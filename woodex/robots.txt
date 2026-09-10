@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://woodexinterior.com/sitemap.xml
+Sitemap: https://woodex.com.pk/sitemap.xml
