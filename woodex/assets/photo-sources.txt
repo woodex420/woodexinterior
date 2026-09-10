@@ -1,0 +1,9 @@
+hero.jpg — https://images.unsplash.com/photo-1600210492486-724fe5c67fb0
+living.jpg — https://images.unsplash.com/photo-1600607687920-4e2a09cf159d
+kitchen.jpg — https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea
+bedroom.jpg — https://images.unsplash.com/photo-1616486338812-3dadae4b4ace
+office.jpg — https://images.unsplash.com/photo-1497366754035-f200968a6e72
+dining.jpg — https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a
+detail.jpg — https://images.unsplash.com/photo-1600210491892-03d54c0aaf87
+studio.jpg — https://images.unsplash.com/photo-1497366811353-6870744d04b2
+lounge.jpg — https://images.unsplash.com/photo-1615874959474-d609969a20ed

@@ -1,0 +1,15 @@
+# Development files (not deployable)
+woodex/generate.py
+woodex/README.md
+*.py
+__pycache__/
+*.pyc
+
+# Agent/tooling artifacts
+CLAUDE.md
+claude-fable-5.1.md
+graphify-out/
+
+# OS
+.DS_Store
+Thumbs.db
