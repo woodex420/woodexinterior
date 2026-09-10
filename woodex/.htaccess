@@ -1,17 +1,20 @@
 # WOODEX INTERIOR — Apache configuration for Hostinger
 # Enables compression, caching, security headers, and custom error pages.
 
-# --- Custom 404 ---
-ErrorDocument 404 /404.html
+# --- Enable Rewrite Engine ---
+RewriteEngine On
 
 # --- Force HTTPS ---
-RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# --- Remove trailing slashes (except directories) ---
+# --- Remove trailing slashes SAFELY (except directories and files) ---
+RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)/$ /$1 [L,R=301]
+RewriteRule ^(.+)/$ /$1 [L,R=301]
+
+# --- Custom 404 ---
+ErrorDocument 404 /404.html
 
 # --- Gzip Compression ---
 <IfModule mod_deflate.c>
@@ -27,6 +30,7 @@ RewriteRule ^(.*)/$ /$1 [L,R=301]
   ExpiresByType text/css                  "access plus 1 month"
   ExpiresByType application/javascript    "access plus 1 month"
   ExpiresByType image/jpeg                "access plus 1 year"
+  ExpiresByType image/png                 "access plus 1 year"
   ExpiresByType image/svg+xml             "access plus 1 year"
   ExpiresByType font/opentype             "access plus 1 year"
   ExpiresByType font/woff2                "access plus 1 year"
@@ -41,10 +45,15 @@ RewriteRule ^(.*)/$ /$1 [L,R=301]
   Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 </IfModule>
 
-# --- Prevent directory listing ---
-Options -Indexes
+# --- Allow directory listing (disable if not needed) ---
+Options +Indexes
 
 # --- Cache-Control for static assets ---
 <FilesMatch "\.(jpg|jpeg|png|gif|svg|otf|woff2|css|js)$">
   Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+
+# --- Allow access to all files ---
+<FilesMatch ".*">
+  Allow from all
 </FilesMatch>
