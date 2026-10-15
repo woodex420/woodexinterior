@@ -10,10 +10,14 @@ use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Sales\Enums\DiscountType;
+use App\Domain\Sales\Enums\MilestonePlanKey;
 use App\Domain\Sales\Enums\QuoteStatus;
+use App\Domain\Sales\Policies\QuotePolicy;
 use App\Models\User;
 use App\Support\Concerns\HasPublicId;
 use App\Support\Money;
+use App\Support\Phone;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -70,7 +74,9 @@ class Quote extends Model
     {
         return LogOptions::defaults()
             ->useLogName('sales')
-            ->logOnly(['status', 'revision', 'total_minor', 'discount_minor', 'valid_until', 'owner_id', 'approved_by'])
+            // Money is not logged here: drafts are recalculated on every edit, and every sent revision keeps an
+            // immutable snapshot with its totals (quote_versions, D-15).
+            ->logOnly(['status', 'revision', 'valid_until', 'owner_id', 'approved_by'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
     }
@@ -161,6 +167,68 @@ class Quote extends Model
     public function project(): HasOne
     {
         return $this->hasOne(Project::class);
+    }
+
+    /**
+     * Quotes a user may open: everyone with leads.view_all or invoices.manage, otherwise their own quotes and the
+     * quotes of leads they own (same rule as contacts, D-53).
+     *
+     * @param  Builder<Quote>  $query
+     * @return Builder<Quote>
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if (QuotePolicy::seesAll($user)) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $inner) use ($user): void {
+            $inner->where('owner_id', $user->id)
+                ->orWhereHas('lead', fn (Builder $lead) => $lead->where('owner_id', $user->id));
+        });
+    }
+
+    /**
+     * Number, title, client name or phone.
+     *
+     * @param  Builder<Quote>  $query
+     */
+    public function scopeSearch(Builder $query, ?string $term): void
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return;
+        }
+
+        $phone = Phone::normalize($term);
+
+        $query->where(function (Builder $q) use ($term, $phone): void {
+            $q->where('number', 'like', "%{$term}%")
+                ->orWhere('title', 'like', "%{$term}%")
+                ->orWhereHas('contact', function (Builder $contact) use ($term, $phone): void {
+                    $contact->where('name', 'like', "%{$term}%");
+
+                    if ($phone !== null) {
+                        $contact->orWhere('phone', $phone)->orWhere('alt_phone', $phone)->orWhere('whatsapp', $phone);
+                    }
+                })
+                ->orWhereHas('company', fn (Builder $company) => $company->where('name', 'like', "%{$term}%"));
+        });
+    }
+
+    /**
+     * The builder edits drafts (and quotes sent back with changes requested). Sent quotes are revised in P2
+     * part 2: editing them creates a new revision instead of changing the sent document (QUO-013).
+     */
+    public function isEditable(): bool
+    {
+        return in_array($this->status, [QuoteStatus::Draft, QuoteStatus::ChangesRequested], true);
+    }
+
+    public function milestonePlan(): MilestonePlanKey
+    {
+        return MilestonePlanKey::tryFrom((string) ($this->meta['milestone_plan'] ?? '')) ?? MilestonePlanKey::Execution;
     }
 
     public function total(): Money

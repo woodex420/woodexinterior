@@ -144,6 +144,38 @@ await inspect('dashboard-after-navigate', page.url());
 await inspect('leads', `${BASE}/admin/leads`);
 await inspect('pipeline', `${BASE}/admin/pipeline`);
 
+// Quote builder (P2): a field saves when it loses focus and the server total changes; the value is put back
+// afterwards so the check leaves the demo quote as it was. Livewire 4's plain wire:model.blur never reached the
+// server; this is the check that caught it (D-55).
+await inspect('quotes', `${BASE}/admin/quotes`);
+const firstQuote = await page.$('tbody a[href*="/admin/quotes/"]');
+if (!firstQuote) {
+    problems.push('quotes: no quotation in the list (run the DemoQuotesSeeder)');
+} else {
+    await Promise.all([page.waitForSelector('[data-quote-total]', { timeout: 30000 }), firstQuote.click()]);
+    await sleep(300);
+    const quoteTotal = () => page.$eval('[data-quote-total]', (el) => el.textContent.trim());
+    const livewireUpdate = () => page.waitForResponse((r) => r.url().includes('/update') && r.request().method() === 'POST', { timeout: 30000 });
+    const setField = async (selector, value) => {
+        const input = await page.$(selector);
+        await input.evaluate((el) => { el.scrollIntoView({ block: 'center' }); el.focus(); el.select(); });
+        await page.keyboard.type(value);
+        await Promise.all([livewireUpdate(), page.keyboard.press('Tab')]);
+        await sleep(400); // morph
+    };
+    const qtySelector = '[data-item-id] input[aria-label="Quantity"]';
+    const original = await page.$eval(qtySelector, (el) => el.value);
+    const before = await quoteTotal();
+    await setField(qtySelector, String(Number(original || 0) + 7));
+    const changed = await quoteTotal();
+    await setField(qtySelector, original);
+    const restored = await quoteTotal();
+    console.log(`quote builder: total ${before} -> ${changed} -> ${restored}`);
+    if (changed === before) problems.push('quote builder: editing a quantity did not change the server total');
+    if (restored !== before) problems.push(`quote builder: total not restored (${restored} vs ${before})`);
+    await page.screenshot({ path: `${SHOTS}/quote-builder.png` });
+}
+
 // Phone width: the sidebar is an off-canvas drawer that the header button opens.
 await page.setViewport({ width: 390, height: 844 });
 await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle0' });
@@ -152,6 +184,17 @@ await page.click(toggle);
 await sleep(600);
 await expectLayout('mobile open', (l) => l.sidebarLeft === 0 && l.sidebarWidth === 280);
 await page.screenshot({ path: `${SHOTS}/mobile-open.png` });
+
+// The quote builder fits a phone screen without sideways scrolling.
+await page.goto(`${BASE}/admin/quotes`, { waitUntil: 'networkidle0' });
+const phoneQuote = await page.$eval('tbody a[href*="/admin/quotes/"]', (a) => a.href).catch(() => null);
+if (phoneQuote) {
+    await page.goto(phoneQuote, { waitUntil: 'networkidle0' });
+    const width = await page.evaluate(() => document.documentElement.scrollWidth);
+    console.log(`quote builder on a phone: page width ${width}`);
+    if (width > 392) problems.push(`quote builder on a phone: page is ${width}px wide`);
+    await page.screenshot({ path: `${SHOTS}/quote-builder-mobile.png` });
+}
 
 await browser.close();
 const serif = (f) => /^"?(Times|serif)/i.test(f);

@@ -134,6 +134,20 @@
                 </x-admin.card>
             @endif
 
+            {{-- Quotations (QUO-003/016) --}}
+            @can('viewAny', \App\Domain\Sales\Models\Quote::class)
+                <x-admin.card title="Quotations">
+                    @can('create', \App\Domain\Sales\Models\Quote::class)
+                        @if ($current->key !== 'lost')
+                            <x-slot:actions>
+                                <x-admin.button size="sm" icon="plus" :href="route('admin.quotes.create', ['lead' => $lead->id])" wire:navigate>New quotation</x-admin.button>
+                            </x-slot:actions>
+                        @endif
+                    @endcan
+                    <x-admin.quote-list :quotes="$quotes" :lakh="$lakh" empty="No quotation for this enquiry yet. Start one from a template once the site is measured." />
+                </x-admin.card>
+            @endcan
+
             {{-- Timeline (CRM-009) --}}
             <x-admin.card title="Timeline" :description="$activities->count() >= 60 ? 'Latest 60 entries' : null">
                 @php

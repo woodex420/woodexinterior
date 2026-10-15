@@ -401,6 +401,9 @@ class LeadShow extends Component
             'files' => $lead->getMedia('files')->sortByDesc('id')->values(),
             'otherLeads' => Lead::query()->with('stage')->where('contact_id', $lead->contact_id)->whereKeyNot($lead->id)->latest('id')->get(),
             'staff' => $this->staff(),
+            'quotes' => $this->user()->can('quotes.view')
+                ? $lead->quotes()->visibleTo($this->user())->latest('id')->get()
+                : collect(),
             'callOutcomes' => CallOutcome::options(),
             'nextTypes' => NextActionType::options(),
             'budgetBands' => $sales->budget_bands,

@@ -19,6 +19,7 @@ use App\Domain\Projects\Models\Project;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Models\Quote;
+use App\Domain\Sales\Policies\QuotePolicy;
 use App\Domain\System\Models\ChangeRequest;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Integrations\Telegram\Clients\TelegramBotApi;
@@ -69,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Lead::class, LeadPolicy::class);
         Gate::policy(Contact::class, ContactPolicy::class);
         Gate::policy(Company::class, CompanyPolicy::class);
+        Gate::policy(Quote::class, QuotePolicy::class);
 
         // The owner can do everything (PRD §7).
         Gate::before(fn (User $user): ?bool => $user->hasRole('owner') ? true : null);

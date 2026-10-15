@@ -8,6 +8,7 @@ use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Sales\Enums\MilestonePlanKey;
 use App\Domain\Sales\Enums\TemplateKind;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Reusable quotation blueprint: sections + items + terms + milestone plan (QUO-002).
@@ -30,6 +31,14 @@ class QuoteTemplate extends Model
             'blueprint' => 'array',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * @return HasMany<Quote, $this>
+     */
+    public function quotes(): HasMany
+    {
+        return $this->hasMany(Quote::class, 'template_id');
     }
 
     public function sectionCount(): int

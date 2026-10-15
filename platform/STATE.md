@@ -2,25 +2,87 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 16 Oct 2026 00:50 PKT)
-- **Where we are:** P1 CRM is complete. The owner has confirmed the preview works: on 16 Oct, 00:47 PKT, they signed
-  in from their own browser and opened Dashboard, My Day, Leads, Pipeline, Contacts, Companies, Tasks, Site Visits,
-  Users and Integrations. Every page returned 200, with no PHP errors.
-- **Next:** CI → Hostinger staging → P2 Quotations (see "Next" below). The owner has not yet answered P-01…P-09
-  (docs/07 §C). P-06 (rotate the leaked credentials) blocks go-live.
+## Resume here (project memory, saved 16 Oct 2026 01:45 PKT)
+- **Where we are:** P1 CRM is complete, and **P2 Quotations part 1 (the quote builder) is done**. The owner
+  confirmed the preview works and that sign-in works from their browser (16 Oct, 00:47 PKT).
+- **Next:** P2 part 2: approvals, PDF, send + versions, the signed client page with view tracking, accept and
+  "request changes", and the accept automation (see "P2 part 2 plan" below). CI and Hostinger staging wait for the
+  owner:
+  - **CI:** this GitHub connection cannot write `.github/workflows`, so the owner adds the two files from
+    `docs/ci/` (2 minutes in the GitHub website).
+  - **Hostinger:** needs the plan and SSH details (P-05). The owner has not yet answered P-01…P-09; P-06 (rotate the
+    leaked credentials) blocks go-live.
 - **Code:** everything is on branch `arena/8be318a2-woodexinterior` and pushed. `master` is still the starting point
   (d77016b); merge through a pull request when the owner approves.
-- **Rules to follow:** docs/07 (D-01…D-52) and platform/AGENTS.md. The plan and specs are in docs/00–08.
+- **Rules to follow:** docs/07 (D-01…D-55) and platform/AGENTS.md. The plan and specs are in docs/00–08.
 - **Preview (AI sandbox only):** after a VM reset run `sh tools/sandbox/setup.sh` (~3–4 min). It rebuilds PHP 8.4,
-  `vendor/`, the front-end build and the demo database. Then start
+  `vendor/`, the front-end build and the demo database, including the demo quotations. Then start
   `PORT=8080 node --stack-size=8000 tools/sandbox/server.mjs` from `/tmp/woodex-run`. The checks are `smoke.sh`,
   `assets-check.sh`, `browser-check.mjs` and `iframe-check.mjs` (tools/sandbox/README.md).
-- **Preview data:** demo seed (26 leads, 5 users). Owner login: `owner@woodex.test` / `Woodex-Preview-2026`; the
-  sign-in page also has a one-click demo button. The preview database lives in `/tmp` and is rebuilt from the
-  seeders after a VM reset, so anything typed into the preview is temporary. Real data arrives with the v2.1 import
-  on staging (docs/08).
+- **Preview data:** demo seed with 26 leads, 5 users and 4 quotations (WI-10100…WI-10102, WF-10050). Owner login:
+  `owner@woodex.test` / `Woodex-Preview-2026`; the sign-in page also has a one-click demo button. The preview
+  database lives in `/tmp` and is rebuilt from the seeders after a VM reset, so anything typed into the preview is
+  temporary. Real data arrives with the v2.1 import on staging (docs/08).
 
-## Current phase: P1 CRM complete (parts 1 + 2) → P2 Quotations next
+## Current phase: P2 Quotations, part 1 done → part 2 next
+
+### P2 part 1 delivered: quote builder (16 Oct 2026)
+- **Quotations list** (QUO-016) at Sales → Quotations: status chips with counts (incl. "Needs follow-up": sent or
+  viewed, no reply for 2 days), search by number, title, client, company or phone; line, owner and sort filters;
+  value, owner and age columns.
+- **New quotation** (QUO-003/006): choose the client (search, or start from an enquiry or contact page), link the open
+  enquiry, the line and a template card (16 templates + "Blank"). The number is given on creation: WI-10100+
+  interior/project, WF-10050+ furniture. The draft starts with valid-until = today + 15 days and the template's
+  terms (or the default execution/design terms), scope, notes and milestone plan.
+- **Quote builder** (QUO-003/004/005/015/020) at `/admin/quotes/{id}`:
+  - Sections (rename, note, reorder, delete) and lines: description, qty with 3 decimals, unit, rate, line discount
+    as % or Rs, optional line, internal cost.
+  - Every field saves on blur, and the server recalculates line totals, section subtotals, discount, other
+    charges, tax, rounding, total and margin (`QuoteEditor` → `RecalculateQuote`, D-54).
+  - Enter in qty/rate/discount adds a line below and focuses it. Lines and sections drag and drop (SortableJS) or
+    use the up/down actions.
+  - The rate book picker (search + category) copies the item into the quote.
+  - Side panel: client, title, validity, quote discount (% or Rs), other charges (label + amount), tax %, payment
+    milestones (Execution 50/40/10, Design 75/25 or Custom; amounts always add up to the total), scope of work
+    (bullets), terms, client notes and internal notes.
+  - A sticky totals bar warns about lines without a quantity or rate and about milestones that are not 100%.
+  - Duplicate, Save as template (new or update) and delete draft (recycle bin). Read-only for viewers and for
+    quotes that are no longer drafts.
+- **Rate book** (QUO-001): list with search, category and hidden/visible filters. Managers (`quotes.catalog`, D-53)
+  add, edit and hide items (rate, internal cost, finish, line).
+- **Quote templates** (QUO-002): cards with type, line, plan, sections, lines and usage count; "View lines",
+  "Use" and edit details (name, description, type, line, plan, scope, terms, notes, hide).
+- **Around the CRM:**
+  - The lead page has a Quotations card with a "New quotation" link. The contact page and company page list quotes.
+  - Global search finds quotation numbers and titles; the recycle bin has a Quotations tab.
+  - Quote events appear on the lead and contact timelines.
+- **Visibility** (D-53): managers, admins and accounts see every quote. Sales and designers see their own quotes and
+  those of their leads.
+- **Found by the real-browser check:** Livewire 4's `wire:model.blur` never sends a request (D-55). The builder uses
+  `wire:model.live.blur`, and `browser-check.mjs` now edits a quantity, checks the server total and puts it back.
+
+### P2 part 1 verification (16 Oct 2026)
+- Pest: 212 tests, 968 assertions, all passing. The 40 new tests include the 42-line Renovation template totalled
+  to the paisa against an independent BigDecimal sum, plus discounts, other charges, tax, rounding, milestones,
+  moves, locks, duplicate, templates, visibility and the Livewire builder.
+- Pint clean · PHP lint clean (269 files) · Larastan level 6: no errors.
+- `browser-check.mjs` passes, including the quote builder edit/restore and the phone width; `iframe-check.mjs`
+  passes; the smoke test checks 21 admin pages.
+
+### P2 part 2 plan (next)
+1. **Approvals (QUO-007):** discount above the role limit (`discount_limits_bp`) or margin below `min_margin_bp` →
+   pending approval; the owner or manager approves in the admin (and later on Telegram, TGM-002). Approvals menu.
+2. **Send + versions (QUO-008/013):** an immutable `quote_versions` snapshot and PDF hash on each send; a copyable
+   signed link plus email (WhatsApp in P4). Editing a sent quote creates revision R1, R2…; staff see the
+   differences.
+3. **PDF (QUO-014):** A4 Studio letterhead with dompdf: client block, scope, sections, totals, amount in words,
+   milestones, terms, bank details and signatories, page numbers.
+4. **Client page (QUO-009/010):** signed, expiring link with a Studio-branded view, PDF download, Accept (name +
+   checkbox), Request changes and Ask on WhatsApp. View tracking with first-view and "hot" alerts.
+5. **Accept automation (QUO-011):** lead → Won, contact → client, a project record and the advance invoice draft (P3
+   tables) in one transaction, then the notifications.
+6. **P2 part 3:** validity reminders and expiry (QUO-012), options A/B (QUO-019) and the v2.1 quotes/templates
+   import.
 
 ### Preview sign-in fix (16 Oct 2026)
 - **Test 1 (00:18 PKT):** the owner signed in as `admin@woodex.com.pk`, which does not exist in the demo data, and
@@ -109,11 +171,12 @@ _Update at the end of every task (docs/03 Part A §7)._
   failed requests or console errors, one chart inside its card (expanded and collapsed sidebar), no layout slide on
   load or `wire:navigate`, mobile drawer, lead form visible without JS and submitted with JS (reference returned).
 
-### Next
-1. Activate CI (docs/ci/README.md; Larastan is blocking there), then commit the first `composer.lock`.
+### Next (after P1)
+1. Activate CI (docs/ci/README.md; Larastan is blocking there), then commit the first `composer.lock`. Waiting for
+   the owner: this GitHub connection cannot write `.github/workflows`.
 2. Staging on Hostinger: subdomain, PHP 8.4, cron, `woodex:install`, Telegram webhook (docs/06); first import dry run
-   from System → Data import against a copy of the v2.1 database (docs/08).
-3. P2 Quotations (docs/03 Part B).
+   from System → Data import against a copy of the v2.1 database (docs/08). Waiting for P-05.
+3. P2 Quotations (docs/03 Part B): part 1 done, see above.
 4. Deferred from P1 (small): CSV import of leads/contacts with mapping (CAP-009); full alert-rule builder (AUT-003,
    P5); client WhatsApp visit reminders (P4); saved views on Contacts/Companies (the concern is ready).
 

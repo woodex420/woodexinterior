@@ -15,6 +15,11 @@ use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\MyDay;
 use App\Livewire\Admin\NotificationsPage;
 use App\Livewire\Admin\Profile\Security;
+use App\Livewire\Admin\Sales\QuoteBuilder;
+use App\Livewire\Admin\Sales\QuoteCreate;
+use App\Livewire\Admin\Sales\QuotesIndex;
+use App\Livewire\Admin\Sales\QuoteTemplates;
+use App\Livewire\Admin\Sales\RateBook;
 use App\Livewire\Admin\System\DataImport;
 use App\Livewire\Admin\System\Health;
 use App\Livewire\Admin\System\Integrations;
@@ -42,6 +47,13 @@ Route::livewire('/companies', CompaniesIndex::class)->name('companies.index');
 Route::livewire('/companies/{company}', CompanyShow::class)->name('companies.show');
 Route::livewire('/tasks', TasksIndex::class)->name('tasks.index');
 Route::livewire('/site-visits', VisitsIndex::class)->name('visits.index');
+
+// Sales (P2)
+Route::livewire('/quotes', QuotesIndex::class)->name('quotes.index')->middleware('can:quotes.view');
+Route::livewire('/quotes/new', QuoteCreate::class)->name('quotes.create')->middleware('can:quotes.manage');
+Route::livewire('/quotes/{quote}', QuoteBuilder::class)->name('quotes.show')->whereNumber('quote');
+Route::livewire('/quote-templates', QuoteTemplates::class)->name('quote-templates')->middleware('can:quotes.view');
+Route::livewire('/rate-book', RateBook::class)->name('rate-book')->middleware('can:quotes.view');
 
 // Private attachments (GLB-006)
 Route::get('/media/{media}/{conversion?}', MediaController::class)->name('media.show')->whereIn('conversion', ['thumb']);

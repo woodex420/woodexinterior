@@ -19,6 +19,7 @@ use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Models\Tag;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Livewire\Concerns\ManagesAttachments;
+use App\Settings\SalesSettings;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -245,6 +246,8 @@ class ContactShow extends Component
             'duplicates' => $user->can('merge', Contact::class) ? $contact->possibleDuplicates() : collect(),
             'types' => ClientType::options(),
             'lines' => BusinessLine::options(),
+            'quotes' => $user->can('quotes.view') ? $contact->quotes()->visibleTo($user)->latest('id')->limit(20)->get() : collect(),
+            'lakh' => app(SalesSettings::class)->lakh_grouping,
         ])->title($contact->name);
     }
 }

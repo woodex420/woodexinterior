@@ -7,6 +7,7 @@ namespace App\Livewire\Admin;
 use App\Domain\Crm\Models\Company;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
+use App\Domain\Sales\Models\Quote;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -34,6 +35,8 @@ class GlobalSearch extends Component
         $leads = collect();
         /** @var Collection<int, Company> $companies */
         $companies = collect();
+        /** @var Collection<int, Quote> $quotes */
+        $quotes = collect();
 
         if (mb_strlen($term) >= 2) {
             if ($user->can('contacts.view')) {
@@ -50,12 +53,19 @@ class GlobalSearch extends Component
                     ->where(fn (Builder $q) => $q->where('ref', 'like', "%{$term}%")->orWhereHas('contact', fn (Builder $c) => $c->search($term)))
                     ->latest('id')->limit(6)->get();
             }
+
+            if ($user->can('quotes.view')) {
+                $quotes = Quote::query()->visibleTo($user)->with('contact:id,name')
+                    ->where(fn (Builder $q) => $q->where('number', 'like', "%{$term}%")->orWhere('title', 'like', "%{$term}%"))
+                    ->latest('id')->limit(5)->get();
+            }
         }
 
         return view('livewire.admin.global-search', [
             'contacts' => $contacts,
             'leads' => $leads,
             'companies' => $companies,
+            'quotes' => $quotes,
             'searched' => mb_strlen($term) >= 2,
         ]);
     }

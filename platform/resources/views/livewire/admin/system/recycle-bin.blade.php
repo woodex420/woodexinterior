@@ -3,7 +3,7 @@
                          :breadcrumbs="['System' => null, 'Recycle bin' => null]" />
 
     <div class="mb-4 inline-flex rounded-lg border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-white/[0.03]" role="tablist">
-        @foreach (['leads' => 'Leads', 'contacts' => 'Contacts', 'companies' => 'Companies'] as $key => $label)
+        @foreach (['leads' => 'Leads', 'contacts' => 'Contacts', 'companies' => 'Companies', 'quotes' => 'Quotations'] as $key => $label)
             <button type="button" wire:click="$set('tab', '{{ $key }}')" role="tab" aria-selected="{{ $tab === $key ? 'true' : 'false' }}"
                     @class(['rounded-md px-3 py-1.5 text-theme-sm font-medium transition', 'bg-navy-900 text-white dark:bg-white dark:text-navy-900' => $tab === $key, 'text-gray-600 hover:text-gray-900 dark:text-gray-400' => $tab !== $key])>
                 {{ $label }} <span class="opacity-70">({{ $counts[$key] }})</span>
@@ -22,6 +22,9 @@
                         @elseif ($tab === 'contacts')
                             <p class="font-medium text-gray-800 dark:text-white/90">{{ $record->name }}</p>
                             <p class="text-theme-xs text-gray-500">{{ \App\Support\Phone::display($record->phone) ?: ($record->email ?: 'no contact details') }} · {{ $record->leads_count }} {{ \Illuminate\Support\Str::plural('enquiry', $record->leads_count) }} · deleted {{ $record->deleted_at?->diffForHumans() }}</p>
+                        @elseif ($tab === 'quotes')
+                            <p class="font-medium text-gray-800 dark:text-white/90">{{ $record->label() }} · {{ $record->contact?->name ?? 'Unknown contact' }}</p>
+                            <p class="text-theme-xs text-gray-500">{{ $record->title }} · {{ \App\Support\Money::ofMinor((int) $record->total_minor)->format() }} · {{ $record->owner?->name ?? 'No owner' }} · deleted {{ $record->deleted_at?->diffForHumans() }}</p>
                         @else
                             <p class="font-medium text-gray-800 dark:text-white/90">{{ $record->name }}</p>
                             <p class="text-theme-xs text-gray-500">{{ $record->typeLabel() }} · deleted {{ $record->deleted_at?->diffForHumans() }}</p>

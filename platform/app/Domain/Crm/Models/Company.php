@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Crm\Models;
 
+use App\Domain\Sales\Models\Quote;
 use App\Models\User;
 use App\Support\Phone;
 use Illuminate\Database\Eloquent\Builder;
@@ -68,6 +69,14 @@ class Company extends Model
     public function contacts(): HasMany
     {
         return $this->hasMany(Contact::class);
+    }
+
+    /**
+     * @return HasMany<Quote, $this>
+     */
+    public function quotes(): HasMany
+    {
+        return $this->hasMany(Quote::class);
     }
 
     /**

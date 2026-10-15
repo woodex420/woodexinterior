@@ -7,8 +7,10 @@ namespace App\Livewire\Admin\Crm;
 use App\Domain\Crm\Models\Company;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
+use App\Domain\Sales\Models\Quote;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Livewire\Forms\CompanyForm;
+use App\Settings\SalesSettings;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Computed;
@@ -17,7 +19,7 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
- * Company page (CRM-002): details, people, enquiries; quotations and invoices join in P2/P3.
+ * Company page (CRM-002): details, people, enquiries and quotations; invoices join in P3.
  *
  * @property-read Company $company
  */
@@ -119,6 +121,12 @@ class CompanyShow extends Component
             'company' => $company,
             'contacts' => Contact::query()->visibleTo($user)->where('company_id', $company->id)->withCount('leads')->orderBy('name')->get(),
             'leads' => $leads,
+            'quotes' => $user->can('quotes.view')
+                ? Quote::query()->visibleTo($user)
+                    ->where(fn (Builder $q) => $q->where('company_id', $company->id)->orWhereIn('contact_id', $contactIds))
+                    ->latest('id')->limit(30)->get()
+                : collect(),
+            'lakh' => app(SalesSettings::class)->lakh_grouping,
             'candidates' => mb_strlen($term) >= 2
                 ? Contact::query()->visibleTo($user)->search($term)->where(fn (Builder $q) => $q->whereNull('company_id')->orWhere('company_id', '!=', $company->id))->limit(6)->get()
                 : collect(),

@@ -221,5 +221,7 @@ class DemoSeeder extends Seeder
                 ]);
             }
         }
+
+        $this->call(DemoQuotesSeeder::class);
     }
 }

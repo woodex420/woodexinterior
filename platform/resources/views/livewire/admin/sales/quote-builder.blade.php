@@ -1,0 +1,466 @@
+@use('App\Support\Money')
+@use('App\Support\Phone')
+@use('App\Support\NumberInput')
+@php
+    $contact = $quote->contact;
+    $money = fn (int $minor) => Money::ofMinor($minor)->format($lakh);
+    $ro = ! $editable;
+    $planKey = $quote->milestonePlan()->value;
+@endphp
+<div>
+    <x-admin.page-header :title="$quote->label()" :breadcrumbs="['Sales' => null, 'Quotations' => route('admin.quotes.index'), $quote->label() => null]">
+        <x-slot:actions>
+            @can('duplicate', $quote)
+                <x-admin.button variant="secondary" icon="copy" wire:click="duplicate" wire:loading.attr="disabled">Duplicate</x-admin.button>
+            @endcan
+            @can('manageCatalog', \App\Domain\Sales\Models\Quote::class)
+                <x-admin.button variant="secondary" icon="templates" wire:click="openSaveTemplate">Save as template</x-admin.button>
+            @endcan
+            <x-admin.button icon="send" disabled title="Approval, PDF and sending arrive in P2 part 2">Send</x-admin.button>
+            @if ($editable && $quote->sent_at === null)
+            @can('delete', $quote)
+                <x-admin.button variant="secondary" icon="trash" wire:click="deleteQuote"
+                                wire:confirm="Move draft {{ $quote->label() }} to the recycle bin? It can be restored." aria-label="Delete draft" />
+            @endcan
+            @endif
+        </x-slot:actions>
+    </x-admin.page-header>
+
+    <div class="-mt-3 mb-5 flex flex-wrap items-center gap-2 text-theme-sm text-gray-500">
+        <x-admin.badge :color="$quote->status->color()">{{ $quote->status->label() }}</x-admin.badge>
+        <span class="font-medium text-gray-700 dark:text-gray-300">{{ $quote->title }}</span>
+        <span class="text-gray-400">·</span>
+        <span>{{ $contact->name }}</span>
+        <span class="text-gray-400">·</span>
+        <span>{{ $quote->business_line->label() }}</span>
+        @if ($quote->valid_until)
+            <span class="text-gray-400">·</span>
+            <span>Valid until {{ $quote->valid_until->format('j M Y') }}</span>
+        @endif
+        <span class="text-gray-400">·</span>
+        <span>Saved {{ $quote->updated_at?->diffForHumans() }}</span>
+        <span wire:loading.delay class="inline-flex items-center gap-1 text-navy-700 dark:text-white"><x-icon name="refresh" class="size-3.5 animate-spin" /> Saving…</span>
+    </div>
+
+    @if ($ro)
+        <div class="mb-5 rounded-xl border border-info-500/30 bg-info-50 px-4 py-3 text-theme-sm text-info-700 dark:bg-info-500/10">
+            {{ $quote->isEditable() ? 'You can view this quotation but not change it.' : "This quotation is {$quote->status->label()} and can no longer be edited." }}
+        </div>
+    @endif
+
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+        {{-- Main column: scope, sections and lines, totals --}}
+        <div class="min-w-0 space-y-5">
+            <x-admin.card title="Scope of work" description="Printed before the price list. Blank line = new paragraph; start lines with “-” for bullets.">
+                <textarea id="details-scope" wire:model.live.blur="details.scope" rows="3" @disabled($ro)
+                          x-data x-init="$nextTick(() => { $el.style.height = Math.max($el.scrollHeight, 76) + 'px' })"
+                          x-on:input="$el.style.height = 'auto'; $el.style.height = Math.max($el.scrollHeight, 76) + 'px'"
+                          class="wx-input h-auto min-h-[76px] py-2.5" placeholder="- Site measurement and drawings&#10;- Supply and installation as per BOQ"></textarea>
+                @error('details.scope')<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+            </x-admin.card>
+
+            <div class="space-y-5" data-quote-sections>
+                @foreach ($quote->sections as $section)
+                    <section wire:key="section-{{ $section->id }}" data-section-id="{{ $section->id }}"
+                             class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+                        <header class="flex items-start gap-2 border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+                            @unless ($ro)
+                                <button type="button" data-section-handle class="mt-2 hidden cursor-grab text-gray-300 hover:text-gray-500 sm:block" aria-label="Drag to reorder section" title="Drag to reorder">
+                                    <x-icon name="grip" class="size-4" />
+                                </button>
+                            @endunless
+                            <div class="min-w-0 flex-1">
+                                <label for="section-{{ $section->id }}-name" class="sr-only">Section name</label>
+                                <input id="section-{{ $section->id }}-name" type="text" wire:model.live.blur="sections.{{ $section->id }}.name" @disabled($ro)
+                                       class="w-full rounded-md border border-transparent bg-transparent px-1.5 py-1 text-theme-lg font-medium text-gray-900 hover:border-gray-200 focus:border-navy-300 focus:outline-hidden dark:text-white dark:hover:border-gray-700">
+                                <label for="section-{{ $section->id }}-note" class="sr-only">Section note</label>
+                                <input id="section-{{ $section->id }}-note" type="text" wire:model.live.blur="sections.{{ $section->id }}.note" @disabled($ro)
+                                       placeholder="{{ $ro ? '' : 'Note for this section (optional)' }}"
+                                       class="w-full rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-theme-xs text-gray-500 hover:border-gray-200 focus:border-navy-300 focus:outline-hidden dark:hover:border-gray-700">
+                                @error("sections.{$section->id}.name")<p class="px-1.5 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+                            </div>
+                            <div class="shrink-0 pt-1.5 text-right">
+                                <p class="text-theme-xs text-gray-400">Subtotal</p>
+                                <p class="font-medium tabular-nums text-gray-900 dark:text-white">{{ $money($section->subtotal_minor) }}</p>
+                            </div>
+                            @unless ($ro)
+                                <div class="relative shrink-0 pt-1" x-data="{ open: false }" x-on:click.outside="open = false" x-on:keydown.escape="open = false">
+                                    <button type="button" x-on:click="open = ! open" class="flex size-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5" aria-label="Section actions" x-bind:aria-expanded="open">
+                                        <x-icon name="more" class="size-4" />
+                                    </button>
+                                    <div x-show="open" x-cloak x-transition.opacity class="absolute right-0 z-30 mt-1 w-48 rounded-xl border border-gray-200 bg-white p-1.5 text-theme-sm shadow-theme-lg dark:border-gray-800 dark:bg-gray-900">
+                                        <button type="button" wire:click="shiftSection({{ $section->id }}, -1)" x-on:click="open = false" @disabled($loop->first) class="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left hover:bg-gray-50 disabled:opacity-40 dark:hover:bg-white/5"><x-icon name="chevron-left" class="size-4 rotate-90" /> Move up</button>
+                                        <button type="button" wire:click="shiftSection({{ $section->id }}, 1)" x-on:click="open = false" @disabled($loop->last) class="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left hover:bg-gray-50 disabled:opacity-40 dark:hover:bg-white/5"><x-icon name="chevron-down" class="size-4" /> Move down</button>
+                                        <button type="button" wire:click="deleteSection({{ $section->id }})" wire:confirm="Delete the section “{{ $section->name }}” and its {{ $section->items->count() }} lines?" x-on:click="open = false" class="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-error-600 hover:bg-error-50 dark:hover:bg-error-500/10"><x-icon name="trash" class="size-4" /> Delete section</button>
+                                    </div>
+                                </div>
+                            @endunless
+                        </header>
+
+                        <div data-quote-lines data-section-id="{{ $section->id }}" class="divide-y divide-gray-100 dark:divide-gray-800">
+                            @foreach ($section->items as $item)
+                                @php
+                                    $line = $lines[$item->id] ?? null;
+                                    $pending = ! $item->is_optional && ((float) $item->qty <= 0 || $item->rate_minor <= 0);
+                                @endphp
+                                @if ($line !== null)
+                                    <div wire:key="line-{{ $item->id }}" data-item-id="{{ $item->id }}" @class(['flex gap-2 px-4 py-3', 'bg-gray-50/70 dark:bg-white/[0.02]' => $item->is_optional])>
+                                        @unless ($ro)
+                                            <button type="button" data-line-handle class="mt-2.5 hidden shrink-0 cursor-grab text-gray-300 hover:text-gray-500 sm:block" aria-label="Drag to reorder line" title="Drag to reorder">
+                                                <x-icon name="grip" class="size-4" />
+                                            </button>
+                                        @endunless
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-start gap-2">
+                                                <div class="min-w-0 flex-1">
+                                                    <label for="line-{{ $item->id }}-description" class="sr-only">Description</label>
+                                                    <textarea id="line-{{ $item->id }}-description" wire:model.live.blur="lines.{{ $item->id }}.description" rows="1" @disabled($ro)
+                                                              x-data x-init="$nextTick(() => { $el.style.height = $el.scrollHeight + 'px' })"
+                                                              x-on:input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                                                              placeholder="Describe the work or item"
+                                                              class="block w-full resize-none overflow-hidden rounded-lg border border-transparent bg-transparent px-2 py-1.5 text-theme-sm text-gray-800 hover:border-gray-200 focus:border-navy-300 focus:bg-white focus:outline-hidden dark:text-white/90 dark:hover:border-gray-700 dark:focus:bg-gray-900"></textarea>
+                                                </div>
+                                                <div class="shrink-0 pt-1.5 text-right">
+                                                    <p @class(['font-medium tabular-nums', 'text-gray-900 dark:text-white' => ! $item->is_optional, 'text-gray-400 line-through decoration-gray-300' => $item->is_optional])>{{ $money($item->line_total_minor) }}</p>
+                                                    @if ($item->discount_minor > 0)
+                                                        <p class="text-theme-xs text-success-700">−{{ $money($item->discount_minor) }}</p>
+                                                    @endif
+                                                </div>
+                                                @unless ($ro)
+                                                    <div class="relative shrink-0" x-data="{ open: false }" x-on:click.outside="open = false" x-on:keydown.escape="open = false">
+                                                        <button type="button" x-on:click="open = ! open" class="mt-0.5 flex size-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5" aria-label="Line actions" x-bind:aria-expanded="open">
+                                                            <x-icon name="more" class="size-4" />
+                                                        </button>
+                                                        <div x-show="open" x-cloak x-transition.opacity class="absolute right-0 z-30 mt-1 w-64 rounded-xl border border-gray-200 bg-white p-3 text-theme-sm shadow-theme-lg dark:border-gray-800 dark:bg-gray-900">
+                                                            <label class="flex items-center gap-2">
+                                                                <input type="checkbox" wire:model.live="lines.{{ $item->id }}.is_optional" class="size-4 rounded border-gray-300 text-navy-900">
+                                                                <span>Optional line <span class="block text-theme-xs text-gray-500">Shown to the client, not added to the total</span></span>
+                                                            </label>
+                                                            <label for="line-{{ $item->id }}-cost" class="mt-3 block text-theme-xs font-medium text-gray-600 dark:text-gray-300">Internal cost per unit (staff only)</label>
+                                                            <div class="mt-1 flex items-center rounded-lg border border-gray-300 focus-within:border-navy-300 dark:border-gray-700">
+                                                                <span class="pl-2.5 text-theme-xs text-gray-400">Rs</span>
+                                                                <input id="line-{{ $item->id }}-cost" type="text" inputmode="decimal" wire:model.live.blur="lines.{{ $item->id }}.internal_cost" placeholder="—"
+                                                                       class="h-9 w-full rounded-lg border-0 bg-transparent px-2 text-theme-sm tabular-nums focus:outline-hidden">
+                                                            </div>
+                                                            @error("lines.{$item->id}.internal_cost")<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+                                                            <div class="mt-3 grid grid-cols-2 gap-1.5 border-t border-gray-100 pt-3 dark:border-gray-800">
+                                                                <button type="button" wire:click="shiftLine({{ $item->id }}, -1)" x-on:click="open = false" @disabled($loop->first) class="rounded-lg px-2 py-1.5 text-left hover:bg-gray-50 disabled:opacity-40 dark:hover:bg-white/5">Move up</button>
+                                                                <button type="button" wire:click="shiftLine({{ $item->id }}, 1)" x-on:click="open = false" @disabled($loop->last) class="rounded-lg px-2 py-1.5 text-left hover:bg-gray-50 disabled:opacity-40 dark:hover:bg-white/5">Move down</button>
+                                                                <button type="button" wire:click="deleteLine({{ $item->id }})" x-on:click="open = false" class="col-span-2 flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-error-600 hover:bg-error-50 dark:hover:bg-error-500/10"><x-icon name="trash" class="size-4" /> Delete line</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endunless
+                                            </div>
+
+                                            <div class="mt-1.5 flex flex-wrap items-center gap-2 pl-0.5">
+                                                <label class="flex h-9 items-center rounded-lg border border-gray-300 bg-white focus-within:border-navy-300 dark:border-gray-700 dark:bg-gray-900">
+                                                    <span class="pl-2.5 text-theme-xs text-gray-400">Qty</span>
+                                                    <input type="text" inputmode="decimal" wire:model.live.blur="lines.{{ $item->id }}.qty" @disabled($ro) aria-label="Quantity"
+                                                           x-on:keydown.enter.prevent="$el.blur(); $nextTick(() => $wire.addLine({{ $section->id }}, {{ $item->id }}))"
+                                                           class="h-full w-20 rounded-lg border-0 bg-transparent px-2 text-right text-theme-sm tabular-nums focus:outline-hidden">
+                                                </label>
+                                                <select wire:model.live="lines.{{ $item->id }}.unit" @disabled($ro) aria-label="Unit"
+                                                        class="h-9 rounded-lg border border-gray-300 bg-white px-2 text-theme-sm text-gray-700 focus:border-navy-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                                    @foreach ($units as $value => $label)
+                                                        <option value="{{ $value }}">{{ $value }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <label class="flex h-9 items-center rounded-lg border border-gray-300 bg-white focus-within:border-navy-300 dark:border-gray-700 dark:bg-gray-900">
+                                                    <span class="pl-2.5 text-theme-xs text-gray-400">Rs</span>
+                                                    <input type="text" inputmode="decimal" wire:model.live.blur="lines.{{ $item->id }}.rate" @disabled($ro) aria-label="Rate in rupees"
+                                                           x-on:keydown.enter.prevent="$el.blur(); $nextTick(() => $wire.addLine({{ $section->id }}, {{ $item->id }}))"
+                                                           class="h-full w-24 rounded-lg border-0 bg-transparent px-2 text-right text-theme-sm tabular-nums focus:outline-hidden">
+                                                    <span class="pr-2.5 text-theme-xs text-gray-400">/{{ $item->unit }}</span>
+                                                </label>
+                                                <div class="flex h-9 items-center rounded-lg border border-gray-300 bg-white focus-within:border-navy-300 dark:border-gray-700 dark:bg-gray-900">
+                                                    <select wire:model.live="lines.{{ $item->id }}.discount_type" @disabled($ro) aria-label="Line discount type"
+                                                            class="h-full rounded-l-lg border-0 bg-transparent pr-1 pl-2.5 text-theme-xs text-gray-500 focus:outline-hidden">
+                                                        <option value="">No discount</option>
+                                                        <option value="percent">Discount %</option>
+                                                        <option value="amount">Discount Rs</option>
+                                                    </select>
+                                                    @if ($line['discount_type'] !== '')
+                                                        <input type="text" inputmode="decimal" wire:model.live.blur="lines.{{ $item->id }}.discount_value" @disabled($ro) aria-label="Line discount"
+                                                               x-on:keydown.enter.prevent="$el.blur(); $nextTick(() => $wire.addLine({{ $section->id }}, {{ $item->id }}))"
+                                                               class="h-full w-20 rounded-r-lg border-0 border-l border-gray-200 bg-transparent px-2 text-right text-theme-sm tabular-nums focus:outline-hidden dark:border-gray-700">
+                                                    @endif
+                                                </div>
+                                                @if ($item->is_optional)
+                                                    <x-admin.badge color="gray" :dot="false">Optional</x-admin.badge>
+                                                @endif
+                                                @if ($pending)
+                                                    <span class="inline-flex items-center gap-1 text-theme-xs text-warning-700"><span class="size-1.5 rounded-full bg-warning-500"></span>Needs {{ (float) $item->qty <= 0 ? 'quantity' : 'rate' }}</span>
+                                                @endif
+                                            </div>
+                                            @foreach (['qty', 'rate', 'unit', 'discount_value', 'description'] as $field)
+                                                @error("lines.{$item->id}.{$field}")<p class="mt-1 pl-0.5 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+
+                        @if ($section->items->isEmpty())
+                            <p class="px-5 py-4 text-theme-sm text-gray-500">No lines in this section yet.</p>
+                        @endif
+
+                        @unless ($ro)
+                            <footer class="flex flex-wrap gap-2 border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+                                <x-admin.button size="sm" variant="ghost" icon="plus" wire:click="addLine({{ $section->id }})">Add line</x-admin.button>
+                                <x-admin.button size="sm" variant="ghost" icon="book" wire:click="openCatalog({{ $section->id }})">From rate book</x-admin.button>
+                            </footer>
+                        @endunless
+                    </section>
+                @endforeach
+            </div>
+
+            @if ($quote->sections->isEmpty())
+                <x-admin.card>
+                    <x-admin.empty icon="quote" title="No sections yet" description="Add a section such as Civil work, Wood work or Furniture, then add its lines." />
+                </x-admin.card>
+            @endif
+
+            @unless ($ro)
+                <button type="button" wire:click="addSection" class="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-gray-300 px-4 py-4 text-theme-sm font-medium text-gray-600 hover:border-navy-300 hover:bg-navy-50/40 hover:text-navy-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5">
+                    <x-icon name="plus" class="size-4" /> Add section
+                </button>
+            @endunless
+
+            {{-- Totals bar (QUO-004): always the server's numbers --}}
+            <div class="sticky bottom-3 z-20 rounded-2xl border border-gray-200 bg-white/95 px-4 py-3 shadow-theme-lg backdrop-blur sm:p-4 dark:border-gray-800 dark:bg-gray-900/95" data-quote-totals>
+                <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+                    {{-- Phones show the total only; the breakdown starts at the sm breakpoint. --}}
+                    <dl class="hidden flex-wrap gap-x-6 gap-y-2 text-theme-sm sm:flex">
+                        <div><dt class="text-theme-xs text-gray-500">Subtotal</dt><dd class="font-medium tabular-nums">{{ $money($quote->subtotal_minor) }}</dd></div>
+                        @if ($quote->discount_minor > 0)
+                            <div><dt class="text-theme-xs text-gray-500">Discount</dt><dd class="font-medium tabular-nums text-success-700">−{{ $money($quote->discount_minor) }}</dd></div>
+                        @endif
+                        @if ($quote->other_charges_minor > 0)
+                            <div><dt class="text-theme-xs text-gray-500">{{ $quote->other_charges_label ?: 'Other charges' }}</dt><dd class="font-medium tabular-nums">{{ $money($quote->other_charges_minor) }}</dd></div>
+                        @endif
+                        <div>
+                            <dt class="text-theme-xs text-gray-500">Tax</dt>
+                            <dd class="font-medium tabular-nums">{{ $quote->tax_bp > 0 ? $money($quote->tax_minor).' ('.NumberInput::fromBp($quote->tax_bp).'%)' : 'Exclusive of taxes' }}</dd>
+                        </div>
+                        @if ($quote->margin_bp !== null)
+                            <div title="From internal costs. Never shown to the client.">
+                                <dt class="text-theme-xs text-gray-500">Margin (staff)</dt>
+                                <dd @class(['font-medium tabular-nums', 'text-error-600' => $quote->margin_bp < 0])>{{ NumberInput::fromBp($quote->margin_bp) }}%</dd>
+                            </div>
+                        @endif
+                    </dl>
+                    <div class="flex w-full items-baseline justify-between gap-3 sm:block sm:w-auto sm:text-right">
+                        <p class="text-theme-xs text-gray-500">Total{{ $quote->rounding_minor !== 0 ? ' (rounded)' : '' }}{{ $quote->tax_bp > 0 ? '' : ' · excl. taxes' }}</p>
+                        <p class="font-heading text-2xl leading-none text-gray-900 tabular-nums sm:text-title-sm dark:text-white" data-quote-total>{{ $money($quote->total_minor) }}</p>
+                    </div>
+                </div>
+                @if ($needsPricing > 0 || $milestoneTotal !== 10000)
+                    <div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 border-t border-gray-100 pt-2 text-theme-xs text-warning-700 sm:mt-3 sm:pt-3 dark:border-gray-800">
+                        @if ($needsPricing > 0)
+                            <span>● {{ $needsPricing }} of {{ $lineCount }} lines still need a quantity or rate</span>
+                        @endif
+                        @if ($milestoneTotal !== 10000)
+                            <span>● Payment milestones add up to {{ NumberInput::fromBp($milestoneTotal) }}%, not 100%</span>
+                        @endif
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        {{-- Side panel --}}
+        <div class="space-y-5">
+            <x-admin.card title="Client">
+                <a href="{{ route('admin.contacts.show', $contact) }}" wire:navigate class="font-medium text-gray-900 hover:underline dark:text-white">{{ $contact->name }}</a>
+                @if ($quote->company)
+                    <p class="text-theme-sm text-gray-500">{{ $quote->company->name }}</p>
+                @endif
+                @if ($contact->phone)
+                    <p class="mt-2 flex items-center gap-2 text-theme-sm text-gray-600 dark:text-gray-400">
+                        {{ Phone::display($contact->phone) }}
+                        <a href="{{ Phone::telUrl($contact->phone) }}" class="text-gray-400 hover:text-navy-800" aria-label="Call"><x-icon name="phone" class="size-4" /></a>
+                        @if ($wa = Phone::whatsappUrl($contact->whatsappNumber(), "Assalam o Alaikum {$contact->firstName()}, this is regarding your quotation {$quote->label()} from Woodex Interior."))
+                            <a href="{{ $wa }}" target="_blank" rel="noopener" class="text-success-600 hover:text-success-700" aria-label="WhatsApp"><x-icon name="whatsapp" class="size-4" /></a>
+                        @endif
+                    </p>
+                @endif
+                @if ($quote->lead)
+                    <a href="{{ route('admin.leads.show', $quote->lead) }}" wire:navigate class="mt-3 flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-theme-sm hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10">
+                        <span>Enquiry {{ $quote->lead->ref }}</span>
+                        <x-admin.badge :color="$quote->lead->stage->badgeColor()">{{ $quote->lead->stage->name }}</x-admin.badge>
+                    </a>
+                @endif
+            </x-admin.card>
+
+            <x-admin.card title="Details">
+                <div class="space-y-4">
+                    <x-admin.field label="Title" for="details.title">
+                        <input id="details.title" type="text" wire:model.live.blur="details.title" @disabled($ro) class="wx-input">
+                    </x-admin.field>
+                    <x-admin.field label="Valid until" for="details.valid_until" hint="Default {{ app(\App\Settings\SalesSettings::class)->quote_validity_days }} days from today.">
+                        <input id="details.valid_until" type="date" wire:model.live.blur="details.valid_until" @disabled($ro) class="wx-input">
+                    </x-admin.field>
+                    <dl class="grid grid-cols-2 gap-3 text-theme-sm">
+                        <div><dt class="text-theme-xs text-gray-500">Number</dt><dd>{{ $quote->label() }}</dd></div>
+                        <div><dt class="text-theme-xs text-gray-500">Line</dt><dd>{{ $quote->business_line->label() }}</dd></div>
+                        <div><dt class="text-theme-xs text-gray-500">Template</dt><dd>{{ $quote->template->name ?? 'Blank' }}</dd></div>
+                        <div><dt class="text-theme-xs text-gray-500">Owner</dt><dd>{{ $quote->owner->name ?? '—' }}</dd></div>
+                    </dl>
+                </div>
+            </x-admin.card>
+
+            <x-admin.card title="Discount, charges and tax">
+                <div class="space-y-4">
+                    <x-admin.field label="Discount on the subtotal" error="details.discount_value">
+                        <div class="flex gap-2">
+                            <select wire:model.live="details.discount_type" @disabled($ro) class="wx-input w-36 shrink-0" aria-label="Discount type">
+                                <option value="">None</option>
+                                <option value="percent">Percent</option>
+                                <option value="amount">Amount (Rs)</option>
+                            </select>
+                            @if (($details['discount_type'] ?? '') !== '')
+                                <input type="text" inputmode="decimal" wire:model.live.blur="details.discount_value" @disabled($ro) aria-label="Discount value"
+                                       placeholder="{{ $details['discount_type'] === 'percent' ? 'e.g. 5' : 'e.g. 25000' }}" class="wx-input text-right tabular-nums">
+                            @endif
+                        </div>
+                    </x-admin.field>
+                    <x-admin.field label="Other charges" error="details.other_charges" hint="Rent, transport or scaffolding; added after the discount, before tax.">
+                        <div class="flex gap-2">
+                            <input type="text" wire:model.live.blur="details.other_charges_label" @disabled($ro) placeholder="Label, e.g. Transport" aria-label="Other charges label" class="wx-input">
+                            <input type="text" inputmode="decimal" wire:model.live.blur="details.other_charges" @disabled($ro) placeholder="Rs" aria-label="Other charges amount" class="wx-input w-32 shrink-0 text-right tabular-nums">
+                        </div>
+                    </x-admin.field>
+                    <x-admin.field label="Tax %" for="details.tax" hint="Leave empty for “exclusive of taxes”.">
+                        <input id="details.tax" type="text" inputmode="decimal" wire:model.live.blur="details.tax" @disabled($ro) placeholder="0" class="wx-input text-right tabular-nums">
+                    </x-admin.field>
+                </div>
+            </x-admin.card>
+
+            <x-admin.card title="Payment milestones">
+                <x-slot:actions>
+                    <select wire:model.live="plan" @disabled($ro) class="h-8 rounded-lg border border-gray-300 bg-white px-2 text-theme-xs dark:border-gray-700 dark:bg-gray-900" aria-label="Milestone plan">
+                        @foreach ($plans as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </x-slot:actions>
+                <ol class="space-y-2.5">
+                    @foreach ($quote->milestones as $milestone)
+                        <li wire:key="milestone-{{ $milestone->id }}" class="rounded-xl border border-gray-100 p-2.5 dark:border-gray-800">
+                            <div class="flex items-center gap-2">
+                                <input type="text" wire:model.live.blur="milestones.{{ $milestone->id }}.name" @disabled($ro) aria-label="Milestone name"
+                                       class="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1.5 py-1 text-theme-sm hover:border-gray-200 focus:border-navy-300 focus:outline-hidden dark:hover:border-gray-700">
+                                <label class="flex h-8 items-center rounded-lg border border-gray-300 dark:border-gray-700">
+                                    <input type="text" inputmode="decimal" wire:model.live.blur="milestones.{{ $milestone->id }}.percent" @disabled($ro) aria-label="Milestone percent"
+                                           class="h-full w-12 rounded-l-lg border-0 bg-transparent px-1.5 text-right text-theme-sm tabular-nums focus:outline-hidden">
+                                    <span class="pr-2 text-theme-xs text-gray-400">%</span>
+                                </label>
+                                @if (! $ro && $quote->milestones->count() > 1)
+                                    <button type="button" wire:click="deleteMilestone({{ $milestone->id }})" class="text-gray-300 hover:text-error-600" aria-label="Remove milestone"><x-icon name="x" class="size-4" /></button>
+                                @endif
+                            </div>
+                            <p class="mt-1 px-1.5 text-right text-theme-xs text-gray-500 tabular-nums">{{ $money($milestone->amount_minor) }}</p>
+                            @error("milestones.{$milestone->id}.percent")<p class="px-1.5 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+                            @error("milestones.{$milestone->id}.name")<p class="px-1.5 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+                        </li>
+                    @endforeach
+                </ol>
+                <div class="mt-3 flex items-center justify-between text-theme-xs">
+                    <span @class(['text-gray-500' => $milestoneTotal === 10000, 'font-medium text-warning-700' => $milestoneTotal !== 10000])>Total {{ NumberInput::fromBp($milestoneTotal) }}%</span>
+                    @unless ($ro)
+                        <button type="button" wire:click="addMilestone" class="font-medium text-navy-800 hover:underline dark:text-white">+ Add milestone</button>
+                    @endunless
+                </div>
+            </x-admin.card>
+
+            <x-admin.card title="Terms and notes">
+                <div class="space-y-4">
+                    <x-admin.field label="Terms and conditions" for="details.terms">
+                        <textarea id="details.terms" wire:model.live.blur="details.terms" rows="5" @disabled($ro) class="wx-input h-auto py-2.5"></textarea>
+                    </x-admin.field>
+                    <x-admin.field label="Notes for the client" for="details.notes">
+                        <textarea id="details.notes" wire:model.live.blur="details.notes" rows="3" @disabled($ro) class="wx-input h-auto py-2.5"></textarea>
+                    </x-admin.field>
+                    <x-admin.field label="Internal notes" for="details.internal_notes" hint="Only staff see these.">
+                        <textarea id="details.internal_notes" wire:model.live.blur="details.internal_notes" rows="3" @disabled($ro) class="wx-input h-auto py-2.5"></textarea>
+                    </x-admin.field>
+                </div>
+            </x-admin.card>
+
+            <x-admin.card title="Sending">
+                <p class="text-theme-sm text-gray-600 dark:text-gray-400">Approval for large discounts, the PDF, sending by link and the client's online acceptance arrive in <strong>P2 part 2</strong>. Until then, quotations stay drafts.</p>
+            </x-admin.card>
+        </div>
+    </div>
+
+    {{-- Rate book picker (QUO-001) --}}
+    @if ($showCatalog)
+        <x-admin.modal name="showCatalog" title="Add from the rate book" description="Rates are copied into the quotation; later rate changes never alter it." width="max-w-3xl">
+            <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div class="relative sm:col-span-2">
+                    <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-gray-400" />
+                    <input type="search" wire:model.live.debounce.300ms="catalogSearch" placeholder="Search items" class="wx-input pl-10" aria-label="Search the rate book" autofocus>
+                </div>
+                <select wire:model.live="catalogCategory" class="wx-input" aria-label="Category">
+                    <option value="">All categories</option>
+                    @foreach ($catalogCategories as $category)
+                        <option value="{{ $category }}">{{ $category }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="max-h-[50vh] divide-y divide-gray-100 overflow-y-auto rounded-xl border border-gray-100 dark:divide-gray-800 dark:border-gray-800">
+                @forelse ($catalogItems as $catalogItem)
+                    <div wire:key="catalog-{{ $catalogItem->id }}" class="flex items-center gap-3 px-4 py-2.5">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-theme-sm text-gray-800 dark:text-white/90">{{ $catalogItem->description }}</p>
+                            <p class="text-theme-xs text-gray-500">{{ $catalogItem->category }} · per {{ $catalogItem->unit }}</p>
+                        </div>
+                        <p class="shrink-0 text-right text-theme-sm tabular-nums {{ $catalogItem->rate_minor > 0 ? 'text-gray-800 dark:text-white/90' : 'text-gray-400' }}">
+                            {{ $catalogItem->rate_minor > 0 ? $money($catalogItem->rate_minor) : 'Rate not set' }}
+                        </p>
+                        <x-admin.button size="sm" variant="secondary" icon="plus" wire:click="addFromCatalog({{ $catalogItem->id }})">Add</x-admin.button>
+                    </div>
+                @empty
+                    <x-admin.empty icon="book" title="Nothing found" description="Try another word or category, or add the item to the rate book." />
+                @endforelse
+            </div>
+            <x-slot:footer>
+                <x-admin.button variant="secondary" wire:click="$set('showCatalog', false)">Done</x-admin.button>
+            </x-slot:footer>
+        </x-admin.modal>
+    @endif
+
+    {{-- Save as template (QUO-002) --}}
+    @if ($showTemplate)
+        <x-admin.modal name="showTemplate" title="Save as template" description="Sections, lines, terms, scope and the milestone plan. Client details and discounts are not saved." submit="saveTemplate">
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-2">
+                    <label @class(['cursor-pointer rounded-xl border p-3 text-theme-sm', 'border-navy-900 bg-navy-50 dark:border-white dark:bg-white/10' => $templateMode === 'new', 'border-gray-200 dark:border-gray-800' => $templateMode !== 'new'])>
+                        <input type="radio" wire:model.live="templateMode" value="new" class="sr-only"> New template
+                    </label>
+                    <label @class(['cursor-pointer rounded-xl border p-3 text-theme-sm', 'border-navy-900 bg-navy-50 dark:border-white dark:bg-white/10' => $templateMode === 'replace', 'border-gray-200 dark:border-gray-800' => $templateMode !== 'replace'])>
+                        <input type="radio" wire:model.live="templateMode" value="replace" class="sr-only"> Update a template
+                    </label>
+                </div>
+                @if ($templateMode === 'replace')
+                    <x-admin.field label="Template to update" for="templateId" hint="Its sections and lines are replaced with this quotation's.">
+                        <select id="templateId" wire:model="templateId" class="wx-input">
+                            <option value="">Choose…</option>
+                            @foreach ($templates as $template)
+                                <option value="{{ $template->id }}">{{ $template->name }}</option>
+                            @endforeach
+                        </select>
+                    </x-admin.field>
+                @endif
+                <x-admin.field label="Template name" for="templateName">
+                    <input id="templateName" type="text" wire:model="templateName" class="wx-input">
+                </x-admin.field>
+            </div>
+            <x-slot:footer>
+                <x-admin.button variant="secondary" wire:click="$set('showTemplate', false)">Cancel</x-admin.button>
+                <x-admin.button type="submit" icon="check">Save template</x-admin.button>
+            </x-slot:footer>
+        </x-admin.modal>
+    @endif
+</div>

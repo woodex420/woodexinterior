@@ -96,9 +96,11 @@
                 </ul>
             </x-admin.card>
 
-            <x-admin.card title="Quotations and invoices">
-                <p class="text-theme-sm text-gray-500">Quotations (P2) and invoices (P3) for this company will be listed here.</p>
-            </x-admin.card>
+            @can('viewAny', \App\Domain\Sales\Models\Quote::class)
+                <x-admin.card title="Quotations" description="Quotations for the company and its people. Invoices join in P3.">
+                    <x-admin.quote-list :quotes="$quotes" :lakh="$lakh" empty="No quotations for this company yet." />
+                </x-admin.card>
+            @endcan
         </div>
     </div>
 

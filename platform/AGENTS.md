@@ -39,6 +39,11 @@ Patterns used in the code (follow them):
   `node ../tools/sandbox/browser-check.mjs` and `node ../tools/sandbox/iframe-check.mjs` pass in a real headless
   browser (D-50, D-52). The second one runs the app the way Arena shows it: inside a cross-site iframe, with the
   cookies blocked or dropped.
+- Quotations: every change goes through `App\Domain\Sales\Services\QuoteEditor` (or an Action such as `CreateQuote`,
+  `DuplicateQuote`), which ends with `RecalculateQuote`. Never write `*_minor` totals anywhere else (D-14, D-54).
+  Check the quote's state (`isEditable()`) as well as the permission: the owner passes every permission check.
+- Livewire 4: `wire:model.blur` never sends a request. Fields that save on blur use `wire:model.live.blur`, and
+  saving is verified in a real browser, not only with `Livewire::test()->set()` (D-55).
 - Never depend on the Referer header (`url()->previous()`) or on the route named `home` (the public website) for an
   admin redirect. Name the admin route instead: failed sign-in → its form, signed-in user on a guest page →
   `admin.dashboard` (D-51).

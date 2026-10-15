@@ -1,5 +1,5 @@
 <div>
-    <x-admin.page-header title="Companies" description="Developers, architects and businesses: their people, enquiries and (from P2) quotations in one place."
+    <x-admin.page-header title="Companies" description="Developers, architects and businesses: their people, enquiries and quotations in one place."
                          :breadcrumbs="['CRM' => null, 'Companies' => null]">
         <x-slot:actions>
             @can('create', \App\Domain\Crm\Models\Company::class)

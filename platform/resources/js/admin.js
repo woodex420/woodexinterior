@@ -107,6 +107,62 @@ async function initKanban() {
     });
 }
 
+/* ---------- Quote builder: drag sections and lines (SortableJS), focus after adding ---------- */
+let quoteSortables = [];
+
+async function initQuoteBuilder() {
+    quoteSortables.forEach((sortable) => sortable.destroy());
+    quoteSortables = [];
+
+    const sections = document.querySelector('[data-quote-sections]');
+    if (!sections || !sections.querySelector('[data-section-handle], [data-line-handle]')) return;
+
+    const { default: Sortable } = await import('sortablejs');
+    const component = () => {
+        const root = sections.closest('[wire\\:id]');
+        return root ? window.Livewire.find(root.getAttribute('wire:id')) : null;
+    };
+
+    quoteSortables.push(
+        Sortable.create(sections, {
+            animation: 150,
+            handle: '[data-section-handle]',
+            draggable: '[data-section-id]',
+            ghostClass: 'sortable-ghost',
+            onEnd(event) {
+                if (event.oldIndex === event.newIndex) return;
+                component()?.call('moveSection', Number(event.item.dataset.sectionId), event.newIndex);
+            },
+        }),
+    );
+
+    sections.querySelectorAll('[data-quote-lines]').forEach((list) => {
+        quoteSortables.push(
+            Sortable.create(list, {
+                group: 'quote-lines',
+                animation: 150,
+                handle: '[data-line-handle]',
+                draggable: '[data-item-id]',
+                ghostClass: 'sortable-ghost',
+                onEnd(event) {
+                    if (event.from === event.to && event.oldIndex === event.newIndex) return;
+                    component()?.call('moveLine', Number(event.item.dataset.itemId), Number(event.to.dataset.sectionId), event.newIndex);
+                },
+            }),
+        );
+    });
+}
+
+// $this->dispatch('quote-focus', target: 'line-12-description') after adding a line or section.
+window.addEventListener('quote-focus', (event) => {
+    const detail = Array.isArray(event.detail) ? event.detail[0] : event.detail;
+    setTimeout(() => {
+        const element = document.getElementById(detail?.target ?? '');
+        element?.focus();
+        element?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }, 60);
+});
+
 /* ---------- Charts (ApexCharts): <div data-chart='{"type":"area","series":[…],"categories":[…]}'> ---------- */
 async function initCharts() {
     const elements = [...document.querySelectorAll('[data-chart]:not([data-chart-ready])')];
@@ -179,11 +235,13 @@ function fitChartToBox(chart, element) {
 const refreshWidgets = () => {
     initPreline();
     initKanban();
+    initQuoteBuilder();
     initCharts();
 };
 
 document.addEventListener('DOMContentLoaded', () => {
     initKanban();
+    initQuoteBuilder();
     initCharts();
 });
 

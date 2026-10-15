@@ -150,6 +150,17 @@
                 </div>
             </x-admin.card>
 
+            @can('viewAny', \App\Domain\Sales\Models\Quote::class)
+                <x-admin.card title="Quotations">
+                    @can('create', \App\Domain\Sales\Models\Quote::class)
+                        <x-slot:actions>
+                            <x-admin.button size="sm" variant="secondary" icon="plus" :href="route('admin.quotes.create', ['contact' => $contact->id])" wire:navigate>New quotation</x-admin.button>
+                        </x-slot:actions>
+                    @endcan
+                    <x-admin.quote-list :quotes="$quotes" :lakh="$lakh" />
+                </x-admin.card>
+            @endcan
+
             <x-admin.card title="Timeline" description="Everything across all enquiries.">
                 <ol class="relative space-y-4 before:absolute before:top-2 before:bottom-2 before:left-4 before:w-px before:bg-gray-200 dark:before:bg-gray-800">
                     @forelse ($activities as $activity)

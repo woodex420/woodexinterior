@@ -34,12 +34,12 @@ final class AdminNavigation
                 self::item('Site Visits', 'calendar', 'admin.visits.index', 'leads.view'),
             ]),
             self::group('Sales', [
-                self::item('Quotations', 'quote', null, null, 'P2'),
+                self::item('Quotations', 'quote', 'admin.quotes.index', 'quotes.view'),
                 self::item('Invoices', 'invoice', null, null, 'P3'),
                 self::item('Payments', 'wallet', null, null, 'P3'),
                 self::item('Receivables', 'clock', null, null, 'P3'),
-                self::item('Quote Templates', 'templates', null, null, 'P2'),
-                self::item('Rate Book', 'book', null, null, 'P2'),
+                self::item('Quote Templates', 'templates', 'admin.quote-templates', 'quotes.view'),
+                self::item('Rate Book', 'book', 'admin.rate-book', 'quotes.view'),
             ]),
             self::group('Projects', [
                 self::item('Projects', 'hammer', null, null, 'P3'),

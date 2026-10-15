@@ -8,6 +8,7 @@ use App\Domain\Crm\Actions\TrashRecords;
 use App\Domain\Crm\Models\Company;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
+use App\Domain\Sales\Models\Quote;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
@@ -17,7 +18,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 /**
- * Recycle bin (GLB-010): restore deleted leads, contacts and companies; the owner can erase a
+ * Recycle bin (GLB-010): restore deleted leads, contacts, companies and draft quotations; the owner can erase a
  * contact's personal data for a privacy request.
  */
 #[Layout('layouts::admin')]
@@ -48,10 +49,30 @@ class RecycleBin extends Component
             'lead' => tap(Lead::onlyTrashed()->findOrFail($id), fn (Lead $lead) => $trash->restoreLead($lead))->ref,
             'contact' => tap(Contact::onlyTrashed()->findOrFail($id), fn (Contact $contact) => $trash->restoreContact($contact))->name,
             'company' => tap(Company::onlyTrashed()->findOrFail($id), fn (Company $company) => $company->restore())->name,
+            'quote' => $this->restoreQuote($id),
             default => abort(404),
         };
 
+        if ($name === null) {
+            return;
+        }
+
         $this->toast("{$name} restored.");
+    }
+
+    private function restoreQuote(int $id): ?string
+    {
+        $quote = Quote::onlyTrashed()->with(['contact' => fn ($q) => $q->withTrashed()])->findOrFail($id);
+
+        if ($quote->contact?->trashed()) {
+            $this->toast("Restore the contact {$quote->contact->name} first.", 'error');
+
+            return null;
+        }
+
+        $quote->restore();
+
+        return $quote->label();
     }
 
     public function erase(int $contactId): void
@@ -67,6 +88,7 @@ class RecycleBin extends Component
         $records = match ($this->tab) {
             'contacts' => Contact::onlyTrashed()->withCount(['leads' => fn ($q) => $q->withTrashed()])->latest('deleted_at')->paginate(25),
             'companies' => Company::onlyTrashed()->latest('deleted_at')->paginate(25),
+            'quotes' => Quote::onlyTrashed()->with(['contact' => fn ($q) => $q->withTrashed(), 'owner:id,name'])->latest('deleted_at')->paginate(25),
             default => Lead::onlyTrashed()->with(['contact' => fn ($q) => $q->withTrashed(), 'owner:id,name'])->latest('deleted_at')->paginate(25),
         };
 
@@ -76,6 +98,7 @@ class RecycleBin extends Component
                 'leads' => Lead::onlyTrashed()->count(),
                 'contacts' => Contact::onlyTrashed()->count(),
                 'companies' => Company::onlyTrashed()->count(),
+                'quotes' => Quote::onlyTrashed()->count(),
             ],
             'isOwner' => $this->user()->hasRole('owner'),
         ]);

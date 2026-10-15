@@ -7,6 +7,7 @@ namespace App\Domain\Crm\Models;
 use App\Domain\Crm\Enums\ClientType;
 use App\Domain\Crm\Models\Concerns\HasAttachments;
 use App\Domain\Crm\Policies\ContactPolicy;
+use App\Domain\Sales\Models\Quote;
 use App\Models\User;
 use App\Support\Phone;
 use Database\Factories\ContactFactory;
@@ -78,6 +79,14 @@ class Contact extends Model implements HasMedia
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * @return HasMany<Quote, $this>
+     */
+    public function quotes(): HasMany
+    {
+        return $this->hasMany(Quote::class);
     }
 
     /**

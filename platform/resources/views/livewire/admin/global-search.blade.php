@@ -18,7 +18,7 @@
             <div class="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-theme-xl dark:bg-gray-900" x-trap.noscroll="open">
                 <div class="flex items-center gap-3 border-b border-gray-100 px-4 dark:border-gray-800">
                     <x-icon name="search" class="size-5 text-gray-400" />
-                    <input x-ref="term" type="search" wire:model.live.debounce.250ms="term" placeholder="Search leads, contacts and companies…"
+                    <input x-ref="term" type="search" wire:model.live.debounce.250ms="term" placeholder="Search leads, contacts, companies and quotations…"
                            class="h-14 flex-1 border-0 bg-transparent text-theme-sm text-gray-800 placeholder:text-gray-400 focus:ring-0 focus:outline-none dark:text-white"
                            x-on:keydown.down.prevent="$focus.within($refs.results).first()" autocomplete="off" aria-label="Search">
                     <span wire:loading wire:target="term" class="size-4 animate-spin rounded-full border-2 border-gray-300 border-t-navy-700"></span>
@@ -36,6 +36,7 @@
                             ['Contacts', 'contact', Route::has('admin.contacts.index') ? route('admin.contacts.index') : null],
                             ['Tasks', 'tasks', Route::has('admin.tasks.index') ? route('admin.tasks.index') : null],
                             ['Site visits', 'calendar', Route::has('admin.visits.index') ? route('admin.visits.index') : null],
+                            ['Quotations', 'quote', Route::has('admin.quotes.index') && auth()->user()->can('quotes.view') ? route('admin.quotes.index') : null],
                         ], fn ($item) => $item[2] !== null) as [$label, $icon, $url])
                             <a href="{{ $url }}" wire:navigate x-on:click="open = false" class="flex items-center gap-3 rounded-lg px-3 py-2 text-theme-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-white/5 dark:focus:bg-white/10">
                                 <x-icon :name="$icon" class="size-4 text-gray-400" /> {{ $label }}
@@ -83,10 +84,24 @@
                                 </a>
                             @endforeach
                         @endif
-                        @if ($leads->isEmpty() && $contacts->isEmpty() && $companies->isEmpty())
+                        @if ($quotes->isNotEmpty())
+                            <p class="px-3 pt-3 pb-1 text-theme-xs font-medium tracking-wide text-gray-400 uppercase">Quotations</p>
+                            @foreach ($quotes as $quote)
+                                <a href="{{ route('admin.quotes.show', $quote) }}" wire:navigate x-on:click="open = false" wire:key="sq-{{ $quote->id }}"
+                                   class="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50 focus:bg-gray-100 focus:outline-none dark:hover:bg-white/5 dark:focus:bg-white/10">
+                                    <span class="flex size-8 items-center justify-center rounded-lg bg-navy-50 text-navy-700 dark:bg-white/10 dark:text-white"><x-icon name="quote" class="size-4" /></span>
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $quote->label() }} · {{ $quote->contact?->name }}</span>
+                                        <span class="block truncate text-theme-xs text-gray-500">{{ $quote->title }}</span>
+                                    </span>
+                                    <x-admin.badge :color="$quote->status->color()">{{ $quote->status->label() }}</x-admin.badge>
+                                </a>
+                            @endforeach
+                        @endif
+                        @if ($leads->isEmpty() && $contacts->isEmpty() && $companies->isEmpty() && $quotes->isEmpty())
                             <div class="px-3 py-10 text-center">
                                 <p class="text-theme-sm text-gray-600 dark:text-gray-400">Nothing found for “{{ $term }}”.</p>
-                                <p class="mt-1 text-theme-xs text-gray-400">Try a phone number in any format, part of a name, or a lead reference.</p>
+                                <p class="mt-1 text-theme-xs text-gray-400">Try a phone number in any format, part of a name, a lead reference or a quotation number.</p>
                             </div>
                         @endif
                     @endif
