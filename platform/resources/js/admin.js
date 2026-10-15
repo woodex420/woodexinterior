@@ -23,7 +23,9 @@ document.addEventListener('alpine:init', () => {
         expanded: true,
         mobileOpen: false,
         init() {
-            this.expanded = window.innerWidth >= 1280 ? localStorage.getItem('wx.sidebar') !== 'collapsed' : false;
+            // The desktop preference; below xl the sidebar is an off-canvas drawer (mobileOpen) at full width.
+            this.expanded = localStorage.getItem('wx.sidebar') !== 'collapsed';
+            this.applyWidth();
         },
         toggle() {
             if (window.innerWidth < 1280) {
@@ -32,6 +34,11 @@ document.addEventListener('alpine:init', () => {
             }
             this.expanded = !this.expanded;
             localStorage.setItem('wx.sidebar', this.expanded ? 'expanded' : 'collapsed');
+            this.applyWidth();
+        },
+        applyWidth() {
+            // Drives --wx-sidebar-w (admin.css), which sizes the sidebar and offsets the content column.
+            document.documentElement.dataset.sidebar = this.expanded ? 'expanded' : 'collapsed';
         },
         close() {
             this.mobileOpen = false;
@@ -102,17 +109,30 @@ async function initKanban() {
 
 /* ---------- Charts (ApexCharts): <div data-chart='{"type":"area","series":[…],"categories":[…]}'> ---------- */
 async function initCharts() {
-    const elements = document.querySelectorAll('[data-chart]:not([data-chart-ready])');
+    const elements = [...document.querySelectorAll('[data-chart]:not([data-chart-ready])')];
     if (!elements.length) return;
+
+    // Claim the elements before the first await: DOMContentLoaded and livewire:navigated both call this on the
+    // first page load, and claiming after the import rendered every chart twice.
+    elements.forEach((element) => (element.dataset.chartReady = '1'));
 
     const { default: ApexCharts } = await import('apexcharts');
     const dark = document.documentElement.classList.contains('dark');
 
     elements.forEach((element) => {
-        element.dataset.chartReady = '1';
+        if (!element.isConnected) return;
         const config = JSON.parse(element.dataset.chart || '{}');
 
-        new ApexCharts(element, {
+        // Small counts (e.g. 0-3 leads a day) get whole-number ticks instead of 0, 0.5, 1 ... rounded to duplicates.
+        const values = (config.series ?? [])
+            .flatMap((serie) => serie.data ?? [])
+            .map((point) => Number(point !== null && typeof point === 'object' ? point.y : point))
+            .filter(Number.isFinite);
+        const max = Math.max(0, ...values);
+        const yaxis = { min: 0, forceNiceScale: true, decimalsInFloat: 0, labels: { formatter: (value) => Math.round(value).toLocaleString() } };
+        if (max <= 5) Object.assign(yaxis, { max: Math.max(1, max), tickAmount: Math.max(1, max) });
+
+        const chart = new ApexCharts(element, {
             chart: {
                 type: config.type ?? 'area',
                 height: config.height ?? 260,
@@ -128,11 +148,32 @@ async function initCharts() {
             dataLabels: { enabled: false },
             grid: { borderColor: dark ? '#1d2939' : '#e4e7ec', strokeDashArray: 4 },
             xaxis: { categories: config.categories ?? [], axisBorder: { show: false }, axisTicks: { show: false } },
-            yaxis: { labels: { formatter: (value) => Math.round(value) } },
+            yaxis,
             legend: { position: 'top', horizontalAlign: 'left' },
             tooltip: { theme: dark ? 'dark' : 'light' },
-        }).render();
+        });
+        chart.render();
+        fitChartToBox(chart, element);
     });
+}
+
+// ApexCharts ignores container resizes while its entry animation runs; re-fit whenever the box really changes
+// (sidebar toggle, window resize, layout settling) and clean up once Livewire navigates the element away.
+function fitChartToBox(chart, element) {
+    let width = element.clientWidth;
+    let timer;
+    const observer = new ResizeObserver(() => {
+        if (!element.isConnected) {
+            observer.disconnect();
+            chart.destroy();
+            return;
+        }
+        if (!element.clientWidth || Math.abs(element.clientWidth - width) < 2) return;
+        width = element.clientWidth;
+        clearTimeout(timer);
+        timer = setTimeout(() => chart.updateOptions({ chart: { width: '100%' } }, false, false), 120);
+    });
+    observer.observe(element);
 }
 
 const refreshWidgets = () => {

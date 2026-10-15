@@ -2,11 +2,8 @@
     $groups = \App\Support\AdminNavigation::for(auth()->user());
 @endphp
 <aside
-    class="fixed inset-y-0 left-0 z-50 flex h-screen flex-col border-r border-gray-200 bg-white px-4 transition-all duration-300 ease-in-out dark:border-gray-800 dark:bg-gray-900"
-    :class="[
-        $store.sidebar.expanded || $store.sidebar.mobileOpen ? 'w-[280px]' : 'w-[88px]',
-        $store.sidebar.mobileOpen ? 'translate-x-0' : '-translate-x-full xl:translate-x-0',
-    ]"
+    class="fixed inset-y-0 left-0 z-50 flex h-screen w-[280px] -translate-x-full flex-col border-r border-gray-200 bg-white px-4 transition-all duration-300 ease-in-out xl:w-(--wx-sidebar-w) xl:translate-x-0 dark:border-gray-800 dark:bg-gray-900"
+    :class="$store.sidebar.mobileOpen && 'translate-x-0!'"
     aria-label="Main navigation">
     <div class="flex h-[72px] shrink-0 items-center px-2 text-navy-900 dark:text-white">
         <a href="{{ route('admin.dashboard') }}" wire:navigate class="flex items-center">

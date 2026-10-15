@@ -4,6 +4,21 @@ _Update at the end of every task (docs/03 Part A §7)._
 
 ## Current phase: P1 CRM complete (parts 1 + 2) → P2 Quotations next
 
+### Preview fix (16 Oct 2026, after P1 part 2)
+- **Holding page unstyled in the owner's browser (reported twice):** the preview emitted absolute asset URLs on a
+  guessed preview host; they failed in the real browser while in-sandbox curl passed. All output URLs are now
+  root-relative (preview server rewrite + `ASSET_URL=/`), so pages work under any origin (D-36). Confirmed from the
+  owner's own browser in the request log (CSS + fonts loaded from the preview origin).
+- **Lead form invisible without JS:** the whole form sat in `<template x-if>`; it is now plain HTML enhanced by
+  Alpine, `x-cloak` added to site.css, submit disabled until Alpine starts (D-49).
+- **Dashboard chart drawn twice and overflowing its card; y-axis 0,1,1,2,2,3,3:** init race fixed, charts re-fit to
+  their box, whole-number ticks (D-48).
+- **Admin content slid in on every page load / `wire:navigate`:** sidebar width is now a CSS variable set before
+  first paint (D-48).
+- Preview server: gzip/brotli (livewire.js 609 → 121 KB, ApexCharts 567 → 135 KB), request log with start / done /
+  ABORTED lines and proxy headers.
+- Sandbox tooling moved into the repo (`tools/sandbox/`, D-50) including a real headless-Chromium check.
+
 ### P1 part 2 delivered (this branch)
 - **Fix: public holding page without styling** (giant logo): the sandbox preview server was rebuilt so asset URLs
   always use the public https origin (no mixed content), static files are served with correct MIME types, and inline
@@ -42,8 +57,10 @@ _Update at the end of every task (docs/03 Part A §7)._
 ### Verification (16 Oct 2026, PHP 8.4.25 sandbox, real dependency versions)
 - **Pest: 170 tests, 704 assertions, all passing** (133 from part 1 + 37 new).
 - **Pint clean · PHP lint clean (246 files) · Larastan level 6: no errors · all Blade views compile.**
-- Live preview: 24 admin/public pages render as owner; CSS/JS URLs on the https preview origin, `text/css` /
-  `text/javascript`, holding page styled.
+- Live preview: 17 admin pages + holding page return 200 as owner; CSS/JS URLs root-relative, `text/css` /
+  `text/javascript`. **Real-browser check (headless Chromium) passes:** styles applied, Alpine/Livewire running, no
+  failed requests or console errors, one chart inside its card (expanded and collapsed sidebar), no layout slide on
+  load or `wire:navigate`, mobile drawer, lead form visible without JS and submitted with JS (reference returned).
 
 ### Next
 1. Activate CI (docs/ci/README.md; Larastan is blocking there), then commit the first `composer.lock`.

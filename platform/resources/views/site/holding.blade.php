@@ -24,51 +24,50 @@
                     Tell us about your space and our team will get back to you.</p>
             </div>
 
+            {{-- The form is plain HTML (visible before/without JS); Alpine only enhances it. --}}
             <form x-data="leadForm()" @submit.prevent="submit" class="rounded-2xl bg-white p-6 text-body shadow-2xl md:p-8">
-                <template x-if="!done">
-                    <div class="space-y-4">
-                        <h2 class="text-2xl">Start your project</h2>
-                        <input type="text" name="company_website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
-                        <div>
-                            <label class="mb-1 block text-sm text-ink" for="lf-name">Name</label>
-                            <input id="lf-name" name="name" required class="h-11 w-full rounded-ui border border-line px-3">
-                            <p class="mt-1 text-xs text-red-600" x-text="errors.name?.[0]"></p>
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm text-ink" for="lf-phone">Phone / WhatsApp</label>
-                            <input id="lf-phone" name="phone" type="tel" required placeholder="0322 4000768" class="h-11 w-full rounded-ui border border-line px-3">
-                            <p class="mt-1 text-xs text-red-600" x-text="errors.phone?.[0]"></p>
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm text-ink" for="lf-service">Service</label>
-                            <select id="lf-service" name="service" class="h-11 w-full rounded-ui border border-line px-3">
-                                <option value="interior-design">Interior design</option>
-                                <option value="renovation">Renovation</option>
-                                <option value="fit-out">Office fit-out</option>
-                                <option value="architecture">Architecture</option>
-                                <option value="furniture">Custom furniture</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm text-ink" for="lf-message">Message</label>
-                            <textarea id="lf-message" name="message" rows="3" class="w-full rounded-ui border border-line px-3 py-2"></textarea>
-                        </div>
-                        <label class="flex items-start gap-2 text-xs">
-                            <input type="checkbox" name="consent" class="mt-0.5"> I agree to be contacted by Woodex on WhatsApp, phone or email about my enquiry.
-                        </label>
-                        <p class="text-sm text-red-600" x-show="error" x-text="error"></p>
-                        <button type="submit" :disabled="sending" class="flex h-11 w-full items-center justify-center rounded-full bg-ink text-sm font-medium text-white hover:bg-navy-900">
-                            <span x-text="sending ? 'Sending…' : 'Send enquiry'"></span>
-                        </button>
+                <div x-show="!done" class="space-y-4">
+                    <h2 class="text-2xl">Start your project</h2>
+                    <input type="text" name="company_website" tabindex="-1" autocomplete="off" class="hidden" aria-hidden="true">
+                    <div>
+                        <label class="mb-1 block text-sm text-ink" for="lf-name">Name</label>
+                        <input id="lf-name" name="name" required autocomplete="name" class="h-11 w-full rounded-ui border border-line px-3">
+                        <p class="mt-1 text-xs text-red-600" x-text="errors.name?.[0]"></p>
                     </div>
-                </template>
-                <template x-if="done">
-                    <div class="py-6 text-center">
-                        <h2 class="text-2xl">Thank you!</h2>
-                        <p class="mt-3">Your reference is <strong x-text="reference"></strong>. Our team will contact you shortly.</p>
-                        <a :href="whatsappUrl" x-show="whatsappUrl" target="_blank" rel="noopener" class="mt-6 inline-flex h-11 items-center rounded-full bg-ink px-6 text-sm font-medium text-white">Continue on WhatsApp</a>
+                    <div>
+                        <label class="mb-1 block text-sm text-ink" for="lf-phone">Phone / WhatsApp</label>
+                        <input id="lf-phone" name="phone" type="tel" required autocomplete="tel" placeholder="0322 4000768" class="h-11 w-full rounded-ui border border-line px-3">
+                        <p class="mt-1 text-xs text-red-600" x-text="errors.phone?.[0]"></p>
                     </div>
-                </template>
+                    <div>
+                        <label class="mb-1 block text-sm text-ink" for="lf-service">Service</label>
+                        <select id="lf-service" name="service" class="h-11 w-full rounded-ui border border-line px-3">
+                            <option value="interior-design">Interior design</option>
+                            <option value="renovation">Renovation</option>
+                            <option value="fit-out">Office fit-out</option>
+                            <option value="architecture">Architecture</option>
+                            <option value="furniture">Custom furniture</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-sm text-ink" for="lf-message">Message</label>
+                        <textarea id="lf-message" name="message" rows="3" class="w-full rounded-ui border border-line px-3 py-2"></textarea>
+                    </div>
+                    <label class="flex items-start gap-2 text-xs">
+                        <input type="checkbox" name="consent" class="mt-0.5"> I agree to be contacted by Woodex on WhatsApp, phone or email about my enquiry.
+                    </label>
+                    <p class="text-sm text-red-600" x-cloak x-show="error" x-text="error"></p>
+                    {{-- Disabled until Alpine starts: without JS the form cannot reach the JSON API (D-13). --}}
+                    <button type="submit" disabled :disabled="sending" class="flex h-11 w-full items-center justify-center rounded-full bg-ink text-sm font-medium text-white hover:bg-navy-900 disabled:opacity-60">
+                        <span x-text="sending ? 'Sending…' : 'Send enquiry'">Send enquiry</span>
+                    </button>
+                    <noscript><p class="text-xs text-red-600">Please turn on JavaScript to send this form.</p></noscript>
+                </div>
+                <div x-cloak x-show="done" class="py-6 text-center" role="status">
+                    <h2 class="text-2xl">Thank you!</h2>
+                    <p class="mt-3">Your reference is <strong x-text="reference"></strong>. Our team will contact you shortly.</p>
+                    <a :href="whatsappUrl" x-show="whatsappUrl" target="_blank" rel="noopener" class="mt-6 inline-flex h-11 items-center rounded-full bg-ink px-6 text-sm font-medium text-white">Continue on WhatsApp</a>
+                </div>
             </form>
         </section>
 

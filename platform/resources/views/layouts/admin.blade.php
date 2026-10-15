@@ -9,7 +9,10 @@
     <title>{{ isset($title) ? $title.' · ' : '' }}Woodex OS</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <script>
-        try { if (localStorage.getItem('wx.theme') === 'dark') { document.documentElement.classList.add('dark'); } } catch (e) {}
+        try {
+            if (localStorage.getItem('wx.theme') === 'dark') { document.documentElement.classList.add('dark'); }
+            if (localStorage.getItem('wx.sidebar') === 'collapsed') { document.documentElement.dataset.sidebar = 'collapsed'; }
+        } catch (e) {}
     </script>
     @vite(['resources/css/admin.css', 'resources/js/admin.js'])
     @livewireStyles
@@ -24,8 +27,7 @@
 
         <x-admin.sidebar />
 
-        <div class="flex min-w-0 flex-1 flex-col transition-all duration-300 ease-in-out"
-             :class="$store.sidebar.expanded ? 'xl:ml-[280px]' : 'xl:ml-[88px]'">
+        <div class="flex min-w-0 flex-1 flex-col transition-[margin-left] duration-300 ease-in-out xl:ml-(--wx-sidebar-w)">
             <x-admin.header :title="$title ?? null" />
 
             <main id="main" class="mx-auto w-full max-w-(--breakpoint-2xl) flex-1 p-4 md:p-6">

@@ -16,8 +16,8 @@
     </div>
 
     <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <x-admin.card title="New leads, last 14 days" class="xl:col-span-2">
-            <div wire:ignore data-chart='@json($chart)' class="-mx-2 min-h-[240px]"></div>
+        <x-admin.card title="New leads, last 14 days" class="min-w-0 xl:col-span-2">
+            <div wire:ignore data-chart='@json($chart)' class="-mx-2 min-h-[240px] min-w-0"></div>
         </x-admin.card>
 
         <x-admin.card title="Pipeline" description="Leads per stage">

@@ -23,6 +23,11 @@
     outline: 2px solid var(--color-wood-500);
     outline-offset: 5px;
   }
+
+  /* Alpine: hide until initialised (thank-you panels, error lines). */
+  [x-cloak] {
+    display: none !important;
+  }
 }
 
 @utility btn-studio {

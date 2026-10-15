@@ -91,6 +91,15 @@
 }
 
 @layer base {
+  /* Desktop sidebar width. <html data-sidebar="collapsed"> is set before first paint (layouts/admin) and by the
+     sidebar store, so the layout never slides on page load or wire:navigate. */
+  :root {
+    --wx-sidebar-w: 280px;
+  }
+  :root[data-sidebar='collapsed'] {
+    --wx-sidebar-w: 88px;
+  }
+
   *,
   ::after,
   ::before,

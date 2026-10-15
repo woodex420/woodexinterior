@@ -31,3 +31,9 @@ Patterns used in the code (follow them):
   return `title`, `body` and `url` from `toArray()`; scheduled work goes in `routes/console.php` (cron-driven).
 - Inline SVGs need `width`/`height` attributes as a no-CSS fallback (D-36). New Tailwind classes require
   `npm run build` before checking a page.
+- Layout geometry (sidebar width, content offset) comes from the CSS variable `--wx-sidebar-w` and
+  `<html data-sidebar>`, never from Alpine `:class` bindings; charts go through `initCharts()` (D-48).
+- Public forms must render and read correctly without JavaScript: no fields inside `<template x-if>`, `x-cloak` on
+  post-submit panels, static button labels (D-49).
+- AI sandbox without native PHP: use `../tools/sandbox/` (README there). UI work is done only when
+  `node ../tools/sandbox/browser-check.mjs` passes in a real headless browser (D-50).
