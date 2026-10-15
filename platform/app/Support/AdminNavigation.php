@@ -23,7 +23,7 @@ final class AdminNavigation
             self::group('Overview', [
                 self::item('Dashboard', 'dashboard', 'admin.dashboard', 'dashboard.view'),
                 self::item('My Day', 'sun', 'admin.my-day', 'leads.view'),
-                self::item('Approvals', 'check-circle', null, null, 'P2'),
+                self::item('Approvals', 'check-circle', 'admin.approvals', 'quotes.approve'),
             ]),
             self::group('CRM', [
                 self::item('Leads', 'users', 'admin.leads.index', 'leads.view'),

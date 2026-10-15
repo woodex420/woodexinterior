@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Portal\QuotePortalController;
 use App\Http\Controllers\Webhooks\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,19 @@ $admin->group(base_path('routes/admin.php'));
 Route::post('/webhooks/telegram/{secret}', TelegramWebhookController::class)
     ->middleware('throttle:webhooks')
     ->name('webhooks.telegram');
+
+/*
+|--------------------------------------------------------------------------
+| Client quotation page (QUO-009): signed, expiring links, no login
+|--------------------------------------------------------------------------
+| Relative signatures, so a link works on whichever domain serves the app.
+*/
+Route::middleware('signed:relative')->prefix('q')->name('quotes.portal')->group(function (): void {
+    Route::get('/{quote:public_id}', [QuotePortalController::class, 'show'])->name('');
+    Route::get('/{quote:public_id}/pdf', [QuotePortalController::class, 'pdf'])->name('.pdf');
+    Route::post('/{quote:public_id}/accept', [QuotePortalController::class, 'accept'])->name('.accept')->middleware('throttle:10,1');
+    Route::post('/{quote:public_id}/changes', [QuotePortalController::class, 'changes'])->name('.changes')->middleware('throttle:10,1');
+});
 
 /*
 |--------------------------------------------------------------------------

@@ -81,16 +81,28 @@ it('rejects invalid quantities', function () {
     new LineInput('1.2345', 100);
 })->throws(InvalidArgumentException::class);
 
-it('splits execution 50/40/10 and design 75/25 so amounts always add up', function () {
+it('splits execution 50/40/10 and design 75/25 into whole rupees that always add up', function () {
     $total = Money::ofMinor(rupees(1_187_651));
 
+    // 593,825.50 / 475,060.40 / rest: payable amounts are whole rupees, the last milestone takes the rest.
     $execution = MilestonePlan::split($total, MilestonePlan::definition(MilestonePlanKey::Execution));
-    expect(array_column($execution, 'amount_minor'))->toBe([59_382_550, 47_506_040, 11_876_510])
+    expect(array_column($execution, 'amount_minor'))->toBe([rupees(593_826), rupees(475_060), rupees(118_765)])
         ->and(array_sum(array_column($execution, 'amount_minor')))->toBe($total->minor);
 
     $design = MilestonePlan::split(Money::ofRupees(333_333), MilestonePlan::definition(MilestonePlanKey::Design));
-    expect(array_sum(array_column($design, 'amount_minor')))->toBe(rupees(333_333))
-        ->and($design[0]['amount_minor'])->toBe(rupees('249999.75'));
+    expect(array_column($design, 'amount_minor'))->toBe([rupees(250_000), rupees(83_333)])
+        ->and(array_sum(array_column($design, 'amount_minor')))->toBe(rupees(333_333));
+
+    // A total with paisa keeps them in the last milestone.
+    expect(array_column(MilestonePlan::split(Money::ofRupees('1001.50'), MilestonePlan::definition(MilestonePlanKey::Design)), 'amount_minor'))
+        ->toBe([rupees(751), rupees('250.50')]);
+});
+
+it('splits absurdly small totals exactly rather than into a negative last milestone', function () {
+    $fifths = array_map(fn (int $i): array => ['name' => "Part {$i}", 'percent_bp' => 2000], range(1, 5));
+    $split = MilestonePlan::split(Money::ofRupees('2.50'), $fifths);
+
+    expect(array_column($split, 'amount_minor'))->toBe([50, 50, 50, 50, 50]);
 });
 
 it('requires milestone percentages to total 100%', function () {

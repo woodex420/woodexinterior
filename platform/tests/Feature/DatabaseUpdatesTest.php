@@ -9,6 +9,7 @@ use Database\Seeders\ProductionSeeder;
 use Database\Seeders\QuoteTemplateSeeder;
 use Database\Seeders\RateBookSeeder;
 use Illuminate\Support\Facades\Artisan;
+use Spatie\Permission\Models\Permission;
 
 /*
 | After a deploy with new migrations the owner applies them with one click (D-58); seeders never undo owner edits.
@@ -111,10 +112,10 @@ it('runs the real update (migrations, permissions, caches) from the button and o
         }
     };
     app()->instance(DatabaseUpdates::class, $updates);
-    Spatie\Permission\Models\Permission::findByName('quotes.approve')->delete();
+    Permission::findByName('quotes.approve')->delete();
 
     expect($updates->apply())->toContain('Permissions and number sequences checked.')
-        ->and(Spatie\Permission\Models\Permission::where('name', 'quotes.approve')->exists())->toBeTrue()
+        ->and(Permission::where('name', 'quotes.approve')->exists())->toBeTrue()
         ->and(Artisan::call('woodex:update'))->toBe(0)
         ->and($updates->cleared)->toBe(2)
         ->and($updates->isCurrent())->toBeTrue();

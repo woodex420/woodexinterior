@@ -36,7 +36,10 @@ final class MilestonePlan
     }
 
     /**
-     * Split a total into milestone amounts.
+     * Split a total into milestone amounts. Payable amounts are whole rupees (paisa are not used in payments): every
+     * milestone but the last is rounded to the nearest rupee and the last takes the rest, so the amounts always add
+     * up to the total. Only for absurdly small totals, where rounding would leave the last one negative, the split is
+     * exact to the paisa.
      *
      * @param  list<array{name: string, percent_bp: int, trigger?: string}>  $milestones
      * @return list<array{name: string, percent_bp: int, trigger: string, amount_minor: int}>
@@ -53,25 +56,42 @@ final class MilestonePlan
             throw new InvalidArgumentException("Milestone percentages must total 100% (got {$sum} bp).");
         }
 
-        $result = [];
+        $amounts = self::amounts($total, $milestones, wholeRupees: true);
+
+        if (min($amounts) < 0) {
+            $amounts = self::amounts($total, $milestones, wholeRupees: false);
+        }
+
+        return array_map(fn (array $milestone, int $amount): array => [
+            'name' => $milestone['name'],
+            'percent_bp' => $milestone['percent_bp'],
+            'trigger' => $milestone['trigger'] ?? 'manual',
+            'amount_minor' => $amount,
+        ], array_values($milestones), $amounts);
+    }
+
+    /**
+     * @param  list<array{name: string, percent_bp: int, trigger?: string}>  $milestones
+     * @return list<int>
+     */
+    private static function amounts(Money $total, array $milestones, bool $wholeRupees): array
+    {
+        $amounts = [];
         $allocated = 0;
         $last = count($milestones) - 1;
 
         foreach (array_values($milestones) as $index => $milestone) {
-            $amount = $index === $last
-                ? $total->minor - $allocated
-                : $total->percent($milestone['percent_bp'])->minor;
+            $share = $total->percent($milestone['percent_bp'])->minor;
 
+            if ($wholeRupees) {
+                $share = $share >= 0 ? intdiv($share + 50, 100) * 100 : -intdiv(-$share + 50, 100) * 100;
+            }
+
+            $amount = $index === $last ? $total->minor - $allocated : $share;
             $allocated += $amount;
-
-            $result[] = [
-                'name' => $milestone['name'],
-                'percent_bp' => $milestone['percent_bp'],
-                'trigger' => $milestone['trigger'] ?? 'manual',
-                'amount_minor' => $amount,
-            ];
+            $amounts[] = $amount;
         }
 
-        return $result;
+        return $amounts;
     }
 }

@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Sales;
 
+use App\Domain\Sales\Actions\DecideQuoteApproval;
 use App\Domain\Sales\Actions\DeleteQuote;
 use App\Domain\Sales\Actions\DuplicateQuote;
+use App\Domain\Sales\Actions\ReopenQuote;
+use App\Domain\Sales\Actions\RequestQuoteApproval;
+use App\Domain\Sales\Actions\ReviseQuote;
 use App\Domain\Sales\Actions\SaveQuoteAsTemplate;
+use App\Domain\Sales\Actions\SendQuote;
 use App\Domain\Sales\Enums\DiscountType;
 use App\Domain\Sales\Enums\MilestonePlanKey;
+use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Enums\Unit;
+use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Exceptions\QuoteLocked;
 use App\Domain\Sales\Models\CatalogItem;
 use App\Domain\Sales\Models\Quote;
@@ -17,7 +24,13 @@ use App\Domain\Sales\Models\QuoteItem;
 use App\Domain\Sales\Models\QuoteMilestone;
 use App\Domain\Sales\Models\QuoteSection;
 use App\Domain\Sales\Models\QuoteTemplate;
+use App\Domain\Sales\Models\QuoteVersion;
+use App\Domain\Sales\Services\QuoteApprovalRules;
+use App\Domain\Sales\Services\QuoteDiff;
 use App\Domain\Sales\Services\QuoteEditor;
+use App\Domain\Sales\Services\QuoteLinks;
+use App\Domain\System\Enums\ApprovalStatus;
+use App\Domain\System\Models\Approval;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Settings\SalesSettings;
 use App\Support\Html;
@@ -26,6 +39,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -82,6 +96,17 @@ class QuoteBuilder extends Component
     public string $templateName = '';
 
     public ?int $templateId = null;
+
+    // Send, approval and revisions (P2 part 2)
+    public bool $showSend = false;
+
+    public bool $sendEmail = false;
+
+    public string $approvalNote = '';
+
+    public bool $showReject = false;
+
+    public string $rejectReason = '';
 
     public function mount(Quote $quote): void
     {
@@ -296,6 +321,110 @@ class QuoteBuilder extends Component
         $this->redirectRoute('admin.quotes.index', navigate: true);
     }
 
+    // ----- Send, approval, revisions (QUO-007/008/013) ----------------------------------------------------------
+
+    public function openSend(): void
+    {
+        $this->authorize('send', $this->quote);
+        $this->resetErrorBag();
+        $this->sendEmail = filled($this->quote->contact->email) && $this->quote->sent_at === null;
+        $this->approvalNote = '';
+        $this->showSend = true;
+    }
+
+    public function send(): void
+    {
+        $this->authorize('send', $this->quote);
+
+        try {
+            $version = app(SendQuote::class)->handle($this->quote, $this->user(), 'link', $this->sendEmail);
+        } catch (ValidationException $exception) {
+            foreach ($exception->validator->errors()->all() as $message) {
+                $this->addError('send', $message);
+            }
+
+            return;
+        } catch (QuoteActionDenied $exception) {
+            $this->addError('send', $exception->getMessage());
+
+            return;
+        }
+
+        unset($this->quote);
+        $this->fillForm();
+        $this->toast("{$version->snapshot['label']} sent. Share the link with the client.");
+    }
+
+    public function requestApproval(): void
+    {
+        $this->authorize('send', $this->quote);
+        $this->validate(['approvalNote' => ['nullable', 'string', 'max:500']], [], ['approvalNote' => 'note']);
+
+        $this->act(function (): void {
+            app(RequestQuoteApproval::class)->handle($this->quote, $this->user(), $this->approvalNote);
+            $this->showSend = false;
+            unset($this->quote);
+            $this->toast('Sent for approval. You will be notified when it is decided.');
+        });
+    }
+
+    public function approve(): void
+    {
+        $this->authorize('approve', Quote::class);
+
+        $this->act(function (): void {
+            app(DecideQuoteApproval::class)->handle($this->pendingApproval() ?? throw new QuoteActionDenied('Nothing is waiting for approval.'), $this->user(), true);
+            unset($this->quote);
+            $this->toast("{$this->quote->label()} approved.");
+        });
+    }
+
+    public function openReject(): void
+    {
+        $this->authorize('approve', Quote::class);
+        $this->rejectReason = '';
+        $this->resetValidation();
+        $this->showReject = true;
+    }
+
+    public function reject(): void
+    {
+        $this->authorize('approve', Quote::class);
+        $this->validate(['rejectReason' => ['required', 'string', 'min:3', 'max:500']], [], ['rejectReason' => 'reason']);
+
+        $this->act(function (): void {
+            app(DecideQuoteApproval::class)->handle($this->pendingApproval() ?? throw new QuoteActionDenied('Nothing is waiting for approval.'), $this->user(), false, $this->rejectReason);
+            $this->showReject = false;
+            unset($this->quote);
+            $this->fillForm();
+            $this->toast('Sent back to draft with your reason.');
+        });
+    }
+
+    public function reopen(): void
+    {
+        $this->authorize('revise', $this->quote);
+
+        $this->act(function (): void {
+            app(ReopenQuote::class)->handle($this->quote, $this->user());
+            unset($this->quote);
+            $this->fillForm();
+            $this->toast("{$this->quote->label()} is a draft again.");
+        });
+    }
+
+    public function revise(): void
+    {
+        $this->authorize('revise', $this->quote);
+
+        $this->act(function (): void {
+            app(ReviseQuote::class)->handle($this->quote, $this->user());
+            unset($this->quote);
+            $this->fillForm();
+            $this->toast("Revision {$this->quote->label()} started. The client keeps seeing the last sent version until you send this one.");
+        });
+    }
+
     public function render(): View
     {
         $quote = $this->quote;
@@ -315,7 +444,53 @@ class QuoteBuilder extends Component
             'catalogItems' => $this->showCatalog ? $this->catalogResults() : collect(),
             'catalogCategories' => $this->showCatalog ? CatalogItem::query()->where('is_active', true)->distinct()->orderBy('category')->pluck('category') : collect(),
             'templates' => $this->showTemplate ? QuoteTemplate::query()->orderBy('position')->get(['id', 'name']) : collect(),
+            ...$this->sendState($quote, $settings->lakh_grouping),
         ])->title($quote->label().' · '.$quote->title);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function sendState(Quote $quote, bool $lakh): array
+    {
+        $user = $this->user();
+        $sender = app(SendQuote::class);
+        $versions = $quote->versions()->with('creator:id,name')->reorder('revision', 'desc')->get();
+        $sendable = $sender->isSendable($quote);
+        $assessment = $sendable ? app(QuoteApprovalRules::class)->assess($quote, $user) : null;
+
+        $diffs = [];
+        foreach ($versions->values() as $index => $version) {
+            $previous = $versions->get($index + 1);
+            if ($previous instanceof QuoteVersion) {
+                $diffs[$version->id] = QuoteDiff::summarize($previous->snapshot, $version->snapshot, $lakh);
+            }
+        }
+
+        return [
+            'versions' => $versions,
+            'diffs' => $diffs,
+            'canSend' => $user->can('send', $quote),
+            'canApprove' => $user->can('approve', Quote::class),
+            'canRevise' => $user->can('revise', $quote) && in_array($quote->status, ReviseQuote::REVISABLE, true),
+            'sendable' => $sendable,
+            'sendProblems' => $sendable && $this->showSend ? $sender->problems($quote) : [],
+            'assessment' => $assessment,
+            'approvedAsIs' => $assessment !== null && $assessment->needed && app(QuoteApprovalRules::class)->isApprovedAsIs($quote),
+            'pendingApproval' => $quote->status === QuoteStatus::PendingApproval ? $this->pendingApproval() : null,
+            'portalUrl' => $versions->isNotEmpty() ? QuoteLinks::portal($quote) : null,
+            'whatsappShare' => $versions->isNotEmpty() ? QuoteLinks::whatsappShare($quote) : null,
+            'clientComment' => $quote->status === QuoteStatus::ChangesRequested
+                ? ($quote->events()->where('type', 'changes_requested')->latest('occurred_at')->first()?->data['comment'] ?? null)
+                : null,
+        ];
+    }
+
+    private function pendingApproval(): ?Approval
+    {
+        return Approval::query()->with('requester:id,name')
+            ->where('approvable_type', 'quote')->where('approvable_id', $this->quoteId)
+            ->where('status', ApprovalStatus::Pending)->latest()->first();
     }
 
     // ----- Field saving -------------------------------------------------------------------------------------
@@ -479,6 +654,16 @@ class QuoteBuilder extends Component
         try {
             $action();
         } catch (InvalidArgumentException|QuoteLocked $exception) {
+            $this->toast($exception->getMessage(), 'error');
+        }
+    }
+
+    /** Document actions that do not edit the quote (approve, reopen, revise): the action itself checks the state. */
+    private function act(callable $action): void
+    {
+        try {
+            $action();
+        } catch (QuoteActionDenied|InvalidArgumentException $exception) {
             $this->toast($exception->getMessage(), 'error');
         }
     }

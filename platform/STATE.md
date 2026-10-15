@@ -15,18 +15,23 @@ _Update at the end of every task (docs/03 Part A §7)._
   database user proves ownership (D-59, `Installer::databaseProvesOwnership`, 10 failures → 10 min wait).
 - **After installing:** add the cron line the installer shows (hPanel → Advanced → Cron Jobs); after each later deploy
   sign in → System → Database update when asked.
-- **In progress (uncommitted until finished):** P2 part 2a — approvals (QUO-007), send + frozen versions (QUO-008/013),
-  PDF (QUO-014), signed client page + view tracking (QUO-009/010), accept / request changes (QUO-011 first part).
-  Tests, Larastan and Pint pass. Left: PDF polish (header rule through the address, "Page 1 of 0", numeric headers,
-  "Lahore, Lahore", whole-rupee milestones), browser check, docs (D-60+), commit.
-- **Next after that:** the owner asked to update and deploy the **public website** (questions first), then continue
+- **Installed (15–16 Oct):** the owner finished the web installer on **woodex.com.pk** (main domain, his choice):
+  `/admin/login` works, `/install` is closed (404), `/` shows the holding page with the enquiry form. Every push to
+  this branch now deploys to the live site (hPanel auto-deploy). Owner still to do: the **cron line** from the
+  installer's last page (hPanel → Advanced → Cron Jobs), sign in, 2FA; after later deploys System → Database update
+  when asked.
+- **P2 part 2a is done (D-60…D-64):** approvals (QUO-007), send + frozen versions (QUO-008/013), PDF (QUO-014),
+  signed client page + view tracking (QUO-009/010), accept / request changes (QUO-011 first part). No new migrations.
+  `browser-check.mjs` now walks approve → send → client page (desktop + phone) → PDF → accept, and puts the demo
+  database back afterwards.
+- **Next:** the owner asked to update and deploy the **public website** (questions first), then continue
   P2 part 2b (project + advance invoice with P3, reminders/expiry QUO-012, options QUO-019, v2.1 quote import).
   - **CI:** this GitHub connection cannot write `.github/workflows`, so the owner adds the two files from
     `docs/ci/` (2 minutes in the GitHub website).
   - The owner has not yet answered P-01…P-09; P-06 (rotate the leaked credentials) blocks go-live.
 - **Code:** everything is on branch `arena/8be318a2-woodexinterior` and pushed. `master` is still the starting point
   (d77016b); merge through a pull request when the owner approves.
-- **Rules to follow:** docs/07 (D-01…D-59) and platform/AGENTS.md. The plan and specs are in docs/00–08.
+- **Rules to follow:** docs/07 (D-01…D-64) and platform/AGENTS.md. The plan and specs are in docs/00–08.
 - **Preview (AI sandbox only):** after a VM reset run `sh tools/sandbox/setup.sh` (~3–4 min). It rebuilds PHP 8.4,
   `vendor/`, the front-end build and the demo database, including the demo quotations. Then start
   `PORT=8080 node --stack-size=8000 tools/sandbox/server.mjs` from `/tmp/woodex-run`. The checks are `smoke.sh`,
@@ -104,7 +109,7 @@ _Update at the end of every task (docs/03 Part A §7)._
 - `browser-check.mjs` passes, including the quote builder edit/restore and the phone width; `iframe-check.mjs`
   passes; the smoke test checks 21 admin pages.
 
-### P2 part 2 plan (next)
+### P2 part 2 plan (items 1–4 and the first half of 5 are done: part 2a, D-60…D-64)
 1. **Approvals (QUO-007):** discount above the role limit (`discount_limits_bp`) or margin below `min_margin_bp` →
    pending approval; the owner or manager approves in the admin (and later on Telegram, TGM-002). Approvals menu.
 2. **Send + versions (QUO-008/013):** an immutable `quote_versions` snapshot and PDF hash on each send; a copyable
@@ -114,8 +119,8 @@ _Update at the end of every task (docs/03 Part A §7)._
    milestones, terms, bank details and signatories, page numbers.
 4. **Client page (QUO-009/010):** signed, expiring link with a Studio-branded view, PDF download, Accept (name +
    checkbox), Request changes and Ask on WhatsApp. View tracking with first-view and "hot" alerts.
-5. **Accept automation (QUO-011):** lead → Won, contact → client, a project record and the advance invoice draft (P3
-   tables) in one transaction, then the notifications.
+5. **Accept automation (QUO-011):** lead → Won, contact → client (done), a project record and the advance invoice
+   draft (P3 tables) in one transaction, then the notifications (part 2b, with P3).
 6. **P2 part 3:** validity reminders and expiry (QUO-012), options A/B (QUO-019) and the v2.1 quotes/templates
    import.
 

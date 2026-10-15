@@ -17,6 +17,15 @@ const BASE = process.argv[2] || 'http://127.0.0.1:8080';
 const SHOTS = '/tmp/woodex-run/shots';
 fs.mkdirSync(SHOTS, { recursive: true });
 
+// The sending step changes demo data (an approval decided, a frozen version, a quotation accepted, its lead won). On
+// the local preview the SQLite file is copied first and put back when the check ends, so the check can run again and
+// the demo stays as seeded.
+const DB_FILE = '/tmp/woodex-run/app/database/database.sqlite';
+const DB_COPY = '/tmp/woodex-run/database-before-browser-check.sqlite';
+const restoreDb = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(BASE) && fs.existsSync(DB_FILE);
+if (restoreDb) fs.copyFileSync(DB_FILE, DB_COPY);
+process.on('exit', () => { if (restoreDb) fs.copyFileSync(DB_COPY, DB_FILE); });
+
 const browser = await puppeteer.launch({
     executablePath: await chromium.executablePath(),
     args: [...chromium.args, '--no-sandbox'],
@@ -27,10 +36,31 @@ const page = await browser.newPage();
 const problems = [];
 let jsDisabled = false; // Chrome cancels module scripts while JS is off: not a real failure
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-page.on('requestfailed', (r) => { if (!jsDisabled) problems.push(`request failed: ${r.url()} (${r.failure()?.errorText})`); });
-page.on('response', (r) => { if (r.status() >= 400) problems.push(`HTTP ${r.status()}: ${r.url()}`); });
-page.on('console', (m) => { if (m.type() === 'error') problems.push(`console error: ${m.text()}`); });
-page.on('pageerror', (e) => problems.push(`page error: ${e.message}`));
+const watch = (p, who = '') => {
+    p.on('requestfailed', (r) => { if (!jsDisabled) problems.push(`${who}request failed: ${r.url()} (${r.failure()?.errorText})`); });
+    p.on('response', (r) => { if (r.status() >= 400) problems.push(`${who}HTTP ${r.status()}: ${r.url()}`); });
+    p.on('console', (m) => { if (m.type() === 'error') problems.push(`${who}console error: ${m.text()}`); });
+    p.on('pageerror', (e) => problems.push(`${who}page error: ${e.message}`));
+};
+watch(page);
+// Clicks the visible button or link whose whole text is `text` (icons have no text). False when there is none.
+async function clickText(p, text) {
+    const handle = await p.evaluateHandle((t) => [...document.querySelectorAll('button, a')]
+        .find((el) => el.textContent.replace(/\s+/g, ' ').trim() === t && el.getClientRects().length > 0) ?? null, text);
+    const el = handle.asElement();
+    if (!el) return false;
+    await el.evaluate((node) => node.scrollIntoView({ block: 'center' }));
+    await el.click();
+    return true;
+}
+const hasText = (p, text) => p.evaluate((t) => document.body.innerText.includes(t), text);
+// Downloads a PDF in the page (with its cookies) and reports what came back.
+const pdfInfo = (p, url) => p.evaluate(async (u) => {
+    const r = await fetch(u, { credentials: 'same-origin' });
+    const bytes = new Uint8Array(await r.arrayBuffer());
+    return { status: r.status, type: r.headers.get('content-type'), magic: String.fromCharCode(...bytes.slice(0, 5)), kb: Math.round(bytes.length / 1024) };
+}, url);
+const pdfOk = (info) => info.status === 200 && info.magic === '%PDF-' && /application\/pdf/.test(info.type ?? '');
 
 async function inspect(name, url) {
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
@@ -148,9 +178,11 @@ await inspect('pipeline', `${BASE}/admin/pipeline`);
 // afterwards so the check leaves the demo quote as it was. Livewire 4's plain wire:model.blur never reached the
 // server; this is the check that caught it (D-55).
 await inspect('quotes', `${BASE}/admin/quotes`);
-const firstQuote = await page.$('tbody a[href*="/admin/quotes/"]');
+// A draft: quotations waiting for approval or already sent are read-only.
+const firstQuote = (await page.evaluateHandle(() => [...document.querySelectorAll('tbody tr')]
+    .find((tr) => /\bDraft\b/.test(tr.textContent))?.querySelector('a[href*="/admin/quotes/"]') ?? null)).asElement();
 if (!firstQuote) {
-    problems.push('quotes: no quotation in the list (run the DemoQuotesSeeder)');
+    problems.push('quotes: no draft quotation in the list (run the DemoQuotesSeeder)');
 } else {
     await Promise.all([page.waitForSelector('[data-quote-total]', { timeout: 30000 }), firstQuote.click()]);
     await sleep(300);
@@ -174,6 +206,102 @@ if (!firstQuote) {
     if (changed === before) problems.push('quote builder: editing a quantity did not change the server total');
     if (restored !== before) problems.push(`quote builder: total not restored (${restored} vs ${before})`);
     await page.screenshot({ path: `${SHOTS}/quote-builder.png` });
+}
+
+// Approvals, sending and the client page (P2 part 2a: QUO-007..011, 014). A waiting approval (when there is one)
+// is approved from the Approvals page. The owner never needs approval, so the first draft without problems is sent;
+// then a client (separate browser profile, no staff session) opens the link on a desktop and a phone, downloads the
+// PDF and accepts, and the builder shows the acceptance.
+await inspect('approvals', `${BASE}/admin/approvals`);
+if (await clickText(page, 'Approve')) {
+    await page.waitForFunction(() => document.body.innerText.includes('Decided in the last 30 days'), { timeout: 30000 })
+        .catch(() => problems.push('approvals: approving did not move the request to "Decided"'));
+    await sleep(300);
+    await page.screenshot({ path: `${SHOTS}/approvals-decided.png` });
+    console.log('approvals: approved a waiting quotation');
+}
+await page.goto(`${BASE}/admin/quotes`, { waitUntil: 'networkidle0' });
+const quoteHrefs = await page.$$eval('tbody a[href*="/admin/quotes/"]', (links) => [...new Set(links.map((a) => a.href))]);
+let sent = null;
+for (const href of quoteHrefs) {
+    await page.goto(href, { waitUntil: 'networkidle0' });
+    if (!(await clickText(page, 'Send'))) continue; // waiting for approval or already sent
+    await page.waitForFunction(() => /Send now|Fix these first|Request approval/.test(document.body.innerText), { timeout: 30000 });
+    await sleep(300);
+    if (await hasText(page, 'Fix these first')) {
+        await page.screenshot({ path: `${SHOTS}/quote-send-problems.png` });
+        continue;
+    }
+    if (!(await hasText(page, 'Send now'))) continue;
+    await page.screenshot({ path: `${SHOTS}/quote-send-modal.png` });
+    await clickText(page, 'Send now');
+    await page.waitForSelector('input[aria-label="Client link"]', { timeout: 90000 });
+    await sleep(400);
+    sent = { href, link: await page.$eval('input[aria-label="Client link"]', (el) => el.value) };
+    await page.screenshot({ path: `${SHOTS}/quote-sent.png`, fullPage: true });
+    break;
+}
+if (!sent) {
+    problems.push('sending: no quotation could be sent (all have problems or wait for approval)');
+} else {
+    const staffPdf = await pdfInfo(page, await page.$eval('a[href$="/pdf"]', (a) => a.href));
+    console.log(`sent ${sent.href}: staff PDF ${JSON.stringify(staffPdf)}`);
+    if (!pdfOk(staffPdf)) problems.push(`staff PDF: ${JSON.stringify(staffPdf)}`);
+
+    const link = new URL(sent.link, BASE);
+    const portalUrl = `${BASE}${link.pathname}${link.search}`;
+    // Signed-in staff opening the link are not counted as client views.
+    await page.goto(portalUrl, { waitUntil: 'networkidle0', timeout: 60000 });
+    // The client: the same tab without the staff cookies (this Chromium runs single-process and cannot open a second
+    // browser profile); the staff cookies are put back afterwards.
+    const staffCookies = await page.cookies();
+    await page.deleteCookie(...staffCookies);
+    const client = page;
+    await client.setViewport({ width: 1366, height: 860 });
+    await client.goto(portalUrl, { waitUntil: 'networkidle0', timeout: 60000 });
+    const portal = await client.evaluate(() => ({
+        title: document.title,
+        h1: document.querySelector('h1')?.textContent.trim() ?? null,
+        font: getComputedStyle(document.body).fontFamily,
+        width: document.documentElement.scrollWidth,
+        acceptForm: !!document.querySelector('#accept-name'),
+    }));
+    console.log(`client page (desktop): ${JSON.stringify(portal)}`);
+    if (!portal.h1 || /^"?(Times|serif)/i.test(portal.font) || !portal.acceptForm) problems.push(`client page: ${JSON.stringify(portal)}`);
+    await client.screenshot({ path: `${SHOTS}/portal-desktop.png`, fullPage: true });
+
+    const clientPdf = await pdfInfo(client, await client.$eval('a[href*="/pdf"]', (a) => a.href));
+    console.log(`client PDF: ${JSON.stringify(clientPdf)}`);
+    if (!pdfOk(clientPdf)) problems.push(`client PDF: ${JSON.stringify(clientPdf)}`);
+
+    await client.setViewport({ width: 390, height: 844 });
+    await client.reload({ waitUntil: 'networkidle0' });
+    const phoneWidth = await client.evaluate(() => document.documentElement.scrollWidth);
+    console.log(`client page on a phone: page width ${phoneWidth}`);
+    if (phoneWidth > 392) problems.push(`client page on a phone: page is ${phoneWidth}px wide`);
+    await client.screenshot({ path: `${SHOTS}/portal-phone.png`, fullPage: true });
+
+    await client.type('#accept-name', 'Ayesha Khan');
+    await client.click('input[name="confirm"]');
+    // The form's own button: the hero has an "Accept quotation" link that only scrolls to the form.
+    await Promise.all([client.waitForNavigation({ waitUntil: 'networkidle0' }), client.click('#accept button[type="submit"]')]);
+    const acceptedText = await client.evaluate(() => document.body.innerText);
+    console.log(`client accepted: ${/accepted/i.test(acceptedText)}`);
+    if (!/accepted/i.test(acceptedText) || await client.$('#accept-name')) problems.push('client page: accepting did not confirm (or the form is still open)');
+    await client.screenshot({ path: `${SHOTS}/portal-accepted.png`, fullPage: true });
+    const clientCookies = await page.cookies();
+    if (clientCookies.length) await page.deleteCookie(...clientCookies);
+    await page.setCookie(...staffCookies);
+    await page.setViewport({ width: 1366, height: 860 });
+
+    await page.goto(sent.href, { waitUntil: 'networkidle0' });
+    const banner = await hasText(page, 'Accepted online by Ayesha Khan');
+    const views = await page.evaluate(() => [...document.querySelectorAll('dt')].find((dt) => dt.textContent.trim() === 'Views')?.nextElementSibling?.textContent.trim() ?? null);
+    console.log(`builder after acceptance: banner ${banner}, client views ${views}`);
+    if (!banner) problems.push('builder: no "Accepted online" banner after the client accepted');
+    // desktop + phone + the page after accepting; the staff visit above and the PDF download are not views
+    if (views !== '3') problems.push(`builder: expected 3 client views, saw ${views}`);
+    await page.screenshot({ path: `${SHOTS}/quote-accepted.png` });
 }
 
 // Phone width: the sidebar is an off-canvas drawer that the header button opens.

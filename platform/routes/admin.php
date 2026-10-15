@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\QuotePdfController;
 use App\Http\Controllers\Admin\SystemUpdateController;
 use App\Livewire\Admin\Crm\AssignmentRules;
 use App\Livewire\Admin\Crm\CompaniesIndex;
@@ -16,6 +17,7 @@ use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\MyDay;
 use App\Livewire\Admin\NotificationsPage;
 use App\Livewire\Admin\Profile\Security;
+use App\Livewire\Admin\Sales\Approvals;
 use App\Livewire\Admin\Sales\QuoteBuilder;
 use App\Livewire\Admin\Sales\QuoteCreate;
 use App\Livewire\Admin\Sales\QuotesIndex;
@@ -53,6 +55,8 @@ Route::livewire('/site-visits', VisitsIndex::class)->name('visits.index');
 Route::livewire('/quotes', QuotesIndex::class)->name('quotes.index')->middleware('can:quotes.view');
 Route::livewire('/quotes/new', QuoteCreate::class)->name('quotes.create')->middleware('can:quotes.manage');
 Route::livewire('/quotes/{quote}', QuoteBuilder::class)->name('quotes.show')->whereNumber('quote');
+Route::get('/quotes/{quote}/pdf', QuotePdfController::class)->name('quotes.pdf')->whereNumber('quote');
+Route::livewire('/approvals', Approvals::class)->name('approvals')->middleware('can:quotes.approve');
 Route::livewire('/quote-templates', QuoteTemplates::class)->name('quote-templates')->middleware('can:quotes.view');
 Route::livewire('/rate-book', RateBook::class)->name('rate-book')->middleware('can:quotes.view');
 

@@ -42,6 +42,15 @@ Patterns used in the code (follow them):
 - Quotations: every change goes through `App\Domain\Sales\Services\QuoteEditor` (or an Action such as `CreateQuote`,
   `DuplicateQuote`), which ends with `RecalculateQuote`. Never write `*_minor` totals anywhere else (D-14, D-54).
   Check the quote's state (`isEditable()`) as well as the permission: the owner passes every permission check.
+- Sending quotations (P2 part 2, D-60…D-64): only `SendQuote` sends. A sent version (`quote_versions`) is frozen:
+  its snapshot, PDF and SHA-256 are never changed; later edits become the next revision through `ReviseQuote`.
+  The client always sees the latest sent version: query versions with `reorder('revision', 'desc')` (the relation
+  orders ascending, so `orderByDesc` alone returns the oldest). Approvals go through `RequestQuoteApproval` /
+  `DecideQuoteApproval` (the fingerprint in `meta.approval` must match the figures being sent). Client actions only
+  through `RecordQuoteView`, `AcceptQuote` and `RequestQuoteChanges`; links only from `QuoteLinks` (relative signed
+  URLs). When a collection of users is notified, eager-load `telegramLink` (lazy loading is off).
+- Money for people: payable amounts (milestones, later invoices) are whole rupees (`MilestonePlan::split`); words via
+  `App\Support\AmountInWords::rupees(Money)`. PDFs come from `QuotePdf` (dompdf, font subsetting on, DejaVu Sans).
 - Livewire 4: `wire:model.blur` never sends a request. Fields that save on blur use `wire:model.live.blur`, and
   saving is verified in a real browser, not only with `Livewire::test()->set()` (D-55).
 - Never depend on the Referer header (`url()->previous()`) or on the route named `home` (the public website) for an

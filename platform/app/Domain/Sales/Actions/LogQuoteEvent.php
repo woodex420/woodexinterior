@@ -19,8 +19,9 @@ final class LogQuoteEvent
 {
     /**
      * @param  array<string, mixed>  $data
+     * @param  array{quote_version_id?: int, channel?: string, ip?: string|null, user_agent?: string|null}  $attributes
      */
-    public function handle(Quote $quote, string $type, ?User $by, string $timelineText, array $data = []): QuoteEvent
+    public function handle(Quote $quote, string $type, ?User $by, string $timelineText, array $data = [], array $attributes = []): QuoteEvent
     {
         $now = now();
 
@@ -30,6 +31,7 @@ final class LogQuoteEvent
             'actor_user_id' => $by?->id,
             'data' => $data === [] ? null : $data,
             'occurred_at' => $now,
+            ...$attributes,
         ]);
 
         Activity::create([

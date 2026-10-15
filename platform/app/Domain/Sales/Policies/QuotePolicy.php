@@ -38,6 +38,23 @@ final class QuotePolicy
         return $user->can('quotes.manage') && self::inScope($user, $quote);
     }
 
+    /** Send, share and revise a quotation the user may work on (QUO-008/013). */
+    public function send(User $user, Quote $quote): bool
+    {
+        return $user->can('quotes.send') && self::inScope($user, $quote);
+    }
+
+    public function revise(User $user, Quote $quote): bool
+    {
+        return $user->can('quotes.manage') && self::inScope($user, $quote);
+    }
+
+    /** Decide approvals (QUO-007): owners and sales managers. */
+    public function approve(User $user): bool
+    {
+        return $user->can('quotes.approve');
+    }
+
     public function delete(User $user, Quote $quote): bool
     {
         return $user->can('quotes.manage') && self::inScope($user, $quote) && $quote->sent_at === null && $quote->isEditable();

@@ -3,6 +3,7 @@
 use App\Domain\Crm\Actions\ScheduleSiteVisit;
 use App\Domain\Crm\Enums\TaskStatus;
 use App\Domain\Crm\Enums\VisitStatus;
+use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Models\PipelineStage;
 use App\Domain\Crm\Models\Task;
@@ -136,7 +137,8 @@ it('builds My Day from uncontacted leads, overdue follow-ups, visits and tasks',
     $sales = $this->userWithRole('sales');
     $new = Lead::factory()->create(['owner_id' => $sales->id, 'first_response_at' => null, 'sla_due_at' => now()->addMinutes(5), 'stage_id' => PipelineStage::query()->where('key', 'new')->value('id')]);
     $overdue = Lead::factory()->create(['owner_id' => $sales->id, 'first_response_at' => now()->subDay(), 'next_action_at' => now()->subHours(3), 'stage_id' => PipelineStage::query()->where('key', 'contacted')->value('id')]);
-    $notMine = Lead::factory()->create(['first_response_at' => null]);
+    // A fixed name: the factory picks from 120 names, so a random one can match a lead of mine (flaky assertDontSee).
+    $notMine = Lead::factory()->create(['first_response_at' => null, 'contact_id' => Contact::factory()->create(['name' => 'Someone Else Entirely'])->id]);
     Task::query()->create(['title' => 'Call supplier about veneer', 'type' => 'call', 'priority' => 'normal', 'status' => 'open', 'due_at' => now()->addHour(), 'assignee_id' => $sales->id]);
 
     $this->actingAs($sales)->get(route('admin.my-day'))->assertOk();

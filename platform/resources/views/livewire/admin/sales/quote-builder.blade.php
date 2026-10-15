@@ -16,7 +16,16 @@
             @can('manageCatalog', \App\Domain\Sales\Models\Quote::class)
                 <x-admin.button variant="secondary" icon="templates" wire:click="openSaveTemplate">Save as template</x-admin.button>
             @endcan
-            <x-admin.button icon="send" disabled title="Approval, PDF and sending arrive in P2 part 2">Send</x-admin.button>
+            <x-admin.button variant="secondary" icon="file" :href="route('admin.quotes.pdf', $quote)" target="_blank" rel="noopener">{{ $sendable ? 'Preview PDF' : 'PDF' }}</x-admin.button>
+            @if ($canRevise)
+                <x-admin.button variant="secondary" icon="pencil" wire:click="revise"
+                                wire:confirm="Start revision R{{ $quote->revision + 1 }}? The client keeps seeing {{ $quote->label() }} until you send the new version.">Revise</x-admin.button>
+            @endif
+            @if ($canSend && $sendable && $quote->status !== \App\Domain\Sales\Enums\QuoteStatus::PendingApproval)
+                <x-admin.button icon="send" wire:click="openSend">Send</x-admin.button>
+            @elseif ($portalUrl && $canSend)
+                <x-admin.button icon="link" wire:click="$set('showSend', true)">Share link</x-admin.button>
+            @endif
             @if ($editable && $quote->sent_at === null)
             @can('delete', $quote)
                 <x-admin.button variant="secondary" icon="trash" wire:click="deleteQuote"
@@ -42,9 +51,44 @@
         <span wire:loading.delay class="inline-flex items-center gap-1 text-navy-700 dark:text-white"><x-icon name="refresh" class="size-3.5 animate-spin" /> Saving…</span>
     </div>
 
-    @if ($ro)
+    @php $status = $quote->status; @endphp
+    @if ($status === \App\Domain\Sales\Enums\QuoteStatus::PendingApproval)
+        <div class="mb-5 flex flex-col gap-3 rounded-xl border border-warning-500/30 bg-warning-50 px-4 py-3 text-theme-sm text-warning-800 md:flex-row md:items-center md:justify-between dark:bg-warning-500/10 dark:text-warning-300" role="status">
+            <div>
+                <p class="font-medium">Waiting for approval{{ $pendingApproval?->requester ? ' · requested by '.$pendingApproval->requester->name : '' }} {{ $pendingApproval?->created_at?->diffForHumans() }}</p>
+                @foreach ((array) ($pendingApproval?->payload['reasons'] ?? []) as $reason)<p>{{ $reason }}</p>@endforeach
+                @if ($pendingApproval?->reason)<p class="italic">“{{ $pendingApproval->reason }}”</p>@endif
+            </div>
+            <div class="flex shrink-0 gap-2">
+                @can('revise', $quote)
+                    <x-admin.button variant="secondary" size="sm" wire:click="reopen">Withdraw</x-admin.button>
+                @endcan
+                @if ($canApprove)
+                    <x-admin.button variant="secondary" size="sm" wire:click="openReject">Decline</x-admin.button>
+                    <x-admin.button size="sm" icon="check" wire:click="approve" wire:loading.attr="disabled">Approve</x-admin.button>
+                @endif
+            </div>
+        </div>
+    @elseif ($status === \App\Domain\Sales\Enums\QuoteStatus::Approved)
+        <div class="mb-5 flex flex-col gap-3 rounded-xl border border-success-500/30 bg-success-50 px-4 py-3 text-theme-sm text-success-800 md:flex-row md:items-center md:justify-between dark:bg-success-500/10 dark:text-success-300" role="status">
+            <p>Approved {{ $quote->approved_at?->diffForHumans() }}: ready to send. Changing it needs a new approval.</p>
+            @can('revise', $quote)
+                <x-admin.button variant="secondary" size="sm" icon="pencil" wire:click="reopen">Edit again</x-admin.button>
+            @endcan
+        </div>
+    @elseif ($status === \App\Domain\Sales\Enums\QuoteStatus::Accepted)
+        <div class="mb-5 rounded-xl border border-success-500/30 bg-success-50 px-4 py-3 text-theme-sm text-success-800 dark:bg-success-500/10 dark:text-success-300" role="status">
+            Accepted online by <strong>{{ $quote->accepted_name }}</strong> on {{ $quote->accepted_at?->timezone('Asia/Karachi')->format('j M Y, g:i a') }}. The advance invoice arrives with P3.
+        </div>
+    @elseif ($status === \App\Domain\Sales\Enums\QuoteStatus::ChangesRequested && $clientComment)
+        <div class="mb-5 rounded-xl border border-warning-500/30 bg-warning-50 px-4 py-3 text-theme-sm text-warning-800 dark:bg-warning-500/10 dark:text-warning-300" role="status">
+            <p class="font-medium">The client asked for changes:</p>
+            <p class="italic">“{{ $clientComment }}”</p>
+            <p class="mt-1">Edit the lines below, then Send: the client gets the next revision on the same link.</p>
+        </div>
+    @elseif ($ro)
         <div class="mb-5 rounded-xl border border-info-500/30 bg-info-50 px-4 py-3 text-theme-sm text-info-700 dark:bg-info-500/10">
-            {{ $quote->isEditable() ? 'You can view this quotation but not change it.' : "This quotation is {$quote->status->label()} and can no longer be edited." }}
+            {{ $quote->isEditable() ? 'You can view this quotation but not change it.' : "This quotation is {$quote->status->label()} and can no longer be edited.".($canRevise ? ' Use “Revise” to prepare a changed version.' : '') }}
         </div>
     @endif
 
@@ -271,6 +315,46 @@
 
         {{-- Side panel --}}
         <div class="space-y-5">
+            @if ($portalUrl)
+                <x-admin.card title="Client link">
+                    <div class="flex items-center gap-2" x-data="{ copied: false }">
+                        <input type="text" readonly value="{{ $portalUrl }}" aria-label="Client link" class="wx-input h-9 min-w-0 flex-1 text-theme-xs" x-on:focus="$el.select()">
+                        <button type="button" class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-theme-xs text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
+                                x-on:click="navigator.clipboard.writeText(@js($portalUrl)).then(() => { copied = true; setTimeout(() => copied = false, 2000) })"
+                                x-text="copied ? 'Copied' : 'Copy'">Copy</button>
+                    </div>
+                    <div class="mt-3 flex flex-wrap gap-2 text-theme-xs">
+                        @if ($whatsappShare)
+                            <a href="{{ $whatsappShare }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-lg bg-success-50 px-2.5 py-1.5 text-success-700 hover:bg-success-100 dark:bg-success-500/10"><x-icon name="whatsapp" class="size-3.5" /> Share on WhatsApp</a>
+                        @endif
+                        <a href="{{ $portalUrl }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2.5 py-1.5 text-gray-700 hover:bg-gray-100 dark:bg-white/5 dark:text-gray-300"><x-icon name="external" class="size-3.5" /> Open client page</a>
+                    </div>
+                    <dl class="mt-4 grid grid-cols-2 gap-3 text-theme-sm">
+                        <div><dt class="text-theme-xs text-gray-500">Views</dt><dd class="font-medium">{{ $quote->view_count }}</dd></div>
+                        <div><dt class="text-theme-xs text-gray-500">Last opened</dt><dd>{{ $quote->last_viewed_at?->diffForHumans() ?? 'not yet' }}</dd></div>
+                        <div><dt class="text-theme-xs text-gray-500">First opened</dt><dd>{{ $quote->first_viewed_at?->timezone('Asia/Karachi')->format('j M, g:i a') ?? '—' }}</dd></div>
+                        <div><dt class="text-theme-xs text-gray-500">Sent</dt><dd>{{ $quote->sent_at?->timezone('Asia/Karachi')->format('j M, g:i a') ?? '—' }}</dd></div>
+                    </dl>
+                </x-admin.card>
+
+                <x-admin.card title="Sent versions" :padding="false">
+                    @foreach ($versions as $version)
+                        <div wire:key="version-{{ $version->id }}" class="border-b border-gray-100 px-5 py-3 text-theme-sm last:border-0 dark:border-gray-800">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="font-medium text-gray-800 dark:text-white/90">{{ $version->snapshot['label'] ?? $quote->number }}</span>
+                                <a href="{{ route('admin.quotes.pdf', ['quote' => $quote, 'revision' => $version->revision]) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-theme-xs text-navy-700 hover:underline dark:text-gray-300"><x-icon name="file" class="size-3.5" /> PDF</a>
+                            </div>
+                            <p class="text-theme-xs text-gray-500">{{ Money::ofMinor($version->total_minor)->format($lakh) }} · {{ $version->sent_at?->timezone('Asia/Karachi')->format('j M Y, g:i a') }}{{ $version->creator ? ' · '.$version->creator->name : '' }}</p>
+                            @if (isset($diffs[$version->id]))
+                                <ul class="mt-1.5 list-disc space-y-0.5 pl-4 text-theme-xs text-gray-600 dark:text-gray-400">
+                                    @foreach ($diffs[$version->id] as $change)<li>{{ $change }}</li>@endforeach
+                                </ul>
+                            @endif
+                        </div>
+                    @endforeach
+                </x-admin.card>
+            @endif
+
             <x-admin.card title="Client">
                 <a href="{{ route('admin.contacts.show', $contact) }}" wire:navigate class="font-medium text-gray-900 hover:underline dark:text-white">{{ $contact->name }}</a>
                 @if ($quote->company)
@@ -460,6 +544,77 @@
             <x-slot:footer>
                 <x-admin.button variant="secondary" wire:click="$set('showTemplate', false)">Cancel</x-admin.button>
                 <x-admin.button type="submit" icon="check">Save template</x-admin.button>
+            </x-slot:footer>
+        </x-admin.modal>
+    @endif
+
+    @if ($showSend)
+        <x-admin.modal name="showSend" :title="$sendable ? 'Send '.$quote->label() : 'Share '.$quote->label()" width="max-w-xl"
+                       :description="$sendable ? 'A frozen copy (PDF + client page) is made now; later changes become the next revision.' : 'The link always shows the latest sent version.'">
+            @if ($sendable)
+                @if ($sendProblems !== [])
+                    <div class="rounded-xl border border-error-500/30 bg-error-50 px-4 py-3 text-theme-sm text-error-700" role="alert">
+                        <p class="font-medium">Fix these first:</p>
+                        <ul class="mt-1 list-disc pl-5">@foreach ($sendProblems as $problem)<li>{{ $problem }}</li>@endforeach</ul>
+                    </div>
+                @elseif ($assessment && $assessment->needed && ! $approvedAsIs)
+                    <div class="rounded-xl border border-warning-500/30 bg-warning-50 px-4 py-3 text-theme-sm text-warning-800 dark:bg-warning-500/10 dark:text-warning-300">
+                        <p class="font-medium">Approval needed before sending</p>
+                        @foreach ($assessment->reasons as $reason)<p>{{ $reason }}</p>@endforeach
+                    </div>
+                    <label for="approval-note" class="wx-label mt-4">Note for the approver (optional)</label>
+                    <textarea id="approval-note" wire:model="approvalNote" rows="2" class="wx-input h-auto py-2" placeholder="Why this discount? For example: repeat client, large order."></textarea>
+                    @error('approvalNote')<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+                @else
+                    <dl class="grid grid-cols-2 gap-3 rounded-xl bg-gray-50 p-4 text-theme-sm dark:bg-white/5">
+                        <div><dt class="text-theme-xs text-gray-500">Client</dt><dd class="font-medium">{{ $contact->name }}</dd></div>
+                        <div><dt class="text-theme-xs text-gray-500">Total</dt><dd class="font-medium tabular-nums">{{ $money($quote->total_minor) }}</dd></div>
+                        <div><dt class="text-theme-xs text-gray-500">Valid until</dt><dd>{{ $quote->valid_until?->format('j M Y') }}</dd></div>
+                        <div><dt class="text-theme-xs text-gray-500">Will be sent as</dt><dd>{{ $quote->number }}{{ $versions->contains('revision', $quote->revision) ? ' R'.($quote->revision + 1) : ($quote->revision > 0 ? ' R'.$quote->revision : '') }}</dd></div>
+                    </dl>
+                    <label class="mt-4 flex items-start gap-2 text-theme-sm text-gray-700 dark:text-gray-300">
+                        <input type="checkbox" wire:model="sendEmail" @disabled(blank($contact->email)) class="mt-0.5 size-4 rounded border-gray-300">
+                        <span>Also email the PDF and link{{ $contact->email ? ' to '.$contact->email : ' (the client has no email address)' }}</span>
+                    </label>
+                    <p class="mt-2 text-theme-xs text-gray-500">After sending, copy the link or share it on WhatsApp from here. Sending through the WhatsApp API arrives in P4.</p>
+                @endif
+                @error('send')
+                    <div class="mt-4 rounded-xl border border-error-500/30 bg-error-50 px-4 py-3 text-theme-sm text-error-700" role="alert">
+                        @foreach ($errors->get('send') as $message)<p>{{ $message }}</p>@endforeach
+                    </div>
+                @enderror
+            @elseif ($portalUrl)
+                <div class="flex items-center gap-2" x-data="{ copied: false }">
+                    <input type="text" readonly value="{{ $portalUrl }}" aria-label="Client link" class="wx-input min-w-0 flex-1" x-on:focus="$el.select()">
+                    <button type="button" class="rounded-lg bg-navy-900 px-3 py-2.5 text-theme-sm text-white hover:bg-navy-800"
+                            x-on:click="navigator.clipboard.writeText(@js($portalUrl)).then(() => { copied = true; setTimeout(() => copied = false, 2000) })"
+                            x-text="copied ? 'Copied' : 'Copy link'">Copy link</button>
+                </div>
+                @if ($whatsappShare)
+                    <a href="{{ $whatsappShare }}" target="_blank" rel="noopener" class="mt-4 inline-flex items-center gap-2 rounded-lg bg-success-500 px-4 py-2.5 text-theme-sm font-medium text-white hover:bg-success-600"><x-icon name="whatsapp" class="size-4" /> Share on WhatsApp</a>
+                @endif
+            @endif
+            <x-slot:footer>
+                <x-admin.button variant="secondary" wire:click="$set('showSend', false)">{{ $sendable ? 'Cancel' : 'Close' }}</x-admin.button>
+                @if ($sendable && $sendProblems === [])
+                    @if ($assessment && $assessment->needed && ! $approvedAsIs)
+                        <x-admin.button icon="check-circle" wire:click="requestApproval" wire:loading.attr="disabled">Request approval</x-admin.button>
+                    @else
+                        <x-admin.button icon="send" wire:click="send" wire:loading.attr="disabled">Send now</x-admin.button>
+                    @endif
+                @endif
+            </x-slot:footer>
+        </x-admin.modal>
+    @endif
+
+    @if ($showReject)
+        <x-admin.modal name="showReject" title="Decline approval" description="The sales person sees your reason and can change the quotation." submit="reject">
+            <label for="builder-reject-reason" class="wx-label">Reason</label>
+            <textarea id="builder-reject-reason" wire:model="rejectReason" rows="3" class="wx-input h-auto py-2"></textarea>
+            @error('rejectReason')<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+            <x-slot:footer>
+                <x-admin.button variant="secondary" type="button" wire:click="$set('showReject', false)">Cancel</x-admin.button>
+                <x-admin.button type="submit">Decline</x-admin.button>
             </x-slot:footer>
         </x-admin.modal>
     @endif
