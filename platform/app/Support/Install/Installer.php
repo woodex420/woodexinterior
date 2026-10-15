@@ -26,6 +26,13 @@ final class Installer
 {
     public const string CODE_FILE = 'setup-code.txt';
 
+    /**
+     * A copy of the setup code in the site folder (public_html), the folder hPanel's File Manager opens first: the
+     * private folder in the home folder only shows under "Access all files of hosting", which owners did not find.
+     * Not reachable from the web: the root .htaccess sends every request to platform/public (and denies this name).
+     */
+    public const string SITE_CODE_FILE = 'WOODEX-SETUP-CODE.txt';
+
     public const string PENDING_FILE = 'install-pending.json';
 
     /** No 0/O, 1/I/L: the code is read from a file and typed or pasted. 24 characters ≈ 119 bits. */
@@ -68,28 +75,50 @@ final class Installer
         return $this->privateFolder().'/'.self::PENDING_FILE;
     }
 
+    /** The copy in the site folder (the repository root, next to platform/). */
+    public function siteCodePath(): string
+    {
+        return dirname($this->site->basePath).'/'.self::SITE_CODE_FILE;
+    }
+
+    /**
+     * The copy as hPanel's File Manager shows it ("public_html/WOODEX-SETUP-CODE.txt"), or null when it could not be
+     * written (the private file still works).
+     */
+    public function siteCodeDisplay(): ?string
+    {
+        $path = $this->siteCodePath();
+
+        if (! is_file($path)) {
+            return null;
+        }
+
+        return preg_match('#/domains/[^/]+/(public_html(?:/.+)?)$#', $path, $match) === 1 ? $match[1] : $this->site->displayPath($path);
+    }
+
     public function hasCode(): bool
     {
         return $this->readCode() !== null;
     }
 
-    /** Writes a new setup code unless one is waiting already. */
+    /**
+     * Writes a new setup code unless one is waiting already, and keeps the copy in the site folder (a deploy replaces
+     * the site folder, so the copy is written again with the same code).
+     */
     public function ensureCode(): void
     {
-        if ($this->hasCode()) {
-            return;
+        if (! $this->hasCode()) {
+            $folder = $this->privateFolder();
+
+            if (! is_dir($folder) && ! @mkdir($folder, 0750, true)) {
+                throw new RuntimeException('Cannot create the data folder '.$this->site->displayPath($folder).'.');
+            }
+
+            EnvFile::write($this->codePath(), "Woodex OS setup code\n\n".self::newCode()."\n\n"
+                ."Paste this code into the installer (/install on your site). It is deleted when the installation finishes.\n");
         }
 
-        $folder = $this->privateFolder();
-
-        if (! is_dir($folder) && ! @mkdir($folder, 0750, true)) {
-            throw new RuntimeException('Cannot create the data folder '.$this->site->displayPath($folder).'.');
-        }
-
-        $text = "Woodex OS setup code\n\n".self::newCode()."\n\n"
-            ."Paste this code into the installer (/install on your site). It is deleted when the installation finishes.\n";
-
-        EnvFile::write($this->codePath(), $text);
+        $this->writeSiteCopy();
     }
 
     public function codeMatches(string $input): bool
@@ -357,6 +386,7 @@ final class Installer
 
         @unlink($this->pendingPath());
         @unlink($this->codePath());
+        @unlink($this->siteCodePath());
 
         return ['owner' => $owner, 'log' => implode("\n", array_filter($log))];
     }
@@ -377,6 +407,32 @@ final class Installer
     {
         // Classic layout: installer files go to storage/app/private (never web-reachable), not into platform/.
         return $this->isClassic() ? $this->site->basePath.'/storage/app/private' : $this->directory();
+    }
+
+    /** Best effort: when the site folder is not writable the owner uses the private file. */
+    private function writeSiteCopy(): void
+    {
+        $code = $this->readCode();
+
+        if ($code === null) {
+            return;
+        }
+
+        $formatted = implode('-', str_split($code, 4));
+        $path = $this->siteCodePath();
+        $existing = @file_get_contents($path);
+
+        if (is_string($existing) && str_contains($existing, $formatted)) {
+            return;
+        }
+
+        try {
+            EnvFile::write($path, "Woodex OS setup code\n\n{$formatted}\n\n"
+                ."Paste this code into the installer (/install on your site). This file cannot be opened from the web and it\n"
+                ."is deleted when the installation finishes. The same code is kept in {$this->site->displayPath($this->codePath())}.\n");
+        } catch (RuntimeException) {
+            // The private file is the source of truth; the form names it.
+        }
     }
 
     private function readCode(): ?string

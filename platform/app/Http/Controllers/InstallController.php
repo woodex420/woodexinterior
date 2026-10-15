@@ -65,7 +65,7 @@ final class InstallController
 
         $validator->after(function ($validator) use ($request): void {
             if (! $this->installer->codeMatches((string) $request->input('setup_code'))) {
-                $validator->errors()->add('setup_code', 'The setup code does not match. Open the file named above in hPanel → File Manager and copy the code again.');
+                $validator->errors()->add('setup_code', 'The setup code does not match. Open the file named above in hPanel → File Manager (Access all files of hosting) and copy the code again.');
             }
 
             foreach (['app_url', 'db_host', 'db_database', 'db_username', 'db_password', 'owner_name'] as $field) {
@@ -149,6 +149,7 @@ final class InstallController
             'errors' => $bag,
             'requirements' => $this->installer->requirements(),
             'codeFile' => $this->installer->site()->displayPath($this->installer->codePath()),
+            'siteCodeFile' => $this->installer->siteCodeDisplay(),
             'classic' => $this->installer->isClassic(),
             'input' => [
                 'app_url' => (string) $request->input('app_url', $request->getSchemeAndHttpHost()),
@@ -171,6 +172,7 @@ final class InstallController
             'auto' => $auto && $error === null,
             'error' => $error,
             'codeFile' => $this->installer->site()->displayPath($this->installer->codePath()),
+            'siteCodeFile' => $this->installer->siteCodeDisplay(),
         ], $status);
     }
 }

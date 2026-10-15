@@ -26,6 +26,12 @@ DirectoryIndex index.php
     RewriteRule ^(?!platform/public/)(.*)$ platform/public/$1 [L]
 </IfModule>
 
+# The installer's setup code (WOODEX-SETUP-CODE.txt, deleted when the installation finishes) sits in this folder. The
+# rule above already sends every request to platform/public; this denies the file by name as well.
+<FilesMatch "^WOODEX-SETUP-CODE">
+    Require all denied
+</FilesMatch>
+
 # Without mod_rewrite nothing in this folder may be served.
 <IfModule !mod_rewrite.c>
     Require all denied

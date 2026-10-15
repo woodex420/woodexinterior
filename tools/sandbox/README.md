@@ -51,7 +51,8 @@ ln -s /tmp/woodex-run/app/vendor $SIM/platform/vendor
 node tools/sandbox/installer-check.mjs          # then stop the server and rm -rf /home/user/domains /home/user/woodex-os
 ```
 
-It checks: every page of a fresh site opens `/install`; the setup code file is private (0600); a wrong code is
+It checks: every page of a fresh site opens `/install`; the setup code file is private (0600) and has a copy in the
+site folder (`WOODEX-SETUP-CODE.txt`, named on the form, not served, deleted after installing); a wrong code is
 refused and writes nothing; the right code installs (SQLite) and continues to step 2 by itself; `.env` (0600) and
 `storage/` are in `~/woodex-os/interior.test/`, nothing in the site folder; `/install` is 404 afterwards; the owner
 signs in; a new migration file sends the owner to System → Database update, and Apply opens the admin again.

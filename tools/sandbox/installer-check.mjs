@@ -45,6 +45,15 @@ await shot('installer-1-form');
 const codeFile = path.join(DATA, 'setup-code.txt');
 const code = (fs.readFileSync(codeFile, 'utf8').match(/[A-Z2-9]{4}(?:-[A-Z2-9]{4}){5}/) || [])[0];
 step(`setup code file ${codeFile}: ${code ? 'found' : 'MISSING'} (mode ${(fs.statSync(codeFile).mode & 0o777).toString(8)})`);
+// The copy in the site folder (where hPanel's File Manager opens): same code, private, named on the page, not served.
+const siteCopy = path.join(SITE, 'WOODEX-SETUP-CODE.txt');
+const copyText = fs.existsSync(siteCopy) ? fs.readFileSync(siteCopy, 'utf8') : '';
+step(`site-folder copy ${siteCopy}: ${copyText.includes(code) ? 'same code' : 'MISSING or different'} (mode ${copyText ? (fs.statSync(siteCopy).mode & 0o777).toString(8) : '-'})`);
+if (!copyText.includes(code)) fail('no setup code copy in the site folder');
+if (!(await page.evaluate(() => document.body.innerText.includes('public_html/WOODEX-SETUP-CODE.txt')))) fail('the form does not name public_html/WOODEX-SETUP-CODE.txt');
+const served = await page.evaluate(async (u) => { const r = await fetch(u); return { status: r.status, body: await r.text() }; }, `${BASE}/WOODEX-SETUP-CODE.txt`);
+step(`GET /WOODEX-SETUP-CODE.txt -> HTTP ${served.status}`);
+if (served.body.includes(code)) fail('the setup code copy is served over HTTP');
 
 async function fill(values) {
     for (const [name, value] of Object.entries(values)) {
@@ -86,6 +95,7 @@ for (const leftover of ['setup-code.txt', 'install-pending.json']) {
     if (fs.existsSync(path.join(DATA, leftover))) fail(`${leftover} still exists after the installation`);
 }
 if (fs.existsSync(path.join(SITE, 'platform/.env'))) fail('a .env was written into the site folder');
+if (fs.existsSync(siteCopy)) fail('WOODEX-SETUP-CODE.txt still exists in the site folder after the installation');
 if (!fs.existsSync(path.join(DATA, 'storage/framework/views'))) fail('storage folders missing in the data folder');
 
 // 4. The installer is closed.

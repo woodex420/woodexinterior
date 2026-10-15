@@ -29,6 +29,7 @@ it('serves only platform/public from the repository root', function () {
 
     expect($htaccess)->toContain('Options -Indexes')
         ->toContain('RewriteRule ^(?!platform/public/)(.*)$ platform/public/$1 [L]')
+        ->toContain('<FilesMatch "^WOODEX-SETUP-CODE">') // the installer's code copy in the site folder
         ->toContain('RewriteRule ^\.well-known/ - [L]')
         ->toContain("<IfModule !mod_rewrite.c>\n    Require all denied");
 })->skip(fn () => ! is_file(repositoryRoot().'/.htaccess'), 'repository root not present (sandbox copy without sync)');

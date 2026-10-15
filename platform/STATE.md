@@ -2,22 +2,28 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 16 Oct 2026 02:30 PKT)
-- **Where we are:** P1 CRM is complete, P2 Quotations part 1 (the quote builder) is done, and the **Hostinger Git
-  deploy is fixed** (see "Hostinger deploy fix" below). The owner deploys from hPanel → Git without SSH.
-- **Owner to do on Hostinger** (docs/06 §2.2): disconnect Git from `woodex.com.pk` and delete the files it put in that
-  `public_html` (restore the old site from a Hostinger backup if it lived there); connect Git on the
-  `interior.woodex.com.pk` folder (Root directory = that folder); PHP 8.4; new empty MySQL database; open the site →
-  installer (setup code from `~/woodex-os/<site>/setup-code.txt` in File Manager); add the cron line it shows.
-  Main domain only after approval (docs/06 §2.6).
-- **Next:** P2 part 2: approvals, PDF, send + versions, the signed client page with view tracking, accept and
-  "request changes", and the accept automation (see "P2 part 2 plan" below).
+## Resume here (project memory, saved 16 Oct 2026 PKT, after the setup-code fix)
+- **Where we are:** P1 CRM is complete, P2 Quotations part 1 (the quote builder) is done, and the Hostinger Git deploy
+  works. **The owner deployed to the main domain `woodex.com.pk`** (his choice; not the subdomain) and reached the web
+  installer: PHP 8.4.26, all 12 extensions, private data folder `woodex-os/woodex.com.pk`, build present.
+- **Setup code fix (D-59):** the owner could not find `~/woodex-os/<site>/setup-code.txt` (hPanel's File Manager opens
+  in `public_html`; the home folder only shows under "Access all files of hosting"). The installer now also writes
+  **`public_html/WOODEX-SETUP-CODE.txt`** (same code, never served, deleted after installing) and names it first.
+  Owner: Deploy again in hPanel → Git, reload `/install`, open that file in File Manager, paste the code.
+- **After installing:** add the cron line the installer shows (hPanel → Advanced → Cron Jobs); after each later deploy
+  sign in → System → Database update when asked.
+- **In progress (uncommitted until finished):** P2 part 2a — approvals (QUO-007), send + frozen versions (QUO-008/013),
+  PDF (QUO-014), signed client page + view tracking (QUO-009/010), accept / request changes (QUO-011 first part).
+  Tests, Larastan and Pint pass. Left: PDF polish (header rule through the address, "Page 1 of 0", numeric headers,
+  "Lahore, Lahore", whole-rupee milestones), browser check, docs (D-60+), commit.
+- **Next after that:** the owner asked to update and deploy the **public website** (questions first), then continue
+  P2 part 2b (project + advance invoice with P3, reminders/expiry QUO-012, options QUO-019, v2.1 quote import).
   - **CI:** this GitHub connection cannot write `.github/workflows`, so the owner adds the two files from
     `docs/ci/` (2 minutes in the GitHub website).
   - The owner has not yet answered P-01…P-09; P-06 (rotate the leaked credentials) blocks go-live.
 - **Code:** everything is on branch `arena/8be318a2-woodexinterior` and pushed. `master` is still the starting point
   (d77016b); merge through a pull request when the owner approves.
-- **Rules to follow:** docs/07 (D-01…D-58) and platform/AGENTS.md. The plan and specs are in docs/00–08.
+- **Rules to follow:** docs/07 (D-01…D-59) and platform/AGENTS.md. The plan and specs are in docs/00–08.
 - **Preview (AI sandbox only):** after a VM reset run `sh tools/sandbox/setup.sh` (~3–4 min). It rebuilds PHP 8.4,
   `vendor/`, the front-end build and the demo database, including the demo quotations. Then start
   `PORT=8080 node --stack-size=8000 tools/sandbox/server.mjs` from `/tmp/woodex-run`. The checks are `smoke.sh`,

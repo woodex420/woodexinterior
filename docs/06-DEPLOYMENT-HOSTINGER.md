@@ -72,9 +72,14 @@ there. It runs no build step except Composer. The repository is prepared for exa
 
 ### 2.3 The installer
 
-- **Setup code:** the installer writes `~/woodex-os/<site>/setup-code.txt`. Open it in hPanel → Files → File
-  Manager (the home folder is the top level) and paste the code. This proves the person installing owns the
-  hosting account; nobody else can finish the installation, even while `/install` is public.
+- **Setup code:** the installer writes the code twice: `~/woodex-os/<site>/setup-code.txt` (private, the source of
+  truth) and a copy **`WOODEX-SETUP-CODE.txt` in the site folder** — the folder hPanel → Websites → the site → File
+  Manager opens first (`public_html`, or `public_html/<sub>` for a subdomain folder). Open the copy and paste the code.
+  The private folder only shows under File Manager → **Access all files of hosting** (owners did not find it there,
+  2026-10-15, hence the copy). The copy is never served: the root `.htaccess` sends every request to `platform/public`
+  and also denies the name. A deploy removes the copy; reloading `/install` writes it again with the same code.
+  Reloading never changes the code. Both files are deleted when the installation finishes. This proves the person
+  installing owns the hosting account; nobody else can finish the installation, even while `/install` is public.
 - **Form:** site address (`https://interior.woodex.com.pk`), database (MySQL: host `localhost`, port 3306, name,
   user, password; SQLite only for a quick look), owner name, email and password (10+ characters, letters and
   numbers), and "require two-factor sign-in" (on by default).

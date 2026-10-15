@@ -29,11 +29,21 @@
     <form method="POST" action="{{ url('/install') }}" class="mt-6 space-y-6" autocomplete="off">
         <section class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
             <h2 class="text-theme-sm font-semibold text-gray-900 dark:text-white">1. Setup code</h2>
-            <p class="mt-1 text-theme-xs text-gray-500">
-                Proves that you own this hosting account. Open <strong>hPanel → Files → File Manager</strong>, go to
-                <code class="rounded bg-gray-100 px-1.5 py-0.5 text-[12px] text-gray-800 dark:bg-gray-800 dark:text-gray-200">{{ $codeFile }}</code>
-                and copy the code from that file. It is deleted when the installation finishes.
-            </p>
+            <p class="mt-1 text-theme-xs text-gray-500">Proves that you own this hosting account.</p>
+            <ol class="mt-2 list-decimal space-y-1 pl-5 text-theme-xs text-gray-600 dark:text-gray-400">
+                <li>Open <strong>hPanel → Websites → this site → File Manager</strong>.</li>
+                @if ($siteCodeFile)
+                    <li>Open the file
+                        <code class="rounded bg-gray-100 px-1.5 py-0.5 text-[12px] font-semibold text-gray-800 dark:bg-gray-800 dark:text-gray-200">{{ $siteCodeFile }}</code>
+                        (in the first folder File Manager shows) and copy the code.</li>
+                    <li class="text-gray-500">The same code is kept outside the website in <code>{{ $codeFile }}</code> (File Manager → <em>Access all files of hosting</em>).</li>
+                @else
+                    <li>Choose <strong>Access all files of hosting</strong>, open
+                        <code class="rounded bg-gray-100 px-1.5 py-0.5 text-[12px] font-semibold text-gray-800 dark:bg-gray-800 dark:text-gray-200">{{ $codeFile }}</code>
+                        and copy the code.</li>
+                @endif
+            </ol>
+            <p class="mt-2 text-theme-xs text-gray-500">Reloading this page keeps the same code. The file cannot be opened from the web and is deleted when the installation finishes.</p>
             <label for="setup_code" class="wx-label mt-4">Setup code</label>
             <input id="setup_code" name="setup_code" required maxlength="64" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
                    class="wx-input h-11 font-mono uppercase tracking-wider">

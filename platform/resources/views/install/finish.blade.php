@@ -21,7 +21,7 @@
             <div>
                 <label for="setup_code" class="wx-label">Setup code</label>
                 <input id="setup_code" name="setup_code" required maxlength="64" spellcheck="false" class="wx-input h-11 font-mono uppercase tracking-wider">
-                <p class="mt-1.5 text-theme-xs text-gray-500">From <code>{{ $codeFile }}</code> (hPanel → File Manager).</p>
+                <p class="mt-1.5 text-theme-xs text-gray-500">From <code>{{ $siteCodeFile ?? $codeFile }}</code> (hPanel → File Manager{{ $siteCodeFile ? '' : ' → Access all files of hosting' }}).</p>
             </div>
         @endif
         <button type="submit" data-busy-text="Installing… (up to a minute)" class="flex h-12 w-full items-center justify-center rounded-lg bg-navy-900 text-theme-sm font-medium text-white hover:bg-navy-800">

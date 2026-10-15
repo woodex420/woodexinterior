@@ -75,6 +75,44 @@ it('shows the installer and writes a setup code into the private data folder', f
     expect(setupCode($this->data))->toBe($first); // reloading keeps the same code
 });
 
+it('puts a copy of the setup code in the site folder, where File Manager opens', function () {
+    $site = $this->home.'/domains/site.test/public_html';
+
+    $this->get('/install')
+        ->assertOk()
+        ->assertSee('public_html/WOODEX-SETUP-CODE.txt')
+        ->assertSee('woodex-os/site.test/setup-code.txt');
+
+    $code = setupCode($this->data);
+    expect((string) file_get_contents($site.'/WOODEX-SETUP-CODE.txt'))->toContain($code)
+        ->and(fileperms($site.'/WOODEX-SETUP-CODE.txt') & 0777)->toBe(0600);
+
+    // A deploy replaces the site folder: the next visit writes the copy again, with the same code.
+    unlink($site.'/WOODEX-SETUP-CODE.txt');
+    $this->get('/install')->assertOk();
+    expect((string) file_get_contents($site.'/WOODEX-SETUP-CODE.txt'))->toContain($code)
+        ->and(setupCode($this->data))->toBe($code);
+
+    // The copy proves nothing on its own: only the private code counts.
+    file_put_contents($site.'/WOODEX-SETUP-CODE.txt', 'AAAA-BBBB-CCCC-DDDD-EEEE-FFFF');
+    $this->post('/install', installerForm(['setup_code' => 'AAAA-BBBB-CCCC-DDDD-EEEE-FFFF']))->assertStatus(422);
+});
+
+it('names only the private file when the site folder is not writable', function () {
+    $site = $this->home.'/domains/site.test/public_html';
+    chmod($site, 0555);
+
+    try {
+        $this->get('/install')
+            ->assertOk()
+            ->assertDontSee('WOODEX-SETUP-CODE.txt')
+            ->assertSee('Access all files of hosting')
+            ->assertSee('woodex-os/site.test/setup-code.txt');
+    } finally {
+        chmod($site, 0755);
+    }
+})->skip(fn () => function_exists('posix_geteuid') && posix_geteuid() === 0, 'root ignores folder permissions');
+
 it('refuses a wrong setup code and writes nothing', function () {
     $this->get('/install');
 
@@ -164,6 +202,7 @@ it('installs in two steps and closes itself', function () {
         ->and($owner->is_active)->toBeTrue()
         ->and(Hash::check('Woodex-Owner-2026', $owner->password))->toBeTrue()
         ->and(file_exists($this->data.'/setup-code.txt'))->toBeFalse()
+        ->and(file_exists($this->home.'/domains/site.test/public_html/WOODEX-SETUP-CODE.txt'))->toBeFalse()
         ->and(file_exists($this->data.'/install-pending.json'))->toBeFalse();
 
     // Closed for good.
