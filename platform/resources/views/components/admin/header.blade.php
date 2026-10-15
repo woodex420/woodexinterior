@@ -1,0 +1,79 @@
+@props(['title' => null])
+@php
+    $user = auth()->user();
+    $notifications = $user?->unreadNotifications()->latest()->limit(6)->get() ?? collect();
+    $unread = $user?->unreadNotifications()->count() ?? 0;
+@endphp
+<header class="sticky top-0 z-30 flex h-[72px] items-center gap-3 border-b border-gray-200 bg-white/90 px-4 backdrop-blur md:px-6 dark:border-gray-800 dark:bg-gray-900/90">
+    <button type="button" @click="$store.sidebar.toggle()"
+            class="flex size-10 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5"
+            aria-label="Toggle sidebar">
+        <x-icon name="menu" />
+    </button>
+
+    {{-- Global search (GLB-002): name, phone in any format, or reference --}}
+    <form action="{{ route('admin.leads.index') }}" method="GET" class="relative hidden max-w-md flex-1 md:block" role="search">
+        <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-gray-400" />
+        <input type="search" name="search" value="{{ request('search') }}" placeholder="Search name, phone (0322…), or L-2026-…"
+               class="wx-input pl-10" aria-label="Search leads">
+    </form>
+
+    <div class="ml-auto flex items-center gap-2">
+        <button type="button" @click="$store.theme.toggle()"
+                class="flex size-10 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5"
+                aria-label="Toggle dark mode">
+            <x-icon name="moon" class="size-5 dark:hidden" />
+            <x-icon name="sun" class="hidden size-5 dark:block" />
+        </button>
+
+        {{-- Notifications (Preline dropdown) --}}
+        <div class="hs-dropdown relative inline-flex [--placement:bottom-right]">
+            <button type="button" class="hs-dropdown-toggle relative flex size-10 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5"
+                    aria-haspopup="menu" aria-expanded="false" aria-label="Notifications">
+                <x-icon name="bell" />
+                @if ($unread > 0)
+                    <span class="absolute -top-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full bg-wood-500 text-[10px] font-semibold text-white">{{ min($unread, 9) }}{{ $unread > 9 ? '+' : '' }}</span>
+                @endif
+            </button>
+            <div class="hs-dropdown-menu z-50 mt-2 hidden w-80 rounded-xl border border-gray-200 bg-white p-2 opacity-0 shadow-theme-lg transition-[opacity,margin] hs-dropdown-open:opacity-100 dark:border-gray-800 dark:bg-gray-900" role="menu">
+                <p class="px-3 py-2 text-theme-xs font-medium tracking-wide text-gray-500 uppercase">Notifications</p>
+                @forelse ($notifications as $notification)
+                    <a href="{{ $notification->data['url'] ?? '#' }}" class="block rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-white/5">
+                        <span class="block text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $notification->data['title'] ?? 'Update' }}</span>
+                        <span class="block truncate text-theme-xs text-gray-500">{{ $notification->data['body'] ?? '' }}</span>
+                        <span class="block text-[11px] text-gray-400">{{ $notification->created_at?->diffForHumans() }}</span>
+                    </a>
+                @empty
+                    <p class="px-3 py-6 text-center text-theme-sm text-gray-500">You're all caught up.</p>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- User menu --}}
+        <div class="hs-dropdown relative inline-flex [--placement:bottom-right]">
+            <button type="button" class="hs-dropdown-toggle flex items-center gap-2 rounded-full py-1 pr-2 pl-1 hover:bg-gray-100 dark:hover:bg-white/5" aria-haspopup="menu" aria-expanded="false">
+                <span class="flex size-9 items-center justify-center rounded-full bg-navy-900 text-theme-xs font-semibold text-white">{{ $user?->initials() }}</span>
+                <span class="hidden text-left sm:block">
+                    <span class="block text-theme-sm leading-tight font-medium text-gray-800 dark:text-white/90">{{ $user?->name }}</span>
+                    <span class="block text-theme-xs leading-tight text-gray-500">{{ \Illuminate\Support\Str::headline($user?->getRoleNames()->first() ?? 'staff') }}</span>
+                </span>
+                <x-icon name="chevron-down" class="size-4 text-gray-400" />
+            </button>
+            <div class="hs-dropdown-menu z-50 mt-2 hidden w-60 rounded-xl border border-gray-200 bg-white p-2 opacity-0 shadow-theme-lg transition-[opacity,margin] hs-dropdown-open:opacity-100 dark:border-gray-800 dark:bg-gray-900" role="menu">
+                <div class="border-b border-gray-100 px-3 pt-1 pb-3 dark:border-gray-800">
+                    <p class="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $user?->name }}</p>
+                    <p class="truncate text-theme-xs text-gray-500">{{ $user?->email }}</p>
+                </div>
+                <a href="{{ route('admin.profile.security') }}" wire:navigate class="mt-1 flex items-center gap-3 rounded-lg px-3 py-2 text-theme-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5">
+                    <x-icon name="shield" class="size-4" /> Security &amp; Telegram
+                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-theme-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5">
+                        <x-icon name="logout" class="size-4" /> Sign out
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>

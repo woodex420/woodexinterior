@@ -1,0 +1,4 @@
+# Woodex OS admin (admin.woodex.com.pk) must never be indexed.
+# The public website robots.txt is generated per domain from phase P6.
+User-agent: *
+Disallow: /

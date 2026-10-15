@@ -1,0 +1,9 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+    # Start at level 5 for the P0 scaffold; raise to 6 during P1 (docs/07 D-28).
+    level: 5
+    treatPhpDocTypesAsCertain: false

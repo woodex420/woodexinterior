@@ -1,0 +1,174 @@
+/*
+ * Woodex OS admin: Tailwind v4 + TailAdmin layout utilities + Preline v5 plugin variants.
+ * TailAdmin Laravel (MIT) tokens are kept for UI legibility; its brand scale is mapped to Woodex navy.
+ */
+@import "tailwindcss";
+@import "./tokens.css";
+@import "preline/variants.css";
+
+@source "../views";
+@source "../js";
+@source "../../app/Livewire";
+@source "../../app/Support";
+@source "../../app/Domain";
+@source "../../node_modules/preline/dist/*.js";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --breakpoint-2xsm: 375px;
+  --breakpoint-xsm: 425px;
+  --breakpoint-3xl: 2000px;
+
+  --text-theme-xs: 12px;
+  --text-theme-xs--line-height: 18px;
+  --text-theme-sm: 14px;
+  --text-theme-sm--line-height: 20px;
+  --text-theme-xl: 20px;
+  --text-theme-xl--line-height: 30px;
+  --text-title-sm: 30px;
+  --text-title-sm--line-height: 38px;
+  --text-title-md: 36px;
+  --text-title-md--line-height: 44px;
+
+  /* TailAdmin "brand" → Woodex navy */
+  --color-brand-25: #f7f9fc;
+  --color-brand-50: var(--color-navy-50);
+  --color-brand-100: var(--color-navy-100);
+  --color-brand-200: var(--color-navy-200);
+  --color-brand-300: var(--color-navy-300);
+  --color-brand-400: var(--color-navy-400);
+  --color-brand-500: var(--color-navy-600);
+  --color-brand-600: var(--color-navy-700);
+  --color-brand-700: var(--color-navy-800);
+  --color-brand-800: var(--color-navy-900);
+  --color-brand-900: var(--color-navy-900);
+  --color-brand-950: var(--color-navy-950);
+
+  /* TailAdmin neutrals and status colours */
+  --color-gray-25: #fcfcfd;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f2f4f7;
+  --color-gray-200: #e4e7ec;
+  --color-gray-300: #d0d5dd;
+  --color-gray-400: #98a2b3;
+  --color-gray-500: #667085;
+  --color-gray-600: #475467;
+  --color-gray-700: #344054;
+  --color-gray-800: #1d2939;
+  --color-gray-900: #101828;
+  --color-gray-950: #0c111d;
+
+  --color-success-50: #ecfdf3;
+  --color-success-100: #d1fadf;
+  --color-success-500: #12b76a;
+  --color-success-600: #039855;
+  --color-success-700: #027a48;
+
+  --color-error-50: #fef3f2;
+  --color-error-100: #fee4e2;
+  --color-error-500: #f04438;
+  --color-error-600: #d92d20;
+  --color-error-700: #b42318;
+
+  --color-warning-50: #fffaeb;
+  --color-warning-100: #fef0c7;
+  --color-warning-500: #f79009;
+  --color-warning-600: #dc6803;
+  --color-warning-700: #b54708;
+
+  --color-info-50: #f0f9ff;
+  --color-info-100: #e0f2fe;
+  --color-info-500: #0ba5ec;
+  --color-info-600: #0086c9;
+  --color-info-700: #026aa2;
+
+  --shadow-theme-xs: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+  --shadow-theme-sm: 0px 1px 3px 0px rgba(16, 24, 40, 0.1), 0px 1px 2px 0px rgba(16, 24, 40, 0.06);
+  --shadow-theme-md: 0px 4px 8px -2px rgba(16, 24, 40, 0.1), 0px 2px 4px -2px rgba(16, 24, 40, 0.06);
+  --shadow-theme-lg: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
+  --shadow-focus-ring: 0px 0px 0px 4px rgba(52, 77, 117, 0.14);
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  body {
+    @apply relative bg-gray-50 font-sans text-theme-sm text-gray-700 antialiased dark:bg-gray-950 dark:text-gray-300;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-wood-500);
+    outline-offset: 2px;
+  }
+
+  [x-cloak] {
+    display: none !important;
+  }
+}
+
+/* ---- TailAdmin sidebar utilities (adapted) ---- */
+@utility menu-item {
+  @apply relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-theme-sm font-medium;
+}
+
+@utility menu-item-active {
+  @apply bg-navy-50 text-navy-800 dark:bg-white/[0.06] dark:text-white;
+}
+
+@utility menu-item-inactive {
+  @apply text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/5 dark:hover:text-white;
+}
+
+@utility menu-item-disabled {
+  @apply cursor-not-allowed text-gray-400 dark:text-gray-600;
+}
+
+@utility no-scrollbar {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    @apply size-1.5;
+  }
+  &::-webkit-scrollbar-track {
+    @apply rounded-full;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-gray-200 dark:bg-gray-700;
+  }
+}
+
+/* ---- Admin form controls ---- */
+@utility wx-input {
+  @apply h-10 w-full rounded-lg border border-gray-300 bg-white px-3.5 text-theme-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-navy-300 focus:shadow-focus-ring focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30;
+}
+
+@utility wx-label {
+  @apply mb-1.5 block text-theme-sm font-medium text-gray-700 dark:text-gray-300;
+}
+
+/* Kanban drag states (SortableJS) */
+.sortable-ghost {
+  @apply opacity-40;
+}
+
+.sortable-drag {
+  @apply rotate-1 shadow-theme-lg;
+}

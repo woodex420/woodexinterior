@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Support\Facades\Schedule;
+
+/*
+|--------------------------------------------------------------------------
+| Scheduler: driven by ONE hPanel cron entry every minute (docs/06 §5)
+|   /usr/bin/php /home/uXXXX/apps/woodexinterior/platform/artisan schedule:run
+|--------------------------------------------------------------------------
+*/
+
+// Drain the database queue without a daemon (D-17).
+Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3')
+    ->everyMinute()
+    ->withoutOverlapping(5)
+    ->runInBackground();
+
+// Cron heartbeat for System → Health.
+Schedule::command('woodex:heartbeat')->everyMinute();
+
+// Backups (spatie/laravel-backup) and housekeeping.
+Schedule::command('backup:run --only-db')->dailyAt('02:30');
+Schedule::command('backup:run')->weeklyOn(0, '03:00');
+Schedule::command('backup:clean')->dailyAt('03:30');
+Schedule::command('backup:monitor')->dailyAt('04:00');
+Schedule::command('queue:prune-failed --hours=720')->dailyAt('04:15');
+Schedule::command('model:prune')->dailyAt('04:30');

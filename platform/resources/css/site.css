@@ -1,0 +1,30 @@
+/*
+ * Woodex public website (phase P6). Studio look on Preline blocks; runtime theme variables come
+ * from the theme builder (/theme/{hash}.css) so publishing a theme never needs a rebuild.
+ */
+@import "tailwindcss";
+@import "./tokens.css";
+
+@source "../views/site";
+
+@layer base {
+  body {
+    @apply bg-paper font-sans text-[15px] leading-[1.65] tracking-[-0.025em] text-body antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading font-normal leading-[1.1] tracking-[-0.025em] text-ink;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-wood-500);
+    outline-offset: 5px;
+  }
+}
+
+@utility btn-studio {
+  @apply inline-flex items-center justify-between gap-6 rounded-full border border-transparent bg-white py-2.5 pr-3 pl-5 text-sm font-medium whitespace-nowrap text-ink transition hover:-translate-y-0.5 hover:bg-beige;
+}

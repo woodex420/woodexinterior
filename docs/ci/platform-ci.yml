@@ -1,0 +1,109 @@
+name: Platform CI
+
+# Tests the Laravel application in platform/ on every push and pull request.
+# ACTIVATE: copy this file to .github/workflows/platform-ci.yml (see docs/ci/README.md).
+# Hostinger has no Node.js, so this workflow is also where front-end assets are built (docs/07 D-10, D-28).
+
+on:
+  push:
+    paths:
+      - 'platform/**'
+      - '.github/workflows/platform-ci.yml'
+  pull_request:
+    paths:
+      - 'platform/**'
+      - '.github/workflows/platform-ci.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: platform-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: platform
+
+jobs:
+  tests:
+    name: PHP 8.4 · Pest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, gd, zip, exif, bcmath, pdo_sqlite, sqlite3, fileinfo
+          coverage: none
+          tools: composer:v2
+
+      - name: Composer cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer/files
+          key: composer-${{ runner.os }}-${{ hashFiles('platform/composer.json', 'platform/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Install PHP dependencies
+        run: |
+          if [ -f composer.lock ]; then
+            composer install --no-interaction --prefer-dist --no-progress
+          else
+            echo "No composer.lock yet: resolving the latest compatible versions."
+            composer update --no-interaction --prefer-dist --no-progress
+          fi
+
+      - name: Print resolved composer.lock (until it is committed)
+        if: ${{ hashFiles('platform/composer.lock') == '' }}
+        run: |
+          echo "Resolved package versions:"
+          composer show --direct --format=text || true
+          echo "WOODEX_LOCK_BEGIN"
+          gzip -9 -c composer.lock | base64 -w0
+          echo
+          echo "WOODEX_LOCK_END"
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Tests (Pest)
+        run: vendor/bin/pest --colors=always
+
+      - name: Code style (Pint)
+        run: vendor/bin/pint --test -v
+
+      - name: Static analysis (Larastan, report only in P0)
+        continue-on-error: true
+        run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+  assets:
+    name: Front-end build (Vite + Tailwind 4 + Preline 5)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: platform/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload public/build (for Hostinger uploads)
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-build
+          path: platform/public/build
+          retention-days: 14

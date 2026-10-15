@@ -1,0 +1,150 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Crm\Models;
+
+use App\Domain\Crm\Enums\ClientType;
+use App\Models\User;
+use App\Support\Phone;
+use Database\Factories\ContactFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
+
+/**
+ * A person: prospect or client. One record per person across all channels (CRM-001).
+ */
+class Contact extends Model
+{
+    /** @use HasFactory<ContactFactory> */
+    use HasFactory, LogsActivity, SoftDeletes;
+
+    protected $guarded = ['id'];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'client_type' => ClientType::class,
+            'is_client' => 'boolean',
+            'became_client_at' => 'datetime',
+            'consent_marketing' => 'boolean',
+            'consent_whatsapp' => 'boolean',
+            'opted_out_at' => 'datetime',
+            'meta' => 'array',
+            'last_activity_at' => 'datetime',
+        ];
+    }
+
+    protected static function newFactory(): ContactFactory
+    {
+        return ContactFactory::new();
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('crm')
+            ->logOnly(['name', 'phone', 'alt_phone', 'whatsapp', 'email', 'city', 'area', 'client_type', 'is_client', 'owner_id', 'opted_out_at'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
+    }
+
+    /**
+     * @return BelongsTo<Company, $this>
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * @return HasMany<Lead, $this>
+     */
+    public function leads(): HasMany
+    {
+        return $this->hasMany(Lead::class);
+    }
+
+    /**
+     * @return HasMany<Activity, $this>
+     */
+    public function activities(): HasMany
+    {
+        return $this->hasMany(Activity::class)->latest('occurred_at');
+    }
+
+    /**
+     * @return MorphToMany<Tag, $this>
+     */
+    public function tags(): MorphToMany
+    {
+        return $this->morphToMany(Tag::class, 'taggable');
+    }
+
+    /**
+     * Find by any of the stored phone columns (already normalised to E.164).
+     *
+     * @param  Builder<Contact>  $query
+     * @return Builder<Contact>
+     */
+    public function scopeWherePhone(Builder $query, string $e164): Builder
+    {
+        return $query->where(function (Builder $inner) use ($e164): void {
+            $inner->where('phone', $e164)->orWhere('alt_phone', $e164)->orWhere('whatsapp', $e164);
+        });
+    }
+
+    /**
+     * Name, phone (any format) or email search used by lists and global search (GLB-002).
+     *
+     * @param  Builder<Contact>  $query
+     * @return Builder<Contact>
+     */
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return $query;
+        }
+
+        $phone = Phone::normalize($term);
+
+        return $query->where(function (Builder $inner) use ($term, $phone): void {
+            $inner->where('name', 'like', "%{$term}%")->orWhere('email', 'like', "%{$term}%");
+
+            if ($phone !== null) {
+                $inner->orWhere('phone', $phone)->orWhere('alt_phone', $phone)->orWhere('whatsapp', $phone);
+            }
+        });
+    }
+
+    public function firstName(): string
+    {
+        return (string) Str::of($this->name)->trim()->explode(' ')->first();
+    }
+
+    public function whatsappNumber(): ?string
+    {
+        return $this->whatsapp ?? $this->phone;
+    }
+}
