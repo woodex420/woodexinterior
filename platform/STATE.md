@@ -8,7 +8,7 @@ _Update at the end of every task (docs/03 Part A §7)._
 - **Holding page unstyled in the owner's browser (reported twice):** the preview emitted absolute asset URLs on a
   guessed preview host; they failed in the real browser while in-sandbox curl passed. All output URLs are now
   root-relative (preview server rewrite + `ASSET_URL=/`), so pages work under any origin (D-36). Confirmed from the
-  owner's own browser in the request log (CSS + fonts loaded from the preview origin).
+  owner's own browser: CSS and fonts load from the preview origin and JavaScript runs (preview beacon: Alpine started).
 - **Lead form invisible without JS:** the whole form sat in `<template x-if>`; it is now plain HTML enhanced by
   Alpine, `x-cloak` added to site.css, submit disabled until Alpine starts (D-49).
 - **Dashboard chart drawn twice and overflowing its card; y-axis 0,1,1,2,2,3,3:** init race fixed, charts re-fit to
