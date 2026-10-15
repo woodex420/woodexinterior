@@ -51,6 +51,12 @@ const SELF_URL = new RegExp(`https?:(\\\\?/)(\\\\?/)${escapeRe(HOST)}(?::\\d+)?(
 const relativize = (text) => text.replace(SELF_URL, (match, slash1, slash2, pathSlash) => pathSlash ?? slash1);
 const REWRITABLE = /^(text\/(html|plain|css|javascript|xml)|application\/(json|javascript|xml|ld\+json|vnd\.api\+json))/i;
 
+// Preview-only diagnostics (never part of the app): tells whether JavaScript runs in the viewer's browser and whether
+// Alpine/Livewire started, via /__preview-beacon lines in the request log. <noscript> pixel = scripts are off.
+const BEACON_HEAD = '<script>(function(){function b(q){try{navigator.sendBeacon("/__preview-beacon?"+q+"&p="+encodeURIComponent(location.pathname)+"&w="+innerWidth)}catch(e){}}b("js=1");addEventListener("load",function(){setTimeout(function(){b("loaded=1&alpine="+!!window.Alpine+"&livewire="+!!window.Livewire)},1500)})})();</script>';
+const BEACON_BODY = '<noscript><img src="/__preview-beacon?js=0" alt="" width="1" height="1" style="position:absolute;left:-9999px"></noscript>';
+const injectBeacon = (html) => html.replace(/<\/head>/i, `${BEACON_HEAD}</head>`).replace(/<body([^>]*)>/i, `<body$1>${BEACON_BODY}`);
+
 const MIME = {
     '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
     '.json': 'application/json', '.map': 'application/json', '.webmanifest': 'application/manifest+json',
@@ -175,7 +181,11 @@ async function servePhp(req, res) {
         outHeaders[lower] = lower === 'set-cookie' ? values : values.map(relativize);
     }
     let body = Buffer.from(response.bytes);
-    if (REWRITABLE.test(contentType) && body.length > 0) body = Buffer.from(relativize(body.toString('utf8')), 'utf8');
+    if (REWRITABLE.test(contentType) && body.length > 0) {
+        let text = relativize(body.toString('utf8'));
+        if (/^text\/html/i.test(contentType) && process.env.PREVIEW_BEACON !== '0') text = injectBeacon(text);
+        body = Buffer.from(text, 'utf8');
+    }
     const encoding = COMPRESSIBLE.test(contentType) && body.length > 1024 && !outHeaders['content-encoding'] ? pickEncoding(req) : null;
     if (encoding) {
         body = compress(body, encoding, 5);
@@ -193,6 +203,14 @@ const server = http.createServer(async (req, res) => {
     track(req, res);
     try {
         const urlPath = new URL(req.url, 'http://local').pathname;
+        if (urlPath === '/__preview-beacon') {
+            req.resume();
+            const line = `${new Date().toISOString()} BEACON ${req.url} ${summary(req.headers)}`;
+            fs.appendFile(LOG_FILE, `${line}\n`, () => {});
+            console.log(line.slice(25));
+            res.writeHead(204, { 'Cache-Control': 'no-store' });
+            return res.end();
+        }
         const file = (req.method === 'GET' || req.method === 'HEAD') ? staticFile(urlPath) : null;
         if (file) return serveStatic(req, res, file);
         await servePhp(req, res);
