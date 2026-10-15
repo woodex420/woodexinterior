@@ -40,7 +40,7 @@
                         <article wire:key="card-{{ $lead->id }}" data-lead-id="{{ $lead->id }}"
                                  class="cursor-grab rounded-xl border border-gray-200 bg-white p-3.5 shadow-theme-xs active:cursor-grabbing dark:border-gray-800 dark:bg-gray-900">
                             <div class="flex items-start justify-between gap-2">
-                                <p class="font-medium text-gray-800 dark:text-white/90">{{ $lead->contact->name }}</p>
+                                <a href="{{ route('admin.leads.show', $lead) }}" wire:navigate draggable="false" class="font-medium text-gray-800 hover:underline dark:text-white/90">{{ $lead->contact->name }}</a>
                                 @if ($lead->score >= 80)
                                     <x-admin.badge color="navy" :dot="false">Hot</x-admin.badge>
                                 @endif

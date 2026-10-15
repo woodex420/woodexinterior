@@ -22,16 +22,16 @@ final class AdminNavigation
         return [
             self::group('Overview', [
                 self::item('Dashboard', 'dashboard', 'admin.dashboard', 'dashboard.view'),
-                self::item('My Day', 'sun', null, null, 'P1'),
+                self::item('My Day', 'sun', 'admin.my-day', 'leads.view'),
                 self::item('Approvals', 'check-circle', null, null, 'P2'),
             ]),
             self::group('CRM', [
                 self::item('Leads', 'users', 'admin.leads.index', 'leads.view'),
                 self::item('Pipeline', 'kanban', 'admin.pipeline', 'leads.view'),
-                self::item('Contacts', 'contact', null, null, 'P1'),
-                self::item('Companies', 'building', null, null, 'P1'),
-                self::item('Tasks', 'tasks', null, null, 'P1'),
-                self::item('Site Visits', 'calendar', null, null, 'P1'),
+                self::item('Contacts', 'contact', 'admin.contacts.index', 'contacts.view'),
+                self::item('Companies', 'building', null, null, 'P2'),
+                self::item('Tasks', 'tasks', 'admin.tasks.index', 'leads.view'),
+                self::item('Site Visits', 'calendar', 'admin.visits.index', 'leads.view'),
             ]),
             self::group('Sales', [
                 self::item('Quotations', 'quote', null, null, 'P2'),
@@ -69,10 +69,10 @@ final class AdminNavigation
                 self::item('Revenue & Collections', 'banknote', null, null, 'P3'),
             ]),
             self::group('System', [
-                self::item('Settings', 'settings', null, null, 'P1'),
-                self::item('Users & Roles', 'shield', null, null, 'P1'),
-                self::item('Integrations', 'link', null, null, 'P1'),
-                self::item('Data Import', 'database', null, null, 'P1'),
+                self::item('Settings', 'settings', 'admin.settings', 'settings.manage'),
+                self::item('Users & Roles', 'shield', 'admin.users.index', 'users.manage'),
+                self::item('Integrations', 'link', null, null, 'P4'),
+                self::item('Data Import', 'database', null, null, 'CLI'),
                 self::item('Health', 'health', 'admin.system.health', 'system.health'),
                 self::item('Change Requests', 'lightbulb', null, null, 'P5'),
             ]),

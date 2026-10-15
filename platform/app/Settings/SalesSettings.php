@@ -9,8 +9,8 @@ use Spatie\LaravelSettings\Settings;
 /**
  * Sales rules the owner can change without a developer (QUO-*, INV-*, CRM-010).
  *
- * Note: no @var docblocks on properties. spatie/laravel-settings parses them to infer casts
- * and rejects generic types such as array<string, int>.
+ * Note: never use @var on properties: spatie/laravel-settings parses @var to infer casts and rejects
+ * generic types such as array<string, int>. Use @phpstan-var for those (spatie ignores it).
  */
 class SalesSettings extends Settings
 {
@@ -24,20 +24,20 @@ class SalesSettings extends Settings
 
     public string $design_terms;
 
-    // array<string, int> role => max discount in basis points without approval
+    /** @phpstan-var array<string, int> role => max discount in basis points without approval */
     public array $discount_limits_bp;
 
     public ?int $min_margin_bp;
 
-    // list<string>
+    /** @phpstan-var list<string> */
     public array $lost_reasons;
 
-    // array<string, string> key => label
+    /** @phpstan-var array<string, string> key => label */
     public array $budget_bands;
 
     public int $sla_first_response_minutes;
 
-    // list<array{name: string, title: string}>
+    /** @phpstan-var list<array{name: string, title: string}> */
     public array $signatories;
 
     public string $invoice_number_format;

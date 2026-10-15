@@ -48,8 +48,8 @@
             @forelse ($attention as $lead)
                 <div class="flex flex-wrap items-center gap-3 border-b border-gray-100 px-5 py-3 last:border-0 dark:border-gray-800">
                     <div class="min-w-0 flex-1">
-                        <p class="truncate font-medium text-gray-800 dark:text-white/90">{{ $lead->contact->name }}
-                            <span class="ml-1 text-theme-xs font-normal text-gray-400">{{ $lead->ref }}</span></p>
+                        <a href="{{ route('admin.leads.show', $lead) }}" wire:navigate class="block truncate font-medium text-gray-800 hover:underline dark:text-white/90">{{ $lead->contact->name }}
+                            <span class="ml-1 text-theme-xs font-normal text-gray-400">{{ $lead->ref }}</span></a>
                         <p class="text-theme-xs text-gray-500">{{ $lead->business_line->label() }}{{ $lead->service ? ' · '.\Illuminate\Support\Str::headline($lead->service) : '' }} · {{ $lead->owner?->name ?? 'Unassigned' }}</p>
                     </div>
                     @if ($lead->isSlaBreached())

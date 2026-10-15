@@ -38,6 +38,7 @@ final class CaptureLead
         private readonly AssignLead $assignLead,
         private readonly BusinessSettings $business,
         private readonly SalesSettings $sales,
+        private readonly ScoreLead $scoreLead,
     ) {}
 
     public function handle(LeadInput $input): CaptureResult
@@ -149,7 +150,7 @@ final class CaptureLead
         $now = CarbonImmutable::now();
         $slaDue = $this->business->hours()->dueAt($now, $this->sales->sla_first_response_minutes);
 
-        $lead = Lead::create([
+        $lead = new Lead([
             'ref' => $this->numbering->next('lead'),
             'contact_id' => $contact->id,
             'company_id' => $contact->company_id,
@@ -175,6 +176,8 @@ final class CaptureLead
             'meta' => $input->meta === [] ? null : $input->meta,
             'last_activity_at' => $now,
         ]);
+        $lead->score = $this->scoreLead->score($lead);
+        $lead->save();
 
         Activity::create([
             'contact_id' => $contact->id,

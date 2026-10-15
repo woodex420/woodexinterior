@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Domain\Crm\Models;
 
 use App\Domain\Crm\Enums\ClientType;
+use App\Domain\Crm\Policies\ContactPolicy;
 use App\Models\User;
 use App\Support\Phone;
 use Database\Factories\ContactFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -136,6 +138,51 @@ class Contact extends Model
                 $inner->orWhere('phone', $phone)->orWhere('alt_phone', $phone)->orWhere('whatsapp', $phone);
             }
         });
+    }
+
+    /**
+     * Contacts a user may see (mirrors ContactPolicy).
+     *
+     * @param  Builder<Contact>  $query
+     * @return Builder<Contact>
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if (ContactPolicy::seesAll($user)) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $inner) use ($user): void {
+            $inner->where('owner_id', $user->id)
+                ->orWhereHas('leads', fn (Builder $lead) => $lead->where('owner_id', $user->id));
+        });
+    }
+
+    /**
+     * Other contacts that share a phone number, email or exact name (CRM-012).
+     *
+     * @return Collection<int, Contact>
+     */
+    public function possibleDuplicates(int $limit = 5): Collection
+    {
+        $phones = array_values(array_filter([$this->phone, $this->alt_phone, $this->whatsapp]));
+
+        return self::query()
+            ->whereKeyNot($this->id)
+            ->where(function (Builder $q) use ($phones): void {
+                if ($phones !== []) {
+                    $q->whereIn('phone', $phones)->orWhereIn('alt_phone', $phones)->orWhereIn('whatsapp', $phones);
+                }
+
+                if ($this->email !== null) {
+                    $q->orWhere('email', $this->email);
+                }
+
+                $q->orWhereRaw('lower(name) = ?', [mb_strtolower(trim($this->name))]);
+            })
+            ->withCount('leads')
+            ->limit($limit)
+            ->get();
     }
 
     public function firstName(): string

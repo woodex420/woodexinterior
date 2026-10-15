@@ -6,7 +6,7 @@ permission for that.
 
 | File | What it does |
 |---|---|
-| `platform-ci.yml` | On every push/PR touching `platform/`: PHP 8.4, `composer install`/`update`, Pest tests (blocking), Pint (blocking), Larastan (report only in P0), and the Vite build (uploads `public/build` as an artifact). |
+| `platform-ci.yml` | On every push/PR touching `platform/`: PHP 8.4, `composer install`/`update`, Pest tests (blocking), Pint (blocking), Larastan level 6 (blocking from P1, D-34), and the Vite build (uploads `public/build` as an artifact). |
 | `deploy-hostinger.yml` | Manual "Run workflow" button. Builds assets, uploads `public/build` over SSH, then on the server: DB backup → `git checkout` → `composer install --no-dev` → `migrate --force` → `optimize`. Needs the `HOSTINGER_*` secrets (docs/06 §6.1). |
 
 ## How to activate (pick one)

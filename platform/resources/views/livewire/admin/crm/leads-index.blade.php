@@ -58,11 +58,11 @@
                     @forelse ($leads as $lead)
                         <tr wire:key="lead-{{ $lead->id }}" class="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
                             <td class="px-5 py-3 whitespace-nowrap">
-                                <span class="font-medium text-gray-800 dark:text-white/90">{{ $lead->ref }}</span>
+                                <a href="{{ route('admin.leads.show', $lead) }}" wire:navigate class="font-medium text-navy-800 hover:underline dark:text-white/90">{{ $lead->ref }}</a>
                                 <span class="block text-theme-xs text-gray-400">{{ $lead->created_at?->timezone('Asia/Karachi')->format('j M, g:i a') }}</span>
                             </td>
                             <td class="px-5 py-3">
-                                <span class="block font-medium text-gray-800 dark:text-white/90">{{ $lead->contact->name }}</span>
+                                <a href="{{ route('admin.leads.show', $lead) }}" wire:navigate class="block font-medium text-gray-800 hover:underline dark:text-white/90">{{ $lead->contact->name }}</a>
                                 <span class="mt-0.5 flex items-center gap-2 text-theme-xs text-gray-500">
                                     {{ \App\Support\Phone::display($lead->contact->phone) ?: $lead->contact->email }}
                                     @if ($wa = \App\Support\Phone::whatsappUrl($lead->contact->whatsappNumber()))
@@ -153,12 +153,9 @@
                     <div>
                         <label class="wx-label" for="newSource">Source</label>
                         <select id="newSource" wire:model="newSource" class="wx-input">
-                            <option value="manual">Manual</option>
-                            <option value="phone_call">Phone call</option>
-                            <option value="walk_in">Walk-in</option>
-                            <option value="referral">Referral</option>
-                            <option value="whatsapp">WhatsApp</option>
-                            <option value="returning_client">Returning client</option>
+                            @foreach (\App\Domain\Crm\Enums\LeadSource::manualSources() as $option)
+                                <option value="{{ $option->value }}">{{ $option->label() }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="sm:col-span-2">

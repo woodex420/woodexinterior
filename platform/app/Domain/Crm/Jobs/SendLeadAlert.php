@@ -30,7 +30,7 @@ final class SendLeadAlert implements ShouldQueue
 
     public function handle(NotificationSettings $settings): void
     {
-        $lead = Lead::query()->with(['contact', 'owner', 'stage'])->find($this->leadId);
+        $lead = Lead::query()->with(['contact', 'owner.telegramLink', 'stage'])->find($this->leadId);
 
         if ($lead === null) {
             return;
@@ -53,6 +53,7 @@ final class SendLeadAlert implements ShouldQueue
         }
 
         return User::query()
+            ->with('telegramLink')
             ->where('is_active', true)
             ->whereHas('roles', fn (Builder $q) => $q->whereIn('name', $settings->unassigned_lead_roles))
             ->get();

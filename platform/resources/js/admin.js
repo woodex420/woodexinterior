@@ -2,10 +2,18 @@
  * Woodex OS admin bundle.
  *
  * - Alpine is provided by Livewire 4. Do NOT import Alpine here (docs/07 D-11).
- * - Preline plugins are re-initialised after Livewire navigation and DOM morphs (D-12).
+ * - Preline: import only the plugins the admin uses (each registers window.HS*), and re-initialise
+ *   them after Livewire navigation and DOM morphs (D-12). Add a plugin here AND to PRELINE_PLUGINS
+ *   when a screen starts using it (e.g. 'preline/plugins/overlay' → 'HSOverlay').
  * - Heavy libraries (SortableJS, ApexCharts) load only on screens that need them.
  */
-import 'preline';
+import 'preline/plugins/dropdown';
+
+const PRELINE_PLUGINS = ['HSDropdown'];
+
+const initPreline = () => {
+    PRELINE_PLUGINS.forEach((name) => window[name]?.autoInit?.());
+};
 
 /* ---------- Alpine stores: sidebar + colour theme (TailAdmin behaviour) ---------- */
 document.addEventListener('alpine:init', () => {
@@ -128,7 +136,7 @@ async function initCharts() {
 }
 
 const refreshWidgets = () => {
-    window.HSStaticMethods?.autoInit();
+    initPreline();
     initKanban();
     initCharts();
 };
@@ -141,9 +149,5 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('livewire:navigated', refreshWidgets);
 
 document.addEventListener('livewire:init', () => {
-    window.Livewire.hook('morphed', () => {
-        window.HSStaticMethods?.autoInit();
-        initKanban();
-        initCharts();
-    });
+    window.Livewire.hook('morphed', refreshWidgets);
 });

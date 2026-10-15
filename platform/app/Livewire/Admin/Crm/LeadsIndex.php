@@ -95,7 +95,7 @@ class LeadsIndex extends Component
             'newEmail' => ['nullable', 'required_without:newPhone', 'email', 'max:160'],
             'newLine' => ['required', Rule::enum(BusinessLine::class)],
             'newService' => ['nullable', 'string', 'max:60'],
-            'newSource' => ['required', Rule::in(['manual', 'phone_call', 'walk_in', 'referral', 'whatsapp', 'returning_client'])],
+            'newSource' => ['required', Rule::in(array_map(fn (LeadSource $s) => $s->value, LeadSource::manualSources()))],
             'newMessage' => ['nullable', 'string', 'max:2000'],
         ], attributes: ['newName' => 'name', 'newPhone' => 'phone', 'newEmail' => 'email']);
 
@@ -123,6 +123,8 @@ class LeadsIndex extends Component
                 : "This contact already has an open lead ({$result->lead->ref}); the enquiry was added to it.",
             type: $result->leadCreated ? 'success' : 'warning',
         );
+
+        $this->redirectRoute('admin.leads.show', $result->lead, navigate: true);
     }
 
     public function render(): View

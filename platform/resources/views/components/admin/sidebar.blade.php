@@ -24,7 +24,7 @@
                     @foreach ($group['items'] as $item)
                         <li>
                             @if ($item['route'])
-                                @php($active = request()->routeIs($item['route']) || request()->routeIs($item['route'].'.*'))
+                                @php($active = request()->routeIs($item['route']) || request()->routeIs(\Illuminate\Support\Str::beforeLast($item['route'], '.index').'.*'))
                                 <a href="{{ route($item['route']) }}" wire:navigate
                                    @class(['menu-item group', 'menu-item-active' => $active, 'menu-item-inactive' => ! $active])
                                    :class="!$store.sidebar.expanded && !$store.sidebar.mobileOpen ? 'xl:justify-center' : ''"
@@ -36,7 +36,7 @@
                             @else
                                 <span class="menu-item menu-item-disabled"
                                       :class="!$store.sidebar.expanded && !$store.sidebar.mobileOpen ? 'xl:justify-center' : ''"
-                                      title="{{ $item['label'] }} (arrives in {{ $item['phase'] }})" aria-disabled="true">
+                                      title="{{ $item['label'] }} ({{ str_starts_with((string) $item['phase'], 'P') ? 'arrives in '.$item['phase'] : 'run from the command line' }})" aria-disabled="true">
                                     <x-icon :name="$item['icon']" class="size-5 shrink-0" />
                                     <span x-show="$store.sidebar.expanded || $store.sidebar.mobileOpen" class="flex flex-1 items-center justify-between gap-2 truncate">
                                         {{ $item['label'] }}

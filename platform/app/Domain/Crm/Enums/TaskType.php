@@ -16,4 +16,16 @@ enum TaskType: string
     case Meeting = 'meeting';
     case Email = 'email';
     case Todo = 'todo';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Call => 'Call',
+            self::WhatsApp => 'WhatsApp',
+            self::Visit => 'Site visit',
+            self::Meeting => 'Meeting',
+            self::Email => 'Email',
+            self::Todo => 'To-do',
+        };
+    }
 }

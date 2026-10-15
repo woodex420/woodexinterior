@@ -12,6 +12,7 @@ use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Models\SiteVisit;
 use App\Domain\Crm\Models\Task;
+use App\Domain\Crm\Policies\ContactPolicy;
 use App\Domain\Crm\Policies\LeadPolicy;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Sales\Models\Invoice;
@@ -65,6 +66,7 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         Gate::policy(Lead::class, LeadPolicy::class);
+        Gate::policy(Contact::class, ContactPolicy::class);
 
         // The owner can do everything (PRD §7).
         Gate::before(fn (User $user): ?bool => $user->hasRole('owner') ? true : null);

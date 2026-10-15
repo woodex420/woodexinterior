@@ -78,8 +78,7 @@ jobs:
       - name: Code style (Pint)
         run: vendor/bin/pint --test -v
 
-      - name: Static analysis (Larastan, report only in P0)
-        continue-on-error: true
+      - name: Static analysis (Larastan level 6, blocking from P1)
         run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
 
   assets:

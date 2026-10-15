@@ -15,3 +15,12 @@ Non-negotiables (short version):
 - Every enquiry goes through `App\Domain\Crm\Actions\CaptureLead`.
 - The repository is public: never commit secrets, tokens, staff phone numbers or bank account numbers.
 - Tests (Pest) for every business rule. CI must be green. Update `STATE.md` at the end of each task.
+
+Patterns used in the code (follow them):
+- Livewire pages: `#[Layout('layouts::admin')]`, `#[Locked] public int $xId` + `#[Computed]` model, `unset($this->x)`
+  after writes, `$this->toast()` from `App\Livewire\Concerns\InteractsWithAdmin`, modals via `<x-admin.modal>`,
+  form rows via `<x-admin.field>`. Business rules live in `app/Domain/*/Actions`, never in components.
+- Visibility: `Lead::visibleTo($user)` / `Contact::visibleTo($user)` for every list or search.
+- Settings classes: never `@var` on properties (spatie parses it); use `@phpstan-var` for array shapes.
+- Preline JS: import per plugin in `resources/js/admin.js` and add it to `PRELINE_PLUGINS`.
+- v2.1 data: extend `App\Domain\System\Import\V21Importer` (idempotent via `legacy_refs`), document in docs/04 §8.

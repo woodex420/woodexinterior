@@ -158,6 +158,17 @@ class Lead extends Model
         return $query->whereHas('stage', fn (Builder $stage) => $stage->where('type', StageType::Open->value));
     }
 
+    /**
+     * Leads a user may see (mirrors LeadPolicy::view).
+     *
+     * @param  Builder<Lead>  $query
+     * @return Builder<Lead>
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        return $user->can('leads.view_all') ? $query : $query->where('owner_id', $user->id);
+    }
+
     public function expectedValue(): ?Money
     {
         return $this->expected_value_minor === null ? null : Money::ofMinor((int) $this->expected_value_minor);

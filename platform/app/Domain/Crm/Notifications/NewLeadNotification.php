@@ -43,7 +43,7 @@ final class NewLeadNotification extends Notification
             'body' => $this->summary(),
             'lead_id' => $this->lead->id,
             'ref' => $this->lead->ref,
-            'url' => route('admin.leads.index', ['search' => $this->lead->ref]),
+            'url' => route('admin.leads.show', $this->lead),
         ];
     }
 
@@ -76,7 +76,7 @@ final class NewLeadNotification extends Notification
             $row[] = ['text' => 'WhatsApp', 'url' => $whatsapp];
         }
 
-        $adminUrl = route('admin.leads.index', ['search' => $lead->ref]);
+        $adminUrl = route('admin.leads.show', $lead);
         if (str_starts_with($adminUrl, 'https://')) {
             $row[] = ['text' => 'Open in Woodex OS', 'url' => $adminUrl];
         }

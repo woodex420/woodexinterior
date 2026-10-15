@@ -9,8 +9,8 @@ use Spatie\LaravelSettings\Settings;
 /**
  * Alert delivery defaults (AUT-003, TGM-002, TGM-008).
  *
- * Note: no @var docblocks on properties. spatie/laravel-settings parses them to infer casts
- * and rejects generic types such as array<string, int>.
+ * Note: never use @var on properties: spatie/laravel-settings parses @var to infer casts and rejects
+ * generic types such as array<string, int>. Use @phpstan-var for those (spatie ignores it).
  */
 class NotificationSettings extends Settings
 {
@@ -22,7 +22,7 @@ class NotificationSettings extends Settings
 
     public string $daily_digest_time;
 
-    // list<string> roles alerted when a lead has no owner
+    /** @phpstan-var list<string> roles alerted about unassigned leads and missed response times */
     public array $unassigned_lead_roles;
 
     public static function group(): string

@@ -41,6 +41,11 @@ final class MoveLeadToStage
             $lead->stage_changed_at = now();
             $lead->last_activity_at = now();
 
+            // A person moving a lead past "New" has spoken to the client: that is the first response (CRM-010).
+            if ($by !== null && $lead->first_response_at === null && $to->key !== 'new') {
+                $lead->first_response_at = now();
+            }
+
             if ($to->type === StageType::Lost) {
                 $lead->lost_at = now();
                 $lead->lost_reason = $lostReason;

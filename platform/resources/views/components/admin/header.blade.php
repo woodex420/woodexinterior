@@ -11,12 +11,8 @@
         <x-icon name="menu" />
     </button>
 
-    {{-- Global search (GLB-002): name, phone in any format, or reference --}}
-    <form action="{{ route('admin.leads.index') }}" method="GET" class="relative hidden max-w-md flex-1 md:block" role="search">
-        <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-gray-400" />
-        <input type="search" name="search" value="{{ request('search') }}" placeholder="Search name, phone (0322…), or L-2026-…"
-               class="wx-input pl-10" aria-label="Search leads">
-    </form>
+    {{-- Global search (GLB-002): Ctrl/⌘ K command palette --}}
+    <livewire:admin.global-search />
 
     <div class="ml-auto flex items-center gap-2">
         <button type="button" @click="$store.theme.toggle()"

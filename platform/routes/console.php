@@ -18,6 +18,9 @@ Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3')
 // Cron heartbeat for System → Health.
 Schedule::command('woodex:heartbeat')->everyMinute();
 
+// First-response SLA: flag uncontacted leads and alert owner + managers (CRM-010).
+Schedule::command('woodex:sla-check')->everyMinute()->withoutOverlapping(5);
+
 // Backups (spatie/laravel-backup) and housekeeping.
 Schedule::command('backup:run --only-db')->dailyAt('02:30');
 Schedule::command('backup:run')->weeklyOn(0, '03:00');

@@ -11,8 +11,8 @@ use Spatie\LaravelSettings\Settings;
  * Public business identity (single source of truth for NAP data, docs/00 §6).
  * Defaults are pending owner confirmation (P-01…P-03) and editable in System → Settings.
  *
- * Note: no @var docblocks on properties. spatie/laravel-settings parses them to infer casts
- * and rejects generic types such as array<string, int>.
+ * Note: never use @var on properties: spatie/laravel-settings parses @var to infer casts and rejects
+ * generic types such as array<string, int>. Use @phpstan-var for those (spatie ignores it).
  */
 class BusinessSettings extends Settings
 {
@@ -44,10 +44,10 @@ class BusinessSettings extends Settings
 
     public string $closes_at;
 
-    // list<int> ISO weekdays, 1 = Monday
+    /** @phpstan-var list<int> ISO weekdays, 1 = Monday */
     public array $working_days;
 
-    // array<string, string> network => URL
+    /** @phpstan-var array<string, string> network => URL */
     public array $social_links;
 
     public static function group(): string
