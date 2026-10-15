@@ -56,6 +56,18 @@ Patterns used in the code (follow them):
 - Never depend on the Referer header (`url()->previous()`) or on the route named `home` (the public website) for an
   admin redirect. Name the admin route instead: failed sign-in → its form, signed-in user on a guest page →
   `admin.dashboard` (D-51).
+- Public website (docs/09, D-65…D-70):
+  - Pages are **content, not code**: text, images, SEO fields, menus and redirects live in the database and are
+    edited in the admin. Blade holds the section components only.
+  - The old site's **142 URLs** are the contract: every one either answers 200 with its trailing-slash canonical
+    or 301s to a 200 page; the parity test (batch 1: `woodex:import-legacy` + a feature test that requests all 142
+    paths) runs before every batch.
+  - Never invent facts: no invented clients, staff, awards or reviews; testimonials are quoted verbatim.
+  - Content rules (docs/09 §9): answer-first, concrete, local (Lahore, PKR, marla/kanal), no banned phrases.
+  - Images: WebP, `srcset`, width/height, alt text required, lazy below the fold, hero preloaded; keep the
+    per-page image budget in docs/09 §2.3.
+  - `npm run build` and commit `public/build` after any change to a website view: the server has no Node.js.
+    `node ../tools/sandbox/home-check.mjs` checks the public site in a real browser (desktop, phone, JS off).
 - Hostinger Git deploy serves the repository as-is (D-56…D-58):
   - `platform/public/build` is committed: run `npm run build` and commit the result with every change to CSS, JS or
     the Tailwind classes in Blade. `tests/Unit/DeployManifestTest.php` checks the build is complete.

@@ -2,44 +2,32 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 16 Oct 2026 PKT, after the setup-code fix)
-- **Where we are:** P1 CRM is complete, P2 Quotations part 1 (the quote builder) is done, and the Hostinger Git deploy
-  works. **The owner deployed to the main domain `woodex.com.pk`** (his choice; not the subdomain) and reached the web
-  installer: PHP 8.4.26, all 12 extensions, private data folder `woodex-os/woodex.com.pk`, build present.
-- **Setup code fix (D-59):** the owner could not find `~/woodex-os/<site>/setup-code.txt` (hPanel's File Manager opens
-  in `public_html`; the home folder only shows under "Access all files of hosting"). The installer now also writes
-  **`public_html/WOODEX-SETUP-CODE.txt`** (same code, never served, deleted after installing) and names it first.
-  Owner: Deploy again in hPanel → Git, reload `/install`, open that file in File Manager, paste the code.
-  The owner still could not find a file, so **the setup code is now optional on Hostinger**: leave it empty and use
-  the hPanel MySQL database (host `localhost`, user `u128159657_…`) — a working local login with this account's
-  database user proves ownership (D-59, `Installer::databaseProvesOwnership`, 10 failures → 10 min wait).
-- **After installing:** add the cron line the installer shows (hPanel → Advanced → Cron Jobs); after each later deploy
-  sign in → System → Database update when asked.
-- **Installed (15–16 Oct):** the owner finished the web installer on **woodex.com.pk** (main domain, his choice):
-  `/admin/login` works, `/install` is closed (404), `/` shows the holding page with the enquiry form. Every push to
-  this branch now deploys to the live site (hPanel auto-deploy). Owner still to do: the **cron line** from the
-  installer's last page (hPanel → Advanced → Cron Jobs), sign in, 2FA; after later deploys System → Database update
-  when asked.
-- **P2 part 2a is done (D-60…D-64):** approvals (QUO-007), send + frozen versions (QUO-008/013), PDF (QUO-014),
-  signed client page + view tracking (QUO-009/010), accept / request changes (QUO-011 first part). No new migrations.
-  `browser-check.mjs` now walks approve → send → client page (desktop + phone) → PDF → accept, and puts the demo
-  database back afterwards.
-- **Next:** the owner asked to update and deploy the **public website** (questions first), then continue
-  P2 part 2b (project + advance invoice with P3, reminders/expiry QUO-012, options QUO-019, v2.1 quote import).
-  - **CI:** this GitHub connection cannot write `.github/workflows`, so the owner adds the two files from
-    `docs/ci/` (2 minutes in the GitHub website).
-  - The owner has not yet answered P-01…P-09; P-06 (rotate the leaked credentials) blocks go-live.
-- **Code:** everything is on branch `arena/8be318a2-woodexinterior` and pushed. `master` is still the starting point
-  (d77016b); merge through a pull request when the owner approves.
-- **Rules to follow:** docs/07 (D-01…D-64) and platform/AGENTS.md. The plan and specs are in docs/00–08.
-- **Preview (AI sandbox only):** after a VM reset run `sh tools/sandbox/setup.sh` (~3–4 min). It rebuilds PHP 8.4,
-  `vendor/`, the front-end build and the demo database, including the demo quotations. Then start
-  `PORT=8080 node --stack-size=8000 tools/sandbox/server.mjs` from `/tmp/woodex-run`. The checks are `smoke.sh`,
-  `assets-check.sh`, `browser-check.mjs`, `iframe-check.mjs` and `installer-check.mjs` (tools/sandbox/README.md).
-- **Preview data:** demo seed with 26 leads, 5 users and 4 quotations (WI-10100…WI-10102, WF-10050). Owner login:
-  `owner@woodex.test` / `Woodex-Preview-2026`; the sign-in page also has a one-click demo button. The preview
-  database lives in `/tmp` and is rebuilt from the seeders after a VM reset, so anything typed into the preview is
-  temporary. Real data arrives with the v2.1 import on staging (docs/08).
+## Resume here (project memory, saved 16 Oct 2026 PKT, after the website plan)
+- **Where we are:** P0–P2 part 2a are done and live. **woodex.com.pk runs this branch**: the installer finished,
+  `/admin/login` works, `/` serves the new **public home page** (commit `54f04c4`). Everything else on the old site
+  (141 URLs) currently answers 404 — that is the main risk this week.
+- **Owner to do:** add the **cron line** shown by the installer (hPanel → Advanced → Cron Jobs); sign in and set up
+  2FA; after later deploys, System → Database update when asked.
+- **Website: the owner approved the plan, not the demo.** The complete frontend plan is
+  **docs/09-WEBSITE-FRONTEND-PLAN.md** (owner decisions D-67…D-70):
+  - **CMS first** — pages, blocks, media, redirects and menus in the database, edited in the admin.
+  - **6 core service pages**; the other **54 old service URLs 301** (mapping in docs/09 §3, hits counted, any URL
+    with traffic becomes a page again).
+  - **Tracking: GA4 + GTM + Search Console + Clarity** (docs/09 §12).
+  - **Import all 142 URLs, then humanize** home, the 6 services, top cities and top insights (§9 rules).
+- **Next to build (batch 1):** `pages`, `page_blocks`, `media`, `redirects`, `navigation`, `page_versions`
+  migrations → admin editor, media library, redirects and menus → catch-all `/{slug}` route + page cache →
+  `woodex:import-legacy` → the 142-URL parity test. Then batch 2 publishes the first 15 pages + 54 redirects.
+- **Rules to follow:** docs/07 (D-01…D-70), docs/09 and platform/AGENTS.md. The plan and specs are in docs/00–09.
+- **Open items P-01…P-16** (docs/07 §C): P-06 (rotate credentials) blocks go-live; P-12 (real project photos)
+  blocks the case studies; P-16 (email + hours in Settings) should be done before batch 2.
+- **Code:** everything is on branch `arena/8be318a2-woodexinterior` and pushed. `master` is still d77016b; merge
+  through a pull request when the owner approves.
+- **Preview (AI sandbox only):** after a VM reset run `sh tools/sandbox/setup.sh` (~3–4 min). Then start
+  `PORT=8080 node --stack-size=8000 tools/sandbox/server.mjs` from `/tmp/woodex-run`. Checks: `smoke.sh`,
+  `browser-check.mjs`, `home-check.mjs`, `iframe-check.mjs`, `installer-check.mjs` (tools/sandbox/README.md).
+- **Preview data:** demo seed (26 leads, 5 users, 4 quotations). Owner login `owner@woodex.test` /
+  `Woodex-Preview-2026`. The preview database lives in `/tmp` and is rebuilt from the seeders after a VM reset.
 
 ## Hostinger deploy fix (16 Oct 2026, D-56…D-58)
 - **What happened (15 Oct, deploy of 3155343):** hPanel's Git deploy copied the repository into the **main domain's**
