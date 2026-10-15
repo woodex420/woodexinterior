@@ -1,7 +1,8 @@
 # Woodex OS: Deployment on Hostinger (shared / cloud hosting)
 
-**Version:** 1.0 · **Date:** 15 October 2026 · **Target:** Hostinger hPanel with SSH, LiteSpeed, MySQL, cron
-**Rule:** no Node.js on the server, no daemons, no secrets in Git (D-10, D-17, D-22)
+**Version:** 1.1 · **Date:** 16 October 2026 · **Target:** Hostinger hPanel: "Deploy from GitHub" without SSH
+(recommended, §2) or an SSH install (§3). LiteSpeed, MySQL, cron.
+**Rule:** no Node.js on the server, no daemons, no secrets in Git (D-10, D-17, D-22, D-56…D-58)
 
 ---
 
@@ -9,21 +10,124 @@
 
 | Item | Where | Notes |
 |---|---|---|
-| Plan with **SSH + cron + MySQL** | Hostinger (Business or Cloud recommended) | Confirm P-05 |
-| **PHP 8.4** for the site | hPanel → Websites → Dashboard → **PHP Configuration** | Hostinger offers PHP 8.2–8.5 (8.3 is the default). Select 8.4. |
-| PHP extensions | hPanel → PHP Configuration → Extensions | `bcmath`, `ctype`, `curl`, `dom`, `fileinfo`, `gd` (or `imagick`), `intl`, `mbstring`, `openssl`, `pdo_mysql`, `tokenizer`, `xml`, `zip`, `exif` |
-| Subdomains | hPanel → Domains → Subdomains | `admin.woodex.com.pk` (P0–P5) · `staging.woodex.com.pk` |
+| Plan with **Git deploy + cron + MySQL** | Hostinger web or cloud hosting | SSH is optional (§3). Confirm P-05 |
+| **PHP 8.4** for the site | hPanel → Websites → site → Advanced → **PHP Configuration** | Hostinger offers PHP 8.2–8.5 (8.3 is the default). Select 8.4 **before** the first deploy. |
+| PHP extensions | hPanel → PHP Configuration → PHP extensions | `bcmath`, `ctype`, `curl`, `dom`, `fileinfo`, `gd` (or `imagick`), `intl`, `mbstring`, `openssl`, `pdo_mysql`, `tokenizer`, `xml`, `zip`, `exif`. The installer checks them. |
+| Test site | hPanel → Domains → Subdomains | **`interior.woodex.com.pk`** until the owner approves; then the main domain (§2.6) |
 | SSL | hPanel → Security → SSL | Free Let's Encrypt for apex + subdomains |
-| MySQL databases | hPanel → Databases | `woodex_os` (production) · `woodex_os_staging` · read-only user on the **old v2.1** DB for the importer |
-| SSH key | hPanel → Advanced → SSH Access | Port is usually **65002** |
+| MySQL databases | hPanel → Databases → Management | one **new, empty** database per site (`u…_woodex_test`, later `u…_woodex`) · read-only user on the **old v2.1** DB for the importer |
 | Email DNS | hPanel → DNS | SPF, DKIM, DMARC for `woodex.com.pk` |
 
-> **Before the first deploy:** rotate every credential that appeared in the old public repository (DB
-> passwords, SMTP, WhatsApp token, Telegram bot token, AI keys, Meta app secret). See risk R5 / P-06.
+> **Before go-live:** rotate every credential that appeared in the old public repository (DB passwords, SMTP,
+> WhatsApp token, Telegram bot token, AI keys, Meta app secret). See risk R5 / P-06.
 
 ---
 
-## 2. Folder layout on the server
+## 2. Recommended: Hostinger Git deploy (no SSH)
+
+### 2.1 How it works
+
+hPanel's **Advanced → Git** copies the repository branch into the site folder on every push and replaces the files
+there. It runs no build step except Composer. The repository is prepared for exactly that (D-56…D-58):
+
+| Piece | What it does |
+|---|---|
+| `/.htaccess` (repository root) | Sends every request to `platform/public/`. Source code, docs, `vendor/`, `storage/` and any `.env` are never reachable from the web. |
+| `/composer.json` (repository root) | Hostinger's "Installing Composer dependencies" step installs the app's PHP packages into `platform/vendor` (same `require` as `platform/composer.json`; a test keeps them equal). |
+| `platform/public/build/` | The front-end build is **committed** (the server has no Node.js). Rebuild with `npm run build` before each commit that changes CSS/JS. |
+| `~/woodex-os/<site>/` | The private **data folder** in the home folder, outside every `public_html`: `.env`, `storage/` (uploads, logs, caches) and, for a quick test, `database.sqlite`. Deploys never touch it. `<site>` is the site folder name, e.g. `interior.woodex.com.pk`. |
+| `/install` | The **web installer**: writes `.env` (new `APP_KEY`), creates the tables, reference data and the owner account. Protected by a setup code that only the hosting account can read; closed for good afterwards. |
+| System → **Database update** | After a deploy with new migrations, the owner's next admin page offers a one-click update (migrations, permissions, cache clear). Staff see a short "updating" notice meanwhile. SSH alternative: `php artisan woodex:update`. |
+
+```
+/home/u123456789/
+├── woodex-os/
+│   └── interior.woodex.com.pk/          ← data folder (created by the installer, never deployed over)
+│       ├── .env                         ← settings and secrets (chmod 600)
+│       └── storage/                     ← uploads, logs, sessions, compiled views
+└── domains/…/public_html/…               ← the site folder = this repository (replaced on every deploy)
+    ├── .htaccess  composer.json          ← routes everything to platform/public · installs platform/vendor
+    ├── docs/  tools/  woodex/            ← not web-reachable
+    └── platform/
+        ├── public/                       ← the only web-visible folder (incl. build/)
+        └── vendor/                       ← installed by Hostinger's Composer step
+```
+
+### 2.2 First setup on `interior.woodex.com.pk`
+
+1. **Find the subdomain folder.** hPanel → Domains → Subdomains shows it, for example
+   `domains/woodex.com.pk/public_html/interior` or `domains/interior.woodex.com.pk/public_html` (when the subdomain
+   is its own website). In File Manager **empty it** (delete Hostinger's `default.php`).
+2. **PHP 8.4** for that site (hPanel → Advanced → PHP Configuration) and the extensions from §1.
+3. **Database:** hPanel → Databases → Management → new database + user + password. Note the full names
+   (`u123456789_…`). Use a new, empty database: the installer refuses databases of other applications (e.g. v2.1).
+4. **Connect Git** on the website that owns the folder: Advanced → Git → Connect with GitHub → repository
+   `woodex420/woodexinterior` → branch (today `arena/8be318a2-woodexinterior`; after the pull request is merged:
+   `master`) → **Root directory = the subdomain folder from step 1** (never the main `public_html` while the
+   main domain serves another site) → Deploy.
+5. **Read the deployment log.** "Installing Composer dependencies" must list packages and end with
+   `Woodex OS: PHP packages installed in platform/vendor`. A failure there is usually the PHP version (step 2).
+6. **Open `https://interior.woodex.com.pk`.** A fresh site opens the installer (§2.3).
+7. **Cron** (§2.4) and **SSL** (hPanel → Security → SSL) for the subdomain.
+
+### 2.3 The installer
+
+- **Setup code:** the installer writes `~/woodex-os/<site>/setup-code.txt`. Open it in hPanel → Files → File
+  Manager (the home folder is the top level) and paste the code. This proves the person installing owns the
+  hosting account; nobody else can finish the installation, even while `/install` is public.
+- **Form:** site address (`https://interior.woodex.com.pk`), database (MySQL: host `localhost`, port 3306, name,
+  user, password; SQLite only for a quick look), owner name, email and password (10+ characters, letters and
+  numbers), and "require two-factor sign-in" (on by default).
+- **Step 1** checks the database connection and writes `.env` (production, `APP_DEBUG=false`, new `APP_KEY`,
+  database sessions/cache/queue, admin at `/admin`). **Step 2** continues by itself: migrations, reference data
+  (roles, pipeline, numbering, rate book, 16 templates) and the owner account. Then the setup code is deleted and
+  `/install` answers 404. Sign in at `https://interior.woodex.com.pk/admin`.
+- **Start over** (wrong database details): delete `~/woodex-os/<site>/.env` in File Manager and open `/install`.
+- **No home folder found** (unusual hosts): settings stay in `platform/` like the SSH install and the Health page
+  warns, because a deploy may replace them. A server variable `WOODEX_HOME` can point to the home folder.
+
+### 2.4 Cron
+
+hPanel → Advanced → **Cron Jobs** → Custom, every minute. The installer's last page shows the exact line, e.g.:
+
+```
+/usr/bin/php /home/u123456789/domains/woodex.com.pk/public_html/interior/platform/artisan schedule:run
+```
+
+Use `/opt/alt/php84/usr/bin/php` if `/usr/bin/php` is another version. The scheduler is described in §5.
+
+### 2.5 After each deploy
+
+- Pushing to the connected branch deploys automatically (auto-deployment needs Business or higher; otherwise
+  Advanced → Git → **Redeploy**). The data folder is untouched.
+- Sign in. If the new code changed the database, the admin opens **System → Database update**: review the list,
+  click **Apply update**. Staff get a short "updating" notice until then.
+- Reference data never overwrites the owner's edits: re-seeding only adds missing rates, templates and stages.
+
+### 2.6 Moving to the main domain (after approval)
+
+When the owner approves (end of a phase or the P6 website cut-over):
+
+1. Back up the current `public_html` of `woodex.com.pk` (hPanel → Files → Backups) if a site still runs there.
+2. Copy the data folder: `~/woodex-os/interior.woodex.com.pk` → `~/woodex-os/woodex.com.pk` (or run the installer
+   again for a fresh production database), then edit `APP_URL` in the copied `.env`.
+3. Connect Git on `woodex.com.pk` with Root directory `public_html`, deploy, add the cron line for the new path.
+4. Keep the subdomain as staging, with its own database.
+
+### 2.7 What went wrong on the first try (15 Oct 2026)
+
+The repository was deployed into the **main domain's** `public_html` (Hostinger's default root directory), before
+the root `.htaccess` and `composer.json` existed: `woodex.com.pk` answered **403** (no index file at the repository
+root), Composer was skipped (no `composer.json` at the root), and the subdomain still showed Hostinger's default
+page. Fix: disconnect Git there, delete the deployed files (`docs/`, `platform/`, `tools/`, `woodex/`,
+`.gitignore`, and later `.htaccess`, `composer.json`) from that `public_html`, restore the old site from a Hostinger
+backup if it lived there, and connect Git on the subdomain folder as in §2.2.
+
+---
+
+## 3. SSH installation (alternative)
+
+### 3.1 Folder layout
 
 ```
 /home/uXXXXXXX/
@@ -53,9 +157,7 @@ $app = require_once __DIR__.'/../../../apps/woodexinterior/platform/bootstrap/ap
 Then set `APP_PUBLIC_PATH` in `.env` so asset paths resolve (see `bootstrap/app.php`). Adjust the number of
 `../` segments to match your folder depth.
 
----
-
-## 3. First installation (SSH)
+### 3.2 First installation
 
 ```bash
 # 1) Get the code
@@ -68,7 +170,7 @@ git checkout <release-tag-or-branch>
 php -v                       # must say 8.4.x; otherwise use: /opt/alt/php84/usr/bin/php
 composer -V                  # Hostinger ships Composer 2
 
-# 3) Dependencies (production only; uses composer.lock, light on memory)
+# 3) Dependencies (production only)
 COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader --no-interaction
 
 # 4) Environment
@@ -76,20 +178,18 @@ cp .env.example .env && chmod 600 .env
 nano .env                    # fill in the values from section 4
 php artisan key:generate
 
-# 5) Front-end assets (built in GitHub Actions or locally, never on the server)
-#    Upload the built folder to platform/public/build/ (rsync, scp or File Manager zip upload).
+# 5) Front-end assets: already in the repository (platform/public/build, D-56)
 
 # 6) Database + storage
 php artisan migrate --force
-php artisan db:seed --class=Database\\Seeders\\ProductionSeeder --force
-php artisan storage:link
-php artisan woodex:install    # creates the owner account (asks for name, email, password) and checks the setup
+php artisan woodex:install    # reference data + the owner account (asks for name, email, password)
 
 # 7) Optimise
 php artisan optimize          # config, routes, views, events cache
 ```
 
-Permissions: `chmod -R 775 storage bootstrap/cache`. No file in the repository needs 777.
+Permissions: `chmod -R 775 storage bootstrap/cache`. No file in the repository needs 777. The web installer
+(§2.3) also works on an SSH install when `.env` does not exist yet.
 
 ---
 
@@ -157,7 +257,7 @@ hPanel → Advanced → **Cron Jobs** → "Custom", every minute (`* * * * *`):
 /usr/bin/php /home/uXXXXXXX/apps/woodexinterior/platform/artisan schedule:run >> /dev/null 2>&1
 ```
 
-Use the PHP 8.4 binary path if `/usr/bin/php` is a different version (for example `/opt/alt/php84/usr/bin/php`).
+(Git deploy: the path is `<site folder>/platform/artisan`, shown by the installer, §2.4.) Use the PHP 8.4 binary path if `/usr/bin/php` is a different version (for example `/opt/alt/php84/usr/bin/php`).
 
 The scheduler (`platform/routes/console.php`) then runs:
 
@@ -179,14 +279,17 @@ Critical alerts (new lead) are **not** delayed by cron. They are sent right afte
 
 ## 6. Updating (every release)
 
+**Git deploy (§2):** push (or Redeploy), then sign in and apply the database update when the admin asks (§2.5).
+
+**SSH install (§3):**
+
 ```bash
 cd ~/apps/woodexinterior/platform
 php artisan backup:run --only-db            # safety copy before migrating
 php artisan down --secret="<random>"        # optional; maintenance with bypass URL
 git fetch --tags && git checkout <new-tag>
 COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader --no-interaction
-# upload the new public/build (from the GitHub Actions artifact or local build)
-php artisan migrate --force
+php artisan woodex:update                   # migrations, permissions, number sequences, cache clear
 php artisan optimize
 php artisan up
 ```
@@ -207,11 +310,10 @@ Repository secrets needed: `HOSTINGER_HOST`, `HOSTINGER_PORT` (65002), `HOSTINGE
 (private key whose public part is added in hPanel), `HOSTINGER_APP_PATH`
 (`/home/uXXXXXXX/apps/woodexinterior/platform`). Nothing runs until these secrets exist.
 
-### 6.2 File Manager fallback (no SSH)
+### 6.2 Without SSH
 
-Possible but not recommended. Upload a release zip from GitHub Actions (with `vendor/` and `public/build/`),
-extract it to `apps/woodexinterior/platform`, then run migrations from a protected one-time route
-(`/admin/system/maintenance`, owner only, 2FA). Use SSH whenever possible.
+Use the Git deploy (§2): Hostinger installs the PHP packages, the front-end build is in the repository and the
+database update is a button in the admin (System → Database update, owner/admin only).
 
 ---
 
@@ -259,10 +361,15 @@ extract it to `apps/woodexinterior/platform`, then run migrations from a protect
 
 | Symptom | Fix |
 |---|---|
+| Domain answers **403** after a Git deploy | The repository went into a folder without the root `.htaccess` (old commit) or into the wrong site. Redeploy the latest commit; check Root directory (§2.2, §2.7). |
+| "Setup needed: PHP packages are not installed" | Hostinger's Composer step did not run or failed: read the deployment log (hPanel → Git → Deployments). Usually PHP is not 8.4 yet → set it, Redeploy. |
+| "This site runs PHP 8.3" page | hPanel → PHP Configuration → 8.4 → Redeploy. |
+| Every page opens `/install` | The site has no `.env` yet (or the installer's step 2 has not finished): complete the installer. |
+| Admin shows "Woodex OS is being updated" | New migrations are waiting: the owner signs in and clicks Apply update (§2.5). |
 | HTTP 500 right after deploy | `storage/` and `bootstrap/cache/` not writable → `chmod -R 775`. Check `storage/logs/laravel-*.log`. |
 | "No application encryption key" | `php artisan key:generate` (only once; keep the key safe; changing it breaks encrypted settings) |
 | CLI uses another PHP version | Use the full binary path (`/opt/alt/php84/usr/bin/php`) in SSH and cron |
 | `composer install` killed (memory) | `COMPOSER_MEMORY_LIMIT=-1`. Always install from `composer.lock` (never `composer update` on the server). |
 | Styles missing | `public/build/manifest.json` not uploaded → upload the build folder from CI |
 | Queue not processing | Cron missing or wrong path → check the heartbeat; run `php artisan schedule:run` manually and read the output |
-| Symlink 403 | LiteSpeed needs "SymLinksIfOwnerMatch". Owner of the symlink and target must match; otherwise use the copy method in §2. |
+| Symlink 403 | LiteSpeed needs "SymLinksIfOwnerMatch". Owner of the symlink and target must match; otherwise use the copy method in §3.1. |

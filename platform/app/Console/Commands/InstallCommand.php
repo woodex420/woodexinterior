@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Domain\System\Actions\CreateOwnerAccount;
 use App\Models\User;
 use Database\Seeders\ProductionSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\text;
 
 /**
- * First-run setup on Hostinger: seeds reference data and creates the owner account.
+ * First-run setup over SSH: seeds reference data and creates the owner account (docs/06 §3).
  * Non-interactive mode reads OWNER_NAME / OWNER_EMAIL / OWNER_PASSWORD from .env.
+ * Hostinger Git deploys without SSH use the web installer at /install instead (docs/06 §2).
  */
 final class InstallCommand extends Command
 {
@@ -24,10 +26,11 @@ final class InstallCommand extends Command
 
     protected $description = 'Seed Woodex OS reference data and create the owner account.';
 
-    public function handle(): int
+    public function handle(CreateOwnerAccount $createOwner): int
     {
         $this->components->info('Woodex OS setup');
 
+        // Reference data only adds what is missing: rates, templates and stages edited by the owner are kept.
         $this->call('db:seed', ['--class' => ProductionSeeder::class, '--force' => true]);
 
         if (User::role('owner')->exists() && ! $this->option('force')) {
@@ -37,30 +40,21 @@ final class InstallCommand extends Command
         }
 
         $name = (string) (config('woodex.owner.name') ?: ($this->input->isInteractive() ? text('Owner name', default: 'Imtiaz Ahmad', required: true) : ''));
-        $email = Str::lower((string) (config('woodex.owner.email') ?: ($this->input->isInteractive() ? text('Owner email', required: true) : '')));
+        $email = (string) (config('woodex.owner.email') ?: ($this->input->isInteractive() ? text('Owner email', required: true) : ''));
         $secret = (string) (config('woodex.owner.password') ?: ($this->input->isInteractive() ? password('Owner password (min 10 characters, letters and numbers)', required: true) : ''));
 
-        $validator = Validator::make(
-            ['name' => $name, 'email' => $email, 'password' => $secret],
-            ['name' => ['required', 'string', 'max:120'], 'email' => ['required', 'email', 'unique:users,email'], 'password' => ['required', Password::default()]],
-        );
+        $passwordCheck = Validator::make(['password' => $secret], ['password' => ['required', Password::default()]]);
 
-        if ($validator->fails()) {
-            foreach ($validator->errors()->all() as $error) {
+        try {
+            $passwordCheck->validate();
+            $createOwner->handle($name, $email, $secret);
+        } catch (ValidationException $exception) {
+            foreach ($exception->validator->errors()->all() as $error) {
                 $this->components->error($error);
             }
 
             return self::FAILURE;
         }
-
-        $user = User::create([
-            'name' => $name,
-            'email' => $email,
-            'password' => $secret,
-            'title' => 'Director',
-            'is_active' => true,
-        ]);
-        $user->assignRole('owner');
 
         $this->components->info("Owner account created for {$email}. Turn on two-factor authentication after the first login.");
 

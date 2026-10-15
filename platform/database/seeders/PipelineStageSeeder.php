@@ -27,7 +27,8 @@ class PipelineStageSeeder extends Seeder
         ];
 
         foreach ($stages as $position => $stage) {
-            PipelineStage::query()->updateOrCreate(['key' => $stage['key']], $stage + ['position' => $position, 'is_active' => true]);
+            // firstOrCreate: re-running (woodex:install, the web installer) never undoes the owner's edits.
+            PipelineStage::query()->firstOrCreate(['key' => $stage['key']], $stage + ['position' => $position, 'is_active' => true]);
         }
     }
 }

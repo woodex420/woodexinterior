@@ -8,6 +8,8 @@ use App\Console\Commands\Heartbeat;
 use App\Domain\System\Models\IntegrationLog;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
 use App\Integrations\Turnstile\TurnstileVerifier;
+use App\Support\Install\DatabaseUpdates;
+use App\Support\Install\SiteState;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Cache;
@@ -23,8 +25,9 @@ use Livewire\Component;
 #[Title('System health')]
 class Health extends Component
 {
-    public function render(): View
+    public function render(DatabaseUpdates $updates, SiteState $site): View
     {
+        $pendingMigrations = count($updates->pending());
         $heartbeat = Cache::get(Heartbeat::CACHE_KEY);
         $heartbeatAt = is_string($heartbeat) ? CarbonImmutable::parse($heartbeat) : null;
 
@@ -32,6 +35,27 @@ class Health extends Component
         $diskTotal = @disk_total_space(storage_path());
 
         $checks = [
+            [
+                'label' => 'Database up to date',
+                'ok' => $pendingMigrations === 0,
+                'value' => $pendingMigrations === 0 ? 'current' : $pendingMigrations.' pending',
+                'hint' => 'After a deploy: System → Database update, or php artisan woodex:update.',
+            ],
+            [
+                'label' => 'Settings and uploads folder',
+                // Classic is right for the SSH install (code outside public_html); a Git deploy may replace it.
+                'ok' => ! ($site->usesClassicLayout() && $site->insideWebFolder() && app()->isProduction()),
+                'value' => $site->usesExternalState() ? 'outside the site folder' : 'platform/ (classic)',
+                'hint' => $site->usesExternalState()
+                    ? $site->displayPath((string) $site->environmentDirectory()).' survives every Git deploy.'
+                    : 'Fine for SSH installs. With Hostinger Git deploys move .env and storage/ to ~/woodex-os/'.$site->siteKey().' (docs/06 §2).',
+            ],
+            [
+                'label' => 'Front-end build',
+                'ok' => is_file(public_path('build/manifest.json')),
+                'value' => is_file(public_path('build/manifest.json')) ? 'present' : 'missing',
+                'hint' => 'platform/public/build is committed to Git (npm run build before each commit).',
+            ],
             [
                 'label' => 'Cron heartbeat',
                 'ok' => $heartbeatAt !== null && $heartbeatAt->greaterThan(now()->subMinutes(3)),

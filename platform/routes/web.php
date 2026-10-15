@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Route;
 | Registered first, so on the admin domain these routes win over public ones.
 | Local/CI: http://localhost:8000/admin · Production: https://admin.woodex.com.pk
 */
-$admin = Route::middleware(['auth', 'active', 'two-factor'])
+// db-current before two-factor: after a deploy with new migrations the owner applies the update first (D-58).
+$admin = Route::middleware(['auth', 'active', 'db-current', 'two-factor'])
     ->prefix(config('woodex.admin.path'))
     ->name('admin.');
 

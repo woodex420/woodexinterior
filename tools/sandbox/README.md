@@ -34,6 +34,28 @@ node tools/sandbox/iframe-check.mjs                         # sign-in inside a c
 
 Demo login on the preview: `owner@woodex.test` / `Woodex-Preview-2026` (sandbox only).
 
+## Installer check (Hostinger Git deploy, D-56…D-58)
+
+Simulates what Hostinger's Git deploy leaves behind (the repository, no `.env`) and walks it through the web installer
+and a post-deploy database update in a real browser. The site lives under `/home/user` so that the `/home/<user>/`
+rule finds the home folder; delete both folders afterwards (they are not part of the repository).
+
+```sh
+SIM=/home/user/domains/interior.test/public_html
+rm -rf /home/user/domains /home/user/woodex-os && mkdir -p $SIM
+cd /home/user/woodexinterior
+git ls-files -z --cached --others --exclude-standard | tar --null -T - -cf - | tar -xf - -C $SIM
+ln -s /tmp/woodex-run/app/vendor $SIM/platform/vendor
+# start_process (cwd /tmp/woodex-run):
+#   APP_DIR=$SIM/platform PORT=8081 PREVIEW_COOKIE_MEMORY=0 PREVIEW_LOGIN_HINT=0 node --stack-size=8000 $T/server.mjs
+node tools/sandbox/installer-check.mjs          # then stop the server and rm -rf /home/user/domains /home/user/woodex-os
+```
+
+It checks: every page of a fresh site opens `/install`; the setup code file is private (0600); a wrong code is
+refused and writes nothing; the right code installs (SQLite) and continues to step 2 by itself; `.env` (0600) and
+`storage/` are in `~/woodex-os/interior.test/`, nothing in the site folder; `/install` is 404 afterwards; the owner
+signs in; a new migration file sends the owner to System → Database update, and Apply opens the admin again.
+
 ## Gotchas
 
 - Always run Node with `--use-system-ca` for HTTPS downloads (resolver).

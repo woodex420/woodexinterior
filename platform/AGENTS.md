@@ -47,3 +47,14 @@ Patterns used in the code (follow them):
 - Never depend on the Referer header (`url()->previous()`) or on the route named `home` (the public website) for an
   admin redirect. Name the admin route instead: failed sign-in → its form, signed-in user on a guest page →
   `admin.dashboard` (D-51).
+- Hostinger Git deploy serves the repository as-is (D-56…D-58):
+  - `platform/public/build` is committed: run `npm run build` and commit the result with every change to CSS, JS or
+    the Tailwind classes in Blade. `tests/Unit/DeployManifestTest.php` checks the build is complete.
+  - A package added to `platform/composer.json` `require` goes into the root `composer.json` too (same test).
+  - New permissions, number sequences or reference data ship as a **migration** (it may call a seeder): the owner's
+    one-click "Database update" (System → Database update, `woodex:update`) runs migrations. Seeders use
+    `firstOrCreate` and never overwrite the owner's edits.
+  - Never read `.env` or `storage/` paths directly: use `base_path()`/`storage_path()`; on Hostinger they live in
+    `~/woodex-os/<site>/` (`App\Support\Install\SiteState`).
+  - The installer routes (`routes/install.php`) run without the `web` group: no session, CSRF or cookies there.
+  - `node ../tools/sandbox/installer-check.mjs` walks a fresh simulated Hostinger site through install and update.

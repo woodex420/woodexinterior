@@ -20,9 +20,16 @@ for dir in app bootstrap/app.php bootstrap/providers.php config database/factori
         cp "$SRC/$dir" "$DST/$dir"
     fi
 done
-for file in artisan composer.json package.json phpunit.xml phpstan.neon pint.json vite.config.js .env.example; do
+for file in artisan composer.json package.json phpunit.xml phpstan.neon pint.json vite.config.js .env.example .gitignore; do
     [ -f "$SRC/$file" ] && cp "$SRC/$file" "$DST/$file"
 done
+
+# Repository-root deploy files (Hostinger Git deploy, D-56): the runtime copy mirrors the repository one level up,
+# so tests/Unit/DeployManifestTest.php checks them here too.
+REPO=$(dirname "$SRC")
+mkdir -p "$(dirname "$DST")/tools/deploy"
+cp "$REPO/composer.json" "$REPO/.htaccess" "$(dirname "$DST")/"
+cp "$REPO/tools/deploy/after-composer.php" "$(dirname "$DST")/tools/deploy/"
 
 # Runtime directories (never deleted: sessions, logs, uploads and compiled views live here).
 mkdir -p "$DST/bootstrap/cache" "$DST/storage/app/private" "$DST/storage/app/public" "$DST/storage/framework/cache/data" \

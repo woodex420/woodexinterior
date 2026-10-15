@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\SystemUpdateController;
 use App\Livewire\Admin\Crm\AssignmentRules;
 use App\Livewire\Admin\Crm\CompaniesIndex;
 use App\Livewire\Admin\Crm\CompanyShow;
@@ -66,6 +67,11 @@ Route::livewire('/settings', SettingsPage::class)->name('settings')->middleware(
 Route::livewire('/settings/lead-assignment', AssignmentRules::class)->name('assignment-rules')->middleware('can:settings.manage');
 Route::livewire('/users', UsersIndex::class)->name('users.index')->middleware('can:users.manage');
 Route::livewire('/system/health', Health::class)->name('system.health')->middleware('can:system.health');
+// Database update after a deploy (D-58): reachable while migrations are pending and before 2FA setup.
+Route::get('/system/updates', [SystemUpdateController::class, 'show'])->name('system.updates')
+    ->middleware('can:system.health')->withoutMiddleware(['db-current', 'two-factor']);
+Route::post('/system/updates', [SystemUpdateController::class, 'apply'])->name('system.updates.apply')
+    ->middleware('can:system.health')->withoutMiddleware(['db-current', 'two-factor']);
 Route::livewire('/recycle-bin', RecycleBin::class)->name('recycle-bin')->middleware('can:leads.delete');
 Route::livewire('/integrations', Integrations::class)->name('integrations')->middleware('can:integrations.manage');
 Route::livewire('/data-import', DataImport::class)->name('data-import')->middleware('can:system.import');

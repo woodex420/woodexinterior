@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\File;
 /**
  * Rate book from real Woodex BOQs (QUO-001): 22 priced catalogue items, the decor item library
  * (rates filled per client) and the 6 website estimator services (WEB-006).
+ *
+ * Only adds what is missing: rates the owner changed and items the owner hid stay as they are when the seeder runs
+ * again (woodex:install, the web installer).
  */
 class RateBookSeeder extends Seeder
 {
@@ -23,7 +26,7 @@ class RateBookSeeder extends Seeder
         $book = json_decode(File::get(database_path('seeders/data/rate-book.json')), true, flags: JSON_THROW_ON_ERROR);
 
         foreach ($book['services'] as $position => $service) {
-            EstimatorRate::query()->updateOrCreate(['key' => $service['key']], [
+            EstimatorRate::query()->firstOrCreate(['key' => $service['key']], [
                 'label' => $service['label'],
                 'hint' => $service['hint'] ?? null,
                 'unit' => Unit::normalize((string) $service['unit'])->value,
@@ -39,7 +42,7 @@ class RateBookSeeder extends Seeder
         $position = 0;
 
         foreach ($book['catalog'] as $item) {
-            CatalogItem::query()->updateOrCreate(
+            CatalogItem::query()->firstOrCreate(
                 ['category' => $item['cat'], 'description' => $item['desc']],
                 [
                     'unit' => Unit::normalize((string) $item['unit'])->value,

@@ -2,27 +2,53 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 16 Oct 2026 01:45 PKT)
-- **Where we are:** P1 CRM is complete, and **P2 Quotations part 1 (the quote builder) is done**. The owner
-  confirmed the preview works and that sign-in works from their browser (16 Oct, 00:47 PKT).
+## Resume here (project memory, saved 16 Oct 2026 02:30 PKT)
+- **Where we are:** P1 CRM is complete, P2 Quotations part 1 (the quote builder) is done, and the **Hostinger Git
+  deploy is fixed** (see "Hostinger deploy fix" below). The owner deploys from hPanel → Git without SSH.
+- **Owner to do on Hostinger** (docs/06 §2.2): disconnect Git from `woodex.com.pk` and delete the files it put in that
+  `public_html` (restore the old site from a Hostinger backup if it lived there); connect Git on the
+  `interior.woodex.com.pk` folder (Root directory = that folder); PHP 8.4; new empty MySQL database; open the site →
+  installer (setup code from `~/woodex-os/<site>/setup-code.txt` in File Manager); add the cron line it shows.
+  Main domain only after approval (docs/06 §2.6).
 - **Next:** P2 part 2: approvals, PDF, send + versions, the signed client page with view tracking, accept and
-  "request changes", and the accept automation (see "P2 part 2 plan" below). CI and Hostinger staging wait for the
-  owner:
+  "request changes", and the accept automation (see "P2 part 2 plan" below).
   - **CI:** this GitHub connection cannot write `.github/workflows`, so the owner adds the two files from
     `docs/ci/` (2 minutes in the GitHub website).
-  - **Hostinger:** needs the plan and SSH details (P-05). The owner has not yet answered P-01…P-09; P-06 (rotate the
-    leaked credentials) blocks go-live.
+  - The owner has not yet answered P-01…P-09; P-06 (rotate the leaked credentials) blocks go-live.
 - **Code:** everything is on branch `arena/8be318a2-woodexinterior` and pushed. `master` is still the starting point
   (d77016b); merge through a pull request when the owner approves.
-- **Rules to follow:** docs/07 (D-01…D-55) and platform/AGENTS.md. The plan and specs are in docs/00–08.
+- **Rules to follow:** docs/07 (D-01…D-58) and platform/AGENTS.md. The plan and specs are in docs/00–08.
 - **Preview (AI sandbox only):** after a VM reset run `sh tools/sandbox/setup.sh` (~3–4 min). It rebuilds PHP 8.4,
   `vendor/`, the front-end build and the demo database, including the demo quotations. Then start
   `PORT=8080 node --stack-size=8000 tools/sandbox/server.mjs` from `/tmp/woodex-run`. The checks are `smoke.sh`,
-  `assets-check.sh`, `browser-check.mjs` and `iframe-check.mjs` (tools/sandbox/README.md).
+  `assets-check.sh`, `browser-check.mjs`, `iframe-check.mjs` and `installer-check.mjs` (tools/sandbox/README.md).
 - **Preview data:** demo seed with 26 leads, 5 users and 4 quotations (WI-10100…WI-10102, WF-10050). Owner login:
   `owner@woodex.test` / `Woodex-Preview-2026`; the sign-in page also has a one-click demo button. The preview
   database lives in `/tmp` and is rebuilt from the seeders after a VM reset, so anything typed into the preview is
   temporary. Real data arrives with the v2.1 import on staging (docs/08).
+
+## Hostinger deploy fix (16 Oct 2026, D-56…D-58)
+- **What happened (15 Oct, deploy of 3155343):** hPanel's Git deploy copied the repository into the **main domain's**
+  `public_html` (its default root directory). `woodex.com.pk` answered 403 (no index file at the repository root),
+  the Composer step was skipped (no root `composer.json`), there was no CSS (`public/build` was gitignored) and the
+  subdomain still showed Hostinger's default page. Hostinger's Git deploy copies files and runs only Composer.
+- **Fix:**
+  - Root `.htaccess` → everything to `platform/public`; nothing else is web-reachable.
+  - Root `composer.json` → same `require` as `platform/composer.json`, `vendor-dir: platform/vendor` (works with or
+    without Composer scripts); `tools/deploy/after-composer.php` clears stale caches.
+  - `platform/public/build` committed (rebuild + commit with every CSS/JS change).
+  - `.env` + `storage/` in `~/woodex-os/<site>/` when `platform/.env` is absent (`App\Support\Install\SiteState`).
+  - Web installer `/install` (setup code from the data folder, two steps, then closed) and System → Database update
+    after deploys (`EnsureDatabaseIsCurrent`, `woodex:update`). Health shows database, data folder and build checks.
+  - `public/index.php` explains a wrong PHP version or missing packages instead of a blank 500.
+  - Seeders only add missing rows (`firstOrCreate`): re-running never undoes the owner's rates/templates/stages.
+  - Production forces https links when `APP_URL` is https (CDN-safe); `TRUSTED_PROXIES` for a CDN.
+- **Verified:** Pest 256 passed, 1155 assertions (1 skipped in the sandbox only: MySQL needs sockets); Larastan clean; Pint clean; lint;
+  smoke (22 pages), browser-check, iframe-check; `installer-check.mjs` on a simulated `~/domains/<site>/public_html`:
+  fresh site → installer → wrong code refused → install → `/install` 404 → owner signs in → a new migration sends the
+  owner to Database update → Apply → admin works.
+- **Not verifiable here:** the real Hostinger Composer step (which command, PHP version, memory) and LiteSpeed's
+  `.htaccess` handling. The first deploy log will tell; the preflight page and docs/06 §2.7/§10 cover the failures.
 
 ## Current phase: P2 Quotations, part 1 done → part 2 next
 

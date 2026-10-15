@@ -15,6 +15,8 @@ use Illuminate\Support\Str;
  * The 16 Woodex quotation templates (QUO-002), converted from the v2.1 template library:
  * Renovation, Civil Work, Interior Designing, Interior, Fit-out, Architecture, 3D Visualization,
  * Furniture, Design Consultancy and seven "Scope of Work" templates.
+ *
+ * Only adds missing templates: templates the owner edited or hid are never overwritten when the seeder runs again.
  */
 class QuoteTemplateSeeder extends Seeder
 {
@@ -29,7 +31,7 @@ class QuoteTemplateSeeder extends Seeder
             $isScope = str_contains($template['name'], 'Scope of Work') || str_contains($template['name'], 'Solution')
                 || str_contains($template['name'], 'Residential') || str_contains($template['name'], 'Commercial');
 
-            QuoteTemplate::query()->updateOrCreate(['slug' => Str::slug($template['name'])], [
+            QuoteTemplate::query()->firstOrCreate(['slug' => Str::slug($template['name'])], [
                 'name' => $template['name'],
                 'description' => $template['description'] ?? null,
                 'business_line' => $template['name'] === 'Furniture' ? 'furniture' : 'interior',
