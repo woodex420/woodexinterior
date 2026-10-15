@@ -34,6 +34,17 @@ node tools/sandbox/iframe-check.mjs                         # sign-in inside a c
 
 Demo login on the preview: `owner@woodex.test` / `Woodex-Preview-2026` (sandbox only).
 
+## Website check (public site)
+
+```sh
+node tools/sandbox/home-check.mjs          # home page: desktop, phone, JavaScript off
+```
+
+It checks: no console errors or 404s; no horizontal scrolling at 1440px and 390px; the hero photograph loads; the
+`h1` really picks up the clamp size and the Nohemi heading font (a missing `npm run build` shows up as a 15px `h1`);
+and without JavaScript the enquiry fields, its button, the FAQ answer and the menu are all visible (D-49). Screenshots
+land in `/tmp/woodex-run/shots/`.
+
 ## Installer check (Hostinger Git deploy, D-56…D-58)
 
 Simulates what Hostinger's Git deploy leaves behind (the repository, no `.env`) and walks it through the web installer

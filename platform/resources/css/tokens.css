@@ -81,7 +81,7 @@
   --color-soft: #f5f5f3;
   --color-beige: #fcf2e8;
   --color-line: #dededb;
-  --color-muted: #777777;
+  --color-muted: #6b6b6b; /* 5.1:1 on white: AA for 14px secondary text (was #777 = 4.48) */
 
   --radius-ui: 8px;
 }

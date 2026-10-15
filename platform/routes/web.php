@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Portal\QuotePortalController;
+use App\Http\Controllers\Site\HomeController;
+use App\Http\Controllers\Site\SitemapController;
 use App\Http\Controllers\Webhooks\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,7 +50,10 @@ Route::middleware('signed:relative')->prefix('q')->name('quotes.portal')->group(
 |--------------------------------------------------------------------------
 | Public website (phase P6)
 |--------------------------------------------------------------------------
-| Until the website cut-over the current live site keeps serving woodex.com.pk.
-| The 142 legacy URLs, page builder and theme builder are registered here in P6.
+| The home page is the first release of the new website: Studio look, the enquiry form posting to the public
+| lead API, and SEO/E-E-A-T structured data. The other 141 legacy URLs, page builder and theme builder follow
+| in this phase; until then the menu on the home page points at its own sections (no dead links).
 */
-Route::view('/', 'site.holding')->name('home');
+Route::get('/', HomeController::class)->name('home');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
+Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');

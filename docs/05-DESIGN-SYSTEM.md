@@ -34,7 +34,7 @@
 | `beige` | `#FCF2E8` | Warm highlight, button hover |
 | `navy` | `#0F1E36` | Brand colour, dark sections, primary buttons in admin |
 | `line` | `#DEDEDB` | Borders, dividers |
-| `muted` | `#777777` | Secondary text |
+| `muted` | `#6b6b6b` | Secondary text (5.1:1 on white; `#777` was 4.48:1 and failed AA at 14px) |
 | `wood` | `#A87442` | Focus ring, accent details (from the Studio focus outline) |
 
 ### 2.2 Generated scales (used by Tailwind classes)
