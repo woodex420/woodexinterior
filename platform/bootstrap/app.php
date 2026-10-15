@@ -7,6 +7,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\ValidationException;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -32,6 +34,19 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->is('webhooks/*') || $request->expectsJson(),
         );
+
+        // A failed sign-in (wrong password, lockout, empty field) always goes back to its own form. Laravel's
+        // default is the Referer or the session's previous URL and, when both are missing (a proxy that drops
+        // Referer, a lost session cookie), "/": the public website when the admin lives under ADMIN_PATH. D-51.
+        $exceptions->render(function (ValidationException $exception, Request $request) {
+            foreach (['login.store' => 'login', 'two-factor.login.store' => 'two-factor.login', 'password.email' => 'password.request'] as $post => $form) {
+                if ($request->routeIs($post) && Route::has($form)) {
+                    $exception->redirectTo(route($form));
+                }
+            }
+
+            return null; // keep Laravel's normal rendering (errors + old input flashed to the session)
+        });
     })->create();
 
 // Hostinger "copy public/ into the subdomain folder" fallback (docs/06 §2).

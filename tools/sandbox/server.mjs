@@ -2,7 +2,9 @@
 // - Static files under platform/public are served by Node; everything else goes to Laravel via php-wasm (PHP 8.4).
 // - Every absolute self-URL in PHP output (HTML, JSON, Location/Link headers) is rewritten to a root-relative
 //   path, so the page works under whatever origin the preview proxy shows to the browser.
-// - Each request is logged to /tmp/woodex-run/requests.log (incl. proxy headers) to debug preview issues.
+// - Each request is logged to /tmp/woodex-run/requests.log (incl. proxy headers and cookie names) to debug preview issues.
+// - Cookie memory: browsers that drop the preview's cookies inside the Arena iframe still keep their session (below).
+// - The sign-in page gets a preview-only "demo account" box with a one-click sign-in.
 // Usage: PORT=8080 node --stack-size=8000 tools/sandbox/server.mjs
 import fs from 'node:fs';
 import http from 'node:http';
@@ -51,11 +53,100 @@ const SELF_URL = new RegExp(`https?:(\\\\?/)(\\\\?/)${escapeRe(HOST)}(?::\\d+)?(
 const relativize = (text) => text.replace(SELF_URL, (match, slash1, slash2, pathSlash) => pathSlash ?? slash1);
 const REWRITABLE = /^(text\/(html|plain|css|javascript|xml)|application\/(json|javascript|xml|ld\+json|vnd\.api\+json))/i;
 
-// Preview-only diagnostics (never part of the app): tells whether JavaScript runs in the viewer's browser and whether
-// Alpine/Livewire started, via /__preview-beacon lines in the request log. <noscript> pixel = scripts are off.
-const BEACON_HEAD = '<script>(function(){function b(q){try{navigator.sendBeacon("/__preview-beacon?"+q+"&p="+encodeURIComponent(location.pathname)+"&w="+innerWidth)}catch(e){}}b("js=1");addEventListener("load",function(){setTimeout(function(){b("loaded=1&alpine="+!!window.Alpine+"&livewire="+!!window.Livewire)},1500)})})();</script>';
+// Preview-only diagnostics (never part of the app): tells whether JavaScript runs in the viewer's browser, whether
+// Alpine/Livewire started and whether the browser kept the session cookies (cookieKept=1 means the XSRF-TOKEN cookie
+// is visible to scripts), via /__preview-beacon lines in the request log. <noscript> pixel = scripts are off.
+const BEACON_HEAD = '<script>(function(){var sa="na";try{document.hasStorageAccess&&document.hasStorageAccess().then(function(v){sa=v?1:0},function(){sa="err"})}catch(e){}function b(q){try{navigator.sendBeacon("/__preview-beacon?"+q+"&p="+encodeURIComponent(location.pathname)+"&w="+innerWidth)}catch(e){}}b("js=1");addEventListener("load",function(){setTimeout(function(){var ck="err";try{ck=/(^|;\\s*)XSRF-TOKEN=/.test(document.cookie)?1:0}catch(e){}b("loaded=1&alpine="+!!window.Alpine+"&livewire="+!!window.Livewire+"&cookieKept="+ck+"&cookieEnabled="+navigator.cookieEnabled+"&framed="+(window.top!==window)+"&storageAccess="+sa)},1500)})})();</script>';
 const BEACON_BODY = '<noscript><img src="/__preview-beacon?js=0" alt="" width="1" height="1" style="position:absolute;left:-9999px"></noscript>';
 const injectBeacon = (html) => html.replace(/<\/head>/i, `${BEACON_HEAD}</head>`).replace(/<body([^>]*)>/i, `<body$1>${BEACON_BODY}`);
+
+// Preview-only cookie memory. On 2026-10-15 the owner's browser never sent the preview's cookies back from inside the
+// Arena iframe (every request started a new Laravel session, even with Secure + SameSite=None + Partitioned cookies):
+// a wrong password landed on the public "/" without the error and a right one bounced back to the sign-in form.
+// tools/sandbox/iframe-check.mjs reproduces it ("no-cookies"). For browser requests through the public preview host
+// the server acts as that browser's cookie jar (key: User-Agent + Accept-Language): it stores every cookie Laravel
+// sets and sends the stored values to PHP, also when the browser sent none (log "memory+name") or an older value
+// ("memory~name"). A browser that keeps cookies sends the same values, so nothing changes for it. Local checks on
+// 127.0.0.1 never use it. Demo data only, sandbox only. PREVIEW_COOKIE_MEMORY=0 turns it off.
+const MEMORY_ON = process.env.PREVIEW_COOKIE_MEMORY !== '0';
+const MEMORY_FILE = '/tmp/woodex-run/cookie-memory.json';
+const MEMORY_MAX_BROWSERS = 50;
+let cookieMemory = {};
+try {
+    cookieMemory = JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf8'));
+} catch {
+    cookieMemory = {};
+}
+
+function memoryKey(req) {
+    if (!MEMORY_ON || req.headers.host !== HOST || !req.headers['sec-fetch-site']) return null;
+    return `${req.headers['user-agent'] ?? ''}|${req.headers['accept-language'] ?? ''}`;
+}
+
+const parseCookieHeader = (header) => {
+    const cookies = new Map();
+    for (const part of String(header ?? '').split(';')) {
+        const eq = part.indexOf('=');
+        if (eq > 0) cookies.set(part.slice(0, eq).trim(), part.slice(eq + 1).trim());
+    }
+    return cookies;
+};
+const cookieNames = (header) => [...parseCookieHeader(header).keys()].join(',') || '-';
+
+// Cookie header for PHP: the browser's cookies with the remembered values on top.
+function withRememberedCookies(key, header) {
+    const cookies = parseCookieHeader(header);
+    const added = [];
+    const replaced = [];
+    for (const [name, value] of Object.entries(cookieMemory[key] ?? {})) {
+        if (!cookies.has(name)) added.push(name);
+        else if (cookies.get(name) !== value) replaced.push(name);
+        cookies.set(name, value);
+    }
+    return { header: [...cookies].map(([name, value]) => `${name}=${value}`).join('; '), added, replaced };
+}
+
+function rememberCookies(key, setCookieHeaders) {
+    const jar = { ...(cookieMemory[key] ?? {}) };
+    for (const line of setCookieHeaders) {
+        const [pair, ...attributes] = String(line).split(';');
+        const eq = pair.indexOf('=');
+        if (eq <= 0) continue;
+        const name = pair.slice(0, eq).trim();
+        const value = pair.slice(eq + 1).trim();
+        const attr = (wanted) => attributes.map((a) => a.trim()).find((a) => a.toLowerCase().startsWith(`${wanted}=`))?.slice(wanted.length + 1);
+        const maxAge = attr('max-age');
+        const expires = attr('expires');
+        const expired = maxAge !== undefined ? Number(maxAge) <= 0 : expires !== undefined && Date.parse(expires) <= Date.now();
+        if (expired || value === '' || value === 'deleted') delete jar[name];
+        else jar[name] = value;
+    }
+    delete cookieMemory[key]; // re-insert: most recently used browsers stay, the oldest are dropped first
+    cookieMemory[key] = jar;
+    const keys = Object.keys(cookieMemory);
+    for (const old of keys.slice(0, Math.max(0, keys.length - MEMORY_MAX_BROWSERS))) delete cookieMemory[old];
+    try {
+        fs.writeFileSync(MEMORY_FILE, JSON.stringify(cookieMemory));
+    } catch (error) {
+        console.error('cookie memory not saved', error);
+    }
+}
+
+// Preview-only demo-account box on the sign-in form (the owner tried an e-mail that does not exist in the demo data).
+const DEMO_EMAIL = process.env.PREVIEW_LOGIN_EMAIL || 'owner@woodex.test';
+const DEMO_PASSWORD = process.env.PREVIEW_LOGIN_PASSWORD || 'Woodex-Preview-2026';
+const html = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const js = (s) => JSON.stringify(String(s)).replace(/</g, '\\u003c');
+const CODE = 'font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;background:#fff;border:1px solid #e7d9bf;border-radius:6px;padding:1px 6px;color:#0f1e36;white-space:nowrap';
+const LOGIN_HINT = `<div id="wx-preview-login" style="border:1px dashed #c9a46a;background:#fbf6ee;border-radius:12px;padding:14px 16px;font-size:13px;line-height:1.6;color:#4a3b22">`
+    + `<div style="font-weight:600;color:#0f1e36">Preview demo account</div>`
+    + `<div style="margin-top:4px">Email <code style="${CODE}">${html(DEMO_EMAIL)}</code> &nbsp;Password <code style="${CODE}">${html(DEMO_PASSWORD)}</code></div>`
+    + `<button type="button" style="margin-top:10px;height:36px;padding:0 14px;border-radius:8px;border:0;background:#0f1e36;color:#fff;font:inherit;font-weight:500;cursor:pointer" `
+    + `onclick="${html(`var f=this.closest('form');f.querySelector('[name=email]').value=${js(DEMO_EMAIL)};f.querySelector('[name=password]').value=${js(DEMO_PASSWORD)};f.requestSubmit?f.requestSubmit():f.submit();`)}">Sign in with the demo account</button>`
+    + `<div style="margin-top:8px;font-size:12px;color:#7a6849">Shown only in this preview. Real staff accounts are created on the live server.</div>`
+    + `</div>`;
+const LOGIN_FORM = /(<form\b[^>]*\baction="[^"]*\/login"[^>]*>)/i;
+const injectLoginHint = (page) => (/name="password"/.test(page) ? page.replace(LOGIN_FORM, `$1${LOGIN_HINT}`) : page);
 
 const MIME = {
     '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
@@ -66,10 +157,23 @@ const MIME = {
     '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf', '.pdf': 'application/pdf',
 };
 
+// "Windows/Chrome150", "iPhone/Safari18", "curl/7.88.1"...: enough to tell the owner's browser from the checks.
+function shortUa(ua) {
+    if (!ua) return '-';
+    const os = /Windows|Android|iPhone|iPad|Macintosh|CrOS|Linux/.exec(ua)?.[0] ?? '?';
+    const tag = /iframe-check\/[\w-]+/.exec(ua)?.[0];
+    for (const brand of ['HeadlessChrome', 'Edg', 'OPR', 'SamsungBrowser', 'Firefox', 'Chrome', 'Version']) {
+        const match = new RegExp(`\\b${brand}/(\\d+)`).exec(ua);
+        if (match) return `${os}/${brand === 'Version' ? 'Safari' : brand}${match[1]}${tag ? `/${tag}` : ''}`;
+    }
+    return ua.slice(0, 30).replace(/\s+/g, '_');
+}
+
 const summary = (h) => [
     `host=${h.host ?? '-'}`, `xfh=${h['x-forwarded-host'] ?? '-'}`, `origin=${h.origin ?? '-'}`, `referer=${h.referer ?? '-'}`,
     `site=${h['sec-fetch-site'] ?? '-'}`, `dest=${h['sec-fetch-dest'] ?? '-'}`, `mode=${h['sec-fetch-mode'] ?? '-'}`,
-    `enc=${h['accept-encoding'] ?? '-'}`,
+    `enc=${h['accept-encoding'] ?? '-'}`, `cookies=${cookieNames(h.cookie)}`,
+    `ua=${shortUa(h['user-agent'])}`,
 ].join(' ');
 
 // One "start" line per request and one "done"/"ABORTED" line when the response is flushed or the client goes away,
@@ -79,7 +183,7 @@ function track(req, res) {
     const id = Math.random().toString(36).slice(2, 7);
     fs.appendFile(LOG_FILE, `${new Date().toISOString()} start ${id} ${req.method} ${req.url} ${summary(req.headers)}\n`, () => {});
     const done = (state) => {
-        const line = `${new Date().toISOString()} ${state} ${id} ${req.method} ${req.url} ${res.statusCode} ${Date.now() - started}ms ${res.getHeader('content-length') ?? '?'}b ${res.getHeader('content-encoding') ?? 'identity'} host=${req.headers.host ?? '-'}`;
+        const line = `${new Date().toISOString()} ${state} ${id} ${req.method} ${req.url} ${res.statusCode} ${Date.now() - started}ms ${res.getHeader('content-length') ?? '?'}b ${res.getHeader('content-encoding') ?? 'identity'} host=${req.headers.host ?? '-'}${res.wxNote ? ` ${res.wxNote}` : ''}`;
         fs.appendFile(LOG_FILE, `${line}\n`, () => {});
         console.log(line.slice(25));
     };
@@ -149,6 +253,13 @@ function serveStatic(req, res, file) {
     res.end(req.method === 'HEAD' ? undefined : body);
 }
 
+let phpQueue = Promise.resolve();
+function oneAtATime(task) {
+    const run = phpQueue.then(() => task());
+    phpQueue = run.catch(() => {});
+    return run;
+}
+
 async function servePhp(req, res) {
     const chunks = [];
     for await (const chunk of req) chunks.push(chunk);
@@ -165,11 +276,29 @@ async function servePhp(req, res) {
     delete headers['transfer-encoding'];
     delete headers['accept-encoding'];
 
-    const response = await handler.request({
-        method: req.method,
-        url: req.url,
-        headers,
-        body: chunks.length > 0 ? new Uint8Array(Buffer.concat(chunks)) : undefined,
+    // PHP requests run one at a time anyway (maxPhpInstances: 1). Queueing them here means each request reads the cookie
+    // memory only after the previous request stored its cookies, so a request queued behind the sign-in cannot
+    // bring back the old guest session.
+    const key = memoryKey(req);
+    const response = await oneAtATime(async () => {
+        if (key) {
+            const merged = withRememberedCookies(key, headers.cookie);
+            if (merged.header) headers.cookie = merged.header;
+            const note = [merged.added.length ? `memory+${merged.added.join(',')}` : '', merged.replaced.length ? `memory~${merged.replaced.join(',')}` : ''].filter(Boolean).join(' ');
+            if (note) {
+                res.wxNote = note;
+                res.setHeader('x-preview-jar', note);
+            }
+        }
+        const result = await handler.request({
+            method: req.method,
+            url: req.url,
+            headers,
+            body: chunks.length > 0 ? new Uint8Array(Buffer.concat(chunks)) : undefined,
+        });
+        const setCookies = Object.entries(result.headers).find(([name]) => name.toLowerCase() === 'set-cookie')?.[1] ?? [];
+        if (key && setCookies.length > 0) rememberCookies(key, setCookies);
+        return result;
     });
 
     const outHeaders = {};
@@ -184,6 +313,7 @@ async function servePhp(req, res) {
     if (REWRITABLE.test(contentType) && body.length > 0) {
         let text = relativize(body.toString('utf8'));
         if (/^text\/html/i.test(contentType) && process.env.PREVIEW_BEACON !== '0') text = injectBeacon(text);
+        if (/^text\/html/i.test(contentType) && process.env.PREVIEW_LOGIN_HINT !== '0') text = injectLoginHint(text);
         body = Buffer.from(text, 'utf8');
     }
     const encoding = COMPRESSIBLE.test(contentType) && body.length > 1024 && !outHeaders['content-encoding'] ? pickEncoding(req) : null;

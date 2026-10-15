@@ -36,4 +36,8 @@ Patterns used in the code (follow them):
 - Public forms must render and read correctly without JavaScript: no fields inside `<template x-if>`, `x-cloak` on
   post-submit panels, static button labels (D-49).
 - AI sandbox without native PHP: use `../tools/sandbox/` (README there). UI work is done only when
-  `node ../tools/sandbox/browser-check.mjs` passes in a real headless browser (D-50).
+  `node ../tools/sandbox/browser-check.mjs` and `node ../tools/sandbox/iframe-check.mjs` pass in a real headless
+  browser (D-50, D-52). The second one runs the app the way Arena shows it: inside a cross-site iframe, with the
+  cookies blocked or dropped.
+- Never depend on the Referer header (`url()->previous()`) for an important redirect. Name the target route
+  instead, as the failed sign-in redirect does (D-51).

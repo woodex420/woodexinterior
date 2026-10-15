@@ -4,6 +4,22 @@ _Update at the end of every task (docs/03 Part A §7)._
 
 ## Current phase: P1 CRM complete (parts 1 + 2) → P2 Quotations next
 
+### Preview sign-in fix (16 Oct 2026)
+- **Owner could not sign in to the preview.** On the first attempt the e-mail was `admin@woodex.com.pk`, which does
+  not exist in the demo data. The page jumped to the public holding page and showed no error. Logs and the session
+  table showed the cause: the owner's browser never sent the preview's cookies back from inside the Arena iframe.
+  Every request started a new session, so even the right password would have bounced back to the sign-in form.
+- **Fixed in three places:**
+  - A failed sign-in now always returns to the sign-in form with the error (D-51, tested).
+  - The preview server keeps the session for browsers that drop its cookies (cookie memory, D-52).
+  - The sign-in page shows the demo account with a one-click "Sign in with the demo account" button (preview only).
+- **New check `tools/sandbox/iframe-check.mjs`** reproduces the Arena setup: a cross-site iframe, a proxy that sends
+  no Referer, third-party cookies blocked, and a run that drops every cookie. Before the fix it showed exactly the
+  owner's result (landing on "/"). Now both runs pass: the error is shown, the demo login works, and `wire:navigate`
+  and a full reload stay signed in.
+- The request log now shows cookie names and a short browser tag. The beacon reports `cookieKept`, so the next visit
+  from the owner's browser shows whether it keeps cookies.
+
 ### Preview fix (16 Oct 2026, after P1 part 2)
 - **Holding page unstyled in the owner's browser (reported twice):** the preview emitted absolute asset URLs on a
   guessed preview host; they failed in the real browser while in-sandbox curl passed. All output URLs are now

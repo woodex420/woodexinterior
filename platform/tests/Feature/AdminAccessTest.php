@@ -22,6 +22,28 @@ it('signs in an active staff member and blocks deactivated accounts', function (
     $this->assertGuest();
 });
 
+it('sends a failed sign-in back to its form even without a referer or a session', function () {
+    // No Referer header and no session here, like a proxy that drops Referer and a browser that drops the
+    // cookies: Laravel's fallback would be "/", the public website when the admin lives under /admin (D-51).
+    $this->post(route('login.store'), ['email' => 'admin@woodex.com.pk', 'password' => 'not-the-password'])
+        ->assertRedirect(route('login'))
+        ->assertSessionHasErrors('email');
+    $this->assertGuest();
+
+    $this->post(route('login.store'), ['email' => '', 'password' => ''])
+        ->assertRedirect(route('login'))
+        ->assertSessionHasErrors(['email', 'password']);
+
+    $this->post(route('password.email'), ['email' => 'not-an-email'])
+        ->assertRedirect(route('password.request'))
+        ->assertSessionHasErrors('email');
+
+    $this->followingRedirects()
+        ->post(route('login.store'), ['email' => 'admin@woodex.com.pk', 'password' => 'not-the-password'])
+        ->assertOk()
+        ->assertSee('These credentials do not match our records.');
+});
+
 it('renders the owner dashboard with the go-live checklist', function () {
     $owner = $this->userWithRole('owner');
 
