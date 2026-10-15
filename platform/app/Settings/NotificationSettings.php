@@ -25,6 +25,9 @@ class NotificationSettings extends Settings
     /** @phpstan-var list<string> roles alerted about unassigned leads and missed response times */
     public array $unassigned_lead_roles;
 
+    /** @phpstan-var list<string> roles alerted when a missed response is still open after the escalation delay */
+    public array $sla_final_roles;
+
     public static function group(): string
     {
         return 'notifications';

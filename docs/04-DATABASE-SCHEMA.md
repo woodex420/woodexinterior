@@ -195,13 +195,29 @@ json · `occurred_at`. Indexes (`contact_id`, `occurred_at`), (`lead_id`, `occur
 ### 4.7 `tasks` ✅
 `title` · `description` · `type` (`call`, `whatsapp`, `visit`, `meeting`, `email`, `todo`) · `due_at` · `remind_at`
 · `assignee_id` · `created_by` · `lead_id` · `contact_id` · `priority` · `status` (`open`, `done`, `cancelled`)
-· `completed_at` · timestamps · soft delete. Index (`assignee_id`, `status`, `due_at`).
+· `completed_at` · `recurrence` (`daily`, `weekdays`, `weekly`, `monthly`, null) · `reminded_at` (reminder sent)
+· timestamps · soft delete. Indexes (`assignee_id`, `status`, `due_at`), (`status`, `remind_at`).
 
 ### 4.8 `site_visits` ✅
 `lead_id` · `contact_id` · `scheduled_at` · `duration_minutes` · `address` · `map_url` · `assigned_to` · `status`
 (`scheduled`, `confirmed`, `rescheduled`, `completed`, `no_show`, `cancelled`) · `client_confirmed_at`
 · `reminders` json (sent timestamps) · `outcome_notes` · `measurements` json
 (`[{room:"Lounge", length_ft:18, width_ft:14, area_sqft:252}]`) · `next_step` · `completed_at` · soft delete.
+`reminders` keys: `staff_d1`, `staff_2h` (ISO timestamps, D-40); client WhatsApp keys arrive in P4.
+
+### 4.9 `assignment_rules` ✅ (CRM-009, D-37)
+`name` · `position` · `is_active` · `conditions` json (`{business_lines:[], services:[], cities:[], sources:[]}`,
+empty = any) · `strategy` (`round_robin`, `least_loaded`) · `role` (nullable) · `user_ids` json (nullable; wins over
+role) · `max_open_leads` (nullable cap) · `working_hours_only` · `last_assigned_user_id` → users · timestamps.
+Index (`is_active`, `position`).
+
+### 4.10 `saved_views` ✅ (GLB-003, D-43)
+`user_id` → users (cascade) · `screen` (`leads`, …) · `name` · `filters` json (filters, sort, perPage, columns)
+· `is_default` · timestamps. Unique (`user_id`, `screen`, `name`).
+
+### 4.11 Additions to `leads`
+`sla_escalated_at` (second SLA escalation sent, D-38). Attachments for leads and contacts use the package `media`
+table (collection `files`, private `local` disk, D-41).
 
 ---
 

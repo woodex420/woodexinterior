@@ -65,6 +65,7 @@ class SettingsPage extends Component
             'closes_at' => $business->closes_at,
             'working_days' => array_map('strval', $business->working_days),
             'social_links' => array_merge(array_fill_keys(array_keys(self::SOCIAL_NETWORKS), ''), $business->social_links),
+            'holidays' => collect($business->holidays)->map(fn (array $h): string => trim($h['date'].' '.$h['name']))->implode("\n"),
         ];
 
         $limits = [];
@@ -93,6 +94,7 @@ class SettingsPage extends Component
             'quiet_hours_end' => $notifications->quiet_hours_end,
             'daily_digest_time' => $notifications->daily_digest_time,
             'unassigned_lead_roles' => $notifications->unassigned_lead_roles,
+            'sla_final_roles' => $notifications->sla_final_roles,
         ];
     }
 
@@ -118,6 +120,7 @@ class SettingsPage extends Component
             'business.working_days' => ['required', 'array', 'min:1'],
             'business.working_days.*' => ['integer', 'between:1,7'],
             'business.social_links.*' => ['nullable', 'url', 'max:255'],
+            'business.holidays' => ['nullable', 'string', 'max:5000'],
         ], attributes: [
             'business.phone' => 'phone', 'business.whatsapp' => 'WhatsApp number', 'business.closes_at' => 'closing time',
             'business.opens_at' => 'opening time', 'business.working_days' => 'working days', 'business.social_links.*' => 'link',
@@ -141,6 +144,14 @@ class SettingsPage extends Component
         sort($days);
         $settings->working_days = array_values(array_unique($days));
         $settings->social_links = array_filter(array_map(fn ($v) => is_string($v) ? trim($v) : '', $data['social_links'] ?? []));
+
+        $holidays = self::parseHolidays((string) ($data['holidays'] ?? ''));
+        if ($holidays === null) {
+            $this->addError('business.holidays', 'Write one holiday per line as YYYY-MM-DD and a name, e.g. 2027-03-23 Pakistan Day.');
+
+            return;
+        }
+        $settings->holidays = $holidays;
         $settings->save();
 
         $this->business['phone'] = Phone::display($settings->phone);
@@ -215,13 +226,16 @@ class SettingsPage extends Component
             'notifications.daily_digest_time' => ['required', 'date_format:H:i'],
             'notifications.unassigned_lead_roles' => ['required', 'array', 'min:1'],
             'notifications.unassigned_lead_roles.*' => [Rule::in(array_keys(UsersIndex::ROLES))],
-        ], attributes: ['notifications.unassigned_lead_roles' => 'escalation roles'])['notifications'];
+            'notifications.sla_final_roles' => ['required', 'array', 'min:1'],
+            'notifications.sla_final_roles.*' => [Rule::in(array_keys(UsersIndex::ROLES))],
+        ], attributes: ['notifications.unassigned_lead_roles' => 'escalation roles', 'notifications.sla_final_roles' => 'final escalation roles'])['notifications'];
 
         $settings->telegram_enabled = (bool) ($data['telegram_enabled'] ?? false);
         $settings->quiet_hours_start = $data['quiet_hours_start'];
         $settings->quiet_hours_end = $data['quiet_hours_end'];
         $settings->daily_digest_time = $data['daily_digest_time'];
         $settings->unassigned_lead_roles = array_values($data['unassigned_lead_roles']);
+        $settings->sla_final_roles = array_values($data['sla_final_roles']);
         $settings->save();
 
         $this->toast('Notification settings saved.');
@@ -255,6 +269,34 @@ class SettingsPage extends Component
             'days' => [1 => 'Mon', 2 => 'Tue', 3 => 'Wed', 4 => 'Thu', 5 => 'Fri', 6 => 'Sat', 7 => 'Sun'],
             'roles' => UsersIndex::ROLES,
         ]);
+    }
+
+    /**
+     * "2027-03-23 Pakistan Day" per line → sorted unique list; null when a line is not a valid date.
+     *
+     * @return list<array{date: string, name: string}>|null
+     */
+    public static function parseHolidays(string $text): ?array
+    {
+        $holidays = [];
+
+        foreach (preg_split('/\R/', $text) ?: [] as $line) {
+            $line = trim($line);
+
+            if ($line === '') {
+                continue;
+            }
+
+            if (! preg_match('/^(\d{4})-(\d{2})-(\d{2})\s*(.*)$/u', $line, $m) || ! checkdate((int) $m[2], (int) $m[3], (int) $m[1])) {
+                return null;
+            }
+
+            $holidays["{$m[1]}-{$m[2]}-{$m[3]}"] = ['date' => "{$m[1]}-{$m[2]}-{$m[3]}", 'name' => mb_substr(trim($m[4]) ?: 'Holiday', 0, 80)];
+        }
+
+        ksort($holidays);
+
+        return array_values($holidays);
     }
 
     private static function bpToPercent(int $bp): string

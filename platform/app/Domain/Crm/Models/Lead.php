@@ -10,8 +10,10 @@ use App\Domain\Crm\Enums\LeadSource;
 use App\Domain\Crm\Enums\LeadType;
 use App\Domain\Crm\Enums\NextActionType;
 use App\Domain\Crm\Enums\StageType;
+use App\Domain\Crm\Models\Concerns\HasAttachments;
 use App\Domain\Sales\Models\Quote;
 use App\Models\User;
+use App\Settings\SalesSettings;
 use App\Support\Money;
 use Database\Factories\LeadFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,14 +25,15 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
+use Spatie\MediaLibrary\HasMedia;
 
 /**
  * An opportunity for one contact in one business line (CRM-003). Created only by CaptureLead.
  */
-class Lead extends Model
+class Lead extends Model implements HasMedia
 {
     /** @use HasFactory<LeadFactory> */
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasAttachments, HasFactory, LogsActivity, SoftDeletes;
 
     protected $guarded = ['id'];
 
@@ -172,6 +175,11 @@ class Lead extends Model
     public function expectedValue(): ?Money
     {
         return $this->expected_value_minor === null ? null : Money::ofMinor((int) $this->expected_value_minor);
+    }
+
+    public function isHot(): bool
+    {
+        return $this->score >= app(SalesSettings::class)->hot_score;
     }
 
     public function isOverdue(): bool

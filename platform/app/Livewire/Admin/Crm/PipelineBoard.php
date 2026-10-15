@@ -9,12 +9,13 @@ use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Crm\Enums\StageType;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Models\PipelineStage;
-use App\Models\User;
+use App\Domain\Crm\Models\SiteVisit;
+use App\Livewire\Concerns\BooksSiteVisits;
+use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Settings\SalesSettings;
 use App\Support\Money;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -23,12 +24,15 @@ use Livewire\Component;
 
 /**
  * Kanban pipeline (CRM-004, CRM-005). Drag a card to change stage; Lost asks for a reason;
- * Won requires an accepted quotation (or the owner).
+ * Won requires an accepted quotation (or the owner); Site visit without a booked visit opens the
+ * booking modal, and cancelling it puts the card back (the board re-renders from the database).
  */
 #[Layout('layouts::admin')]
 #[Title('Pipeline')]
 class PipelineBoard extends Component
 {
+    use BooksSiteVisits, InteractsWithAdmin;
+
     #[Url(except: '')]
     public string $line = '';
 
@@ -58,6 +62,12 @@ class PipelineBoard extends Component
             return;
         }
 
+        if ($stage->key === 'site_visit' && ! $lead->siteVisits()->upcoming()->exists()) {
+            $this->openVisitFor($lead);
+
+            return;
+        }
+
         try {
             app(MoveLeadToStage::class)->handle($lead, $stage, $this->user());
             $this->dispatch('toast', message: "{$lead->ref} moved to {$stage->name}.");
@@ -82,6 +92,16 @@ class PipelineBoard extends Component
     public function cancelLost(): void
     {
         $this->reset('pendingLeadId', 'lostReason');
+    }
+
+    protected function visitBooked(Lead $lead, SiteVisit $visit): void
+    {
+        // Booking moves New/Contacted leads itself; a lead dragged back from a later stage moves here.
+        if ($lead->stage->type === StageType::Open && $lead->stage->key !== 'site_visit') {
+            app(MoveLeadToStage::class)->handle($lead, PipelineStage::byKey('site_visit'), $this->user());
+        }
+
+        $this->toast("{$lead->ref}: visit booked for ".$visit->scheduled_at->format('D j M, g:i a').'.');
     }
 
     public function render(): View
@@ -117,14 +137,7 @@ class PipelineBoard extends Component
             'totals' => $totals,
             'lines' => BusinessLine::options(),
             'lostReasons' => app(SalesSettings::class)->lost_reasons,
+            'staff' => $this->showVisit ? $this->staff() : collect(),
         ]);
-    }
-
-    private function user(): User
-    {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user;
     }
 }

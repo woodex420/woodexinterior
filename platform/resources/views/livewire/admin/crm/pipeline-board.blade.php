@@ -1,5 +1,5 @@
 <div>
-    <x-admin.page-header title="Pipeline" description="Drag a card to move it. Lost asks for a reason; Won needs an accepted quotation."
+    <x-admin.page-header title="Pipeline" description="Drag a card to move it. Site visit books the visit, Lost asks for a reason, Won needs an accepted quotation."
                          :breadcrumbs="['CRM' => null, 'Pipeline' => null]">
         <x-slot:actions>
             <select wire:model.live="line" class="wx-input w-auto" aria-label="Business line">
@@ -41,7 +41,7 @@
                                  class="cursor-grab rounded-xl border border-gray-200 bg-white p-3.5 shadow-theme-xs active:cursor-grabbing dark:border-gray-800 dark:bg-gray-900">
                             <div class="flex items-start justify-between gap-2">
                                 <a href="{{ route('admin.leads.show', $lead) }}" wire:navigate draggable="false" class="font-medium text-gray-800 hover:underline dark:text-white/90">{{ $lead->contact->name }}</a>
-                                @if ($lead->score >= 80)
+                                @if ($lead->isHot())
                                     <x-admin.badge color="navy" :dot="false">Hot</x-admin.badge>
                                 @endif
                             </div>
@@ -88,5 +88,9 @@
                 </div>
             </form>
         </div>
+    @endif
+
+    @if ($showVisit)
+        <x-admin.visit-modal :staff="$staff" :conflicts="$visitConflicts" />
     @endif
 </div>

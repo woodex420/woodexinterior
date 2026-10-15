@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Crm\Models;
 
 use App\Domain\Crm\Enums\LeadPriority;
+use App\Domain\Crm\Enums\TaskRecurrence;
 use App\Domain\Crm\Enums\TaskStatus;
 use App\Domain\Crm\Enums\TaskType;
 use App\Models\User;
@@ -32,6 +33,8 @@ class Task extends Model
             'priority' => LeadPriority::class,
             'due_at' => 'datetime',
             'remind_at' => 'datetime',
+            'reminded_at' => 'datetime',
+            'recurrence' => TaskRecurrence::class,
             'completed_at' => 'datetime',
         ];
     }

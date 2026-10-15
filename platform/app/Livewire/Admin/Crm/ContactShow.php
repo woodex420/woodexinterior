@@ -7,6 +7,7 @@ namespace App\Livewire\Admin\Crm;
 use App\Domain\Crm\Actions\CaptureLead;
 use App\Domain\Crm\Actions\MergeContacts;
 use App\Domain\Crm\Actions\SaveContact;
+use App\Domain\Crm\Actions\TrashRecords;
 use App\Domain\Crm\Data\LeadInput;
 use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Crm\Enums\ClientType;
@@ -17,6 +18,7 @@ use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Models\Tag;
 use App\Livewire\Concerns\InteractsWithAdmin;
+use App\Livewire\Concerns\ManagesAttachments;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -33,7 +35,7 @@ use Livewire\Component;
 #[Layout('layouts::admin')]
 class ContactShow extends Component
 {
-    use InteractsWithAdmin;
+    use InteractsWithAdmin, ManagesAttachments;
 
     #[Locked]
     public int $contactId;
@@ -63,6 +65,21 @@ class ContactShow extends Component
     public function contact(): Contact
     {
         return Contact::query()->with(['tags', 'company', 'owner:id,name'])->findOrFail($this->contactId);
+    }
+
+    public function deleteContact(): void
+    {
+        $contact = $this->contact;
+        abort_unless($this->user()->can('leads.delete'), 403);
+
+        app(TrashRecords::class)->deleteContact($contact);
+        $this->toast("{$contact->name} and their enquiries moved to the recycle bin.");
+        $this->redirectRoute('admin.contacts.index', navigate: true);
+    }
+
+    protected function attachable(): Contact
+    {
+        return $this->contact;
     }
 
     public function openEdit(): void
@@ -224,6 +241,7 @@ class ContactShow extends Component
             'contact' => $contact,
             'leads' => $leads,
             'activities' => $activities,
+            'files' => $contact->getMedia('files')->sortByDesc('id')->values(),
             'duplicates' => $user->can('merge', Contact::class) ? $contact->possibleDuplicates() : collect(),
             'types' => ClientType::options(),
             'lines' => BusinessLine::options(),

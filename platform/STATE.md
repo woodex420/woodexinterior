@@ -2,9 +2,58 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Current phase: P1 CRM (core delivered, part 2 next)
+## Current phase: P1 CRM complete (parts 1 + 2) → P2 Quotations next
 
-### P1 delivered (this branch)
+### P1 part 2 delivered (this branch)
+- **Fix: public holding page without styling** (giant logo): the sandbox preview server was rebuilt so asset URLs
+  always use the public https origin (no mixed content), static files are served with correct MIME types, and inline
+  SVGs (logo, icons) now carry width/height fallbacks so no page can explode while CSS loads (D-36).
+- **Pipeline exit test** (CRM-004/005): dragging a card to *Site visit* without a booked visit opens the booking
+  modal; cancelling puts the card back; booking moves it (also when dragged back from a later stage).
+- **Visit booking everywhere** via one concern (`BooksSiteVisits`) with a **double-booking warning** (same team member,
+  overlapping time → "Book anyway").
+- **Visit calendar** (CRM-008): week columns and month grid with status colours, previous/next/today, day → week.
+- **Staff reminders** (CRM-007/008): `woodex:reminders` every minute → task reminders at `remind_at` (30 min before
+  due) and site-visit reminders 24 h and 2 h before, in-app + Telegram, each sent once (D-40).
+- **Repeating tasks**: daily, working days (Mon–Sat), weekly, monthly; completing creates the next one (D-40).
+- **Companies** (CRM-002): list (search by name/phone/email/NTN, type, sort), company page (details, people with
+  link/unlink, enquiries, P2/P3 placeholders), edit, delete; companies in global search.
+- **Assignment rules** (CRM-009) at Settings → Lead assignment: ordered rules by line, service, city/area and source;
+  role or chosen people; round robin or fewest open leads; workload cap; "working hours only" (after-hours rule
+  below it); fallback = least-loaded sales person. **Reassign with a reason** on the lead page (D-37).
+- **SLA** (CRM-010, AUT-004): response target per source, **holidays** in Settings → Business, second escalation to
+  the final roles (default owner) after the escalation delay (D-38).
+- **Lead scoring rules in Settings** (CRM-011): Settings → Lead rules (budget, size, line, timeline, lead type,
+  services, cities, per-source points, hot threshold) (D-39).
+- **List tools** on Leads (GLB-003): sort, 25/50/100 per page, column chooser, saved views per person (with default
+  view), CSV export (`leads.export`, formula-injection safe), bulk assign / move stage / delete (D-43).
+- **Notification centre** (GLB-008): header bell with unread count, mark read, deep links, 30 s polling while visible,
+  and a full Notifications page (D-45).
+- **@mentions** in notes (GLB-005): `@Sara`, `@Sara Khan`, `@sara.khan` notify in-app + Telegram (D-44).
+- **Attachments** (GLB-006) on leads and contacts: photos, PDF, DWG/DXF, Excel, Word up to 20 MB, private disk,
+  authorised download route, WebP thumbnails for images, timeline entry (D-41).
+- **Recycle bin** (GLB-010): delete lead / contact (with its enquiries) / company, restore together; owner-only
+  **erase** of personal data for privacy requests (D-42).
+- **Integrations hub** (SYS-005) + **integration log viewer** (GLB-018): status cards (Telegram, email, website forms,
+  Turnstile, v2.1 database; WhatsApp/Meta/LinkedIn planned), test buttons, connect Telegram webhook (D-47).
+- **Data import wizard** (SYS-006): connection check, choose parts, queued dry run, reports with warnings/duplicates
+  downloads, real run only after a dry run in the last 24 h + typing IMPORT (D-46).
+
+### Verification (16 Oct 2026, PHP 8.4.25 sandbox, real dependency versions)
+- **Pest: 170 tests, 704 assertions, all passing** (133 from part 1 + 37 new).
+- **Pint clean · PHP lint clean (246 files) · Larastan level 6: no errors · all Blade views compile.**
+- Live preview: 24 admin/public pages render as owner; CSS/JS URLs on the https preview origin, `text/css` /
+  `text/javascript`, holding page styled.
+
+### Next
+1. Activate CI (docs/ci/README.md; Larastan is blocking there), then commit the first `composer.lock`.
+2. Staging on Hostinger: subdomain, PHP 8.4, cron, `woodex:install`, Telegram webhook (docs/06); first import dry run
+   from System → Data import against a copy of the v2.1 database (docs/08).
+3. P2 Quotations (docs/03 Part B).
+4. Deferred from P1 (small): CSV import of leads/contacts with mapping (CAP-009); full alert-rule builder (AUT-003,
+   P5); client WhatsApp visit reminders (P4); saved views on Contacts/Companies (the concern is ready).
+
+### P1 part 1 delivered (commit cfd0fd5)
 - **Lead page** `admin/leads/{lead}` (CRM-003/006/016, GLB-004): one-tap call outcomes, WhatsApp/email/meeting/note
   logging, next action with presets (1 h, tomorrow, 3 days, next week), stage bar with lost-reason modal, owner
   reassignment, site visit booking, tasks, editable details, score badge and SLA status, full timeline.
@@ -38,7 +87,7 @@ _Update at the end of every task (docs/03 Part A §7)._
   Visits, Settings, Users & Roles enabled; lead links everywhere (list, board, dashboard, Telegram, notifications).
 - Demo seeder (local only) adds calls, visits (today/tomorrow/overdue/completed with measurements) and tasks.
 
-### Verification (15 Oct 2026, PHP 8.4.25 sandbox, real dependency versions)
+### Part 1 verification (15 Oct 2026)
 - **Pest: 133 tests, 518 assertions, all passing** (60 from P0 + 73 new: lead page, contacts, tasks/visits/My Day,
   SLA, global search, users/settings, importer against a v2.1-shaped database, value conversions).
 - **Pint: clean (210 files). PHP lint: clean.**
@@ -46,16 +95,6 @@ _Update at the end of every task (docs/03 Part A §7)._
   built (a renamed method still called in one path; an untyped schema call).
 - Live preview: all 16 admin pages render as owner (dashboard, My Day, leads, lead page, pipeline, contacts,
   contact page, tasks, site visits, settings × 3 tabs, users, health).
-
-### Next
-1. **P1 part 2:** pipeline drag to "Site visit" opens the booking modal (exit test); Companies screen (CRM-002);
-   visit calendar (week/month) + visit reminders on Telegram; assignment rules UI (CRM-009); recurring tasks and task
-   reminders; list tools (GLB-003: sort, saved views, CSV export, bulk assign); notification bell (GLB-008);
-   @mentions (GLB-005); attachments (GLB-006); holidays list for SLA (AUT-004); scoring rules in Settings.
-2. Activate CI (docs/ci/README.md; Larastan is now blocking there), then commit the first `composer.lock`.
-3. Staging on Hostinger: subdomain, PHP 8.4, cron, `woodex:install`, Telegram webhook (docs/06); first import dry run
-   against a copy of the v2.1 database (docs/08).
-4. P2 Quotations.
 
 ## P0 Foundation (done, commit ce819db)
 - Laravel 13 + PHP 8.4, Livewire 4 class components, Fortify (login, reset, TOTP 2FA + enforcement), spatie

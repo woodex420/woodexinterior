@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use App\Domain\Crm\Models\Company;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
 use App\Livewire\Concerns\InteractsWithAdmin;
@@ -31,11 +32,17 @@ class GlobalSearch extends Component
         $contacts = collect();
         /** @var Collection<int, Lead> $leads */
         $leads = collect();
+        /** @var Collection<int, Company> $companies */
+        $companies = collect();
 
         if (mb_strlen($term) >= 2) {
             if ($user->can('contacts.view')) {
                 $contacts = Contact::query()->visibleTo($user)->search($term)->withCount('leads')
                     ->orderByDesc('last_activity_at')->limit(6)->get();
+            }
+
+            if ($user->can('contacts.view')) {
+                $companies = Company::query()->search($term)->withCount('contacts')->orderBy('name')->limit(4)->get();
             }
 
             if ($user->can('leads.view')) {
@@ -48,6 +55,7 @@ class GlobalSearch extends Component
         return view('livewire.admin.global-search', [
             'contacts' => $contacts,
             'leads' => $leads,
+            'companies' => $companies,
             'searched' => mb_strlen($term) >= 2,
         ]);
     }

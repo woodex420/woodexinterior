@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Crm\Models;
 
 use App\Domain\Crm\Enums\ClientType;
+use App\Domain\Crm\Models\Concerns\HasAttachments;
 use App\Domain\Crm\Policies\ContactPolicy;
 use App\Models\User;
 use App\Support\Phone;
@@ -20,14 +21,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
+use Spatie\MediaLibrary\HasMedia;
 
 /**
  * A person: prospect or client. One record per person across all channels (CRM-001).
  */
-class Contact extends Model
+class Contact extends Model implements HasMedia
 {
     /** @use HasFactory<ContactFactory> */
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasAttachments, HasFactory, LogsActivity, SoftDeletes;
 
     protected $guarded = ['id'];
 

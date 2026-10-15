@@ -14,19 +14,29 @@ final readonly class BusinessHours
 {
     /**
      * @param  list<int>  $workingDays  ISO day numbers (1 = Monday … 7 = Sunday)
+     * @param  list<string>  $holidays  closed dates (Y-m-d), Settings → Business (AUT-004)
      */
     public function __construct(
         public string $opensAt = '10:00',
         public string $closesAt = '19:00',
         public array $workingDays = [1, 2, 3, 4, 5, 6],
         public string $timezone = 'Asia/Karachi',
+        public array $holidays = [],
     ) {}
+
+    public function isWorkingDay(CarbonImmutable $day): bool
+    {
+        $local = $day->setTimezone($this->timezone);
+
+        return in_array($local->dayOfWeekIso, $this->workingDays, true)
+            && ! in_array($local->format('Y-m-d'), $this->holidays, true);
+    }
 
     public function isOpen(CarbonImmutable $moment): bool
     {
         $local = $moment->setTimezone($this->timezone);
 
-        if (! in_array($local->dayOfWeekIso, $this->workingDays, true)) {
+        if (! $this->isWorkingDay($local)) {
             return false;
         }
 
@@ -61,11 +71,12 @@ final readonly class BusinessHours
         $local = $from->setTimezone($this->timezone);
         [$hour, $minute] = array_map('intval', explode(':', $this->opensAt));
 
-        for ($i = 0; $i <= 8; $i++) {
+        // Long holiday stretches (e.g. Eid) are skipped too, hence the 30-day horizon.
+        for ($i = 0; $i <= 30; $i++) {
             $day = $local->startOfDay()->addDays($i);
             $opening = $day->setTime($hour, $minute);
 
-            if (in_array($day->dayOfWeekIso, $this->workingDays, true) && $opening->greaterThan($local)) {
+            if ($this->isWorkingDay($day) && $opening->greaterThan($local)) {
                 return $opening;
             }
         }

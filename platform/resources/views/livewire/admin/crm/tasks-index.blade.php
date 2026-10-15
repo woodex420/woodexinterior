@@ -47,6 +47,9 @@
                                 </p>
                                 <p class="mt-0.5 flex flex-wrap items-center gap-x-2 text-theme-xs text-gray-500">
                                     <span>{{ $task->type->label() }}</span>
+                                    @if ($task->recurrence)
+                                        <span class="inline-flex items-center gap-1" title="{{ $task->recurrence->label() }}"><x-icon name="refresh" class="size-3" /> {{ $task->recurrence->label() }}</span>
+                                    @endif
                                     @if ($task->due_at)
                                         <span @class(['text-error-600' => ! $done && $task->due_at->isPast()])>· {{ $done ? 'Done '.$task->completed_at?->diffForHumans() : $task->due_at->format('D j M, g:i a') }}</span>
                                     @endif
@@ -94,6 +97,12 @@
                 <x-admin.field label="Assign to" for="assignee">
                     <select id="assignee" wire:model="assignee" class="wx-input" @disabled(! auth()->user()->can('leads.assign'))>
                         @foreach ($staff as $member)<option value="{{ $member->id }}">{{ $member->name }}</option>@endforeach
+                    </select>
+                </x-admin.field>
+                <x-admin.field label="Repeats" for="recurrence" class="sm:col-span-2" hint="Completing a repeating task creates the next one automatically.">
+                    <select id="recurrence" wire:model="recurrence" class="wx-input">
+                        <option value="">Does not repeat</option>
+                        @foreach ($recurrences as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
                     </select>
                 </x-admin.field>
                 <x-admin.field label="Lead reference (optional)" for="leadRef" class="sm:col-span-2" hint="e.g. L-2026-000123 — links the task to the lead's timeline.">

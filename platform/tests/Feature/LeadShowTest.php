@@ -161,9 +161,16 @@ it('lets a manager reassign the lead', function () {
 
     Livewire::test(LeadShow::class, ['lead' => $this->lead])
         ->call('assignTo', (string) $other->id)
-        ->assertHasNoErrors();
+        ->assertSet('showReassign', true)
+        ->call('confirmReassign')
+        ->assertHasErrors('reassignReason')
+        ->set('reassignReason', 'Owner is on leave')
+        ->call('confirmReassign')
+        ->assertHasNoErrors()
+        ->assertSet('showReassign', false);
 
-    expect($this->lead->fresh()->owner_id)->toBe($other->id);
+    expect($this->lead->fresh()->owner_id)->toBe($other->id)
+        ->and($this->lead->activities()->where('type', 'assignment')->latest('id')->value('body'))->toContain('Owner is on leave');
 });
 
 it('does not let a sales user act on another person\'s lead', function () {

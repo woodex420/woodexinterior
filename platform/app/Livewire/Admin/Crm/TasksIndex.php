@@ -6,6 +6,7 @@ namespace App\Livewire\Admin\Crm;
 
 use App\Domain\Crm\Actions\ManageTask;
 use App\Domain\Crm\Enums\LeadPriority;
+use App\Domain\Crm\Enums\TaskRecurrence;
 use App\Domain\Crm\Enums\TaskStatus;
 use App\Domain\Crm\Enums\TaskType;
 use App\Domain\Crm\Models\Lead;
@@ -50,6 +51,8 @@ class TasksIndex extends Component
 
     public string $leadRef = '';
 
+    public string $recurrence = '';
+
     public function mount(): void
     {
         $this->authorize('viewAny', Lead::class);
@@ -61,7 +64,7 @@ class TasksIndex extends Component
 
     public function openCreate(): void
     {
-        $this->reset('title', 'due', 'leadRef');
+        $this->reset('title', 'due', 'leadRef', 'recurrence');
         $this->type = 'todo';
         $this->priority = 'normal';
         $this->assignee = (string) $this->user()->id;
@@ -81,7 +84,14 @@ class TasksIndex extends Component
             'due' => ['nullable', 'date'],
             'assignee' => ['nullable', Rule::exists('users', 'id')->where('is_active', true)],
             'leadRef' => ['nullable', 'string', 'max:20', Rule::exists('leads', 'ref')->whereNull('deleted_at')],
+            'recurrence' => ['nullable', Rule::enum(TaskRecurrence::class)],
         ], attributes: ['leadRef' => 'lead reference']);
+
+        if ($this->recurrence !== '' && $this->due === '') {
+            $this->addError('due', 'A repeating task needs a first due date.');
+
+            return;
+        }
 
         $lead = $this->leadRef !== '' ? Lead::query()->where('ref', trim($this->leadRef))->first() : null;
 
@@ -105,6 +115,7 @@ class TasksIndex extends Component
             $lead,
             TaskType::from($this->type),
             LeadPriority::from($this->priority),
+            recurrence: TaskRecurrence::tryFrom($this->recurrence),
         );
 
         $this->showCreate = false;
@@ -155,6 +166,7 @@ class TasksIndex extends Component
             'canSeeTeam' => $user->can('leads.view_all'),
             'staff' => $this->staff(),
             'types' => TaskType::options(),
+            'recurrences' => TaskRecurrence::options(),
             'priorities' => LeadPriority::options(),
             'counts' => [
                 'open' => $this->visibleTasks()->where('status', TaskStatus::Open->value)->count(),

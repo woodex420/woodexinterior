@@ -11,7 +11,10 @@ use App\Domain\Crm\Actions\UpdateSiteVisit;
 use App\Domain\Crm\Enums\ActivityType;
 use App\Domain\Crm\Enums\CallOutcome;
 use App\Domain\Crm\Enums\LeadPriority;
+use App\Domain\Crm\Enums\TaskRecurrence;
 use App\Domain\Crm\Enums\TaskType;
+use App\Domain\Crm\Models\AssignmentRule;
+use App\Domain\Crm\Models\Company;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Models\PipelineStage;
@@ -93,6 +96,8 @@ class DemoSeeder extends Seeder
      */
     private function seedWorkload(): void
     {
+        $this->seedCompaniesRulesAndNotifications();
+
         if (SiteVisit::query()->exists() || Task::query()->exists()) {
             return;
         }
@@ -153,6 +158,68 @@ class DemoSeeder extends Seeder
         foreach ($examples as $i => [$title, $due, $type]) {
             $lead = $open[$i % max(1, $open->count())] ?? null;
             $tasks->create($title, $due, $lead?->owner, $lead?->owner, $lead, $type, $i === 0 ? LeadPriority::High : LeadPriority::Normal);
+        }
+    }
+
+    /**
+     * P1 part 2 demo data: companies, assignment rules, a repeating task and a few notifications.
+     */
+    private function seedCompaniesRulesAndNotifications(): void
+    {
+        if (Company::query()->exists()) {
+            return;
+        }
+
+        $owner = User::query()->where('email', 'owner@woodex.test')->first();
+        $manager = User::query()->where('email', 'manager@woodex.test')->first();
+
+        $companies = collect([
+            ['name' => 'Bahria Developers', 'type' => 'developer', 'phone' => '+924235780000', 'email' => 'projects@bahriadev.pk', 'city' => 'Lahore', 'address' => 'Gulberg III'],
+            ['name' => 'Studio Arc & Co.', 'type' => 'architect', 'phone' => '+923004441122', 'email' => 'hello@studioarc.pk', 'city' => 'Lahore', 'address' => 'DHA Phase 5'],
+            ['name' => 'Cafe Aylanto Group', 'type' => 'hospitality', 'phone' => '+924235711111', 'city' => 'Lahore', 'address' => 'MM Alam Road'],
+        ])->map(fn (array $data) => Company::create($data + ['owner_id' => $owner?->id]));
+
+        Contact::query()->whereNull('company_id')->inRandomOrder()->limit(4)->get()->each(function (Contact $contact, int $i) use ($companies): void {
+            $company = $companies[$i % $companies->count()];
+            $contact->update(['company_id' => $company->id]);
+            $contact->leads()->update(['company_id' => $company->id]);
+        });
+
+        AssignmentRule::create([
+            'name' => 'Project leads to the sales manager',
+            'position' => 1,
+            'conditions' => ['business_lines' => ['project']],
+            'role' => 'sales_manager',
+            'strategy' => 'round_robin',
+        ]);
+        AssignmentRule::create([
+            'name' => 'Interior and furniture in working hours',
+            'position' => 2,
+            'conditions' => ['business_lines' => ['interior', 'furniture']],
+            'role' => 'sales',
+            'strategy' => 'least_loaded',
+            'max_open_leads' => 25,
+            'working_hours_only' => true,
+        ]);
+
+        if ($manager !== null) {
+            app(ManageTask::class)->create('Weekly pipeline review', now()->next('Monday')->setTime(10, 30), $manager, $manager, recurrence: TaskRecurrence::Weekly);
+        }
+
+        if ($owner !== null) {
+            $lead = Lead::query()->with('contact')->latest('id')->first();
+            foreach ([
+                ['New lead from the website', ($lead?->contact->name ?? 'A client').' · '.($lead?->ref ?? ''), $lead ? route('admin.leads.show', $lead) : null],
+                ['Demo Sales Manager mentioned you', '@Demo please approve 7% on the kitchen quotation.', $lead ? route('admin.leads.show', $lead) : null],
+                ['Site visit tomorrow', 'DHA Phase 6 · 11:00 am', route('admin.visits.index')],
+            ] as $i => [$title, $body, $url]) {
+                $owner->notifications()->create([
+                    'id' => (string) Str::uuid(),
+                    'type' => 'demo',
+                    'data' => ['title' => $title, 'body' => $body, 'url' => $url],
+                    'created_at' => now()->subMinutes(5 + $i * 40),
+                ]);
+            }
         }
     }
 }

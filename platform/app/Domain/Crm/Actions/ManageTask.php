@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Crm\Actions;
 
 use App\Domain\Crm\Enums\LeadPriority;
+use App\Domain\Crm\Enums\TaskRecurrence;
 use App\Domain\Crm\Enums\TaskStatus;
 use App\Domain\Crm\Enums\TaskType;
 use App\Domain\Crm\Models\Lead;
@@ -13,7 +14,8 @@ use App\Models\User;
 use Carbon\CarbonInterface;
 
 /**
- * Create, complete and reopen follow-up tasks (CRM-007).
+ * Create, complete and reopen follow-up tasks (CRM-007). The reminder defaults to 30 minutes before the
+ * due time; completing a repeating task creates its next occurrence.
  */
 final class ManageTask
 {
@@ -26,6 +28,7 @@ final class ManageTask
         TaskType $type = TaskType::Todo,
         LeadPriority $priority = LeadPriority::Normal,
         ?string $description = null,
+        ?TaskRecurrence $recurrence = null,
     ): Task {
         return Task::create([
             'title' => trim($title),
@@ -39,12 +42,17 @@ final class ManageTask
             'contact_id' => $lead?->contact_id,
             'priority' => $priority,
             'status' => TaskStatus::Open,
+            'recurrence' => $recurrence,
         ]);
     }
 
     public function complete(Task $task): Task
     {
         $task->forceFill(['status' => TaskStatus::Done, 'completed_at' => now()])->save();
+
+        if ($task->recurrence !== null) {
+            $this->scheduleNext($task);
+        }
 
         if ($task->lead_id !== null) {
             $task->lead()->update(['last_activity_at' => now()]);
@@ -58,5 +66,47 @@ final class ManageTask
         $task->forceFill(['status' => TaskStatus::Open, 'completed_at' => null])->save();
 
         return $task;
+    }
+
+    /**
+     * Next occurrence of a repeating task (skipped if it already exists, e.g. completed → reopened → completed).
+     */
+    private function scheduleNext(Task $task): ?Task
+    {
+        /** @var TaskRecurrence $recurrence */
+        $recurrence = $task->recurrence;
+        $due = $recurrence->next($task->due_at ?? now());
+
+        // A task completed long after it was due continues from today, not from the past.
+        while ($due->isPast()) {
+            $due = $recurrence->next($due);
+        }
+
+        $exists = Task::query()
+            ->where('status', TaskStatus::Open)
+            ->where('title', $task->title)
+            ->where('assignee_id', $task->assignee_id)
+            ->where('lead_id', $task->lead_id)
+            ->where('due_at', '>=', $due->copy()->startOfDay())
+            ->exists();
+
+        if ($exists) {
+            return null;
+        }
+
+        return Task::create([
+            'title' => $task->title,
+            'description' => $task->description,
+            'type' => $task->type,
+            'due_at' => $due,
+            'remind_at' => $due->copy()->subMinutes(30),
+            'assignee_id' => $task->assignee_id,
+            'created_by' => $task->created_by,
+            'lead_id' => $task->lead_id,
+            'contact_id' => $task->contact_id,
+            'priority' => $task->priority,
+            'status' => TaskStatus::Open,
+            'recurrence' => $recurrence,
+        ]);
     }
 }

@@ -23,11 +23,14 @@ final class LogLeadActivity
     /** @var list<ActivityType> */
     private const OUTBOUND = [ActivityType::Call, ActivityType::WhatsApp, ActivityType::Email, ActivityType::Meeting];
 
-    public function __construct(private readonly MoveLeadToStage $moveLeadToStage) {}
+    public function __construct(
+        private readonly MoveLeadToStage $moveLeadToStage,
+        private readonly NotifyMentions $notifyMentions,
+    ) {}
 
     public function handle(Lead $lead, ActivityType $type, ?User $by = null, ?string $body = null, ?CallOutcome $outcome = null): Activity
     {
-        return DB::transaction(function () use ($lead, $type, $by, $body, $outcome): Activity {
+        $activity = DB::transaction(function () use ($lead, $type, $by, $body, $outcome): Activity {
             $now = now();
             $outbound = in_array($type, self::OUTBOUND, true);
 
@@ -57,6 +60,13 @@ final class LogLeadActivity
 
             return $activity;
         });
+
+        // Notify after commit so a failed write never sends a mention.
+        if ($activity->body !== null) {
+            $this->notifyMentions->handle($activity, $by);
+        }
+
+        return $activity;
     }
 
     public function reached(ActivityType $type, ?CallOutcome $outcome): bool

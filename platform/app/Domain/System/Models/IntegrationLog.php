@@ -23,6 +23,7 @@ class IntegrationLog extends Model
     {
         return [
             'ok' => 'boolean',
+            'created_at' => 'datetime',
             'request' => 'array',
             'response' => 'array',
         ];

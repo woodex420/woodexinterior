@@ -8,7 +8,6 @@ use App\Domain\Crm\Actions\AssignLead;
 use App\Domain\Crm\Actions\LogLeadActivity;
 use App\Domain\Crm\Actions\ManageTask;
 use App\Domain\Crm\Actions\MoveLeadToStage;
-use App\Domain\Crm\Actions\ScheduleSiteVisit;
 use App\Domain\Crm\Actions\SetNextAction;
 use App\Domain\Crm\Enums\ActivityType;
 use App\Domain\Crm\Enums\BusinessLine;
@@ -20,7 +19,10 @@ use App\Domain\Crm\Enums\TaskStatus;
 use App\Domain\Crm\Models\Activity;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Models\PipelineStage;
+use App\Domain\Crm\Models\SiteVisit;
+use App\Livewire\Concerns\BooksSiteVisits;
 use App\Livewire\Concerns\InteractsWithAdmin;
+use App\Livewire\Concerns\ManagesAttachments;
 use App\Models\User;
 use App\Settings\SalesSettings;
 use App\Support\Money;
@@ -44,7 +46,7 @@ use Livewire\Component;
 #[Layout('layouts::admin')]
 class LeadShow extends Component
 {
-    use InteractsWithAdmin;
+    use BooksSiteVisits, InteractsWithAdmin, ManagesAttachments;
 
     #[Locked]
     public int $leadId;
@@ -61,16 +63,12 @@ class LeadShow extends Component
 
     public string $nextAt = '';
 
-    // Site visit
-    public bool $showVisit = false;
+    // Reassign with reason
+    public bool $showReassign = false;
 
-    public string $visitAt = '';
+    public string $reassignTo = '';
 
-    public int $visitDuration = 60;
-
-    public string $visitAddress = '';
-
-    public string $visitAssignee = '';
+    public string $reassignReason = '';
 
     // Tasks
     public string $taskTitle = '';
@@ -212,53 +210,78 @@ class LeadShow extends Component
         $this->authorize('assign', Lead::class);
 
         $to = $userId === '' ? null : User::query()->where('is_active', true)->findOrFail((int) $userId);
+        $current = $this->lead->owner_id;
 
-        app(AssignLead::class)->handle($this->lead, $to, $this->user(), $to ? null : 'Unassigned');
+        // Taking a lead away from someone needs a reason on the timeline (CRM-009).
+        if ($current !== null && $current !== $to?->id) {
+            $this->reassignTo = $userId;
+            $this->reassignReason = '';
+            $this->resetValidation();
+            $this->showReassign = true;
 
+            return;
+        }
+
+        if ($to !== null) {
+            app(AssignLead::class)->handle($this->lead, $to, $this->user());
+            unset($this->lead);
+            $this->toast("Assigned to {$to->name}.");
+        }
+    }
+
+    public function confirmReassign(): void
+    {
+        $this->authorize('assign', Lead::class);
+        $this->validate(['reassignReason' => ['required', 'string', 'min:3', 'max:200']], attributes: ['reassignReason' => 'reason']);
+
+        $lead = $this->lead;
+        $from = $lead->owner->name ?? 'nobody';
+        $to = $this->reassignTo === '' ? null : User::query()->where('is_active', true)->findOrFail((int) $this->reassignTo);
+
+        if ($to === null) {
+            $lead->forceFill(['owner_id' => null])->save();
+            Activity::create([
+                'contact_id' => $lead->contact_id,
+                'lead_id' => $lead->id,
+                'user_id' => $this->user()->id,
+                'type' => ActivityType::Assignment,
+                'body' => "Unassigned from {$from}: {$this->reassignReason}",
+                'occurred_at' => now(),
+            ]);
+        } else {
+            app(AssignLead::class)->handle($lead, $to, $this->user(), "Reassigned from {$from} to {$to->name}: {$this->reassignReason}");
+        }
+
+        $this->reset('showReassign', 'reassignTo', 'reassignReason');
         unset($this->lead);
-        $this->toast($to ? "Assigned to {$to->name}." : 'Lead unassigned.');
+        $this->toast($to ? "Reassigned to {$to->name}." : 'Lead unassigned.');
+    }
+
+    public function deleteLead(): void
+    {
+        $lead = $this->lead;
+        $this->authorize('delete', $lead);
+
+        $lead->delete();
+        $this->toast("{$lead->ref} moved to the recycle bin.");
+        $this->redirectRoute('admin.leads.index', navigate: true);
+    }
+
+    protected function attachable(): Lead
+    {
+        return $this->lead;
     }
 
     public function openVisit(): void
     {
-        $lead = $this->lead;
-        $this->authorize('update', $lead);
-
-        $this->visitAt = CarbonImmutable::now()->addDay()->setTime(11, 0)->format('Y-m-d\TH:i');
-        $this->visitDuration = 60;
-        $this->visitAddress = (string) ($lead->address ?? trim(($lead->area ?? '').', '.($lead->city ?? ''), ', '));
-        $this->visitAssignee = (string) ($lead->owner_id ?? $this->user()->id);
-        $this->resetValidation();
-        $this->showVisit = true;
+        $this->openVisitFor($this->lead);
     }
 
-    public function scheduleVisit(): void
+    protected function visitBooked(Lead $lead, SiteVisit $visit): void
     {
-        $lead = $this->lead;
-        $this->authorize('update', $lead);
-
-        $this->validate([
-            'visitAt' => ['required', 'date', 'after:now'],
-            'visitDuration' => ['required', 'integer', 'between:15,480'],
-            'visitAddress' => ['nullable', 'string', 'max:255'],
-            'visitAssignee' => ['nullable', Rule::exists('users', 'id')->where('is_active', true)],
-        ], attributes: ['visitAt' => 'visit time', 'visitAssignee' => 'team member']);
-
-        $assignee = $this->visitAssignee !== '' ? User::query()->find((int) $this->visitAssignee) : null;
-
-        app(ScheduleSiteVisit::class)->handle(
-            $lead,
-            Carbon::parse($this->visitAt),
-            $this->visitDuration,
-            $this->visitAddress !== '' ? $this->visitAddress : null,
-            $assignee,
-            $this->user(),
-        );
-
-        $this->reset('showVisit', 'visitAt', 'visitAddress', 'visitAssignee');
         unset($this->lead);
         $this->fillNextAction($this->lead);
-        $this->toast('Site visit scheduled.');
+        $this->toast('Site visit booked for '.$visit->scheduled_at->format('D j M, g:i a').'.');
     }
 
     public function addTask(): void
@@ -375,6 +398,7 @@ class LeadShow extends Component
             'openTasks' => $lead->tasks()->with('assignee:id,name')->where('status', TaskStatus::Open->value)->orderByRaw('due_at is null')->orderBy('due_at')->get(),
             'doneTasks' => $lead->tasks()->where('status', TaskStatus::Done->value)->latest('completed_at')->limit(5)->get(),
             'visits' => $lead->siteVisits()->with('assignee:id,name')->latest('scheduled_at')->get(),
+            'files' => $lead->getMedia('files')->sortByDesc('id')->values(),
             'otherLeads' => Lead::query()->with('stage')->where('contact_id', $lead->contact_id)->whereKeyNot($lead->id)->latest('id')->get(),
             'staff' => $this->staff(),
             'callOutcomes' => CallOutcome::options(),

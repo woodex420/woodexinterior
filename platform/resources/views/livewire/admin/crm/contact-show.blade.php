@@ -18,6 +18,9 @@
             @can('create', \App\Domain\Crm\Models\Lead::class)
                 <x-admin.button icon="plus" wire:click="$set('showLead', true)">New enquiry</x-admin.button>
             @endcan
+            @can('leads.delete')
+                <x-admin.button variant="secondary" icon="trash" wire:click="deleteContact" wire:confirm="Move {{ $contact->name }} and all their enquiries to the recycle bin? They can be restored." aria-label="Delete contact" />
+            @endcan
         </x-slot:actions>
     </x-admin.page-header>
 
@@ -102,6 +105,9 @@
                 @endif
             </x-admin.card>
 
+            {{-- Files (GLB-006) --}}
+            <x-admin.attachments :files="$files" :can-edit="$canUpdate" />
+
             {{-- Possible duplicates (CRM-012) --}}
             @if ($duplicates->isNotEmpty())
                 <x-admin.card title="Possible duplicates" description="Same phone, email or name. Merging moves every enquiry, note and document here.">
@@ -159,7 +165,7 @@
                                     @endif
                                 </p>
                                 @if ($activity->body)
-                                    <p class="mt-0.5 text-theme-sm break-words whitespace-pre-line text-gray-600 dark:text-gray-400">{{ $activity->body }}</p>
+                                    <p class="mt-0.5 text-theme-sm break-words whitespace-pre-line text-gray-600 dark:text-gray-400">{!! \App\Domain\Crm\Actions\NotifyMentions::highlight($activity->body) !!}</p>
                                 @endif
                                 <p class="mt-1 text-theme-xs text-gray-400">{{ $activity->user?->name ?? 'System' }} · {{ $activity->occurred_at->format('j M Y, g:i a') }}</p>
                             </div>

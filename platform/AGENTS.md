@@ -24,3 +24,10 @@ Patterns used in the code (follow them):
 - Settings classes: never `@var` on properties (spatie parses it); use `@phpstan-var` for array shapes.
 - Preline JS: import per plugin in `resources/js/admin.js` and add it to `PRELINE_PLUGINS`.
 - v2.1 data: extend `App\Domain\System\Import\V21Importer` (idempotent via `legacy_refs`), document in docs/04 §8.
+- Reusable Livewire concerns: `BooksSiteVisits` (+ `<x-admin.visit-modal>`) for visit booking with conflict warning,
+  `ManagesAttachments` (+ `<x-admin.attachments>`) for files on a record, `HasSavedViews` for list screens.
+  Form objects live in `app/Livewire/Forms` (e.g. `CompanyForm` + `<x-admin.company-fields>`).
+- Staff notifications: use `App\Notifications\Concerns\SendsToDatabaseAndTelegram` (bell + Telegram when linked),
+  return `title`, `body` and `url` from `toArray()`; scheduled work goes in `routes/console.php` (cron-driven).
+- Inline SVGs need `width`/`height` attributes as a no-CSS fallback (D-36). New Tailwind classes require
+  `npm run build` before checking a page.

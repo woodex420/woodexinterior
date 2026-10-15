@@ -10,17 +10,23 @@ use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Notifications\SlaBreachedNotification;
 use App\Models\User;
 use App\Settings\NotificationSettings;
+use App\Settings\SalesSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Notification;
 
 /**
  * First-response SLA (CRM-010): flag open leads nobody has contacted by their due time and alert the
- * owner plus the managers (in-app + Telegram). Each lead is flagged once; runs every minute.
+ * lead owner plus the escalation roles (in-app + Telegram). If the lead is still not contacted after
+ * Settings → Sales "escalation delay", the final roles (default: owner) are alerted once more.
+ * Each step happens once per lead (atomic claims); runs every minute.
  */
 final class CheckLeadSla
 {
-    public function __construct(private readonly NotificationSettings $settings) {}
+    public function __construct(
+        private readonly NotificationSettings $settings,
+        private readonly SalesSettings $sales,
+    ) {}
 
     /**
      * @return int number of leads newly flagged
@@ -68,6 +74,74 @@ final class CheckLeadSla
             });
 
         return $flagged;
+    }
+
+    /**
+     * Second level: still uncontacted N minutes after the breach.
+     *
+     * @return int number of leads escalated
+     */
+    public function escalate(): int
+    {
+        $escalated = 0;
+
+        Lead::query()
+            ->open()
+            ->whereNull('first_response_at')
+            ->whereNull('sla_escalated_at')
+            ->whereNotNull('sla_breached_at')
+            ->where('sla_breached_at', '<=', now()->subMinutes($this->sales->sla_escalation_minutes))
+            ->with(['contact', 'owner.telegramLink'])
+            ->chunkById(100, function (Collection $leads) use (&$escalated): void {
+                foreach ($leads as $lead) {
+                    /** @var Lead $lead */
+                    $claimed = Lead::query()->whereKey($lead->id)->whereNull('sla_escalated_at')->update(['sla_escalated_at' => now()]);
+
+                    if ($claimed === 0) {
+                        continue;
+                    }
+
+                    Activity::create([
+                        'contact_id' => $lead->contact_id,
+                        'lead_id' => $lead->id,
+                        'type' => ActivityType::System,
+                        'body' => 'Still not contacted: escalated to '.implode(', ', array_map(
+                            fn (string $role): string => str_replace('_', ' ', $role),
+                            $this->settings->sla_final_roles,
+                        )).'.',
+                        'occurred_at' => now(),
+                    ]);
+
+                    $recipients = $this->usersWithRoles($this->settings->sla_final_roles);
+
+                    if ($lead->owner !== null && $lead->owner->is_active) {
+                        $recipients->push($lead->owner);
+                    }
+
+                    $recipients = $recipients->unique('id')->values();
+
+                    if ($recipients->isNotEmpty()) {
+                        Notification::send($recipients, new SlaBreachedNotification($lead, escalated: true));
+                    }
+
+                    $escalated++;
+                }
+            });
+
+        return $escalated;
+    }
+
+    /**
+     * @param  list<string>  $roles
+     * @return Collection<int, User>
+     */
+    private function usersWithRoles(array $roles): Collection
+    {
+        return User::query()
+            ->with('telegramLink')
+            ->where('is_active', true)
+            ->whereHas('roles', fn (Builder $q) => $q->whereIn('name', $roles))
+            ->get();
     }
 
     /**

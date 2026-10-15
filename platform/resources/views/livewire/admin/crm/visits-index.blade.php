@@ -5,7 +5,7 @@
 
     <div class="mb-5 flex flex-wrap items-center gap-2">
         <div class="inline-flex rounded-lg border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-white/[0.03]" role="tablist">
-            @foreach (['upcoming' => 'Upcoming', 'past' => 'Past 60 days'] as $value => $label)
+            @foreach (['upcoming' => 'Upcoming', 'past' => 'Past 60 days', 'week' => 'Week', 'month' => 'Month'] as $value => $label)
                 <button type="button" wire:click="$set('range', '{{ $value }}')" role="tab" aria-selected="{{ $range === $value ? 'true' : 'false' }}"
                         @class(['rounded-md px-3 py-1.5 text-theme-sm font-medium transition', 'bg-navy-900 text-white dark:bg-white dark:text-navy-900' => $range === $value, 'text-gray-600 hover:text-gray-900 dark:text-gray-400' => $range !== $value])>{{ $label }}</button>
             @endforeach
@@ -20,7 +20,11 @@
         @endif
     </div>
 
-    <div class="space-y-6" wire:loading.class="opacity-60">
+    @if ($calendar)
+        @include('livewire.admin.crm.partials.visit-calendar', ['calendar' => $calendar, 'mode' => $range])
+    @endif
+
+    <div class="space-y-6" wire:loading.class="opacity-60" @if ($calendar) hidden @endif>
         @forelse ($groups as $label => $visits)
             <section>
                 <h2 @class(['mb-3 text-theme-sm font-semibold', 'text-error-600' => $label === 'Needs an update', 'text-gray-800 dark:text-white/90' => $label !== 'Needs an update'])>{{ $label }}</h2>

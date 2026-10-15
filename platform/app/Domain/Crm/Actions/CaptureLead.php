@@ -148,7 +148,7 @@ final class CaptureLead
     private function createLead(Contact $contact, LeadInput $input): Lead
     {
         $now = CarbonImmutable::now();
-        $slaDue = $this->business->hours()->dueAt($now, $this->sales->sla_first_response_minutes);
+        $slaDue = $this->business->hours()->dueAt($now, $this->sales->slaMinutesFor($input->source->value));
 
         $lead = new Lead([
             'ref' => $this->numbering->next('lead'),

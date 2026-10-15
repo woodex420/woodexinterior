@@ -24,13 +24,16 @@
             @if ($canUpdate && ! $isClosed)
                 <x-admin.button icon="calendar" wire:click="openVisit">Book site visit</x-admin.button>
             @endif
+            @can('delete', $lead)
+                <x-admin.button variant="secondary" icon="trash" wire:click="deleteLead" wire:confirm="Move {{ $lead->ref }} to the recycle bin? It can be restored." aria-label="Delete lead" />
+            @endcan
         </x-slot:actions>
     </x-admin.page-header>
 
     <div class="-mt-3 mb-5 flex flex-wrap items-center gap-2 text-theme-sm text-gray-500">
         <x-admin.badge :color="$current->badgeColor()">{{ $current->name }}</x-admin.badge>
         <x-admin.badge :color="$lead->priority->color()" :dot="false">{{ $lead->priority->label() }} priority</x-admin.badge>
-        @if ($lead->score >= 80)
+        @if ($lead->isHot())
             <x-admin.badge color="wood" :dot="false"><x-icon name="flame" class="size-3.5" /> Hot · {{ $lead->score }}</x-admin.badge>
         @endif
         @if ($lead->first_response_at === null && $lead->sla_due_at && ! $isClosed)
@@ -118,8 +121,9 @@
                         <div>
                             <label for="logBody" class="sr-only">Details</label>
                             <textarea id="logBody" wire:model="logBody" rows="3" class="wx-input h-auto py-2.5"
-                                      placeholder="What was discussed? Budget, timeline, decision makers…"></textarea>
+                                      placeholder="What was discussed? Budget, timeline, decision makers… Type @name to notify a teammate."></textarea>
                             @error('logBody') <p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p> @enderror
+                            <p class="mt-1 flex items-center gap-1 text-theme-xs text-gray-400"><x-icon name="at-sign" class="size-3" /> @@Sara or @@sara.khan notifies them in the app and on Telegram.</p>
                         </div>
 
                         <div class="flex items-center justify-between gap-3">
@@ -154,7 +158,7 @@
                                         @endif
                                     </p>
                                     @if ($activity->body)
-                                        <p class="mt-0.5 text-theme-sm break-words whitespace-pre-line text-gray-600 dark:text-gray-400">{{ $activity->body }}</p>
+                                        <p class="mt-0.5 text-theme-sm break-words whitespace-pre-line text-gray-600 dark:text-gray-400">{!! \App\Domain\Crm\Actions\NotifyMentions::highlight($activity->body) !!}</p>
                                     @endif
                                     <p class="mt-1 text-theme-xs text-gray-400">
                                         {{ $activity->user?->name ?? 'System' }} · <time datetime="{{ $activity->occurred_at->toIso8601String() }}" title="{{ $activity->occurred_at->format('j M Y, g:i a') }}">{{ $activity->occurred_at->format('g:i a') }}</time>
@@ -205,6 +209,9 @@
                     </form>
                 @endif
             </x-admin.card>
+
+            {{-- Files (GLB-006) --}}
+            <x-admin.attachments :files="$files" :can-edit="$canUpdate" />
 
             {{-- Owner --}}
             <x-admin.card title="Owner">
@@ -371,37 +378,23 @@
         </div>
     </div>
 
-    {{-- Book site visit --}}
-    @if ($showVisit)
-        <x-admin.modal name="showVisit" title="Book a site visit" description="The visit becomes this lead's next action. Reminders go out the day before (P4)." submit="scheduleVisit">
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <x-admin.field label="Date and time" for="visitAt">
-                    <input id="visitAt" type="datetime-local" wire:model="visitAt" class="wx-input">
-                </x-admin.field>
-                <x-admin.field label="Duration" for="visitDuration">
-                    <select id="visitDuration" wire:model="visitDuration" class="wx-input">
-                        @foreach ([30 => '30 minutes', 60 => '1 hour', 90 => '1½ hours', 120 => '2 hours', 180 => '3 hours'] as $minutes => $label)
-                            <option value="{{ $minutes }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </x-admin.field>
-                <x-admin.field label="Address" for="visitAddress" class="sm:col-span-2">
-                    <input id="visitAddress" type="text" wire:model="visitAddress" class="wx-input" placeholder="House 12, Street 4, DHA Phase 6, Lahore">
-                </x-admin.field>
-                <x-admin.field label="Team member" for="visitAssignee" class="sm:col-span-2">
-                    <select id="visitAssignee" wire:model="visitAssignee" class="wx-input">
-                        <option value="">Unassigned</option>
-                        @foreach ($staff as $member)
-                            <option value="{{ $member->id }}">{{ $member->name }}</option>
-                        @endforeach
-                    </select>
-                </x-admin.field>
-            </div>
+    {{-- Reassign with reason (CRM-009) --}}
+    @if ($showReassign)
+        <x-admin.modal name="showReassign" title="Reassign this lead" submit="confirmReassign"
+                       description="The reason is written to the timeline so the previous owner knows why.">
+            <x-admin.field label="Reason" for="reassignReason">
+                <input id="reassignReason" type="text" wire:model="reassignReason" class="wx-input" placeholder="On leave this week / better fit for a project lead / workload">
+            </x-admin.field>
             <x-slot:footer>
-                <x-admin.button variant="secondary" wire:click="$set('showVisit', false)">Cancel</x-admin.button>
-                <x-admin.button type="submit" icon="calendar-check">Book visit</x-admin.button>
+                <x-admin.button variant="secondary" wire:click="$set('showReassign', false)">Cancel</x-admin.button>
+                <x-admin.button type="submit" icon="users">Reassign</x-admin.button>
             </x-slot:footer>
         </x-admin.modal>
+    @endif
+
+    {{-- Book site visit --}}
+    @if ($showVisit)
+        <x-admin.visit-modal :staff="$staff" :conflicts="$visitConflicts" />
     @endif
 
     {{-- Edit details --}}

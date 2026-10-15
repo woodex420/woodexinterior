@@ -50,6 +50,9 @@ class BusinessSettings extends Settings
     /** @phpstan-var array<string, string> network => URL */
     public array $social_links;
 
+    /** @phpstan-var list<array{date: string, name: string}> public holidays (AUT-004) */
+    public array $holidays;
+
     public static function group(): string
     {
         return 'business';
@@ -57,6 +60,11 @@ class BusinessSettings extends Settings
 
     public function hours(): BusinessHours
     {
-        return new BusinessHours($this->opens_at, $this->closes_at, $this->working_days);
+        return new BusinessHours(
+            $this->opens_at,
+            $this->closes_at,
+            $this->working_days,
+            holidays: array_values(array_map(fn (array $holiday): string => (string) $holiday['date'], $this->holidays)),
+        );
     }
 }

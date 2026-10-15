@@ -1,8 +1,6 @@
 @props(['title' => null])
 @php
     $user = auth()->user();
-    $notifications = $user?->unreadNotifications()->latest()->limit(6)->get() ?? collect();
-    $unread = $user?->unreadNotifications()->count() ?? 0;
 @endphp
 <header class="sticky top-0 z-30 flex h-[72px] items-center gap-3 border-b border-gray-200 bg-white/90 px-4 backdrop-blur md:px-6 dark:border-gray-800 dark:bg-gray-900/90">
     <button type="button" @click="$store.sidebar.toggle()"
@@ -22,28 +20,8 @@
             <x-icon name="sun" class="hidden size-5 dark:block" />
         </button>
 
-        {{-- Notifications (Preline dropdown) --}}
-        <div class="hs-dropdown relative inline-flex [--placement:bottom-right]">
-            <button type="button" class="hs-dropdown-toggle relative flex size-10 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5"
-                    aria-haspopup="menu" aria-expanded="false" aria-label="Notifications">
-                <x-icon name="bell" />
-                @if ($unread > 0)
-                    <span class="absolute -top-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full bg-wood-500 text-[10px] font-semibold text-white">{{ min($unread, 9) }}{{ $unread > 9 ? '+' : '' }}</span>
-                @endif
-            </button>
-            <div class="hs-dropdown-menu z-50 mt-2 hidden w-80 rounded-xl border border-gray-200 bg-white p-2 opacity-0 shadow-theme-lg transition-[opacity,margin] hs-dropdown-open:opacity-100 dark:border-gray-800 dark:bg-gray-900" role="menu">
-                <p class="px-3 py-2 text-theme-xs font-medium tracking-wide text-gray-500 uppercase">Notifications</p>
-                @forelse ($notifications as $notification)
-                    <a href="{{ $notification->data['url'] ?? '#' }}" class="block rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-white/5">
-                        <span class="block text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $notification->data['title'] ?? 'Update' }}</span>
-                        <span class="block truncate text-theme-xs text-gray-500">{{ $notification->data['body'] ?? '' }}</span>
-                        <span class="block text-[11px] text-gray-400">{{ $notification->created_at?->diffForHumans() }}</span>
-                    </a>
-                @empty
-                    <p class="px-3 py-6 text-center text-theme-sm text-gray-500">You're all caught up.</p>
-                @endforelse
-            </div>
-        </div>
+        {{-- Notifications (GLB-008) --}}
+        <livewire:admin.notification-bell />
 
         {{-- User menu --}}
         <div class="hs-dropdown relative inline-flex [--placement:bottom-right]">

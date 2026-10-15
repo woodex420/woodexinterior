@@ -9,9 +9,12 @@ use App\Domain\Crm\Enums\VisitStatus;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Models\SiteVisit;
 use App\Livewire\Concerns\InteractsWithAdmin;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -30,8 +33,13 @@ class VisitsIndex extends Component
     #[Url(except: 'mine')]
     public string $scope = 'mine';
 
+    /** upcoming | past | week | month (calendar views, CRM-008) */
     #[Url(except: 'upcoming')]
     public string $range = 'upcoming';
+
+    /** Calendar anchor date (Y-m-d); empty = today. */
+    #[Url(except: '')]
+    public string $date = '';
 
     public ?int $completingId = null;
 
@@ -140,8 +148,78 @@ class VisitsIndex extends Component
         $this->reset('completingId', 'reschedulingId');
     }
 
+    public function shiftCalendar(int $steps): void
+    {
+        $anchor = $this->anchor();
+        $this->date = ($this->range === 'month' ? $anchor->addMonthsNoOverflow($steps) : $anchor->addWeeks($steps))->format('Y-m-d');
+    }
+
+    public function showWeekOf(string $date): void
+    {
+        $this->range = 'week';
+        $this->date = $this->anchor($date)->format('Y-m-d');
+    }
+
+    public function today(): void
+    {
+        $this->date = '';
+    }
+
+    private function anchor(?string $date = null): CarbonImmutable
+    {
+        $date ??= $this->date;
+
+        try {
+            return $date !== '' ? CarbonImmutable::createFromFormat('Y-m-d', $date)->startOfDay() : CarbonImmutable::today();
+        } catch (\Throwable) {
+            return CarbonImmutable::today();
+        }
+    }
+
+    /**
+     * @return array{title: string, days: list<CarbonImmutable>, visits: Collection<array-key, \Illuminate\Database\Eloquent\Collection<int, SiteVisit>>, anchor: CarbonImmutable}
+     */
+    private function calendar(): array
+    {
+        $anchor = $this->anchor();
+        [$start, $end] = $this->range === 'month'
+            ? [$anchor->startOfMonth()->startOfWeek(CarbonInterface::MONDAY), $anchor->endOfMonth()->endOfWeek(CarbonInterface::SUNDAY)]
+            : [$anchor->startOfWeek(CarbonInterface::MONDAY), $anchor->endOfWeek(CarbonInterface::SUNDAY)];
+
+        $days = [];
+        for ($day = $start; $day->lte($end); $day = $day->addDay()) {
+            $days[] = $day;
+        }
+
+        $visits = $this->visibleVisits()
+            ->with(['contact:id,name', 'assignee:id,name', 'lead:id,ref'])
+            ->whereBetween('scheduled_at', [$start, $end])
+            ->where('status', '!=', VisitStatus::Cancelled->value)
+            ->orderBy('scheduled_at')
+            ->get()
+            ->groupBy(fn (SiteVisit $visit): string => $visit->scheduled_at->format('Y-m-d'))
+            ->toBase();
+
+        $title = $this->range === 'month'
+            ? $anchor->format('F Y')
+            : $start->format($start->month === $end->month ? 'j' : 'j M').' – '.$end->format('j M Y');
+
+        return ['title' => $title, 'days' => $days, 'visits' => $visits, 'anchor' => $anchor];
+    }
+
     public function render(): View
     {
+        if (in_array($this->range, ['week', 'month'], true)) {
+            return view('livewire.admin.crm.visits-index', [
+                'calendar' => $this->calendar(),
+                'groups' => collect(),
+                'canSeeTeam' => $this->user()->can('leads.view_all'),
+                'completing' => null,
+                'measuredArea' => 0,
+                'todayCount' => $this->visibleVisits()->whereIn('status', [VisitStatus::Scheduled->value, VisitStatus::Confirmed->value, VisitStatus::Rescheduled->value])->whereDate('scheduled_at', today())->count(),
+            ]);
+        }
+
         $open = [VisitStatus::Scheduled->value, VisitStatus::Confirmed->value, VisitStatus::Rescheduled->value];
 
         $query = $this->visibleVisits()->with(['lead:id,ref,contact_id,owner_id,area,city', 'contact:id,name,phone,whatsapp', 'assignee:id,name']);
@@ -166,6 +244,7 @@ class VisitsIndex extends Component
         $area = collect($this->measurements)->sum(fn ($row) => (float) ($row['length_ft'] ?: 0) * (float) ($row['width_ft'] ?: 0));
 
         return view('livewire.admin.crm.visits-index', [
+            'calendar' => null,
             'groups' => $groups,
             'canSeeTeam' => $this->user()->can('leads.view_all'),
             'completing' => $completing,

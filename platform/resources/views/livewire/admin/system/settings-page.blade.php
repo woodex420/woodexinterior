@@ -3,7 +3,7 @@
                          :breadcrumbs="['System' => null, 'Settings' => null]" />
 
     <div class="mb-6 inline-flex rounded-lg border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-white/[0.03]" role="tablist">
-        @foreach (['business' => 'Business', 'sales' => 'Sales rules', 'notifications' => 'Notifications'] as $key => $label)
+        @foreach (['business' => 'Business', 'sales' => 'Sales rules', 'leads' => 'Lead rules', 'notifications' => 'Notifications'] as $key => $label)
             <button type="button" wire:click="$set('tab', '{{ $key }}')" role="tab" aria-selected="{{ $tab === $key ? 'true' : 'false' }}"
                     @class(['rounded-md px-4 py-1.5 text-theme-sm font-medium transition', 'bg-navy-900 text-white dark:bg-white dark:text-navy-900' => $tab === $key, 'text-gray-600 hover:text-gray-900 dark:text-gray-400' => $tab !== $key])>{{ $label }}</button>
         @endforeach
@@ -49,6 +49,12 @@
                         </div>
                     </x-admin.field>
                 </div>
+            </x-admin.card>
+
+            <x-admin.card title="Holidays" description="Closed days pause response timers and reminders (AUT-004). Add Eid and other moon-dependent holidays when they are announced.">
+                <x-admin.field label="One per line: date and name" for="business.holidays" hint="Example: 2027-03-10 Eid ul Fitr (day 1)">
+                    <textarea id="business.holidays" wire:model="business.holidays" rows="6" class="wx-input font-mono text-theme-xs"></textarea>
+                </x-admin.field>
             </x-admin.card>
 
             <x-admin.card title="Social profiles" description="Used in the website footer and structured data.">
@@ -147,6 +153,11 @@
         </form>
     @endif
 
+    {{-- Lead rules (own component) --}}
+    @if ($tab === 'leads')
+        <livewire:admin.system.lead-rules-settings />
+    @endif
+
     {{-- Notifications --}}
     @if ($tab === 'notifications')
         <form wire:submit="saveNotifications" class="space-y-6">
@@ -168,6 +179,17 @@
                     @endforeach
                 </div>
                 @error('notifications.unassigned_lead_roles') <p class="mt-2 text-theme-xs text-error-600">{{ $message }}</p> @enderror
+            </x-admin.card>
+            <x-admin.card title="Final escalation" description="Alerted when a missed response is still open after the escalation delay (Lead rules tab).">
+                <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
+                    @foreach ($roles as $key => $description)
+                        <label class="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2.5 text-theme-sm hover:bg-gray-50 has-[:checked]:border-navy-900 has-[:checked]:bg-navy-50 dark:border-gray-700 dark:hover:bg-white/5 dark:has-[:checked]:bg-white/10">
+                            <input type="checkbox" wire:model="notifications.sla_final_roles" value="{{ $key }}" class="rounded border-gray-300">
+                            <span class="font-medium text-gray-800 dark:text-white/90">{{ \Illuminate\Support\Str::headline($key) }}</span>
+                        </label>
+                    @endforeach
+                </div>
+                @error('notifications.sla_final_roles') <p class="mt-2 text-theme-xs text-error-600">{{ $message }}</p> @enderror
             </x-admin.card>
             <div class="flex justify-end"><x-admin.button type="submit" icon="check">Save notification settings</x-admin.button></div>
         </form>

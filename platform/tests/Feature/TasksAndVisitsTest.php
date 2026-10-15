@@ -9,6 +9,7 @@ use App\Domain\Crm\Models\Task;
 use App\Livewire\Admin\Crm\TasksIndex;
 use App\Livewire\Admin\Crm\VisitsIndex;
 use App\Livewire\Admin\MyDay;
+use Carbon\CarbonImmutable;
 use Livewire\Livewire;
 
 it('creates a task linked to a lead by its reference', function () {
@@ -130,6 +131,8 @@ it('hides other people\'s visits from sales users', function () {
 });
 
 it('builds My Day from uncontacted leads, overdue follow-ups, visits and tasks', function () {
+    // Midday, so "due in an hour" is still today in Karachi whenever the suite runs.
+    $this->travelTo(CarbonImmutable::parse('2026-10-20 12:00', 'Asia/Karachi'));
     $sales = $this->userWithRole('sales');
     $new = Lead::factory()->create(['owner_id' => $sales->id, 'first_response_at' => null, 'sla_due_at' => now()->addMinutes(5), 'stage_id' => PipelineStage::query()->where('key', 'new')->value('id')]);
     $overdue = Lead::factory()->create(['owner_id' => $sales->id, 'first_response_at' => now()->subDay(), 'next_action_at' => now()->subHours(3), 'stage_id' => PipelineStage::query()->where('key', 'contacted')->value('id')]);

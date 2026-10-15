@@ -16,9 +16,14 @@ class SlaCheck extends Command
     public function handle(CheckLeadSla $check): int
     {
         $flagged = $check->handle();
+        $escalated = $check->escalate();
 
         if ($flagged > 0) {
             $this->components->warn("{$flagged} lead(s) missed the response target; alerts sent.");
+        }
+
+        if ($escalated > 0) {
+            $this->components->warn("{$escalated} lead(s) still not contacted; escalated.");
         }
 
         return self::SUCCESS;
