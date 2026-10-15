@@ -45,8 +45,15 @@
             </ol>
             <p class="mt-2 text-theme-xs text-gray-500">Reloading this page keeps the same code. The file cannot be opened from the web and is deleted when the installation finishes.</p>
             <label for="setup_code" class="wx-label mt-4">Setup code</label>
-            <input id="setup_code" name="setup_code" required maxlength="64" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
+            <input id="setup_code" name="setup_code" @unless ($databaseProof) required @endunless maxlength="64" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
                    class="wx-input h-11 font-mono uppercase tracking-wider">
+            @if ($databaseProof)
+                <p class="mt-2 rounded-lg bg-gray-50 px-3 py-2 text-theme-xs text-gray-600 dark:bg-white/5 dark:text-gray-400">
+                    <strong>Cannot find the file?</strong> Leave the code empty and use a MySQL database of this hosting account
+                    in step 3 (host <code>localhost</code>, the user starts with your account name, like <code>u123456789_woodex</code>):
+                    only the account owner can create one in hPanel, so it proves ownership too.
+                </p>
+            @endif
         </section>
 
         <section class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">

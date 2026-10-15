@@ -41,7 +41,19 @@ final class Installer
     /** PHP extensions the application needs on the server. */
     public const array EXTENSIONS = ['ctype', 'curl', 'dom', 'fileinfo', 'gd', 'intl', 'mbstring', 'openssl', 'pdo_mysql', 'tokenizer', 'xml', 'zip'];
 
-    public function __construct(private readonly SiteState $site) {}
+    public const string FAILURES_FILE = 'install-failures.json';
+
+    /** Failed proofs of ownership allowed per client within FAILURE_WINDOW seconds (no cache or database exists yet). */
+    public const int MAX_FAILURES = 10;
+
+    public const int FAILURE_WINDOW = 600;
+
+    private readonly ProbesDatabase $probe;
+
+    public function __construct(private readonly SiteState $site, ?ProbesDatabase $probe = null)
+    {
+        $this->probe = $probe ?? new MysqlProbe;
+    }
 
     public function site(): SiteState
     {
@@ -121,6 +133,64 @@ final class Installer
         $this->writeSiteCopy();
     }
 
+    /** The waiting code as XXXX-XXXX-…, for the step-2 page after the owner proved ownership another way. */
+    public function currentCode(): ?string
+    {
+        $code = $this->readCode();
+
+        return $code === null ? null : implode('-', str_split($code, 4));
+    }
+
+    /**
+     * Second proof of ownership (D-59) for owners who cannot find the setup code file. On Hostinger (and cPanel) every
+     * database user starts with the hosting account name ("u123456789_…") and only that account can create one in
+     * hPanel, so logging in to the LOCAL MySQL server as such a user proves the same as reading the file. Not for
+     * remote hosts (anyone can create any user name on their own server), SQLite, or a user without a password.
+     *
+     * @param  array{connection: string, host: string, username: string, password: string}  $db
+     */
+    public function databaseMayProveOwnership(array $db): bool
+    {
+        $account = $this->site->account();
+
+        return $account !== null
+            && $db['connection'] === 'mysql'
+            && in_array(strtolower(trim($db['host'])), ['localhost', '127.0.0.1', '::1'], true)
+            && str_starts_with($db['username'], $account.'_')
+            && $db['password'] !== '';
+    }
+
+    /**
+     * After connecting: MySQL must really have authenticated an account user, not an anonymous user that accepts any
+     * name (CURRENT_USER() is then "@localhost").
+     *
+     * @param  array{connection: string, host: string, username: string, password: string}  $db
+     */
+    public function databaseProvesOwnership(array $db, ?string $currentUser): bool
+    {
+        $account = $this->site->account();
+
+        return $this->databaseMayProveOwnership($db) && $account !== null && $currentUser !== null
+            && str_starts_with($currentUser, $account.'_');
+    }
+
+    public function tooManyFailures(string $client): bool
+    {
+        return count($this->recentFailures()[self::clientKey($client)] ?? []) >= self::MAX_FAILURES;
+    }
+
+    public function recordFailure(string $client): void
+    {
+        $failures = $this->recentFailures();
+        $failures[self::clientKey($client)][] = now()->getTimestamp();
+
+        try {
+            EnvFile::write($this->privateFolder().'/'.self::FAILURES_FILE, (string) json_encode($failures));
+        } catch (RuntimeException) {
+            // Without a writable data folder the installer cannot work anyway.
+        }
+    }
+
     public function codeMatches(string $input): bool
     {
         $expected = $this->readCode();
@@ -194,7 +264,7 @@ final class Installer
      * Connects with the details from the form and refuses databases that belong to another application.
      *
      * @param  array{connection: string, host: string, port: int, database: string, username: string, password: string}  $db
-     * @return array{ok: bool, message: string}
+     * @return array{ok: bool, message: string, user?: string}
      */
     public function checkDatabase(array $db): array
     {
@@ -209,14 +279,7 @@ final class Installer
         }
 
         try {
-            $pdo = new PDO(
-                sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4', $db['host'], $db['port'], $db['database']),
-                $db['username'],
-                $db['password'],
-                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5],
-            );
-            $version = (string) $pdo->query('SELECT VERSION()')?->fetchColumn();
-            $tables = ($statement = $pdo->query('SHOW TABLES')) !== false ? $statement->fetchAll(PDO::FETCH_COLUMN) : [];
+            ['version' => $version, 'tables' => $tables, 'user' => $user] = $this->probe->probe($db);
         } catch (PDOException $exception) {
             return ['ok' => false, 'message' => self::explainMysqlError($exception)];
         }
@@ -229,7 +292,7 @@ final class Installer
             return ['ok' => false, 'message' => "Database server {$version} is too old: MySQL 8.0 or MariaDB 10.6 or newer is needed."];
         }
 
-        return ['ok' => true, 'message' => 'Connected to '.$version.($tables !== [] ? ' (existing Woodex OS tables are kept and updated).' : ' (empty database).')];
+        return ['ok' => true, 'user' => $user, 'message' => 'Connected to '.$version.($tables !== [] ? ' (existing Woodex OS tables are kept and updated).' : ' (empty database).')];
     }
 
     public static function versionSupported(string $version): bool
@@ -387,6 +450,7 @@ final class Installer
         @unlink($this->pendingPath());
         @unlink($this->codePath());
         @unlink($this->siteCodePath());
+        @unlink($this->privateFolder().'/'.self::FAILURES_FILE);
 
         return ['owner' => $owner, 'log' => implode("\n", array_filter($log))];
     }
@@ -407,6 +471,31 @@ final class Installer
     {
         // Classic layout: installer files go to storage/app/private (never web-reachable), not into platform/.
         return $this->isClassic() ? $this->site->basePath.'/storage/app/private' : $this->directory();
+    }
+
+    /**
+     * @return array<string, list<int>>
+     */
+    private function recentFailures(): array
+    {
+        $data = json_decode((string) @file_get_contents($this->privateFolder().'/'.self::FAILURES_FILE), true);
+        $since = now()->getTimestamp() - self::FAILURE_WINDOW;
+        $recent = [];
+
+        foreach (is_array($data) ? $data : [] as $key => $times) {
+            $kept = array_values(array_filter(is_array($times) ? $times : [], fn ($time): bool => is_int($time) && $time > $since));
+
+            if ($kept !== []) {
+                $recent[(string) $key] = $kept;
+            }
+        }
+
+        return $recent;
+    }
+
+    private static function clientKey(string $client): string
+    {
+        return substr(hash('sha256', $client), 0, 16);
     }
 
     /** Best effort: when the site folder is not writable the owner uses the private file. */

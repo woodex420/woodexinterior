@@ -30,15 +30,41 @@ final class SiteState
         'framework/sessions',
         'framework/testing',
         'framework/views',
+        'fonts', // dompdf font cache (quotation PDFs)
         'logs',
     ];
+
+    /** System users that are never a hosting account (a database user prefix of theirs proves nothing). */
+    private const array SYSTEM_USERS = ['root', 'www-data', 'nobody', 'apache', 'nginx', 'httpd', 'http', 'daemon', 'litespeed', 'lsadm'];
 
     public function __construct(
         /** The Laravel application folder (platform/). */
         public readonly string $basePath,
         /** The hosting account's home folder, or null when it could not be found safely. */
         public readonly ?string $home,
+        /** The hosting account name (Hostinger: "u123456789"); null = detect when asked (only the installer asks). */
+        private readonly ?string $account = null,
     ) {}
+
+    /**
+     * The hosting account name: the user PHP runs as (Hostinger and cPanel run each account's PHP as that account),
+     * else the owner of the application files. Null for system users or anything that does not look like an account.
+     */
+    public function account(): ?string
+    {
+        $name = $this->account;
+
+        if ($name === null && function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
+            $entry = @posix_getpwuid(posix_geteuid());
+            $name = is_array($entry) ? $entry['name'] : null;
+        }
+
+        if ($name === null || $name === '') {
+            $name = get_current_user();
+        }
+
+        return preg_match('/^[a-z][a-z0-9]{2,31}$/', $name) === 1 && ! in_array($name, self::SYSTEM_USERS, true) ? $name : null;
+    }
 
     public static function detect(string $basePath): self
     {

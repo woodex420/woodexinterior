@@ -80,6 +80,11 @@ there. It runs no build step except Composer. The repository is prepared for exa
   and also denies the name. A deploy removes the copy; reloading `/install` writes it again with the same code.
   Reloading never changes the code. Both files are deleted when the installation finishes. This proves the person
   installing owns the hosting account; nobody else can finish the installation, even while `/install` is public.
+- **No file needed (Hostinger/cPanel):** leave the setup code empty and enter a MySQL database of this hosting account
+  (host `localhost`, user `u123456789_…` with a password). Only the account owner can create such a user in hPanel, so
+  logging in with it proves ownership as well. Never accepted: remote hosts, other accounts' users, users without a
+  password, an anonymous MySQL login (`CURRENT_USER()` must be the account user), SQLite. After 10 failed proofs from
+  one address the installer waits 10 minutes (`install-failures.json` in the data folder; deleted after installing).
 - **Form:** site address (`https://interior.woodex.com.pk`), database (MySQL: host `localhost`, port 3306, name,
   user, password; SQLite only for a quick look), owner name, email and password (10+ characters, letters and
   numbers), and "require two-factor sign-in" (on by default).

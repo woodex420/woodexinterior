@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Support\Install\Installer;
+use App\Support\Install\ProbesDatabase;
 use App\Support\Install\SiteState;
 use Dotenv\Dotenv;
 use Illuminate\Support\Facades\Hash;
@@ -17,7 +18,7 @@ beforeEach(function () {
     $this->data = $this->home.'/woodex-os/site.test';
     mkdir($this->home.'/domains/site.test/public_html/platform', 0777, true);
 
-    $this->app->instance(SiteState::class, new SiteState($this->home.'/domains/site.test/public_html/platform', $this->home));
+    $this->app->instance(SiteState::class, new SiteState($this->home.'/domains/site.test/public_html/platform', $this->home, 'u123'));
 });
 
 afterEach(function () {
@@ -96,6 +97,94 @@ it('puts a copy of the setup code in the site folder, where File Manager opens',
     // The copy proves nothing on its own: only the private code counts.
     file_put_contents($site.'/WOODEX-SETUP-CODE.txt', 'AAAA-BBBB-CCCC-DDDD-EEEE-FFFF');
     $this->post('/install', installerForm(['setup_code' => 'AAAA-BBBB-CCCC-DDDD-EEEE-FFFF']))->assertStatus(422);
+});
+
+/** A MySQL server stand-in: php-wasm (AI sandbox) has no sockets, and the rule only needs what MySQL answers. */
+function fakeMysql(?string $authenticatedAs = null): void
+{
+    app()->instance(ProbesDatabase::class, new class($authenticatedAs) implements ProbesDatabase
+    {
+        public function __construct(private readonly ?string $authenticatedAs) {}
+
+        public function probe(array $db): array
+        {
+            return ['version' => '8.0.36', 'tables' => [], 'user' => $this->authenticatedAs ?? $db['username'].'@localhost'];
+        }
+    });
+}
+
+function mysqlForm(array $overrides = []): array
+{
+    return installerForm(['setup_code' => '', 'connection' => 'mysql', 'db_host' => 'localhost', 'db_port' => '3306',
+        'db_database' => 'u123_woodex', 'db_username' => 'u123_woodex', 'db_password' => 'Db-Secret-2026', ...$overrides]);
+}
+
+it('accepts this hosting account\'s local MySQL user instead of the setup code', function () {
+    fakeMysql();
+    $this->get('/install')->assertSee('Cannot find the file?');
+    $code = setupCode($this->data);
+
+    // Step 1 without a code; step 2 gets the real code (it checks the code again).
+    $this->post('/install', mysqlForm())
+        ->assertOk()
+        ->assertSee('Finish installation')
+        ->assertSee($code);
+
+    expect((string) file_get_contents($this->data.'/.env'))->toContain('mysql')->toContain('u123_woodex');
+});
+
+it('never takes a remote, foreign, anonymous or password-less database as proof', function (array $form, ?string $authenticatedAs) {
+    fakeMysql($authenticatedAs);
+    $this->get('/install');
+
+    $this->post('/install', mysqlForm($form))
+        ->assertStatus(422)
+        ->assertSee('Enter the setup code from the file named above');
+
+    expect(file_exists($this->data.'/.env'))->toBeFalse();
+})->with([
+    'remote host (any user name can be made there)' => [['db_host' => 'db.example.com'], null],
+    'another account\'s user' => [['db_username' => 'u999_woodex', 'db_database' => 'u999_woodex'], null],
+    'same digits, longer account' => [['db_username' => 'u1234_woodex'], null],
+    'no account prefix' => [['db_username' => 'woodex'], null],
+    'no password' => [['db_password' => ''], null],
+    'SQLite' => [['connection' => 'sqlite'], null],
+    'anonymous MySQL login accepting any name' => [[], '@localhost'],
+]);
+
+it('treats odd input (arrays instead of text) as empty, without an error page', function () {
+    $this->get('/install');
+
+    $this->post('/install', installerForm(['setup_code' => ['x'], 'connection' => 'mysql', 'db_host' => ['localhost'], 'db_username' => ['u123_x']]))
+        ->assertStatus(422);
+    expect(file_exists($this->data.'/.env'))->toBeFalse();
+});
+
+it('stops guessing after 10 failed proofs for 10 minutes', function () {
+    $this->get('/install');
+    $code = setupCode($this->data);
+
+    foreach (range(1, 10) as $attempt) {
+        $this->post('/install', installerForm(['setup_code' => 'AAAA-BBBB-CCCC-DDDD-EEEE-FFFF']))->assertStatus(422);
+    }
+
+    $this->post('/install', installerForm(['setup_code' => $code]))->assertStatus(429)->assertSee('Too many attempts');
+    expect(file_exists($this->data.'/.env'))->toBeFalse();
+
+    $this->travel(11)->minutes();
+    $this->post('/install', installerForm(['setup_code' => $code]))->assertOk()->assertSee('Finish installation');
+});
+
+it('only offers the database route when the hosting account is known', function () {
+    $this->app->instance(SiteState::class, new SiteState($this->home.'/domains/site.test/public_html/platform', $this->home, 'root'));
+
+    $this->get('/install')
+        ->assertOk()
+        ->assertDontSee('Cannot find the file?');
+
+    fakeMysql();
+    $this->post('/install', mysqlForm())->assertStatus(422);
+    expect(file_exists($this->data.'/.env'))->toBeFalse();
 });
 
 it('names only the private file when the site folder is not writable', function () {

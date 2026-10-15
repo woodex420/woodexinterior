@@ -10,6 +10,9 @@ _Update at the end of every task (docs/03 Part A §7)._
   in `public_html`; the home folder only shows under "Access all files of hosting"). The installer now also writes
   **`public_html/WOODEX-SETUP-CODE.txt`** (same code, never served, deleted after installing) and names it first.
   Owner: Deploy again in hPanel → Git, reload `/install`, open that file in File Manager, paste the code.
+  The owner still could not find a file, so **the setup code is now optional on Hostinger**: leave it empty and use
+  the hPanel MySQL database (host `localhost`, user `u128159657_…`) — a working local login with this account's
+  database user proves ownership (D-59, `Installer::databaseProvesOwnership`, 10 failures → 10 min wait).
 - **After installing:** add the cron line the installer shows (hPanel → Advanced → Cron Jobs); after each later deploy
   sign in → System → Database update when asked.
 - **In progress (uncommitted until finished):** P2 part 2a — approvals (QUO-007), send + frozen versions (QUO-008/013),

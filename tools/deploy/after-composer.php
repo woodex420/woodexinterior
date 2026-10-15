@@ -17,7 +17,7 @@ foreach (glob($platform.'/bootstrap/cache/*.php') ?: [] as $file) {
     $cleared += (int) @unlink($file);
 }
 
-foreach (['app/private', 'app/public', 'framework/cache/data', 'framework/sessions', 'framework/testing', 'framework/views', 'logs'] as $folder) {
+foreach (['app/private', 'app/public', 'framework/cache/data', 'framework/sessions', 'framework/testing', 'framework/views', 'fonts', 'logs'] as $folder) {
     if (! is_dir($platform.'/storage/'.$folder)) {
         @mkdir($platform.'/storage/'.$folder, 0775, true);
     }
