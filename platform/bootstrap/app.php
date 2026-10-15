@@ -29,6 +29,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: ['webhooks/*']);
 
         $middleware->redirectGuestsTo(fn () => route('login'));
+        // Signed-in staff who open a guest page (sign-in form, a second sign-in POST) go to the admin, not to the
+        // public site: Laravel's default target is the route named "home", which is the website (D-51).
+        $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

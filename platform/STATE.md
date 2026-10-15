@@ -2,23 +2,54 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 16 Oct 2026 00:50 PKT)
+- **Where we are:** P1 CRM is complete. The owner has confirmed the preview works: on 16 Oct, 00:47 PKT, they signed
+  in from their own browser and opened Dashboard, My Day, Leads, Pipeline, Contacts, Companies, Tasks, Site Visits,
+  Users and Integrations. Every page returned 200, with no PHP errors.
+- **Next:** CI → Hostinger staging → P2 Quotations (see "Next" below). The owner has not yet answered P-01…P-09
+  (docs/07 §C). P-06 (rotate the leaked credentials) blocks go-live.
+- **Code:** everything is on branch `arena/8be318a2-woodexinterior` and pushed. `master` is still the starting point
+  (d77016b); merge through a pull request when the owner approves.
+- **Rules to follow:** docs/07 (D-01…D-52) and platform/AGENTS.md. The plan and specs are in docs/00–08.
+- **Preview (AI sandbox only):** after a VM reset run `sh tools/sandbox/setup.sh` (~3–4 min). It rebuilds PHP 8.4,
+  `vendor/`, the front-end build and the demo database. Then start
+  `PORT=8080 node --stack-size=8000 tools/sandbox/server.mjs` from `/tmp/woodex-run`. The checks are `smoke.sh`,
+  `assets-check.sh`, `browser-check.mjs` and `iframe-check.mjs` (tools/sandbox/README.md).
+- **Preview data:** demo seed (26 leads, 5 users). Owner login: `owner@woodex.test` / `Woodex-Preview-2026`; the
+  sign-in page also has a one-click demo button. The preview database lives in `/tmp` and is rebuilt from the
+  seeders after a VM reset, so anything typed into the preview is temporary. Real data arrives with the v2.1 import
+  on staging (docs/08).
+
 ## Current phase: P1 CRM complete (parts 1 + 2) → P2 Quotations next
 
 ### Preview sign-in fix (16 Oct 2026)
-- **Owner could not sign in to the preview.** On the first attempt the e-mail was `admin@woodex.com.pk`, which does
-  not exist in the demo data. The page jumped to the public holding page and showed no error. Logs and the session
-  table showed the cause: the owner's browser never sent the preview's cookies back from inside the Arena iframe.
-  Every request started a new session, so even the right password would have bounced back to the sign-in form.
-- **Fixed in three places:**
-  - A failed sign-in now always returns to the sign-in form with the error (D-51, tested).
-  - The preview server keeps the session for browsers that drop its cookies (cookie memory, D-52).
-  - The sign-in page shows the demo account with a one-click "Sign in with the demo account" button (preview only).
-- **New check `tools/sandbox/iframe-check.mjs`** reproduces the Arena setup: a cross-site iframe, a proxy that sends
-  no Referer, third-party cookies blocked, and a run that drops every cookie. Before the fix it showed exactly the
-  owner's result (landing on "/"). Now both runs pass: the error is shown, the demo login works, and `wire:navigate`
-  and a full reload stay signed in.
-- The request log now shows cookie names and a short browser tag. The beacon reports `cookieKept`, so the next visit
-  from the owner's browser shows whether it keeps cookies.
+- **Test 1 (00:18 PKT):** the owner signed in as `admin@woodex.com.pk`, which does not exist in the demo data, and
+  landed on the public holding page with no error. **Cause:** the preview proxy drops the `Cookie` request header.
+  The browser keeps the cookies (beacon `cookieKept=1`), but every request reached Laravel without them and started
+  a new session. Even the right password would have bounced back to the sign-in form.
+- **Fixes:**
+  - A failed sign-in returns to its form with the error (D-51).
+  - The preview server keeps each browser's session (cookie memory, D-52).
+  - The sign-in page has a demo-account box with a one-click sign-in (preview only).
+- **Test 2 (00:43 PKT):** sign-in worked (the session was signed in), but a double click on "Sign in" sent a second
+  POST. That request arrived already signed in, and Laravel's "already signed in" redirect goes to the route named
+  `home`, which is the public website. Opening the sign-in page again went there too.
+  **Fixed:** signed-in users on guest pages go to `admin.dashboard` (`redirectUsersTo`); the auth forms submit
+  only once per page (D-51, tested).
+- **Test 3 (00:47 PKT):** the owner was in the admin and browsed 10 screens without errors.
+- **New check `tools/sandbox/iframe-check.mjs`** reproduces the Arena setup: a cross-site iframe, a proxy without
+  Referer, third-party cookies blocked, and a run that drops every cookie. Before each fix it showed exactly what the
+  owner saw. Now both runs pass:
+  - a wrong password shows the error;
+  - a double click sends one request and opens the dashboard;
+  - the sign-in page leads back to the admin;
+  - `wire:navigate` and a full reload stay signed in.
+- The request log shows cookie names and a short browser tag (`ua=Windows/Chrome153`). The beacon reports
+  `cookieKept`, `framed` and `storageAccess`.
+- **Verification:**
+  - Pest: 172 tests, 726 assertions, all passing.
+  - Pint clean.
+  - `browser-check.mjs` passes; `iframe-check.mjs` passes both runs; smoke test: 17 admin pages return 200.
 
 ### Preview fix (16 Oct 2026, after P1 part 2)
 - **Holding page unstyled in the owner's browser (reported twice):** the preview emitted absolute asset URLs on a

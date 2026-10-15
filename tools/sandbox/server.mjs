@@ -3,7 +3,7 @@
 // - Every absolute self-URL in PHP output (HTML, JSON, Location/Link headers) is rewritten to a root-relative
 //   path, so the page works under whatever origin the preview proxy shows to the browser.
 // - Each request is logged to /tmp/woodex-run/requests.log (incl. proxy headers and cookie names) to debug preview issues.
-// - Cookie memory: browsers that drop the preview's cookies inside the Arena iframe still keep their session (below).
+// - Cookie memory: the preview proxy drops the Cookie request header; the server keeps each browser's session (below).
 // - The sign-in page gets a preview-only "demo account" box with a one-click sign-in.
 // Usage: PORT=8080 node --stack-size=8000 tools/sandbox/server.mjs
 import fs from 'node:fs';
@@ -60,14 +60,14 @@ const BEACON_HEAD = '<script>(function(){var sa="na";try{document.hasStorageAcce
 const BEACON_BODY = '<noscript><img src="/__preview-beacon?js=0" alt="" width="1" height="1" style="position:absolute;left:-9999px"></noscript>';
 const injectBeacon = (html) => html.replace(/<\/head>/i, `${BEACON_HEAD}</head>`).replace(/<body([^>]*)>/i, `<body$1>${BEACON_BODY}`);
 
-// Preview-only cookie memory. On 2026-10-15 the owner's browser never sent the preview's cookies back from inside the
-// Arena iframe (every request started a new Laravel session, even with Secure + SameSite=None + Partitioned cookies):
-// a wrong password landed on the public "/" without the error and a right one bounced back to the sign-in form.
-// tools/sandbox/iframe-check.mjs reproduces it ("no-cookies"). For browser requests through the public preview host
-// the server acts as that browser's cookie jar (key: User-Agent + Accept-Language): it stores every cookie Laravel
-// sets and sends the stored values to PHP, also when the browser sent none (log "memory+name") or an older value
-// ("memory~name"). A browser that keeps cookies sends the same values, so nothing changes for it. Local checks on
-// 127.0.0.1 never use it. Demo data only, sandbox only. PREVIEW_COOKIE_MEMORY=0 turns it off.
+// Preview-only cookie memory. The preview proxy drops the Cookie request header: requests from the owner's browser
+// arrive with no cookies although the browser keeps them (beacon cookieKept=1, storageAccess=1; 2026-10-15). Every
+// request then started a new Laravel session: a wrong password landed on the public "/" without the error and a
+// right one bounced back to the sign-in form. tools/sandbox/iframe-check.mjs reproduces it ("no-cookies"). For browser
+// requests through the public preview host the server acts as that browser's cookie jar (key: User-Agent +
+// Accept-Language): it stores every cookie Laravel sets and sends the stored values to PHP, also when the request has
+// none (log "memory+name") or an older value ("memory~name"). Requests that do carry the current cookies are
+// unchanged. Local checks on 127.0.0.1 never use it. Demo data only, sandbox only. PREVIEW_COOKIE_MEMORY=0 turns it off.
 const MEMORY_ON = process.env.PREVIEW_COOKIE_MEMORY !== '0';
 const MEMORY_FILE = '/tmp/woodex-run/cookie-memory.json';
 const MEMORY_MAX_BROWSERS = 50;

@@ -53,5 +53,33 @@
             <p class="relative font-heading text-[140px] leading-none font-semibold tracking-tight text-white/10" aria-hidden="true">WOODEX</p>
         </aside>
     </div>
+    <script>
+        // Each form submits once (D-51). Signing in takes about a second (password hashing); a second click used to
+        // send a second request that arrived already signed in. Reset when the page returns from the back/forward cache.
+        (function () {
+            var busy = ['opacity-70', 'cursor-wait'];
+            document.addEventListener('submit', function (event) {
+                var form = event.target;
+                if (form.dataset.submitting) {
+                    event.preventDefault();
+                    return;
+                }
+                form.dataset.submitting = '1';
+                form.querySelectorAll('button[type="submit"]').forEach(function (button) {
+                    button.setAttribute('aria-busy', 'true');
+                    button.classList.add.apply(button.classList, busy);
+                });
+            });
+            window.addEventListener('pageshow', function () {
+                document.querySelectorAll('form[data-submitting]').forEach(function (form) {
+                    delete form.dataset.submitting;
+                    form.querySelectorAll('button[type="submit"]').forEach(function (button) {
+                        button.removeAttribute('aria-busy');
+                        button.classList.remove.apply(button.classList, busy);
+                    });
+                });
+            });
+        })();
+    </script>
 </body>
 </html>

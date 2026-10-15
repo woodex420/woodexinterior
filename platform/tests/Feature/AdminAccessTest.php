@@ -44,6 +44,18 @@ it('sends a failed sign-in back to its form even without a referer or a session'
         ->assertSee('These credentials do not match our records.');
 });
 
+it('sends signed-in staff to the admin dashboard, never to the public site', function () {
+    // The owner's preview test on 2026-10-15: a double click on "Sign in" sent a second POST that arrived signed in,
+    // and Laravel's default "already signed in" target is the route named "home" (the website) (D-51).
+    $owner = $this->userWithRole('owner', ['email' => 'owner@woodex.test', 'password' => 'secret-pass-1']);
+
+    $this->actingAs($owner)->get(route('login'))->assertRedirect(route('admin.dashboard'));
+    $this->actingAs($owner)
+        ->post(route('login.store'), ['email' => 'owner@woodex.test', 'password' => 'secret-pass-1'])
+        ->assertRedirect(route('admin.dashboard'));
+    $this->actingAs($owner)->get(route('password.request'))->assertRedirect(route('admin.dashboard'));
+});
+
 it('renders the owner dashboard with the go-live checklist', function () {
     $owner = $this->userWithRole('owner');
 

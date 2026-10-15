@@ -4,8 +4,9 @@
 // cookie problems; this check does. Two runs, each in a fresh Chromium:
 //   3pc-blocked  Chromium blocks third-party cookies (only Partitioned cookies may work in the frame);
 //   no-cookies   the proxy drops every Cookie / Set-Cookie header: the browser never keeps any cookie.
-// In both runs: a wrong sign-in must come back to the sign-in form with the error (never the public "/"), the
-// preview's demo-login button must sign in, wire:navigate to Leads and a full reload must stay signed in.
+// In both runs: a wrong sign-in must come back to the sign-in form with the error (never the public "/"), a double
+// click on the preview's demo-login button must send one request and open the admin dashboard, the sign-in page must
+// lead back to the admin while signed in, and wire:navigate to Leads and a full reload must stay signed in.
 // Usage: node tools/sandbox/iframe-check.mjs        (preview server running on PORT, default 8080)
 import fs from 'node:fs';
 import http from 'node:http';
@@ -123,12 +124,19 @@ async function scenario(name, { dropCookies, blockThirdPartyCookies }) {
     expect('wrong password -> back on the form with the error', wrong.path === '/admin/login' && /do not match/i.test(wrong.alert ?? ''), wrong);
     await page.screenshot({ path: `${SHOTS}/iframe-${name}-2-wrong-password.png` });
 
-    // 2. Demo login (the preview's button, or typing it when the button is missing).
+    // 2. Demo login, clicked twice like the owner did on 2026-10-15 (signing in takes about a second). Only one
+    //    POST may leave the page, and the result must be the admin dashboard, never the public "/".
     if (!(await state()).loginForm) {
         await (await frame()).goto(`${base}/admin/login`, { waitUntil: 'networkidle0', timeout: 60000 });
     }
+    let signInPosts = 0;
+    const countPosts = (r) => { if (r.method() === 'POST' && new URL(r.url()).pathname === '/admin/login') signInPosts += 1; };
+    page.on('request', countPosts);
     if (await (await frame()).$('#wx-preview-login button')) {
-        await submitAndWait((f) => f.click('#wx-preview-login button'));
+        await submitAndWait(async (f) => {
+            await f.click('#wx-preview-login button');
+            await f.click('#wx-preview-login button').catch(() => { /* page already left */ });
+        });
     } else {
         const f = await frame();
         await f.$eval('input[name="email"]', (el) => { el.value = ''; });
@@ -136,8 +144,10 @@ async function scenario(name, { dropCookies, blockThirdPartyCookies }) {
         await f.type('input[name="password"]', 'Woodex-Preview-2026');
         await submitAndWait((g) => g.click('form button[type="submit"]'));
     }
+    page.off('request', countPosts);
     const signedIn = await state();
-    expect('demo login -> admin dashboard', signedIn.path === '/admin' && signedIn.sidebar && !signedIn.loginForm, signedIn);
+    expect('demo login (double click) -> admin dashboard', signedIn.path === '/admin' && signedIn.sidebar && !signedIn.loginForm, signedIn);
+    expect('double click sends one sign-in request', signInPosts === 1, { signInPosts });
     await new Promise((r) => setTimeout(r, 1500));
     await page.screenshot({ path: `${SHOTS}/iframe-${name}-3-dashboard.png` });
 
@@ -150,7 +160,12 @@ async function scenario(name, { dropCookies, blockThirdPartyCookies }) {
         expect('wire:navigate to Leads stays signed in', leads.path === '/admin/leads' && !leads.loginForm, leads);
     }
 
-    // 4. A full page load inside the frame keeps the session too.
+    // 4. Opening the sign-in page again while signed in leads to the admin, not to the public site.
+    await (await frame()).goto(`${base}/admin/login`, { waitUntil: 'networkidle0', timeout: 60000 });
+    const again = await state();
+    expect('sign-in page while signed in -> admin dashboard', again.path === '/admin' && !again.loginForm, again);
+
+    // 5. A full page load inside the frame keeps the session too.
     await (await frame()).goto(`${base}/admin/pipeline`, { waitUntil: 'networkidle0', timeout: 60000 });
     const pipeline = await state();
     expect('full reload of /admin/pipeline stays signed in', pipeline.path === '/admin/pipeline' && !pipeline.loginForm, pipeline);

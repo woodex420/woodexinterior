@@ -39,5 +39,6 @@ Patterns used in the code (follow them):
   `node ../tools/sandbox/browser-check.mjs` and `node ../tools/sandbox/iframe-check.mjs` pass in a real headless
   browser (D-50, D-52). The second one runs the app the way Arena shows it: inside a cross-site iframe, with the
   cookies blocked or dropped.
-- Never depend on the Referer header (`url()->previous()`) for an important redirect. Name the target route
-  instead, as the failed sign-in redirect does (D-51).
+- Never depend on the Referer header (`url()->previous()`) or on the route named `home` (the public website) for an
+  admin redirect. Name the admin route instead: failed sign-in → its form, signed-in user on a guest page →
+  `admin.dashboard` (D-51).
