@@ -15,11 +15,13 @@ DirectoryIndex index.php
     # SSL certificates (Let's Encrypt) are validated through /.well-known in the site folder.
     RewriteRule ^\.well-known/ - [L]
 
-    # Laravel removes trailing slashes. Do it here, on the original address: after the rewrite below the address
-    # would already contain /platform/public.
+    # Trailing slashes, on the original address (after the rewrite below it would already contain /platform/public).
+    # Only the app's own paths are canonical WITHOUT one: every public page is canonical WITH one (D-26), and the
+    # SiteRouter puts it back, so stripping it from pages too was a redirect loop on every page of the website.
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
+    RewriteCond %{REQUEST_URI} ^/(admin|install|up|api|livewire|build|media|q|i|p|portal|webhooks)(/.*)?$
+    RewriteCond %{REQUEST_URI} ^/(.+)/$
+    RewriteRule ^ /%1 [L,R=301]
 
     # Everything goes to the Laravel public folder; its own .htaccess takes over there. The pattern is relative to
     # this folder, so it also works when the site folder is a subfolder (public_html/interior).
