@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Projects;
 
+use App\Domain\Crm\Models\Lead;
 use App\Domain\Projects\Actions\AcceptHandover;
 use App\Domain\Projects\Actions\ChangeProjectStage;
 use App\Domain\Projects\Actions\DraftCaseStudy;
-use App\Domain\Projects\Actions\StartHandover;
 use App\Domain\Projects\Actions\PostProjectUpdate;
 use App\Domain\Projects\Actions\RaiseMilestoneInvoice;
 use App\Domain\Projects\Actions\ReachProjectMilestone;
+use App\Domain\Projects\Actions\RequestClientReviews;
 use App\Domain\Projects\Actions\ShareProjectUpdate;
+use App\Domain\Projects\Actions\StartHandover;
 use App\Domain\Projects\Enums\ProjectStage;
 use App\Domain\Projects\Enums\ProjectStatus;
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\ProjectMilestone;
 use App\Domain\Projects\Mail\ProjectMail;
-use App\Domain\Projects\Models\ProjectUpdate;
+use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Services\PortalLinks;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Models\User;
@@ -26,7 +26,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
@@ -148,8 +147,6 @@ class ProjectShow extends Component
     {
         $this->authorize('update', $this->project);
 
-
-
         $this->validate([
             'body' => ['required', 'string', 'min:2', 'max:4000'],
             'progressPercent' => ['nullable', 'integer', 'min:0', 'max:100'],
@@ -203,7 +200,7 @@ class ProjectShow extends Component
 
         $this->validate([
             'uploads' => ['array', 'max:10'],
-            'uploads.*' => ['file', 'max:20480', 'extensions:'.implode(',', \App\Domain\Crm\Models\Lead::ATTACHMENT_EXTENSIONS)],
+            'uploads.*' => ['file', 'max:20480', 'extensions:'.implode(',', Lead::ATTACHMENT_EXTENSIONS)],
         ], [
             'uploads.*.max' => 'Each file can be up to 20 MB.',
             'uploads.*.extensions' => 'Allowed: photos, PDF, DWG/DXF drawings, Excel, Word and PowerPoint files.',
@@ -366,7 +363,7 @@ class ProjectShow extends Component
 
         try {
             app(AcceptHandover::class)->handle($this->project, $name, $this->user());
-        $this->signatureName = '';
+            $this->signatureName = '';
         } catch (ValidationException $exception) {
             $this->toast((string) collect($exception->errors())->flatten()->first(), 'error');
 
@@ -396,7 +393,7 @@ class ProjectShow extends Component
             'portalUrl' => PortalLinks::absolute($this->project),
             'portalRelative' => PortalLinks::portal($this->project),
             'whatsappShare' => PortalLinks::whatsappShare($this->project),
-            'reviewDueOn' => app(\App\Domain\Projects\Actions\RequestClientReviews::class)->dueOn($this->project),
+            'reviewDueOn' => app(RequestClientReviews::class)->dueOn($this->project),
             'progress' => $project->handoverProgress(),
             'lakh' => app(SalesSettings::class)->lakh_grouping,
         ])->title($project->code.' · '.$project->name);

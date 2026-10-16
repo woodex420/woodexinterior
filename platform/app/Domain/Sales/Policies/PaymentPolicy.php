@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Policies;
 
+use App\Domain\Sales\Enums\PaymentStatus;
 use App\Domain\Sales\Models\Payment;
 use App\Models\User;
 
@@ -31,6 +32,6 @@ final class PaymentPolicy
     /** Confirming, or sending back, a payment somebody reported (INV-006). */
     public function verify(User $user, Payment $payment): bool
     {
-        return $user->can('payments.verify') && $payment->status === \App\Domain\Sales\Enums\PaymentStatus::PendingVerification;
+        return $user->can('payments.verify') && $payment->status === PaymentStatus::PendingVerification;
     }
 }

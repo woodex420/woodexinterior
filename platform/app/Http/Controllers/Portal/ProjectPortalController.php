@@ -5,18 +5,25 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Portal;
 
 use App\Domain\Projects\Actions\AcceptHandover;
+use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectHandoverItem;
 use App\Domain\Projects\Models\ProjectUpdate;
+use App\Domain\Projects\Services\PortalLinks;
+use App\Domain\Sales\Models\Invoice;
+use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Services\InvoiceLinks;
 use App\Domain\Sales\Services\ReceiptPdf;
 use App\Settings\BusinessSettings;
+use App\Settings\SalesSettings;
 use App\Support\Money;
 use App\Support\Phone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -29,11 +36,11 @@ final class ProjectPortalController
 {
     public function show(Request $request, Project $project, BusinessSettings $business): View
     {
-        abort_if($project->status === \App\Domain\Projects\Enums\ProjectStatus::Cancelled, 404);
+        abort_if($project->status === ProjectStatus::Cancelled, 404);
 
         $project->loadMissing(['contact', 'manager', 'quote', 'invoices', 'handoverItems']);
 
-        $lakh = app(\App\Settings\SalesSettings::class)->lakh_grouping;
+        $lakh = app(SalesSettings::class)->lakh_grouping;
 
         return view('site.project-portal', [
             'project' => $project,
@@ -89,7 +96,7 @@ final class ProjectPortalController
     /** The client signs for the space: their name is the signature. */
     public function handover(Request $request, Project $project, AcceptHandover $accept): RedirectResponse
     {
-        $page = url(\App\Domain\Projects\Services\PortalLinks::signed('projects.portal', $project));
+        $page = url(PortalLinks::signed('projects.portal', $project));
 
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'min:2', 'max:120'],
@@ -102,7 +109,7 @@ final class ProjectPortalController
 
         try {
             $accept->handle($project, (string) $request->input('name'));
-        } catch (\Illuminate\Validation\ValidationException $exception) {
+        } catch (ValidationException $exception) {
             return redirect()->to($page.'#handover')
                 ->withErrors(['confirm' => (string) collect($exception->errors())->flatten()->first()], 'handover')
                 ->withInput();
@@ -114,9 +121,9 @@ final class ProjectPortalController
     /**
      * Money in, and the receipt that proves it.
      *
-     * @return \Illuminate\Support\Collection<int, \App\Domain\Sales\Models\Payment>
+     * @return Collection<int, Payment>
      */
-    private function receipts(Project $project): \Illuminate\Support\Collection
+    private function receipts(Project $project): Collection
     {
         return $project->invoices()
             ->with('payments')
@@ -128,7 +135,7 @@ final class ProjectPortalController
     }
 
     /** Invoice links the client can open from here (each one signed for itself). */
-    public static function invoiceLink(\App\Domain\Sales\Models\Invoice $invoice): string
+    public static function invoiceLink(Invoice $invoice): string
     {
         return InvoiceLinks::signed('invoices.portal', $invoice);
     }

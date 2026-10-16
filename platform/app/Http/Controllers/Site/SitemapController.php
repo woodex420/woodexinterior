@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Site;
 
 use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\Page;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 
@@ -25,16 +26,30 @@ final class SitemapController
         return response($xml, 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
     }
 
-    public function robots(): Response
+    /**
+     * One file serves both domains, so it answers for the one that is asking: the admin keeps everything out of
+     * search, the public website asks to be crawled. There used to be a static public/robots.txt with "Disallow: /"
+     * in it, which silently kept the whole new website out of Google (P-13).
+     */
+    public function robots(Request $request): Response
     {
-        $lines = [
-            'User-agent: *',
-            'Allow: /',
-            'Disallow: /admin',
-            'Disallow: /q/',
-            '',
-            'Sitemap: '.url('/sitemap.xml'),
-        ];
+        $adminDomain = config('woodex.admin.domain');
+        $isAdmin = is_string($adminDomain) && $adminDomain !== ''
+            && $request->getHost() === $adminDomain;
+
+        $lines = $isAdmin
+            ? ['User-agent: *', 'Disallow: /']
+            : [
+                'User-agent: *',
+                'Allow: /',
+                'Disallow: /'.trim((string) config('woodex.admin.path', 'admin'), '/'),
+                'Disallow: /q/',
+                'Disallow: /i/',
+                'Disallow: /p/',
+                'Disallow: /portal',
+                '',
+                'Sitemap: '.url('/sitemap.xml'),
+            ];
 
         return response(implode("\n", $lines)."\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
     }

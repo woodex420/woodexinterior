@@ -4,7 +4,6 @@ use App\Http\Controllers\Portal\ClientPortalController;
 use App\Http\Controllers\Portal\InvoicePortalController;
 use App\Http\Controllers\Portal\ProjectPortalController;
 use App\Http\Controllers\Portal\QuotePortalController;
-use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\Site\SitemapController;
 use App\Http\Controllers\Site\WebsiteMediaController;
 use App\Http\Controllers\Webhooks\TelegramWebhookController;
@@ -88,11 +87,10 @@ Route::prefix('portal')->name('portal')->group(function (): void {
 |--------------------------------------------------------------------------
 | Public website (phase P6)
 |--------------------------------------------------------------------------
-| The home page is the first release of the new website: Studio look, the enquiry form posting to the public
-| lead API, and SEO/E-E-A-T structured data. The other 141 legacy URLs, page builder and theme builder follow
-| in this phase; until then the menu on the home page points at its own sections (no dead links).
+| There is no home page route: the home page is a page in the CMS like any other (slug "/"), rendered by the
+| SiteRouter on the 404 handler with everything else (docs/09 §3). The owner edits it in Website -> Pages, and
+| what the studio sees in the page editor is what visitors get — no second, hidden template to keep in step.
 */
-Route::get('/', HomeController::class)->name('home');
 
 /*
 | Website images (docs/09 §2.1). Served through the app rather than from a public symlink: on shared hosting the

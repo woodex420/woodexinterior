@@ -348,7 +348,8 @@ it('builds the header menu from the dashboard', function () {
     expect(NavigationItem::query()->where('menu', 'header')->count())->toBe(1);
 
     // The menu is what the public header shows (menus are cached for a day).
-    $this->get('/')->assertOk()->assertSee('Interior design')->assertSee('href="/interior-design/"', false);
+    $this->publishHomePage();
+    $this->siteGet('/')->assertOk()->assertSee('Interior design')->assertSee('href="/interior-design/"', false);
 });
 
 it('takes the tracking IDs the owner pastes and loads nothing until they are filled in', function () {
@@ -369,11 +370,12 @@ it('takes the tracking IDs the owner pastes and loads nothing until they are fil
     // Visitors get the scripts; signed-in staff do not (below), so the check runs as a visitor.
     Auth::guard('web')->logout();
 
-    $body = $this->get('/')->assertOk()->getContent();
+    $this->publishHomePage();
+    $body = $this->siteGet('/')->assertOk()->getContent();
     expect($body)->toContain('GTM-WX8ZQ2')->toContain('googletagmanager.com/gtm.js');
 
     // Signed-in staff are not visitors: no tracking for them.
-    $this->actingAs($owner)->get('/')->assertDontSee('googletagmanager.com/gtm.js');
+    expect($this->siteGet('/', $owner)->assertOk()->getContent())->not->toContain('googletagmanager.com/gtm.js');
 
     // A wrong ID is refused.
     Livewire::test(WebsiteSettings::class)->set('gtm_id', 'UA-123')->call('save')->assertHasErrors('gtm_id');
@@ -385,5 +387,6 @@ it('leaves the analytics out while tracking is switched off', function () {
     $settings->tracking_enabled = false;
     $settings->save();
 
-    $this->get('/')->assertOk()->assertDontSee('G-ABC1234567');
+    $this->publishHomePage();
+    $this->siteGet('/')->assertOk()->assertDontSee('G-ABC1234567');
 });

@@ -140,6 +140,7 @@ it('shows a helpful 404 page for a URL that belongs to nothing', function () {
 });
 
 it('lists the published pages in the sitemap and every URL answers 200', function () {
+    $this->publishHomePage();
     Page::factory()->published()->withSlug('/interior-design/')->create(['title' => 'Interior Design']);
     Page::factory()->withSlug('/still-draft/')->create(['title' => 'Draft']);
 
@@ -156,11 +157,7 @@ it('lists the published pages in the sitemap and every URL answers 200', functio
     foreach ($urls as $loc) {
         $path = parse_url($loc, PHP_URL_PATH) ?: '/';
 
-        if ($path === '/') {
-            $this->get('/')->assertOk(); // the home page is a route of its own
-        } else {
-            $this->siteGet($path)->assertOk();
-        }
+        $this->siteGet($path)->assertOk();
     }
 });
 

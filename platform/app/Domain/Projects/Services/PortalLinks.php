@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Services;
 
 use App\Domain\Projects\Models\Project;
+use App\Settings\BusinessSettings;
 use Illuminate\Support\Facades\URL;
 
 /**
@@ -46,7 +47,7 @@ final class PortalLinks
      */
     public static function whatsappShare(Project $project): string
     {
-        $business = app(\App\Settings\BusinessSettings::class);
+        $business = app(BusinessSettings::class);
 
         return 'https://wa.me/?text='.rawurlencode(
             $project->code.': '.$project->name."\n".self::absolute($project)."\n".$business->brand_name

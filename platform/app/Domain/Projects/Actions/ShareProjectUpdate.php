@@ -10,6 +10,7 @@ use App\Domain\Projects\Notifications\ProjectNotification;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 /**
  * Sending one update to the client (PRJ-004). The photographs go into the client portal in the next part of this
@@ -48,7 +49,7 @@ final class ShareProjectUpdate
             User::query()->with('telegramLink')->permission('projects.view')->where('is_active', true)->get(),
             new ProjectNotification(
                 title: 'Update shared on '.$update->project->code,
-                body: \Illuminate\Support\Str::limit($update->body, 200),
+                body: Str::limit($update->body, 200),
                 url: route('admin.projects.show', $update->project_id),
                 kind: 'shared',
             ),

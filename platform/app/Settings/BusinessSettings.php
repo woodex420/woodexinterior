@@ -53,8 +53,14 @@ class BusinessSettings extends Settings
     /** @phpstan-var list<array{date: string, name: string}> public holidays (AUT-004) */
     public array $holidays;
 
-    /** Google review link for the studio (PRJ-007): empty means no review email is ever sent. */
-    public string $google_review_url;
+    /**
+     * Google review link for the studio (PRJ-007): empty means no review email is ever sent.
+     *
+     * The default matters: a settings property with no value in the database and no default is uninitialized, and
+     * reading (or serializing) it throws — which took the whole public website down on a server whose Database
+     * update had not been run yet. Every new property gets a default, so a pending update degrades instead.
+     */
+    public string $google_review_url = '';
 
     public static function group(): string
     {

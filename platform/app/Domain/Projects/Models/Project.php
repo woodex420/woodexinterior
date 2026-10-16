@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Models;
 
 use App\Domain\Crm\Enums\BusinessLine;
-use App\Domain\Crm\Models\Concerns\HasAttachments;
 use App\Domain\Crm\Models\Company;
+use App\Domain\Crm\Models\Concerns\HasAttachments;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Projects\Enums\ProjectStage;
@@ -18,11 +18,12 @@ use App\Domain\Website\Models\Page;
 use App\Models\User;
 use App\Support\Concerns\HasPublicId;
 use App\Support\Money;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -152,12 +153,12 @@ class Project extends Model implements HasMedia
     /**
      * Drawings and documents the team chose to show the client (the rest stay in the studio).
      *
-     * @return \Illuminate\Support\Collection<int, Media>
+     * @return Collection<int, Media>
      */
-    public function clientDocuments(): \Illuminate\Support\Collection
+    public function clientDocuments(): Collection
     {
         return $this->getMedia('files')
-            ->filter(fn (\Spatie\MediaLibrary\MediaCollections\Models\Media $file): bool => (bool) $file->getCustomProperty('visible_to_client'))
+            ->filter(fn (Media $file): bool => (bool) $file->getCustomProperty('visible_to_client'))
             ->values();
     }
 

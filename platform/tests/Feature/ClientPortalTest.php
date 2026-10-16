@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Crm\Enums\BusinessLine;
+use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Projects\Actions\DraftCaseStudy;
 use App\Domain\Projects\Actions\OpenPortalWithCode;
@@ -18,9 +19,11 @@ use App\Domain\Sales\Actions\CreateQuote;
 use App\Domain\Sales\Actions\RecalculateQuote;
 use App\Domain\Sales\Actions\SendQuote;
 use App\Domain\Sales\Enums\MilestonePlanKey;
+use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Services\QuoteEditor;
 use App\Domain\Sales\Services\QuoteLinks;
 use App\Domain\Website\Enums\PageStatus;
+use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
 use App\Livewire\Admin\Projects\ProjectShow;
 use App\Models\User;
@@ -55,7 +58,7 @@ beforeEach(function () {
 });
 
 /** A sent quotation of PKR 1,000,000 on the 50/40/10 plan, accepted by the client. */
-function portalProjectQuote(Lead $lead, User $sales): \App\Domain\Sales\Models\Quote
+function portalProjectQuote(Lead $lead, User $sales): Quote
 {
     $quote = app(CreateQuote::class)->handle($lead->contact, BusinessLine::Interior, $sales, $lead, null, 'Lounge and kitchen');
     $editor = app(QuoteEditor::class);
@@ -242,7 +245,7 @@ it('turns a finished job into a draft case study, with the client consent', func
         ->and($page->title)->toBe($this->project->name)
         ->and($page->blocks->pluck('type.value')->all())->toContain('hero', 'gallery', 'specs')
         ->and($this->project->fresh()->case_study_page_id)->toBe($page->id)
-        ->and(\App\Domain\Website\Models\Media::query()->count())->toBeGreaterThan(0);
+        ->and(Media::query()->count())->toBeGreaterThan(0);
 
     // Idempotent: pressing again refreshes the same draft.
     $again = app(DraftCaseStudy::class)->handle($this->project->fresh(), $this->editor);
@@ -258,7 +261,7 @@ it('emails the client the link to their own page', function () {
 });
 
 it('asks for a code only for people who have a project with us', function () {
-    $stranger = \App\Domain\Crm\Models\Contact::factory()->create(['email' => 'nobody@example.com']);
+    $stranger = Contact::factory()->create(['email' => 'nobody@example.com']);
 
     expect(app(RequestPortalAccess::class)->handle('nobody@example.com', '127.0.0.1'))->toBe(['sent' => false]);
     Mail::assertNothingQueued();

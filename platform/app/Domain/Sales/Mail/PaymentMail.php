@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Sales\Mail;
 
 use App\Domain\Sales\Models\Payment;
+use App\Domain\Sales\Services\ReceiptPdf;
 use App\Settings\BusinessSettings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -54,7 +55,7 @@ final class PaymentMail extends Mailable implements ShouldQueue
         $payment = $this->payment();
 
         return $this->kind === 'verified' && $payment->receipt_pdf_path !== null
-            ? [Attachment::fromStorageDisk('local', $payment->receipt_pdf_path)->as(\App\Domain\Sales\Services\ReceiptPdf::filename($payment))->withMime('application/pdf')]
+            ? [Attachment::fromStorageDisk('local', $payment->receipt_pdf_path)->as(ReceiptPdf::filename($payment))->withMime('application/pdf')]
             : [];
     }
 

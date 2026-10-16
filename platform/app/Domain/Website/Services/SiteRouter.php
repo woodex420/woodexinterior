@@ -23,7 +23,7 @@ final class SiteRouter
     /**
      * First segments that belong to the app, never to a page: `q` is the client's quotation link (QUO-009) and
      * `i` the client's invoice link (INV-005) and `p` the client's project portal (PRJ-006), all signed routes
- * that must keep their 404s to themselves; `portal` is the code page.
+     * that must keep their 404s to themselves; `portal` is the code page.
      */
     private const array RESERVED = [
         'install', 'up', 'build', 'vendor', 'storage', 'api', 'webhooks', 'livewire', 'q', 'i', 'p', 'portal', 'admin',
@@ -41,9 +41,8 @@ final class SiteRouter
             return null;
         }
 
-        if ($path === '/') { // the home page is a route of its own
-            return null;
-        }
+        // The home page is a CMS page like any other (slug "/"), so it is served from here too. Keeping it out of
+        // routes/web.php means there is one place where public pages come from, and the owner can edit it.
 
         $slug = Page::normalizeSlug($path);
 
@@ -61,7 +60,7 @@ final class SiteRouter
                 return null;
             }
 
-            return $this->render($page);
+            return $this->render($page, $request->user() === null);
         }
 
         $redirect = Redirect::query()->where('from_path', $slug)->first();
@@ -75,9 +74,17 @@ final class SiteRouter
         return null;
     }
 
-    private function render(Page $page): Response
+    /**
+     * Signed-in staff are not visitors, so their view is never the one that gets cached (D-69): the first person
+     * to open a page would otherwise decide whether everybody else is counted for the next day.
+     */
+    private function render(Page $page, bool $cacheable): Response
     {
-        $html = PageCache::html($page, fn (): string => (string) view('site.page', $this->renderer->viewData($page))->render());
+        $html = PageCache::html(
+            $page,
+            fn (): string => (string) view('site.page', $this->renderer->viewData($page))->render(),
+            $cacheable,
+        );
 
         return new Response($html, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
     }

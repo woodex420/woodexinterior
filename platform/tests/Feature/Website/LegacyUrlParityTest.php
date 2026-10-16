@@ -82,6 +82,19 @@ it('redirects the version without the trailing slash of an old page URL', functi
     $this->siteGet('/insights/small-space-ideas')->assertStatus(301)->assertRedirect($this->siteUrl('/insights/small-space-ideas/'));
 });
 
-it('keeps the home page, which this batch still serves outside the CMS', function () {
-    $this->get('/')->assertOk();
+it('serves the home page from the CMS, like every other page', function () {
+    $page = $this->publishHomePage();
+    PageBlock::factory()->for($page)->asType(BlockType::Text, [
+        'heading' => 'Spaces shaped by purpose',
+        'body' => 'From the first sketch to the final handover.',
+    ])->create(['position' => 0]);
+
+    $this->siteGet('/')
+        ->assertOk()
+        ->assertSee('Spaces shaped by purpose');
+
+    // No home page in the CMS, no home page on the website: it is not a route any more.
+    $page->update(['status' => 'draft', 'published_at' => null]);
+
+    $this->siteGet('/')->assertNotFound();
 });

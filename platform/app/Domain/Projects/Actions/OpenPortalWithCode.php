@@ -6,7 +6,9 @@ namespace App\Domain\Projects\Actions;
 
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Projects\Models\PortalAccessCode;
+use App\Support\Phone;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 /**
  * Trading six digits for the client's own page (PRJ-006): the newest code we sent them, checked against the
@@ -19,8 +21,8 @@ final class OpenPortalWithCode
         $contact = Contact::query()
             ->when(
                 str_contains($identifier, '@'),
-                fn ($q) => $q->where('email', \Illuminate\Support\Str::lower(trim($identifier))),
-                fn ($q) => $q->where('phone_e164', \App\Support\Phone::normalize($identifier))
+                fn ($q) => $q->where('email', Str::lower(trim($identifier))),
+                fn ($q) => $q->where('phone_e164', Phone::normalize($identifier))
                     ->orWhere('phone', trim($identifier)),
             )
             ->first();

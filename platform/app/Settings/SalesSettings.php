@@ -70,12 +70,27 @@ class SalesSettings extends Settings
     /**
      * Lines a handover checklist starts with (PRJ-007); the team adds and ticks them on the project.
      *
+     * Defaults matter: a settings property missing from the database and without a default is uninitialized and
+     * throws when read, which is a public 500 on a server whose Database update has not been run yet. These match
+     * database/settings/2026_10_16_100600_add_handover_settings.php.
+     *
      * @phpstan-var list<string>
      */
-    public array $handover_checklist;
+    public array $handover_checklist = [
+        'Site cleaned and dusted',
+        'Paint and polish touched up',
+        'All fittings and fixtures checked',
+        'Electrical and lighting tested',
+        'Plumbing and sanitary fittings tested',
+        'Doors, locks and handles adjusted',
+        'Warranty cards and maintenance notes handed over',
+        'Spare materials and paint left with the client',
+        'Keys handed over',
+        'Photographs of the finished space taken',
+    ];
 
     /** Days after the client signs the handover before we ask for a public review (PRJ-007). */
-    public int $review_request_days;
+    public int $review_request_days = 3;
 
     public function slaMinutesFor(string $source): int
     {

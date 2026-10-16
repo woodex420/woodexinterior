@@ -37,12 +37,15 @@ Options -Indexes
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
-    # Redirect Trailing Slashes If Not A Folder...
-    # NOTE (P6 website cut-over): the 142 legacy public URLs END WITH "/" (docs/07 D-26).
-    # Replace this rule with the inverse (add a trailing slash) when the public site moves here.
+    # Trailing slashes (P6 website cut-over, docs/07 D-26).
+    # The app's own paths are canonical WITHOUT one — /admin/, /install/ and friends are redirected to /admin,
+    # /install — while every public page is canonical WITH one, because the 142 legacy URLs end in a slash.
+    # Stripping the slash from public pages too (the rule this replaced) fought the SiteRouter, which puts it
+    # straight back: two redirects for every page, and a loop for anyone following them.
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
+    RewriteCond %{REQUEST_URI} ^/(admin|install|up|api|livewire|build|media|q|i|p|portal)(/.*)?$
+    RewriteCond %{REQUEST_URI} ^/(.+)/$
+    RewriteRule ^ /%1 [L,R=301]
 
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d

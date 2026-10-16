@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Crm\Models;
 
-use App\Domain\Projects\Models\Project;
-use App\Domain\Projects\Models\PortalAccessCode;
 use App\Domain\Crm\Enums\ClientType;
 use App\Domain\Crm\Models\Concerns\HasAttachments;
 use App\Domain\Crm\Policies\ContactPolicy;
+use App\Domain\Projects\Models\PortalAccessCode;
+use App\Domain\Projects\Models\Project;
 use App\Domain\Sales\Models\Quote;
 use App\Models\User;
 use App\Support\Phone;

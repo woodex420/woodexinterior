@@ -2,9 +2,25 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 16 Oct 2026 PKT, after P3 payments + P4: projects & the client portal)
+## Resume here (project memory, saved 16 Oct 2026 PKT, after P4 + the full website going live in the CMS)
 - **Where we are:** P0-P3 are done and live; **P4 is complete**: the project workspace (part 1) and the client
   portal, handover and case-study draft (part 2). **woodex.com.pk runs this branch** — every push redeploys it.
+- **The demo home page is gone; the whole website is the CMS (this commit, D-93…D-95):**
+  - `HomeController` + `resources/views/site/home.blade.php` are **deleted**. The home page is the CMS page with
+    the slug `/`, served by the `SiteRouter` like every other page: what the studio edits in Website -> Pages is
+    what visitors get. No second template to keep in step.
+  - **All 89 pages are published** (`database/migrations/2026_10_16_110000_publish_imported_website_pages.php`):
+    the home page, `/insights/` and its 43 guides, `/projects/` and its 6 studies, 12 city pages and the 8 Lahore
+    area pages. Pages without a single visible block stay drafts.
+  - The home page's imported "Tell us about your space" closing was text without a form; it is now an **enquiry
+    form block** (`..._110010_add_enquiry_form_to_home.php`), keeping the words the import brought.
+  - **Two live bugs fixed:** `public/robots.txt` was a static `Disallow: /` — the whole website was being kept
+    out of Google (it is now answered per domain: the admin says no, the website says yes and points at the
+    sitemap); and `public/.htaccess` **stripped the trailing slash** from every URL, which fought the SiteRouter
+    that puts it back — two redirects for every page.
+  - New settings properties now carry defaults, so a pending Database update can never 500 the public site.
+  - A signed-in member of staff no longer fills the page cache: whoever opened a page first used to decide
+    whether everybody else was counted in analytics for a day (`PageCache`).
 - **P4 part 2 — the client's side (this commit, PRJ-006…PRJ-008, D-90…D-92):**
   - **Client portal** `/p/{public_id}` (signed, 120 days): where the job stands, the diary with its photographs,
     the drawings we chose to share, invoices (each opens its own signed invoice page), and the receipts.

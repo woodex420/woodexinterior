@@ -12,6 +12,7 @@ use App\Domain\Projects\Models\ProjectUpdate;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * A post in the site diary (PRJ-004): what happened on site today, with the photographs, written from a phone.
@@ -71,7 +72,7 @@ final class PostProjectUpdate
                 'lead_id' => $project->lead_id,
                 'user_id' => $by->id,
                 'type' => ActivityType::Note,
-                'body' => sprintf('%s: %s', $project->code, \Illuminate\Support\Str::limit($update->body, 160)),
+                'body' => sprintf('%s: %s', $project->code, Str::limit($update->body, 160)),
                 'data' => ['project_id' => $project->id, 'update_id' => $update->id, 'shared' => $shareWithClient],
                 'occurred_at' => now(),
             ]);

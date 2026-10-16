@@ -7,6 +7,7 @@ namespace App\Domain\Projects\Actions;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Projects\Mail\PortalCodeMail;
 use App\Domain\Projects\Models\PortalAccessCode;
+use App\Support\Phone;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -54,7 +55,7 @@ final class RequestPortalAccess
 
         return str_contains($identifier, '@')
             ? $query->where('email', Str::lower($identifier))->first()
-            : $query->where('phone_e164', \App\Support\Phone::normalize($identifier))->first()
+            : $query->where('phone_e164', Phone::normalize($identifier))->first()
                 ?? $query->where('phone', $identifier)->first();
     }
 }

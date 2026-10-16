@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Actions;
 
+use App\Domain\Projects\Models\ProjectMilestone;
 use App\Domain\Sales\Enums\InvoiceKind;
 use App\Domain\Sales\Enums\InvoiceStatus;
 use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\InvoiceItem;
-use App\Domain\Projects\Models\ProjectMilestone;
 use App\Domain\Sales\Services\InvoicePdf;
 use App\Domain\Sales\Services\InvoiceSnapshot;
 use App\Models\User;

@@ -7,6 +7,7 @@ namespace App\Domain\Projects\Actions;
 use App\Domain\Crm\Enums\ActivityType;
 use App\Domain\Crm\Models\Activity;
 use App\Domain\Projects\Enums\ProjectStage;
+use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
@@ -37,7 +38,7 @@ final class AcceptHandover
             'client_ok_name' => trim($name),
             'handover_completed_at' => $project->handover_completed_at ?? now(),
             'stage' => ProjectStage::Completed,
-            'status' => \App\Domain\Projects\Enums\ProjectStatus::Completed,
+            'status' => ProjectStatus::Completed,
             'completed_at' => $project->completed_at ?? now(),
             'progress_percent' => 100,
         ])->save();

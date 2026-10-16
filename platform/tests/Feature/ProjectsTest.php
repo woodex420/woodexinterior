@@ -24,8 +24,8 @@ use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Services\QuoteEditor;
 use App\Domain\Sales\Services\QuoteLinks;
 use App\Livewire\Admin\Projects\ProjectBoard;
-use App\Livewire\Admin\Projects\ProjectsIndex;
 use App\Livewire\Admin\Projects\ProjectShow;
+use App\Livewire\Admin\Projects\ProjectsIndex;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Livewire\Livewire;
@@ -142,11 +142,11 @@ it('posts an update with photographs, lifts the progress and writes it on the ti
     $component = Livewire::actingAs($this->pm)->test(ProjectShow::class, ['project' => $this->project]);
 
     $component->set([
-            'body' => 'Electrical rough-in finished, photographs attached.',
-            'progressPercent' => 45,
-            'photos' => [UploadedFile::fake()->image('site-one.jpg', 800, 600), UploadedFile::fake()->image('site-two.jpg', 800, 600)],
-            'shareWithClient' => true,
-        ])
+        'body' => 'Electrical rough-in finished, photographs attached.',
+        'progressPercent' => 45,
+        'photos' => [UploadedFile::fake()->image('site-one.jpg', 800, 600), UploadedFile::fake()->image('site-two.jpg', 800, 600)],
+        'shareWithClient' => true,
+    ])
         ->call('post')
         ->assertHasNoErrors();
 

@@ -20,9 +20,11 @@ final class PageCache
         return sprintf('website.page.%d.%s', $page->id, $page->updated_at?->format('U.u') ?? '0');
     }
 
-    public static function html(Page $page, callable $render): string
+    public static function html(Page $page, callable $render, bool $cacheable = true): string
     {
-        if (! (bool) config('website.cache', true)) {
+        // Two reasons to render instead of cache: caching is switched off, or a signed-in member of staff is
+        // looking — their page is not the visitors' page (D-69), and it must not become it for a day.
+        if (! $cacheable || ! (bool) config('website.cache', true)) {
             return (string) $render();
         }
 

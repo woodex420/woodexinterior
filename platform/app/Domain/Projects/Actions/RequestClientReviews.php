@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Actions;
 
-use App\Domain\Crm\Models\Activity;
 use App\Domain\Crm\Enums\ActivityType;
+use App\Domain\Crm\Models\Activity;
 use App\Domain\Projects\Mail\ProjectMail;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Services\PortalLinks;
 use App\Settings\BusinessSettings;
 use App\Settings\SalesSettings;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -75,7 +76,7 @@ final class RequestClientReviews
     }
 
     /** Used by the project screen: when the review email is due. */
-    public function dueOn(Project $project): ?\Carbon\CarbonInterface
+    public function dueOn(Project $project): ?CarbonInterface
     {
         return $project->client_ok_at?->addDays(max(0, (int) $this->sales->review_request_days));
     }
