@@ -570,3 +570,15 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
   is on with pending owner QR setup (dashboard/leads/integrations/security), password-protected cancellation,
   desktop/mobile layout and both iframe-cookie checks passed. General homepage check has the unrelated known
   failures documented above. Production not modified: deploying this branch is required for the live fix.
+
+## Deployment preparation — 2026-10-17
+
+- Owner requested deployment to woodex.com.pk but could not identify the Hostinger-connected branch. No Hostinger
+  access or GitHub deployment workflow is available in this session; production deployment cannot be confirmed.
+- Committed security/Telegram changes on arena/fe1287c9-woodexinterior and merged the latest previous application
+  branch (8d3eee1) into it so the website enquiry-form bridge is preserved. No changes pushed to other branches.
+- Post-integration verification: 57 targeted tests / 309 assertions passed, including the website bridge tests.
+- Release branch is intended for hPanel → woodex.com.pk → Advanced → Git → select
+  arena/fe1287c9-woodexinterior → Deploy. Preserve the existing target directory and private production settings.
+  No new database migrations are introduced by the security repair. Confirm the deployed commit and owner
+  access after hPanel finishes; then use /admin/integrations → Check live connection for Telegram.
