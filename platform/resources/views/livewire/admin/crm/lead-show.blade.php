@@ -144,6 +144,19 @@
                             </x-slot:actions>
                         @endif
                     @endcan
+                    @if ($estimate)
+                        <div class="mb-4 rounded-xl border border-navy-500/20 bg-navy-50/60 px-4 py-3 text-theme-sm dark:bg-white/5">
+                            <p class="font-medium text-gray-800 dark:text-white/90">Website estimate: {{ $estimate['rate']->label }}, {{ number_format($estimate['area'], 0) }} {{ $estimate['rate']->unit }}, {{ ucfirst($estimate['finish']) }} finish</p>
+                            @if ($estimate['estimate'] !== '')
+                                <p class="mt-0.5 text-gray-500">They were shown {{ $estimate['estimate'] }}.</p>
+                            @endif
+                            <div class="mt-3 flex flex-wrap items-center gap-2">
+                                <x-admin.button size="sm" icon="calculator" wire:click="startQuoteFromEstimate" wire:loading.attr="disabled">Start quotation from this estimate</x-admin.button>
+                                <span class="text-theme-xs text-gray-400">Prices the line from the rate book as a draft — you check the scope before it goes out.</span>
+                            </div>
+                            @error('estimate')<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+                        </div>
+                    @endif
                     <x-admin.quote-list :quotes="$quotes" :lakh="$lakh" empty="No quotation for this enquiry yet. Start one from a template once the site is measured." />
                 </x-admin.card>
             @endcan

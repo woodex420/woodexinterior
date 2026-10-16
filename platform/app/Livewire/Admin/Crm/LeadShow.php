@@ -20,6 +20,8 @@ use App\Domain\Crm\Models\Activity;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Models\PipelineStage;
 use App\Domain\Crm\Models\SiteVisit;
+use App\Domain\Sales\Actions\CreateQuoteFromEstimate;
+use App\Domain\Sales\Models\EstimatorRate;
 use App\Livewire\Concerns\BooksSiteVisits;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Livewire\Concerns\ManagesAttachments;
@@ -98,6 +100,36 @@ class LeadShow extends Component
     public function lead(): Lead
     {
         return Lead::query()->with(['contact.tags', 'stage', 'owner', 'company'])->findOrFail($this->leadId);
+    }
+
+    /** One click from the website's estimate to a priced draft quotation (QUO-017). */
+    public function startQuoteFromEstimate(): void
+    {
+        $this->authorize('update', $this->lead);
+
+        $creator = app(CreateQuoteFromEstimate::class);
+
+        if (! $creator->available($this->lead->refresh())) {
+            $this->addError('estimate', 'This enquiry has no estimate to price yet.');
+
+            return;
+        }
+
+        $quote = $creator->handle($this->lead->refresh(), $this->user());
+
+        $this->redirectRoute('admin.quotes.show', ['quote' => $quote->id], navigate: true);
+    }
+
+    /**
+     * The estimate the website captured, for the card on the lead page.
+     *
+     * @return array{service: string, area: float, finish: string, estimate: string, rate: EstimatorRate}|null
+     */
+    public function estimate(): ?array
+    {
+        $read = app(CreateQuoteFromEstimate::class)->read($this->lead);
+
+        return $read['rate'] !== null && $read['area'] > 0 ? $read : null;
     }
 
     public function logActivity(): void
@@ -411,6 +443,7 @@ class LeadShow extends Component
             'timelines' => self::timelines(),
             'lines' => BusinessLine::options(),
             'priorities' => LeadPriority::options(),
+            'estimate' => $this->estimate(),
             'lakh' => $sales->lakh_grouping,
         ])->title($lead->contact->name.' · '.$lead->ref);
     }
