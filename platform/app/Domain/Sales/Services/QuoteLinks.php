@@ -6,6 +6,7 @@ namespace App\Domain\Sales\Services;
 
 use App\Domain\Sales\Models\Quote;
 use App\Models\User;
+use App\Support\Money;
 use App\Support\Phone;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -37,13 +38,30 @@ final class QuoteLinks
         return URL::temporarySignedRoute($route, self::expiresAt($quote), ['quote' => $quote->public_id], absolute: false);
     }
 
-    /** "Share on WhatsApp" with the client's number and a ready message (click-to-chat; the API arrives in P4). */
+    /** "Share on WhatsApp" by hand, with the client's number and a ready message — the fallback when the API is off. */
     public static function whatsappShare(Quote $quote): ?string
     {
-        $text = "Assalam o Alaikum {$quote->contact->name}, here is your quotation {$quote->label()} from Woodex for "
-            ."\"{$quote->title}\". You can view it, download the PDF and accept it here:\n".self::portal($quote);
+        return Phone::whatsappUrl($quote->contact->whatsappNumber(), self::whatsappBody($quote));
+    }
 
-        return Phone::whatsappUrl($quote->contact->whatsappNumber(), $text);
+    /**
+     * The message that carries a quotation to the client (QUO-008, D-111).
+     *
+     * The link, not the PDF: a link always opens the latest revision, keeps working after a revision, and lets the
+     * client accept, ask for changes or ask a question from the same place.
+     */
+    public static function whatsappBody(Quote $quote): string
+    {
+        $total = Money::ofMinor((int) $quote->total_minor)->format(lakhGrouping: true);
+        $valid = $quote->valid_until !== null ? CarbonImmutable::parse($quote->valid_until)->format('j M Y') : null;
+
+        return implode("\n", array_filter([
+            "Assalam o Alaikum {$quote->contact->firstName()}, here is your quotation {$quote->label()} from Woodex"
+                ." for \"{$quote->title}\".",
+            'Total: '.$total.($valid !== null ? ", valid until {$valid}." : '.'),
+            self::portal($quote),
+            'Open it to see the details, download the PDF and accept — or reply here with any question.',
+        ]));
     }
 
     /**

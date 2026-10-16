@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Webhooks;
 
 use App\Domain\Conversations\Actions\ReceiveWhatsAppMessage;
 use App\Domain\Conversations\Actions\RecordMessageStatus;
+use App\Domain\Sales\Actions\SuggestQuoteAcceptance;
 use App\Domain\System\Enums\WebhookStatus;
 use App\Domain\System\Models\WebhookEvent;
 use App\Http\Controllers\Controller;
@@ -139,7 +140,13 @@ final class WhatsAppWebhookController extends Controller
             return;
         }
 
-        $this->receive->handle($value);
+        $message = $this->receive->handle($value);
+
+        // A client's "ok" on WhatsApp is a hint, never an acceptance (D-112): it is remembered for the team to
+        // confirm. Outside the transaction above, so a notification can never roll back a stored message.
+        if ($message !== null) {
+            app(SuggestQuoteAcceptance::class)->handle($message);
+        }
     }
 
     private function signatureMatches(string $secret, string $signature, string $body): bool

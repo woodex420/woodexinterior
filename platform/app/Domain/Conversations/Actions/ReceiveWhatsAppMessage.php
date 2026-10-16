@@ -121,7 +121,7 @@ final class ReceiveWhatsAppMessage
     {
         return Conversation::query()->firstOrCreate(
             ['contact_id' => $contact->id, 'channel' => Channel::Whatsapp->value],
-            ['external_number' => $from, 'status' => ConversationStatus::Open, 'window_expires_at' => now()->addHours(24)],
+            ['external_number' => $from, 'status' => ConversationStatus::Open, 'window_expires_at' => now()->addHours(24), 'unread_count' => 0],
         );
     }
 

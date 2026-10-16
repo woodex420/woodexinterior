@@ -13,6 +13,7 @@ use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Notifications\QuoteNotification;
 use App\Domain\Sales\Services\QuoteLinks;
+use App\Models\User;
 use App\Support\Phone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -31,7 +32,7 @@ final class AcceptQuote
         private readonly RaiseAdvanceInvoice $raiseInvoice,
     ) {}
 
-    public function handle(Quote $quote, string $name, ?string $phone, ?string $ip, ?string $userAgent): Quote
+    public function handle(Quote $quote, string $name, ?string $phone, ?string $ip, ?string $userAgent, ?User $by = null): Quote
     {
         if (! in_array($quote->status, [QuoteStatus::Sent, QuoteStatus::Viewed], true)) {
             throw new QuoteActionDenied('This quotation can no longer be accepted online. Please contact us.');
@@ -41,7 +42,7 @@ final class AcceptQuote
             throw new QuoteActionDenied('This quotation expired on '.$quote->valid_until->format('j M Y').'. Ask us for an updated one.');
         }
 
-        DB::transaction(function () use ($quote, $name, $phone, $ip, $userAgent): void {
+        DB::transaction(function () use ($quote, $name, $phone, $ip, $userAgent, $by): void {
             $quote->update([
                 'status' => QuoteStatus::Accepted,
                 'accepted_at' => now(),
@@ -50,10 +51,12 @@ final class AcceptQuote
                 'accepted_ip' => $ip,
             ]);
 
-            $this->log->handle($quote, 'accepted', null, "{$quote->contact->name} accepted {$quote->label()} online as “".trim($name).'”.', [
-                'name' => trim($name),
-                'total_minor' => (int) $quote->total_minor,
-            ], ['channel' => 'link', 'ip' => $ip, 'user_agent' => mb_substr((string) $userAgent, 0, 250)]);
+            $this->log->handle($quote, 'accepted', $by, $by === null
+                ? "{$quote->contact->name} accepted {$quote->label()} online as “".trim($name).'”.'
+                : "{$by->name} accepted {$quote->label()}: the client said yes on WhatsApp.", [
+                    'name' => trim($name),
+                    'total_minor' => (int) $quote->total_minor,
+                ], ['channel' => $by === null ? 'link' : 'whatsapp', 'ip' => $ip, 'user_agent' => mb_substr((string) $userAgent, 0, 250)]);
 
             $contact = $quote->contact;
             if (! $contact->is_client) {
@@ -82,11 +85,13 @@ final class AcceptQuote
 
         $invoice = $quote->refresh()->invoices()->latest('id')->first();
 
-        Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'accepted', 'Accepted online by “'.trim($name).'”. '.(
-            $invoice === null
-                ? 'No advance milestone: raise the first invoice when the work reaches one.'
-                : 'Advance invoice '.$invoice->number.' ('.$invoice->total()->format().') is '.$invoice->status->label().'.'
-        )));
+        Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'accepted', ($by === null
+            ? 'Accepted online by “'.trim($name).'”. '
+            : "Accepted on WhatsApp, confirmed by {$by->name}. ").(
+                $invoice === null
+                    ? 'No advance milestone: raise the first invoice when the work reaches one.'
+                    : 'Advance invoice '.$invoice->number.' ('.$invoice->total()->format().') is '.$invoice->status->label().'.'
+            )));
 
         return $quote;
     }

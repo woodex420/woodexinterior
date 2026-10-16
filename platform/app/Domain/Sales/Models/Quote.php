@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Models;
 
+use App\Domain\Conversations\Models\Message;
 use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Crm\Models\Company;
 use App\Domain\Crm\Models\Contact;
@@ -62,6 +63,7 @@ class Quote extends Model
             'first_viewed_at' => 'datetime',
             'last_viewed_at' => 'datetime',
             'accepted_at' => 'datetime',
+            'acceptance_hint_at' => 'datetime',
             'declined_at' => 'datetime',
             'expired_at' => 'datetime',
             'approved_at' => 'datetime',
@@ -87,6 +89,16 @@ class Quote extends Model
     public function contact(): BelongsTo
     {
         return $this->belongsTo(Contact::class);
+    }
+
+    /**
+     * The WhatsApp reply that sounded like a yes (D-112): kept so the studio can read what the client wrote.
+     *
+     * @return BelongsTo<Message, $this>
+     */
+    public function acceptanceHintMessage(): BelongsTo
+    {
+        return $this->belongsTo(Message::class, 'acceptance_hint_message_id');
     }
 
     /**

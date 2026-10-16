@@ -52,6 +52,20 @@
     </div>
 
     @php $status = $quote->status; @endphp
+    @if ($quote->acceptance_hint_at && in_array($status, [\App\Domain\Sales\Enums\QuoteStatus::Sent, \App\Domain\Sales\Enums\QuoteStatus::Viewed], true))
+        <div class="mb-5 flex flex-col gap-3 rounded-xl border border-warning-500/30 bg-warning-50 px-4 py-3 text-theme-sm text-warning-800 md:flex-row md:items-center md:justify-between dark:bg-warning-500/10 dark:text-warning-300" role="status">
+            <div>
+                <p class="font-medium">{{ $contact->name }} may have accepted on WhatsApp · {{ $quote->acceptance_hint_at->diffForHumans() }}</p>
+                <p>They replied: “{{ $quote->acceptanceHintMessage?->body }}”. Accepting opens the project and raises the advance invoice.</p>
+            </div>
+            <div class="flex shrink-0 gap-2">
+                <x-admin.button variant="secondary" size="sm" wire:click="dismissAcceptanceHint">Not a yes</x-admin.button>
+                <x-admin.button size="sm" icon="check-circle" wire:click="acceptFromHint"
+                                wire:confirm="Accept {{ $quote->label() }}? This opens the project and raises the advance invoice.">Accept quotation</x-admin.button>
+            </div>
+        </div>
+        @error('acceptHint')<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+    @endif
     @if ($status === \App\Domain\Sales\Enums\QuoteStatus::PendingApproval)
         <div class="mb-5 flex flex-col gap-3 rounded-xl border border-warning-500/30 bg-warning-50 px-4 py-3 text-theme-sm text-warning-800 md:flex-row md:items-center md:justify-between dark:bg-warning-500/10 dark:text-warning-300" role="status">
             <div>
@@ -629,7 +643,11 @@
                         <input type="checkbox" wire:model="sendEmail" @disabled(blank($contact->email)) class="mt-0.5 size-4 rounded border-gray-300">
                         <span>Also email the PDF and link{{ $contact->email ? ' to '.$contact->email : ' (the client has no email address)' }}</span>
                     </label>
-                    <p class="mt-2 text-theme-xs text-gray-500">After sending, copy the link or share it on WhatsApp from here. Sending through the WhatsApp API arrives in P4.</p>
+                    <label class="mt-2 flex items-start gap-2 text-theme-sm text-gray-700 dark:text-gray-300">
+                        <input type="checkbox" wire:model="sendWhatsapp" @disabled(! $this->whatsappReady()) class="mt-0.5 size-4 rounded border-gray-300">
+                        <span>Send the link on WhatsApp{{ $this->whatsappReady() ? ' to '.$contact->whatsappNumber() : ' (no WhatsApp number, or the API is not connected)' }}</span>
+                    </label>
+                    <p class="mt-2 text-theme-xs text-gray-500">The link always opens the latest version, so the client can accept, ask for a change or ask a question from the same page. Inside 24 hours of the client's last message it is sent as a normal message; after that WhatsApp only allows an approved template.</p>
                 @endif
                 @error('send')
                     <div class="mt-4 rounded-xl border border-error-500/30 bg-error-50 px-4 py-3 text-theme-sm text-error-700" role="alert">

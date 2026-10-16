@@ -130,7 +130,7 @@ class Conversation extends Model
             'last_message_at' => $at,
             'last_direction' => $direction->value,
             'last_preview' => mb_substr($preview, 0, 240),
-            'unread_count' => $direction === MessageDirection::In ? $this->unread_count + 1 : $this->unread_count,
+            'unread_count' => $direction === MessageDirection::In ? ((int) $this->unread_count) + 1 : (int) $this->unread_count,
         ]);
 
         $this->contact?->forceFill(['last_activity_at' => $at])->save();

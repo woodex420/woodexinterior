@@ -26,6 +26,7 @@ final class QuoteNotification extends Notification
         'hot' => ['🔥', 'Hot quotation'],
         'accepted' => ['🎉', 'Quotation accepted'],
         'changes_requested' => ['✏️', 'Changes requested'],
+        'acceptance_suggested' => ['🤔', 'Client may have accepted'],
     ];
 
     public function __construct(

@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Sales;
 
+use App\Domain\Sales\Actions\AcceptQuote;
 use App\Domain\Sales\Actions\DecideQuoteApproval;
 use App\Domain\Sales\Actions\DeleteQuote;
 use App\Domain\Sales\Actions\DuplicateQuote;
+use App\Domain\Sales\Actions\LogQuoteEvent;
 use App\Domain\Sales\Actions\ReopenQuote;
 use App\Domain\Sales\Actions\RequestQuoteApproval;
 use App\Domain\Sales\Actions\ReviseQuote;
 use App\Domain\Sales\Actions\SaveQuoteAsTemplate;
 use App\Domain\Sales\Actions\SendQuote;
+use App\Domain\Sales\Actions\SendQuoteByWhatsApp;
 use App\Domain\Sales\Enums\DiscountType;
 use App\Domain\Sales\Enums\MilestonePlanKey;
 use App\Domain\Sales\Enums\QuoteStatus;
@@ -31,6 +34,7 @@ use App\Domain\Sales\Services\QuoteEditor;
 use App\Domain\Sales\Services\QuoteLinks;
 use App\Domain\System\Enums\ApprovalStatus;
 use App\Domain\System\Models\Approval;
+use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Settings\SalesSettings;
 use App\Support\Html;
@@ -101,6 +105,8 @@ class QuoteBuilder extends Component
     public bool $showSend = false;
 
     public bool $sendEmail = false;
+
+    public bool $sendWhatsapp = false;
 
     public string $approvalNote = '';
 
@@ -328,6 +334,7 @@ class QuoteBuilder extends Component
         $this->authorize('send', $this->quote);
         $this->resetErrorBag();
         $this->sendEmail = filled($this->quote->contact->email) && $this->quote->sent_at === null;
+        $this->sendWhatsapp = $this->whatsappReady();
         $this->approvalNote = '';
         $this->showSend = true;
     }
@@ -350,9 +357,69 @@ class QuoteBuilder extends Component
             return;
         }
 
+        // The quotation is sent whatever happens next: the snapshot, the PDF and the link exist. WhatsApp is how
+        // the client hears about it, and if that fails the team is told plainly instead of assuming it arrived.
+        $delivery = $this->sendWhatsapp
+            ? app(SendQuoteByWhatsApp::class)->handle($this->quote->refresh(), $version, $this->user())
+            : null;
+
         unset($this->quote);
         $this->fillForm();
-        $this->toast("{$version->snapshot['label']} sent. Share the link with the client.");
+        $this->toast($delivery === null
+            ? "{$version->snapshot['label']} sent. Share the link with the client."
+            : $delivery->summary((string) $version->snapshot['label']));
+    }
+
+    /** The client's reply sounded like a yes, and the team confirms it (D-112). */
+    public function acceptFromHint(): void
+    {
+        $this->authorize('accept', $this->quote);
+
+        try {
+            $quote = app(AcceptQuote::class)->handle(
+                $this->quote->refresh(),
+                (string) $this->quote->contact->name,
+                $this->quote->contact->whatsappNumber(),
+                null,
+                null,
+                $this->user(),
+            );
+        } catch (QuoteActionDenied $exception) {
+            $this->addError('acceptHint', $exception->getMessage());
+
+            return;
+        }
+
+        unset($this->quote);
+        $this->fillForm();
+        $this->toast("{$quote->label()} accepted. The project is open and the advance invoice is raised.");
+    }
+
+    /** It was not a yes: clear the hint so the banner stops asking. */
+    public function dismissAcceptanceHint(): void
+    {
+        $this->authorize('accept', $this->quote);
+
+        $quote = $this->quote->refresh();
+        $quote->update(['acceptance_hint_at' => null, 'acceptance_hint_message_id' => null]);
+
+        app(LogQuoteEvent::class)->handle(
+            $quote,
+            'acceptance_hint_dismissed',
+            $this->user(),
+            "{$this->user()->name} read the client's WhatsApp reply: not an acceptance.",
+        );
+
+        unset($this->quote);
+        $this->fillForm();
+        $this->toast('Noted — the quotation stays as sent.');
+    }
+
+    /** Whether the client can be reached on WhatsApp at all: a number, and the API connected. */
+    public function whatsappReady(): bool
+    {
+        return filled($this->quote->contact?->whatsappNumber())
+            && app(WhatsAppGateway::class)->isConfigured();
     }
 
     public function requestApproval(): void

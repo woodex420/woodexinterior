@@ -44,6 +44,12 @@ final class QuotePolicy
         return $user->can('quotes.send') && self::inScope($user, $quote);
     }
 
+    /** Record that a client accepted, or that their reply was not a yes (D-112). */
+    public function accept(User $user, Quote $quote): bool
+    {
+        return $user->can('quotes.send') && self::inScope($user, $quote);
+    }
+
     public function revise(User $user, Quote $quote): bool
     {
         return $user->can('quotes.manage') && self::inScope($user, $quote);
