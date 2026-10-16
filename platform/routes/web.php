@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Portal\InvoicePortalController;
 use App\Http\Controllers\Portal\QuotePortalController;
 use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\Site\SitemapController;
@@ -45,6 +46,18 @@ Route::middleware('signed:relative')->prefix('q')->name('quotes.portal')->group(
     Route::get('/{quote:public_id}/pdf', [QuotePortalController::class, 'pdf'])->name('.pdf');
     Route::post('/{quote:public_id}/accept', [QuotePortalController::class, 'accept'])->name('.accept')->middleware('throttle:10,1');
     Route::post('/{quote:public_id}/changes', [QuotePortalController::class, 'changes'])->name('.changes')->middleware('throttle:10,1');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Client invoice page (INV-005/006): signed, expiring links, no login
+|--------------------------------------------------------------------------
+| Payment reporting and proof upload come from here; the accountant confirms them in the admin.
+*/
+Route::middleware('signed:relative')->prefix('i')->name('invoices.portal')->group(function (): void {
+    Route::get('/{invoice:public_id}', [InvoicePortalController::class, 'show'])->name('');
+    Route::get('/{invoice:public_id}/pdf', [InvoicePortalController::class, 'pdf'])->name('.pdf');
+    Route::post('/{invoice:public_id}/proof', [InvoicePortalController::class, 'proof'])->name('.proof')->middleware('throttle:10,1');
 });
 
 /*

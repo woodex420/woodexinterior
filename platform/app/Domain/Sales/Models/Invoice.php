@@ -120,11 +120,35 @@ class Invoice extends Model
     }
 
     /**
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
      * @return HasMany<PaymentAllocation, $this>
      */
     public function allocations(): HasMany
     {
         return $this->hasMany(PaymentAllocation::class);
+    }
+
+    /**
+     * Money received against this invoice (INV-005). Anything over the balance is client credit, so the amount is
+     * cut at what is still owed; the rest stays unallocated on the payment.
+     */
+    public function applyPayment(int $amountMinor): void
+    {
+        $paid = min((int) $this->total_minor, (int) $this->paid_minor + $amountMinor);
+        $balance = (int) $this->total_minor - $paid;
+
+        $this->forceFill([
+            'paid_minor' => $paid,
+            'balance_minor' => $balance,
+            'status' => $balance <= 0 ? InvoiceStatus::Paid : InvoiceStatus::PartiallyPaid,
+        ])->save();
     }
 
     /**

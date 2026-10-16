@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Models;
 
+use App\Domain\Crm\Models\Concerns\HasAttachments;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Sales\Enums\PaymentMethod;
@@ -17,13 +18,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
+use Spatie\MediaLibrary\HasMedia;
 
 /**
  * Money received (or claimed by a client upload, pending verification) (INV-005, INV-006).
  */
-class Payment extends Model
+class Payment extends Model implements HasMedia
 {
-    use HasPublicId, LogsActivity, SoftDeletes;
+    use HasAttachments, HasPublicId, LogsActivity, SoftDeletes;
 
     protected $guarded = ['id'];
 
@@ -64,6 +66,16 @@ class Payment extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * The invoice this payment came in against, when it came in against one (INV-006).
+     *
+     * @return BelongsTo<Invoice, $this>
+     */
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
     }
 
     /**

@@ -2,9 +2,68 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 16 Oct 2026 PKT, after website batch 2: the import)
-- **Where we are:** P0-P2 part 2a are done and live. **woodex.com.pk runs this branch.** The website CMS
-  (batch 1) and the import of the old site (batch 2) are built and pushed:
+## Resume here (project memory, saved 16 Oct 2026 PKT, after P2 part 2b + P3 payments)
+- **Where we are:** P0-P2 are done and live; **P3 (get paid) is built and pushed** (commit below) but not yet
+  verified by the owner on the live site. **woodex.com.pk runs this branch** — every push redeploys it.
+- **P3 — get paid (this commit, INV-005/006, D-84…D-86):** money reaches the ledger two ways and both land in the
+  same place.
+  - **Record payment** (Admin → Sales → Payments): the studio saying the money is in the bank — verified at once,
+    receipt `RC-2026-0001` written to storage, mailed to the client, the team notified on Telegram.
+  - **"I have paid"** on the client's invoice page (`/i/{public_id}`, signed for 90 days, no login): the client's
+    amount, date, method, bank reference and an optional screenshot → **Pending verification**, nothing allocated.
+    Accounts presses **Confirm** (allocates + receipt + mail) or **Send back** with a reason (mail with the reason).
+  - Money settles **its own invoice first, then the oldest open invoices of that client first**, and an overpayment
+    stays as unallocated client credit (`AllocatePayment`, D-85).
+  - The client invoice page shows the frozen invoice, the bank account to pay into, the PDF link and a WhatsApp
+    share; it 404s for a draft or a paid/void invoice. Every invoice row in the quote builder now has a
+    **Client link** and a **WhatsApp** link.
+  - Only `payments.verify` (accounts) may confirm or send back; a payment can only be acted on while it waits.
+- **Verification of this commit:** Pest **377 passed, 2 745 assertions** (9 new in `tests/Feature/PaymentsTest.php`:
+  record + receipt + mail, spreading over two invoices with the remainder as credit, client proof, confirm, send
+  back, the client page, the draft/paid guards, permissions and the Livewire screen) · Larastan level 6 clean ·
+  Pint clean · PHP lint clean (392 files) · smoke 31 admin pages green including `/admin/payments`.
+- **Next (your call):** the remaining P2 part 2b items (QUO-012 reminders/expiry, QUO-019 quote options, v2.1 quote
+  import), then **P4 projects/execution**, or back to **website batch 3** (publish the 12 cities + 8 Lahore areas
+  + `/insights/` + `/projects/`, humanize home and the six services). Tell me which and I start it.
+- **Website (unchanged, still open):** 12 pages live from the CMS, **76 drafts waiting for a human**
+  (12 cities, 8 Lahore areas, 48 insights, 6 projects), 54 old service URLs 301'd, parity test green.
+- **Open items P-01…P-16** (docs/07 section C): P-06 (rotate credentials) blocks go-live; P-12 (real project
+  photographs) blocks the case studies; P-15 (GA4/GTM/Clarity IDs into Website → Settings) blocks tracking;
+  P-16 (email + hours in Settings) should be done now.
+- **Rules to follow:** docs/07 (D-01…D-86), docs/09 and platform/AGENTS.md. The plan and specs are in docs/00-09.
+- **Code:** everything is on branch `arena/8be318a2-woodexinterior` and pushed. `master` is still d77016b; merge
+  through a pull request when the owner approves.
+- **Preview (AI sandbox only):** after a VM reset run `sh tools/sandbox/setup.sh` (~3-4 min). Then start
+  `PORT=8080 node --stack-size=8000 tools/sandbox/server.mjs` from `/tmp/woodex-run`. Checks: `smoke.sh`,
+  `browser-check.mjs`, `home-check.mjs`, `page-check.mjs`, `iframe-check.mjs`, `installer-check.mjs`
+  (tools/sandbox/README.md). The preview's database holds the imported pages; `/tmp/ref/frontend-v1` is the
+  read-only clone of the old site and `/tmp/ref` is never pushed to.
+- **Preview data:** demo seed (26 leads, 5 users, 4 quotations) + the 89 imported pages (12 published).
+  Owner login `owner@woodex.test` / `Woodex-Preview-2026`. The preview database lives in `/tmp` and is rebuilt
+  from the seeders after a VM reset (the pages then come from the committed bundle via `woodex:import-website`).
+
+### P3 part 1 delivered: payments, proofs and receipts (16 Oct 2026, D-84…D-86)
+- **Actions** (`app/Domain/Sales/Actions/`): `RecordPayment` (verified at once, receipt number `RC-{year}-{0001}`
+  per year inside the same transaction, mail + Telegram), `AllocatePayment` (own invoice, then oldest due date
+  first, remainder unallocated), `SubmitPaymentProof` (client claim, `Pending verification`, proof in the `files`
+  media collection, throttled 10/min), `VerifyPayment` (confirm → allocate → receipt → mail), `RejectPayment`
+  (reason 5–500 chars → mail). `Money::ofMinor()->format($lakhGrouping)` everywhere; paisa stored as integers.
+- **Receipt PDF** (`ReceiptPdf` + `views/pdf/receipt.blade.php`): the studio's letterhead text, receipt number,
+  client, the invoices the money settled and how much of each, the method/reference/date, and the amount in words.
+- **Client invoice page** (`Portal\InvoicePortalController`, `views/site/invoice.blade.php`): signed `i/{public_id}`
+  for 90 days — status banners, invoice/paid/balance, the frozen lines, the bank account to pay into, PDF +
+  WhatsApp links, and the proof form. Draft and void invoices 404; a paid or already-reported invoice hides the form.
+- **Admin → Sales → Payments** (`Livewire\Admin\Sales\PaymentsIndex`): status chips with counts, search, a
+  "record payment" form (client typeahead, one or the oldest open invoices, method, reference, bank account, date,
+  notes), and per row: **Proof** (the uploaded file), **Receipt** (PDF), **Confirm**, **Send back** (reason modal).
+  A warning counts how many are waiting for accounts.
+- **Wiring:** `PaymentPolicy` (view follows `invoices.view`; `payments.record` to record; `payments.verify` to
+  confirm or send back, and only while pending) · `payments.invoice_id` migration `2026_10_16_000700` ·
+  `Payment` gained `HasAttachments` + `implements HasMedia` · `Invoice::payments()` + `applyPayment()` ·
+  `/i` reserved in `SiteRouter` (D-86) · "Client link" and WhatsApp per invoice in the quote builder.
+
+## Website state (batch 2: the import, 16 Oct 2026)
+- **Where the website stands:** the CMS (batch 1) and the import of the old site (batch 2) are built and pushed:
   - **Live:** the home page (`/`, still its own Blade page) plus 12 pages from the CMS: the six core services
     (`/interior-design/`, `/fit-out/`, `/renovation/`, `/architecture/`, `/3d-visualization/`, `/furniture/`),
     `/services/`, `/about/`, `/contact/`, `/privacy/`, `/estimator/`, `/book-a-visit/`.
@@ -19,25 +78,11 @@ _Update at the end of every task (docs/03 Part A §7)._
   "Database update" does the rest. Both importers are idempotent (`legacy_refs`, checksum per slug).
   To re-import from the old HTML: `php artisan woodex:import-legacy --path=/path/to/frontend-v1`
   (`--publish --only=/slug/,...` publishes; without `--publish` everything lands as a draft).
-- **Owner to do:** after this deploy, sign in and press **System -> Database update** (it adds the website tables,
-  the 54 redirects and all 89 pages); add the **cron line** shown by the installer; set up 2FA.
+- **Owner to do:** after a deploy, sign in and press **System -> Database update** (it adds the new tables such as
+  `payments.invoice_id` and all 89 pages); add the **cron line** shown by the installer; set up 2FA.
 - **Next (batch 3):** publish the 12 cities + 8 Lahore areas + `/insights/` + `/projects/` after reading them, and
-  humanize home and the six services (docs/09 section 9). Then batch 4 (48 insights), 5 (projects + tracking +
-  `llms.txt` + consent), 6 (estimator and book-a-visit as real tools).
-- **Open items P-01...P-16** (docs/07 section C): P-06 (rotate credentials) blocks go-live; P-12 (real project
-  photographs) blocks the case studies; P-15 (GA4/GTM/Clarity IDs into Website -> Settings) blocks tracking;
-  P-16 (email + hours in Settings) should be done now.
-- **Rules to follow:** docs/07 (D-01...D-79), docs/09 and platform/AGENTS.md. The plan and specs are in docs/00-09.
-- **Code:** everything is on branch `arena/8be318a2-woodexinterior` and pushed. `master` is still d77016b; merge
-  through a pull request when the owner approves.
-- **Preview (AI sandbox only):** after a VM reset run `sh tools/sandbox/setup.sh` (~3-4 min). Then start
-  `PORT=8080 node --stack-size=8000 tools/sandbox/server.mjs` from `/tmp/woodex-run`. Checks: `smoke.sh`,
-  `browser-check.mjs`, `home-check.mjs`, `page-check.mjs`, `iframe-check.mjs`, `installer-check.mjs`
-  (tools/sandbox/README.md). The preview's database holds the imported pages; `/tmp/ref/frontend-v1` is the
-  read-only clone of the old site and `/tmp/ref` is never pushed to.
-- **Preview data:** demo seed (26 leads, 5 users, 4 quotations) + the 89 imported pages (12 published).
-  Owner login `owner@woodex.test` / `Woodex-Preview-2026`. The preview database lives in `/tmp` and is rebuilt
-  from the seeders after a VM reset (the pages then come from the committed bundle via `woodex:import-website`).
+    humanize home and the six services (docs/09 section 9). Then batch 4 (48 insights), 5 (projects + tracking +
+    `llms.txt` + consent), 6 (estimator and book-a-visit as real tools).
 
 ## Hostinger deploy fix (16 Oct 2026, D-56…D-58)
 - **What happened (15 Oct, deploy of 3155343):** hPanel's Git deploy copied the repository into the **main domain's**

@@ -492,6 +492,12 @@
                                     <x-admin.badge :color="$invoice->status->color()">{{ $invoice->status->label() }}</x-admin.badge>
                                     @can('view', $invoice)
                                         <a href="{{ route('admin.invoices.pdf', $invoice) }}" target="_blank" rel="noopener" class="text-theme-xs text-brand-600 hover:underline dark:text-brand-400">PDF</a>
+                                        @if ($invoice->status !== \App\Domain\Sales\Enums\InvoiceStatus::Draft)
+                                            <a href="{{ \App\Domain\Sales\Services\InvoiceLinks::portal($invoice) }}" target="_blank" rel="noopener" class="text-theme-xs text-brand-600 hover:underline dark:text-brand-400">Client link</a>
+                                            @if ($share = \App\Domain\Sales\Services\InvoiceLinks::whatsappShare($invoice))
+                                                <a href="{{ $share }}" target="_blank" rel="noopener" class="text-theme-xs text-brand-600 hover:underline dark:text-brand-400">WhatsApp</a>
+                                            @endif
+                                        @endif
                                     @endcan
                                 </div>
                             </li>

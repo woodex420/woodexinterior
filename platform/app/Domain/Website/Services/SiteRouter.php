@@ -20,9 +20,12 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 final class SiteRouter
 {
-    /** First segments that belong to the app, never to a page. */
+    /**
+     * First segments that belong to the app, never to a page: `q` is the client's quotation link (QUO-009) and
+     * `i` the client's invoice link (INV-005), both signed routes that must keep their 404s to themselves.
+     */
     private const array RESERVED = [
-        'install', 'up', 'build', 'vendor', 'storage', 'api', 'webhooks', 'livewire', 'q', 'admin',
+        'install', 'up', 'build', 'vendor', 'storage', 'api', 'webhooks', 'livewire', 'q', 'i', 'admin',
     ];
 
     public function __construct(private readonly PageRenderer $renderer) {}

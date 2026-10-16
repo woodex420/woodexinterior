@@ -20,6 +20,7 @@ use App\Livewire\Admin\NotificationsPage;
 use App\Livewire\Admin\Profile\Security;
 use App\Livewire\Admin\Sales\Approvals;
 use App\Livewire\Admin\Sales\InvoicesIndex;
+use App\Livewire\Admin\Sales\PaymentsIndex;
 use App\Livewire\Admin\Sales\QuoteBuilder;
 use App\Livewire\Admin\Sales\QuoteCreate;
 use App\Livewire\Admin\Sales\QuotesIndex;
@@ -66,6 +67,7 @@ Route::livewire('/quotes/{quote}', QuoteBuilder::class)->name('quotes.show')->wh
 Route::get('/quotes/{quote}/pdf', QuotePdfController::class)->name('quotes.pdf')->whereNumber('quote');
 Route::livewire('/invoices', InvoicesIndex::class)->name('invoices.index')->middleware('can:invoices.view');
 Route::get('/invoices/{invoice}/pdf', InvoicePdfController::class)->name('invoices.pdf')->whereNumber('invoice');
+Route::livewire('/payments', PaymentsIndex::class)->name('payments.index')->middleware('can:invoices.view');
 Route::livewire('/approvals', Approvals::class)->name('approvals')->middleware('can:quotes.approve');
 Route::livewire('/quote-templates', QuoteTemplates::class)->name('quote-templates')->middleware('can:quotes.view');
 Route::livewire('/rate-book', RateBook::class)->name('rate-book')->middleware('can:quotes.view');

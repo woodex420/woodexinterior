@@ -20,6 +20,7 @@ use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Policies\InvoicePolicy;
+use App\Domain\Sales\Policies\PaymentPolicy;
 use App\Domain\Sales\Policies\QuotePolicy;
 use App\Domain\System\Models\ChangeRequest;
 use App\Http\Middleware\EnsureUserIsActive;
@@ -80,6 +81,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Company::class, CompanyPolicy::class);
         Gate::policy(Quote::class, QuotePolicy::class);
         Gate::policy(Invoice::class, InvoicePolicy::class);
+        Gate::policy(Payment::class, PaymentPolicy::class);
 
         // The owner can do everything (PRD §7).
         Gate::before(fn (User $user): ?bool => $user->hasRole('owner') ? true : null);
