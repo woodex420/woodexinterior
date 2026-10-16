@@ -2,6 +2,32 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT, after the complete old website went into the CMS)
+- **The complete frontend v1 is the website now: 143 pages, 0 redirects (owner's decision, D-102).** The old site's
+  54 specialist URLs used to 301 to the nearest discipline; they are pages now, editable in Website -> Pages with
+  the Woodex builder. `database/data/legacy-website.php` holds 143 pages and an empty redirect list.
+- **How it gets to the server in one step:** `woodex:reset-website` (new command) empties the public website —
+  pages, sections, photographs, the 301s and the import bookkeeping — and
+  `2026_10_17_000200_reload_the_complete_website.php` empties and reloads `database/data/website-bundle` in the
+  same Database update, so woodex.com.pk is never blank. It records the bundle's checksum, so a later update with
+  the same bundle changes nothing and pages the studio has since edited survive (D-104).
+- **The four content fixes are actions now** (`app/Domain/Website/Actions/`, D-103), because an import brings the
+  old pages back without them: AddMissingCallToActions, LinkCityPagesToAreas, LinkEmptyServiceUrls (123 empty
+  discipline links filled in — the old site listed Furniture with no link at all) and RepairImportedCopy (the
+  privacy page no longer promises Supabase and Vercel).
+- **Two bugs found doing it:** a reset did not clear the *image* bookkeeping, so every imported block pointed at a
+  deleted photograph (ImportLegacyMedia now checks a ref before believing it); and `/furniture/` carried the
+  wardrobe page's title and description — it has its own words now, not yet its own photographs.
+- **The audit after the reload:** 143 pages · 0 broken links · 0 orphans · min 489 words, median 815 · every page
+  has one h1, JSON-LD, alt text and dimensions, and a closing · 5 pages still carry no photograph
+  (`/services/`, `/projects/`, `/book-a-visit/`, `/estimator/`, `/privacy/`) · sitemap 143 URLs.
+- **Verification:** Pest **419 passed** (6 new: the four actions and the reset command, which asks before it
+  deletes and keeps media and redirects when asked) · Larastan level 6 clean · Pint clean on 458 files · admin
+  smoke 34 pages · preview checked (frontend + dashboard) before pushing.
+- **docs/11 is the v2 plan** the owner asked for: SEO first (the 54 specialist pages have to stop reading like
+  copies of the six disciplines), then the section library and page patterns, then the design-token theme builder.
+  Item 1 is still the owner's one click: **woodex.com.pk -> /admin -> System -> Database update.**
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after the 89-page launch audit)
 - **All 89 pages were audited page by page** (docs/10): every page rendered through the app's HTTP kernel, 704
   internal links followed. **Sound:** 89/89 answer 200, **0 broken links**, one `<h1>` each, titles ≤ 65 chars,
