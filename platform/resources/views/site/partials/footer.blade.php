@@ -2,6 +2,7 @@
      matching the structured data. --}}
 @php
     $navigation ??= [];
+    $cities ??= [];
 @endphp
 <footer class="mt-20 bg-navy-900 text-white">
     <div class="mx-auto max-w-6xl px-5 py-14 md:px-8">
@@ -48,6 +49,17 @@
                 <p>© {{ date('Y') }} {{ $business->legal_name }}. All rights reserved.</p>
                 <p>Interior design, fit-out, renovation, architecture, 3D visualisation and custom furniture · {{ $business->city }}, Pakistan</p>
             </div>
+
+            @if ($cities !== [])
+                <div class="mt-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <h2 class="text-xs text-navy-300">Where we work</h2>
+                    <nav aria-label="Cities" class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        @foreach ($cities as $city)
+                            <a href="{{ $city['url'] }}" class="inline-block py-1 hover:text-white">{{ $city['name'] }}</a>
+                        @endforeach
+                    </nav>
+                </div>
+            @endif
 
             @if ($navigation !== [])
                 <nav aria-label="Footer" class="mt-5">

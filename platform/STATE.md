@@ -2,6 +2,30 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT, after the 89-page launch audit)
+- **All 89 pages were audited page by page** (docs/10): every page rendered through the app's HTTP kernel, 704
+  internal links followed. **Sound:** 89/89 answer 200, **0 broken links**, one `<h1>` each, titles ≤ 65 chars,
+  descriptions 120–165 chars with no duplicates, JSON-LD on every page, every image has alt + width/height,
+  `last_reviewed` set, **no thin content** (min 489 words, median 929, max 1 738).
+- **Three defects found and fixed in this commit:**
+  1. **The site had no navigation.** `navigation_items` was empty, so the header and the footer were blank and
+     27 of 89 pages (home, about, projects, insights, privacy, all 12 cities, all 8 Lahore areas) had no link
+     pointing at them — only the sitemap. `Menus::defaults()` now supplies a header and a footer until the studio
+     fills in Website → Menus, and `Menus::cityLinks()` puts **Where we work** (the 12 cities) in the footer.
+     Orphans **27 → 0**; average internal links per page **2.2 → 22**.
+  2. **40 pages ended on a full stop** — every cost guide had no form and no next step. `..._130000` gives every
+     published page without one an enquiry-form block with a heading written for its kind of page. **40 → 0**.
+  3. **The 8 Lahore area pages were unreachable.** `..._130100` ends each city page with **"Areas of X we work
+     in"**, listing its areas (Lahore → all 8; the other cities have none yet, so nothing was invented).
+- **`tools/website/audit.php`** (new): renders every published page, follows every internal link, prints a summary
+  and exits non-zero on a broken link. Run it after every content batch: `php tools/website/audit.php`.
+- **Still open (owner):** 5 pages carry no photograph (`/services/`, `/projects/`, `/book-a-visit/`,
+  `/estimator/`, `/privacy/`) — the library holds 74 imported images with no names, so nothing was picked at
+  random; and **woodex.com.pk → /admin → System → Database update** still needs one click to publish the 89
+  pages and create the conversation tables.
+- **Verification:** Pest **413 passed**, 2 878 assertions (2 new navigation tests) · Larastan level 6 clean ·
+  Pint clean on 450 files · audit re-run clean · preview checked (frontend + dashboard) before committing.
+
 ## Resume here (project memory, saved 16 Oct 2026 PKT, after P4: conversations part 1 - the inbox)
 - **P4 part 1 — conversations: the pipes and the inbox (this commit, CNV-001/002/005, WAP-001…004/006):**
   - **Admin -> Inbox** (`/admin/inbox`, `inbox.view` to read, `inbox.reply` to answer): conversations on the left,

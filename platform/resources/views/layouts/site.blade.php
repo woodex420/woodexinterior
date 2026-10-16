@@ -10,6 +10,7 @@
     $faqs ??= [];
     $navigation = \App\Domain\Website\Services\Menus::items('header');
     $footerNavigation = \App\Domain\Website\Services\Menus::items('footer');
+    $cities = \App\Domain\Website\Services\Menus::cityLinks();
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -36,6 +37,7 @@
     @include('site.partials.footer', [
         'navigation' => $footerNavigation,
         'services' => $services,
+        'cities' => $cities,
         'business' => $business,
         'phone' => $phone,
         'whatsapp' => $whatsapp,

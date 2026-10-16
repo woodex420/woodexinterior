@@ -19,3 +19,6 @@ Thumbs.db
 /vendor/
 # Installer setup code copy (written on the server, deleted after installation)
 /WOODEX-SETUP-CODE.txt
+
+# Website audit output (tools/website/audit.php)
+tools/website/audit.json

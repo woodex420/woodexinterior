@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * Menus and the service links used by the header, the footer and the structured data (docs/09 §2.1). Menus are
- * editable in the dashboard; until someone fills them in, the views fall back to their built-in defaults.
+ * editable in the dashboard; until someone fills them in the header and the footer use the built-in defaults
+ * below, so the site always has its structure (docs/09 §2.1, audit of 16 Oct 2026 in docs/10).
  */
 final class Menus
 {
@@ -31,7 +32,42 @@ final class Menus
                 'target' => $item->target ?: '_self',
             ])->all());
 
-        return $items;
+        return $items === [] ? self::defaults($menu) : $items;
+    }
+
+    /**
+     * The navigation a studio's website needs before anybody has opened Website -> Menus.
+     *
+     * Without this the header and the footer were empty, and with them the site had no structure: 27 of the 89
+     * pages (the home page among them) had no link pointing at them anywhere but the sitemap. The owner can
+     * replace every line of it in the dashboard; this is only what shows until they do.
+     *
+     * @return list<array{label: string, url: string, target: string}>
+     */
+    public static function defaults(string $menu): array
+    {
+        $link = fn (string $label, string $url): array => ['label' => $label, 'url' => $url, 'target' => '_self'];
+
+        return match ($menu) {
+            'header' => [
+                $link('Services', '/services/'),
+                $link('Cost guides', '/insights/'),
+                $link('Projects', '/projects/'),
+                $link('About', '/about/'),
+                $link('Contact', '/contact/'),
+            ],
+            'footer' => [
+                $link('Interior design', '/interior-design/'),
+                $link('Cost guides', '/insights/'),
+                $link('Cost estimator', '/estimator/'),
+                $link('Projects', '/projects/'),
+                $link('Book a visit', '/book-a-visit/'),
+                $link('About the studio', '/about/'),
+                $link('Contact', '/contact/'),
+                $link('Privacy', '/privacy/'),
+            ],
+            default => [],
+        };
     }
 
     /**
@@ -56,9 +92,32 @@ final class Menus
         return $links;
     }
 
+    /**
+     * The cities we work in, for the footer. Before this existed the twelve city pages were reachable from the
+     * sitemap and nothing else — every one of them an orphan.
+     *
+     * @return list<array{name: string, url: string}>
+     */
+    public static function cityLinks(): array
+    {
+        /** @var list<array{name: string, url: string}> $links */
+        $links = Cache::remember('website.cities', now()->addDay(), fn (): array => Page::query()
+            ->published()
+            ->ofType(PageType::City)
+            ->orderBy('sort')
+            ->get()
+            ->map(fn (Page $page): array => [
+                'name' => $page->title,
+                'url' => $page->path(),
+            ])->all());
+
+        return $links;
+    }
+
     public static function flush(): void
     {
         Cache::forget('website.services');
+        Cache::forget('website.cities');
 
         foreach (['header', 'footer', 'services'] as $menu) {
             Cache::forget('website.menu.'.$menu);

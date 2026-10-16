@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Website\Enums\BlockType;
+use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\NavigationItem;
 use App\Domain\Website\Models\Page;
@@ -116,5 +117,25 @@ it('falls back to the built-in links until someone fills the menus in', function
 
     $body = $this->siteGet('/fit-out/')->assertOk()->getContent();
 
-    expect($body)->toContain('href="#services"')->toContain('Start your project');
+    // Real URLs, not scroll anchors: an empty menu must still leave every main page one click away.
+    foreach (['/services/', '/insights/', '/projects/', '/about/', '/contact/', '/book-a-visit/', '/estimator/'] as $url) {
+        expect($body, $url.' is missing from the navigation')->toContain('href="'.$url.'"');
+    }
+
+    expect($body)->toContain('Start your project');
+});
+
+it('lists the cities we work in the footer so no area page is an orphan', function () {
+    Menus::flush();
+
+    $city = Page::factory()->published()->create(['type' => PageType::City, 'slug' => '/lahore/', 'title' => 'Interior design in Lahore']);
+
+    pageWithSections('/fit-out/', [['type' => BlockType::Text, 'data' => sectionSample(BlockType::Text, 0, 0)['data']]]);
+
+    $body = $this->siteGet('/fit-out/')->assertOk()->getContent();
+
+    expect($body)->toContain('Where we work')->toContain('href="/lahore/"');
+
+    expect(Menus::cityLinks())->toHaveCount(1)
+        ->and(Menus::cityLinks()[0]['url'])->toBe('/lahore/');
 });
