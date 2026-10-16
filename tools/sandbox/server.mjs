@@ -222,6 +222,30 @@ function staticFile(urlPath) {
     }
 }
 
+/**
+ * Apache's `DirectoryIndex index.html index.php` (platform/public/.htaccess): a folder that holds a page of its
+ * own answers with it. The PHP runtime below only knows about index.php, so the original website's pages — real
+ * index.html files — are found here first.
+ */
+function directoryIndex(urlPath) {
+    let dir;
+    try {
+        dir = path.normalize(path.join(DOCROOT, decodeURIComponent(urlPath)));
+    } catch {
+        return null;
+    }
+
+    if (!dir.startsWith(`${DOCROOT}${path.sep}`)) return null;
+
+    const candidate = path.join(dir, 'index.html');
+
+    try {
+        return fs.statSync(candidate).isFile() ? candidate : null;
+    } catch {
+        return null;
+    }
+}
+
 function serveStatic(req, res, file) {
     const stat = fs.statSync(file);
     const type = MIME[path.extname(file).toLowerCase()] ?? 'application/octet-stream';
@@ -341,7 +365,9 @@ const server = http.createServer(async (req, res) => {
             res.writeHead(204, { 'Cache-Control': 'no-store' });
             return res.end();
         }
-        const file = (req.method === 'GET' || req.method === 'HEAD') ? staticFile(urlPath) : null;
+        const file = (req.method === 'GET' || req.method === 'HEAD')
+            ? (staticFile(urlPath) ?? directoryIndex(urlPath))
+            : null;
         if (file) return serveStatic(req, res, file);
         await servePhp(req, res);
     } catch (error) {

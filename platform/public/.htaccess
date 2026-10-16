@@ -1,6 +1,10 @@
 # Woodex OS hardening (docs/06 §7)
 Options -Indexes
 
+# The original website is served as it is: its pages are real files in this folder (docs/11 §2), so a directory
+# request answers with the page's own index.html. Only when there is no file does the request reach the app.
+DirectoryIndex index.html index.php
+
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"
 </IfModule>
@@ -46,6 +50,11 @@ Options -Indexes
     RewriteCond %{REQUEST_URI} ^/(admin|install|up|api|livewire|build|media|q|i|p|portal)(/.*)?$
     RewriteCond %{REQUEST_URI} ^/(.+)/$
     RewriteRule ^ /%1 [L,R=301]
+
+    # The original home page is a real file in this folder now, and the site root answers with it (docs/11 §2).
+    # Written out rather than left to DirectoryIndex alone, so the address a visitor types cannot depend on the
+    # order the server happens to prefer. Remove this line when the CMS serves `/` again.
+    RewriteRule ^$ index.html [L]
 
     # robots.txt is answered by the app, per domain (D-95): Hostinger's Git deploy can leave a deleted static
     # file behind on the server, and a stale "Disallow: /" is a whole website kept out of Google in silence.
