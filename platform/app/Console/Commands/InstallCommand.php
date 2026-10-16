@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Domain\System\Actions\CreateOwnerAccount;
+use App\Domain\Website\Actions\ImportBundledWebsite;
 use App\Models\User;
 use Database\Seeders\ProductionSeeder;
 use Illuminate\Console\Command;
@@ -26,7 +27,7 @@ final class InstallCommand extends Command
 
     protected $description = 'Seed Woodex OS reference data and create the owner account.';
 
-    public function handle(CreateOwnerAccount $createOwner): int
+    public function handle(CreateOwnerAccount $createOwner, ImportBundledWebsite $importWebsite): int
     {
         $this->components->info('Woodex OS setup');
 
@@ -35,6 +36,7 @@ final class InstallCommand extends Command
 
         if (User::role('owner')->exists() && ! $this->option('force')) {
             $this->components->info('An owner account already exists. Nothing else to do.');
+            $this->importWebsite($importWebsite);
 
             return self::SUCCESS;
         }
@@ -57,7 +59,23 @@ final class InstallCommand extends Command
         }
 
         $this->components->info("Owner account created for {$email}. Turn on two-factor authentication after the first login.");
+        $this->importWebsite($importWebsite);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * The pages of the website come with the code (docs/09 §13). The migration imports them on a database that
+     * already has an owner; here they land on a brand-new one, written in the new owner's name.
+     */
+    private function importWebsite(ImportBundledWebsite $importWebsite): void
+    {
+        $output = $importWebsite();
+
+        if ($output === null) {
+            return;
+        }
+
+        $this->line($output === '' ? 'The pages of the website are up to date.' : $output);
     }
 }

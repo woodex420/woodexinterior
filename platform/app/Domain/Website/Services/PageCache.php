@@ -38,6 +38,18 @@ final class PageCache
     }
 
     /**
+     * Called after an image changed: every published page that shows it has to be rendered again.
+     *
+     * @param  iterable<Page>  $pages
+     */
+    public static function invalidateAll(iterable $pages): void
+    {
+        foreach ($pages as $page) {
+            self::invalidate($page);
+        }
+    }
+
+    /**
      * Called after any change to a page or to one of its blocks. The old entry is dropped first (the key still
      * holds the old timestamp at that moment), then the page is touched so the next render writes a new key.
      */

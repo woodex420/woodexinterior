@@ -7,7 +7,7 @@
             @php $logo = isset($item['id']) ? ($media[$item['id']] ?? null) : null; @endphp
             @if ($logo)
                 <li><img src="{{ $logo->url() }}" width="{{ $logo->width ?? 320 }}" height="{{ $logo->height ?? 160 }}" loading="lazy" decoding="async"
-                         alt="{{ $item['alt'] ?? $logo->alt }}" class="h-10 w-auto opacity-70 grayscale"></li>
+                         alt="{{ $item['alt'] ?: $logo->alt }}" class="h-10 w-auto opacity-70 grayscale"></li>
             @endif
         @endforeach
     </ul>

@@ -1,4 +1,8 @@
-{{-- Public site footer: name, address, phone (NAP) and the service list, all matching the structured data. --}}
+{{-- Public site footer: name, address, phone (NAP), the service list and the links from Website → Menus, all
+     matching the structured data. --}}
+@php
+    $navigation ??= [];
+@endphp
 <footer class="mt-20 bg-navy-900 text-white">
     <div class="mx-auto max-w-6xl px-5 py-14 md:px-8">
         <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
@@ -39,9 +43,21 @@
             </div>
         </div>
 
-        <div class="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-navy-300 sm:flex-row sm:items-center sm:justify-between">
-            <p>© {{ date('Y') }} {{ $business->legal_name }}. All rights reserved.</p>
-            <p>Interior design, fit-out, renovation, architecture, 3D visualisation and custom furniture · {{ $business->city }}, Pakistan</p>
+        <div class="mt-12 border-t border-white/10 pt-6 text-xs text-navy-300">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p>© {{ date('Y') }} {{ $business->legal_name }}. All rights reserved.</p>
+                <p>Interior design, fit-out, renovation, architecture, 3D visualisation and custom furniture · {{ $business->city }}, Pakistan</p>
+            </div>
+
+            @if ($navigation !== [])
+                <nav aria-label="Footer" class="mt-5">
+                    <ul class="flex flex-wrap items-center gap-x-5 gap-y-1">
+                        @foreach ($navigation as $item)
+                            <li><a href="{{ $item['url'] }}" @if ($item['target'] === '_blank') target="_blank" rel="noopener" @endif class="inline-block py-1 hover:text-white">{{ $item['label'] }}</a></li>
+                        @endforeach
+                    </ul>
+                </nav>
+            @endif
         </div>
     </div>
 </footer>

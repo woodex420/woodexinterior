@@ -1,5 +1,5 @@
 {
-    "exported_at": "2026-10-16T06:48:08+05:00",
+    "exported_at": "2026-10-16T09:07:51+05:00",
     "pages": [
         {
             "slug": "/",
@@ -25,7 +25,7 @@
                         "eyebrow": "Design and build · Lahore",
                         "heading": "Spaces shaped by purpose and identity",
                         "text": "From the first sketch to final handover, design, build and furniture stay with one accountable team.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "primary_label": "Start your project",
                         "primary_url": "/contact/",
                         "secondary_label": "Explore services",
@@ -118,7 +118,7 @@
                         "eyebrow": "One brief. One standard. One accountable team.",
                         "heading": "Design clarity, material warmth and precise delivery",
                         "body": "Woodex Interior has worked from Lahore since 2016, bringing architecture, interior design, fit-out, renovation, visualization and custom furniture into one connected practice.",
-                        "image_id": 334,
+                        "image_id": 2,
                         "facts": []
                     },
                     "visible": true
@@ -311,7 +311,7 @@
             "title": "3D Visualization Lahore | 3D Interior Rendering",
             "excerpt": "Photorealistic renders, walkthroughs, virtual tours and shadow studies made in house for clearer decisions before construction.",
             "status": "published",
-            "published_at": "2026-10-16T06:44:30+05:00",
+            "published_at": "2026-10-16T08:58:35+05:00",
             "seo": {
                 "title": "3D Visualization Lahore | 3D Interior Rendering | Woodex",
                 "description": "3D visualization in Lahore: photoreal interior and exterior renders, walkthroughs and virtual tours from the in-house Woodex 3D studio.",
@@ -329,7 +329,7 @@
                         "eyebrow": "Independent visualization, made in house",
                         "heading": "3D Visualization Studio in Lahore",
                         "text": "Photorealistic renders, walkthroughs, virtual tours and shadow studies made in house for clearer decisions before construction.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "primary_label": "Start a brief",
                         "primary_url": "#brief",
                         "secondary_label": "View a 3D study",
@@ -368,7 +368,7 @@
                         "eyebrow": "",
                         "heading": "What Is 3D Visualization?",
                         "body": "Most interior disputes come from a gap between what a client imagined and what was drawn. Visualisation closes that gap. You see the finished ceiling, the veneer direction, the lighting temperature and the furniture layout while everything is still editable.\n\nBecause our render team sits beside our design and site teams, what you approve is what we build — no reinterpretation between image and installation.",
-                        "image_id": 334,
+                        "image_id": 2,
                         "facts": [
                             {
                                 "label": "2018",
@@ -392,7 +392,7 @@
                         "eyebrow": "Choose the right scope",
                         "heading": "3D Studio vs Interior Design",
                         "body": "Visualization shows the idea. Interior design creates it.\n\nRenders, animation and virtual tours for an existing design.\n\nSpace planning, materials and detailing, with 3D included.",
-                        "image_id": 334,
+                        "image_id": 2,
                         "facts": []
                     },
                     "visible": true
@@ -627,27 +627,27 @@
                         "heading": "What you get with 3D Visualization",
                         "images": [
                             {
-                                "id": 336,
+                                "id": 3,
                                 "caption": "",
                                 "alt": "Photoreal stills – 3D Visualization"
                             },
                             {
-                                "id": 337,
+                                "id": 4,
                                 "caption": "",
                                 "alt": "Walkthroughs – 3D Visualization"
                             },
                             {
-                                "id": 338,
+                                "id": 5,
                                 "caption": "",
                                 "alt": "360 views – 3D Visualization"
                             },
                             {
-                                "id": 339,
+                                "id": 6,
                                 "caption": "",
                                 "alt": "2 revision rounds – 3D Visualization"
                             },
                             {
-                                "id": 340,
+                                "id": 7,
                                 "caption": "",
                                 "alt": "Material studies – 3D Visualization"
                             }
@@ -661,34 +661,34 @@
                         "heading": "Why choose Woodex 3D Studio?",
                         "images": [
                             {
-                                "id": 337,
+                                "id": 4,
                                 "caption": "",
-                                "alt": ""
+                                "alt": "Walkthroughs – 3D Visualization"
                             },
                             {
-                                "id": 336,
+                                "id": 3,
                                 "caption": "",
-                                "alt": ""
+                                "alt": "Photoreal stills – 3D Visualization"
                             },
                             {
-                                "id": 338,
+                                "id": 5,
                                 "caption": "",
-                                "alt": ""
+                                "alt": "360 views – 3D Visualization"
                             },
                             {
-                                "id": 339,
+                                "id": 6,
                                 "caption": "",
-                                "alt": ""
+                                "alt": "2 revision rounds – 3D Visualization"
                             },
                             {
-                                "id": 341,
+                                "id": 8,
                                 "caption": "",
-                                "alt": ""
+                                "alt": "A Woodex Interior project photograph"
                             },
                             {
-                                "id": 342,
+                                "id": 9,
                                 "caption": "",
-                                "alt": ""
+                                "alt": "A Woodex Interior project photograph"
                             }
                         ]
                     },
@@ -752,7 +752,7 @@
             "title": "About Woodex Interior | Design & Build Lahore",
             "excerpt": "Woodex Interior was founded in Lahore in 2016. We plan, design and deliver offices, commercial spaces and premium homes across Pakistan with one accountable team.",
             "status": "published",
-            "published_at": "2026-10-16T06:44:45+05:00",
+            "published_at": "2026-10-16T08:58:35+05:00",
             "seo": {
                 "title": "About Woodex Interior | Design & Build Lahore",
                 "description": "About Woodex Interior, Lahore. Founded in 2016 by Imtiaz Ahmad: interior design, fit-out, renovation, architecture, visualization and joinery under one team.",
@@ -770,7 +770,7 @@
                         "eyebrow": "About the studio",
                         "heading": "Design and build, held to one standard",
                         "text": "Woodex Interior was founded in Lahore in 2016. We plan, design and deliver offices, commercial spaces and premium homes across Pakistan with one accountable team.",
-                        "image_id": 334,
+                        "image_id": 2,
                         "primary_label": "Start your project",
                         "primary_url": "#about-visit",
                         "secondary_label": "Explore our services",
@@ -785,7 +785,7 @@
                         "eyebrow": "",
                         "heading": "A decade of design, delivered on site.",
                         "body": "Founded in 2016 by Imtiaz Ahmad, Woodex Interior is a Lahore-based design-and-build company working across corporate offices, retail, hospitality, healthcare and premium residential projects. With more than 200 completed spaces, our work is shaped as much by site experience as by drawing boards.\n\nDesign, visualization, joinery and site delivery sit inside one studio, supported by Woodex 3D Studio™ and Woodex Furniture™. That means fewer handovers, clearer accountability and a finished space that matches what was approved.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "facts": [
                             {
                                 "label": "2016",
@@ -981,7 +981,7 @@
             "title": "Architecture Services Lahore | House Design",
             "excerpt": "Building design, working drawings, elevations and authority submissions. From first concept to a construction-ready package.",
             "status": "published",
-            "published_at": "2026-10-16T06:44:34+05:00",
+            "published_at": "2026-10-16T08:58:35+05:00",
             "seo": {
                 "title": "Architecture Services Lahore | House Design | Woodex",
                 "description": "Architecture services in Lahore for house design, commercial buildings, front elevations and master planning, from concept to construction-ready drawings.",
@@ -999,7 +999,7 @@
                         "eyebrow": "",
                         "heading": "Architecture Services in Lahore",
                         "text": "Building design, working drawings, elevations and authority submissions. From first concept to a construction-ready package.",
-                        "image_id": 334,
+                        "image_id": 2,
                         "primary_label": "Book a consultation",
                         "primary_url": "#architecture-contact",
                         "secondary_label": "View services",
@@ -1038,7 +1038,7 @@
                         "eyebrow": "",
                         "heading": "What Architecture Services Cover",
                         "body": "Architecture plans the building itself: its form, layout, structure and route to approval.\n\nWe turn a plot and a brief into drawings a contractor can build from. The design is coordinated early, so fewer decisions are left unresolved on site.",
-                        "image_id": 335,
+                        "image_id": 10,
                         "facts": [
                             {
                                 "label": "Concept Design",
@@ -1151,7 +1151,7 @@
                         "eyebrow": "",
                         "heading": "Residential Architecture",
                         "body": "A house should work before it begins to impress.\n\nWe plan light, privacy, parking, storage and everyday movement from the start, then carry the approved concept into elevations and working drawings.",
-                        "image_id": 334,
+                        "image_id": 2,
                         "facts": [
                             {
                                 "label": "5 Marla House",
@@ -1195,7 +1195,7 @@
                         "eyebrow": "",
                         "heading": "Commercial Architecture",
                         "body": "Good commercial buildings work for operators, visitors and the authorities who approve them.\n\nWe coordinate the floor plate, movement, safety, services and facade around the building type. The result is practical to occupy and ready to price for construction.",
-                        "image_id": 334,
+                        "image_id": 2,
                         "facts": [
                             {
                                 "label": "Office Buildings",
@@ -1239,7 +1239,7 @@
                         "eyebrow": "",
                         "heading": "Master Planning",
                         "body": "The big-picture plan for land, buildings and movement.\n\nFor larger developments, we study how the site should be organized before individual buildings are resolved. Zoning, access, open space and infrastructure move forward as one plan.",
-                        "image_id": 335,
+                        "image_id": 10,
                         "facts": [
                             {
                                 "label": "Housing schemes",
@@ -1312,27 +1312,27 @@
                         "heading": "What you get with Architecture Services",
                         "images": [
                             {
-                                "id": 337,
+                                "id": 4,
                                 "caption": "",
                                 "alt": "Concept and massing – Architecture Services"
                             },
                             {
-                                "id": 338,
+                                "id": 5,
                                 "caption": "",
                                 "alt": "Planning drawings – Architecture Services"
                             },
                             {
-                                "id": 339,
+                                "id": 6,
                                 "caption": "",
                                 "alt": "3D exterior views – Architecture Services"
                             },
                             {
-                                "id": 336,
+                                "id": 3,
                                 "caption": "",
                                 "alt": "Structure and services – Architecture Services"
                             },
                             {
-                                "id": 343,
+                                "id": 11,
                                 "caption": "",
                                 "alt": "Construction set – Architecture Services"
                             }
@@ -1488,7 +1488,7 @@
                         "eyebrow": "Where we work",
                         "heading": "Interior design in Bahawalpur",
                         "text": "Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Bahawalpur from it. Site visits are grouped into planned rounds covering each stage of the work.",
-                        "image_id": 354,
+                        "image_id": 12,
                         "primary_label": "Start a Bahawalpur project",
                         "primary_url": "/contact/",
                         "secondary_label": "How we work",
@@ -1634,7 +1634,7 @@
                         "eyebrow": "A local note",
                         "heading": "A note on working in Bahawalpur",
                         "body": "In Bahawalpur we take on homes and select commercial work. Projects run from our Lahore studio, with site visits grouped into planned rounds. Clients here get the same drawings, quantities and accountability as any Lahore project.",
-                        "image_id": 355,
+                        "image_id": 13,
                         "facts": []
                     },
                     "visible": true
@@ -1689,7 +1689,7 @@
             "title": "Book a Site Visit or Meeting",
             "excerpt": "Choose a time that suits you. A Woodex designer will visit your site, meet you at our Lahore studio, or call you online — and we confirm every booking on WhatsApp.",
             "status": "published",
-            "published_at": "2026-10-16T06:44:45+05:00",
+            "published_at": "2026-10-16T08:58:35+05:00",
             "seo": {
                 "title": "Book a Site Visit or Meeting | Woodex Interior Lahore",
                 "description": "Book a site visit, studio meeting or online call with Woodex Interior in Lahore. Pick a date and time that suits you — we confirm on WhatsApp.",
@@ -1827,7 +1827,7 @@
             "title": "Contact Woodex Interior | Lahore Design & Build Studio",
             "excerpt": "Based in Lahore, working across Islamabad, Karachi and nationwide. Tell us what you need and we will respond with next steps.",
             "status": "published",
-            "published_at": "2026-10-16T06:44:45+05:00",
+            "published_at": "2026-10-16T08:58:35+05:00",
             "seo": {
                 "title": "Contact Woodex Interior | Lahore Design & Build Studio",
                 "description": "Contact Woodex Interior in Lahore for interior design, fit-out, renovation, architecture and 3D. Call, WhatsApp, email or visit our studio.",
@@ -1845,7 +1845,7 @@
                         "eyebrow": "Contact",
                         "heading": "Let’s talk about your space",
                         "text": "Based in Lahore, working across Islamabad, Karachi and nationwide. Tell us what you need and we will respond with next steps.",
-                        "image_id": 335,
+                        "image_id": 10,
                         "primary_label": "Start your project",
                         "primary_url": "#contact-cards",
                         "secondary_label": "",
@@ -1942,7 +1942,7 @@
             "title": "Interior Design Cost Estimator",
             "excerpt": "Pick a service, tell us the size, choose a finish. You get an honest starting range in under a minute, based on our recent projects across Lahore.",
             "status": "published",
-            "published_at": "2026-10-16T06:44:45+05:00",
+            "published_at": "2026-10-16T08:58:35+05:00",
             "seo": {
                 "title": "Interior Design Cost Estimator | Woodex Interior",
                 "description": "Interior design cost estimator: pick a service, size and finish level to get a starting range for your Lahore project, then book a visit for a quote.",
@@ -2049,7 +2049,7 @@
                         "eyebrow": "Where we work",
                         "heading": "Interior design in Faisalabad",
                         "text": "Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Faisalabad from it. Offices, retail and commercial projects run in scheduled phases with site visits at each milestone.",
-                        "image_id": 335,
+                        "image_id": 10,
                         "primary_label": "Start a Faisalabad project",
                         "primary_url": "/contact/",
                         "secondary_label": "How we work",
@@ -2195,7 +2195,7 @@
                         "eyebrow": "A local note",
                         "heading": "A note on working in Faisalabad",
                         "body": "Faisalabad's textile and industrial base shapes what we build here: offices, retail and pragmatic commercial interiors. Budgets tend to be practical and timelines firm, which suits the way we work. Projects run from Lahore with scheduled site visits at each milestone.",
-                        "image_id": 356,
+                        "image_id": 14,
                         "facts": []
                     },
                     "visible": true
@@ -2250,7 +2250,7 @@
             "title": "Fit-Out Company Lahore | Office & Commercial",
             "excerpt": "From bare shell to finished space. One accountable team coordinates every trade, finish and final handover.",
             "status": "published",
-            "published_at": "2026-10-16T06:44:38+05:00",
+            "published_at": "2026-10-16T08:58:35+05:00",
             "seo": {
                 "title": "Fit-Out Company Lahore | Office & Commercial | Woodex",
                 "description": "Fit out in Lahore for offices, restaurants, retail, healthcare and commercial spaces: design, MEP coordination, joinery and handover by Woodex.",
@@ -2268,7 +2268,7 @@
                         "eyebrow": "",
                         "heading": "Fit-Out & Build in Lahore",
                         "text": "From bare shell to finished space. One accountable team coordinates every trade, finish and final handover.",
-                        "image_id": 335,
+                        "image_id": 10,
                         "primary_label": "Request a Fit-Out Quote",
                         "primary_url": "#fitout-hub-contact",
                         "secondary_label": "WhatsApp",
@@ -2307,7 +2307,7 @@
                         "eyebrow": "",
                         "heading": "A complete build, coordinated under one team",
                         "body": "What fit-out covers\n\nFit-out turns an empty or unfinished interior into a space ready to use.\n\nWoodex coordinates the structure, services, finishes, joinery and furniture through one BOQ, one site programme and one final handover.",
-                        "image_id": 335,
+                        "image_id": 10,
                         "facts": [
                             {
                                 "label": "Partitions & ceilings",
@@ -2335,7 +2335,7 @@
                         "eyebrow": "",
                         "heading": "Experience that stays accountable on site",
                         "body": "Built on delivery",
-                        "image_id": 334,
+                        "image_id": 2,
                         "facts": [
                             {
                                 "label": "2016",
@@ -2480,27 +2480,27 @@
                         "heading": "What you get with Fit-Out Company",
                         "images": [
                             {
-                                "id": 338,
+                                "id": 5,
                                 "caption": "",
                                 "alt": "Survey and measured drawings – Fit-Out Company"
                             },
                             {
-                                "id": 337,
+                                "id": 4,
                                 "caption": "",
                                 "alt": "Design and 3D – Fit-Out Company"
                             },
                             {
-                                "id": 342,
+                                "id": 9,
                                 "caption": "",
                                 "alt": "MEP coordination – Fit-Out Company"
                             },
                             {
-                                "id": 344,
+                                "id": 15,
                                 "caption": "",
                                 "alt": "Joinery and furniture – Fit-Out Company"
                             },
                             {
-                                "id": 343,
+                                "id": 11,
                                 "caption": "",
                                 "alt": "Phased handover – Fit-Out Company"
                             }
@@ -2514,7 +2514,7 @@
                         "eyebrow": "",
                         "heading": "The people and trades move as one team",
                         "body": "Under one contract\n\nNo disconnected suppliers to chase. Woodex coordinates design checks, procurement, site trades and close-out under one accountable lead.",
-                        "image_id": 335,
+                        "image_id": 10,
                         "facts": []
                     },
                     "visible": true
@@ -2596,7 +2596,7 @@
             "title": "Furniture and joinery",
             "excerpt": "Kitchens, wardrobes and dressing rooms in Lahore, measured, drawn in 3D and built to fit by one team.",
             "status": "published",
-            "published_at": "2026-10-16T06:44:08+05:00",
+            "published_at": "2026-10-16T08:58:35+05:00",
             "seo": {
                 "title": "Kitchens, Wardrobes & Dressing Rooms | Woodex",
                 "description": "Woodex designs and builds kitchens, wardrobes and dressing rooms in Lahore: measured on site, drawn in 3D, made to order and fitted by one team.",
@@ -2614,7 +2614,7 @@
                         "eyebrow": "Furniture and joinery",
                         "heading": "Joinery made for the room it goes in",
                         "text": "Kitchens, wardrobes and dressing rooms, measured on site, drawn in 3D and built to fit. The old wardrobe, kitchen and dressing room pages now live here.",
-                        "image_id": 347,
+                        "image_id": 16,
                         "primary_label": "Plan your joinery",
                         "primary_url": "/contact/",
                         "secondary_label": "WhatsApp the studio",
@@ -2744,27 +2744,27 @@
                         "heading": "Kitchens, wardrobes and dressing rooms",
                         "images": [
                             {
-                                "id": 349,
+                                "id": 17,
                                 "caption": "",
                                 "alt": "Space planning – Wardrobe Design"
                             },
                             {
-                                "id": 350,
+                                "id": 18,
                                 "caption": "",
                                 "alt": "3D visualization – Wardrobe Design"
                             },
                             {
-                                "id": 351,
+                                "id": 19,
                                 "caption": "",
                                 "alt": "Materials and finishes – Wardrobe Design"
                             },
                             {
-                                "id": 352,
+                                "id": 20,
                                 "caption": "",
                                 "alt": "Lighting plan – Wardrobe Design"
                             },
                             {
-                                "id": 353,
+                                "id": 21,
                                 "caption": "",
                                 "alt": "Coordinated build – Wardrobe Design"
                             }
@@ -2840,7 +2840,7 @@
                         "eyebrow": "Where we work",
                         "heading": "Interior design in Gujranwala",
                         "text": "Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Gujranwala from it. Being close by helps: site visits are easy to schedule around each phase of shops and homes.",
-                        "image_id": 357,
+                        "image_id": 22,
                         "primary_label": "Start a Gujranwala project",
                         "primary_url": "/contact/",
                         "secondary_label": "How we work",
@@ -2986,7 +2986,7 @@
                         "eyebrow": "A local note",
                         "heading": "A note on working in Gujranwala",
                         "body": "Gujranwala is growing fast, and most of our work here is new shops and family homes. Projects tend to move quickly once drawings are approved. We serve the city from our Lahore studio with site visits scheduled around each phase.",
-                        "image_id": 358,
+                        "image_id": 23,
                         "facts": []
                     },
                     "visible": true
@@ -3059,7 +3059,7 @@
                         "eyebrow": "Where we work",
                         "heading": "Interior design in Hyderabad",
                         "text": "Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Hyderabad from it. Shops, offices and homes run in scheduled phases with site visits at each stage.",
-                        "image_id": 359,
+                        "image_id": 24,
                         "primary_label": "Start a Hyderabad project",
                         "primary_url": "/contact/",
                         "secondary_label": "How we work",
@@ -3205,7 +3205,7 @@
                         "eyebrow": "A local note",
                         "heading": "A note on working in Hyderabad",
                         "body": "Hyderabad is Sindh's second city, and we serve it the way we serve Karachi. Shops, offices and homes are run from our Lahore studio in scheduled phases. Site visits are planned around each stage, with drawings and video check-ins between visits.",
-                        "image_id": 360,
+                        "image_id": 25,
                         "facts": []
                     },
                     "visible": true
@@ -3278,7 +3278,7 @@
                         "eyebrow": "Notes from the studio",
                         "heading": "Ideas for better spaces.",
                         "text": "Practical reading on cost, process and planning, from our Lahore studio.",
-                        "image_id": 335,
+                        "image_id": 10,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -3619,7 +3619,7 @@
                         "eyebrow": "Home interiors",
                         "heading": "1 Kanal House Interior Cost in Lahore 2026: Room-by-Room Budget",
                         "text": "A 1 kanal house has more rooms, more joinery and more services than most owners expect. Plan the budget room by room and the big number becomes manageable.",
-                        "image_id": 355,
+                        "image_id": 13,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -3717,7 +3717,7 @@
                         "eyebrow": "",
                         "heading": "Phasing a large home sensibly",
                         "body": "Many families phase a kanal interior. Do the services, ceilings and flooring for the whole house in one go, then finish rooms in order of use: kitchen and master suite first, guest rooms and basement later. That avoids reopening finished work.\n\nSee our 1 kanal house design page for layouts, and DHA vs Bahria Town interiors for how locality shapes style.",
-                        "image_id": 378,
+                        "image_id": 26,
                         "facts": []
                     },
                     "visible": true
@@ -3879,7 +3879,7 @@
                         "eyebrow": "Homes",
                         "heading": "10 Marla House Interior Design in Lahore",
                         "text": "The 10 marla house is Lahore's family favourite: big enough for real rooms, small enough that every metre counts.",
-                        "image_id": 379,
+                        "image_id": 27,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -3941,7 +3941,7 @@
                         "eyebrow": "",
                         "heading": "Storage that disappears",
                         "body": "Clutter shrinks a house faster than small rooms do. Build storage into walls: full-height wardrobes, a TV wall with closed cabinets, under-stair drawers and a shoe unit at the entrance. Closed fronts in a calm finish keep rooms visually quiet.",
-                        "image_id": 348,
+                        "image_id": 28,
                         "facts": []
                     },
                     "visible": true
@@ -4131,7 +4131,7 @@
                         "eyebrow": "3D Studio",
                         "heading": "3D Interior Design Cost in Pakistan 2026",
                         "text": "3D views let you see a space before you build it. The cost depends on what you need to see, how real it must look and how many changes you make.",
-                        "image_id": 360,
+                        "image_id": 25,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -4225,7 +4225,7 @@
                         "eyebrow": "",
                         "heading": "How to brief a 3D studio",
                         "body": "A clear brief saves rounds and gets a better result faster.",
-                        "image_id": 355,
+                        "image_id": 13,
                         "facts": [
                             {
                                 "label": "",
@@ -4430,7 +4430,7 @@
                         "eyebrow": "3D Studio",
                         "heading": "See the room before it exists",
                         "text": "3D visualization for interiors: stills, walkthroughs and 360 views at 4K, with 2 revision rounds, so you see the room before it exists.",
-                        "image_id": 357,
+                        "image_id": 22,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -4466,7 +4466,7 @@
                         "eyebrow": "",
                         "heading": "Two revision rounds, 4K and up",
                         "body": "Every project includes 2 structured revision rounds after the first views are issued. You review, we revise, and the design converges without endless loops.\n\nDelivery is 4K resolution and above, sharp enough to judge materials, shadows and proportions properly.",
-                        "image_id": 380,
+                        "image_id": 29,
                         "facts": []
                     },
                     "visible": true
@@ -4689,7 +4689,7 @@
                         "eyebrow": "Renovation cost",
                         "heading": "5 Marla House Renovation Cost in Lahore 2026",
                         "text": "A 5 marla house is compact, so every renovation decision shows. Here is what drives the cost and where a small budget does the most good.",
-                        "image_id": 368,
+                        "image_id": 30,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -4771,7 +4771,7 @@
                         "eyebrow": "",
                         "heading": "Keeping the budget under control",
                         "body": "Decide early which rooms get the full treatment and which only need a refresh. Fix the scope in writing and keep a contingency for what opens up behind old plaster. Moving bathrooms is expensive in a small house; keeping wet areas where they are saves real money.",
-                        "image_id": 378,
+                        "image_id": 26,
                         "facts": []
                     },
                     "visible": true
@@ -4977,7 +4977,7 @@
                         "eyebrow": "Small spaces",
                         "heading": "Apartment Interior Ideas for Lahore Flats",
                         "text": "Apartment living is growing fast in Lahore. Good planning makes flats feel larger and work better for families.",
-                        "image_id": 381,
+                        "image_id": 31,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -5017,7 +5017,7 @@
                         "eyebrow": "",
                         "heading": "Storage in every wall",
                         "body": "Closed storage keeps small spaces visually calm.",
-                        "image_id": 382,
+                        "image_id": 32,
                         "facts": [
                             {
                                 "label": "",
@@ -5262,7 +5262,7 @@
                         "eyebrow": "Small spaces",
                         "heading": "Apartment and Small-House Space Planning in Lahore",
                         "text": "Apartments and compact homes are growing fast in Lahore. Good planning, not more furniture, is what makes them comfortable.",
-                        "image_id": 382,
+                        "image_id": 32,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -5302,7 +5302,7 @@
                         "eyebrow": "",
                         "heading": "Six planning moves that work",
                         "body": "",
-                        "image_id": 378,
+                        "image_id": 26,
                         "facts": [
                             {
                                 "label": "",
@@ -5360,7 +5360,7 @@
                         "eyebrow": "",
                         "heading": "Light and finishes",
                         "body": "Light makes small rooms feel bigger. Keep window walls clear, use pale floors and walls, and add layered lighting so corners never go dark. Choose a few materials and repeat them; too many finishes make a small home feel busy. Our lighting layers guide helps.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "facts": []
                     },
                     "visible": true
@@ -5568,7 +5568,7 @@
                         "eyebrow": "Architecture",
                         "heading": "How Much Does an Architect Charge in Lahore? 2026 Guide",
                         "text": "Architects in Lahore charge in a few standard ways. Understanding the stages behind the fee shows you what you are paying for and what you might be missing.",
-                        "image_id": 383,
+                        "image_id": 33,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -5846,7 +5846,7 @@
                         "eyebrow": "Renovation",
                         "heading": "Bathroom Renovation in Lahore: A Practical Planning Guide",
                         "text": "Bathrooms are small rooms with the most hidden work. Plan the parts you cannot see first and the finishes will last.",
-                        "image_id": 384,
+                        "image_id": 34,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -5900,7 +5900,7 @@
                         "eyebrow": "",
                         "heading": "Waterproofing comes first",
                         "body": "Most bathroom failures are leaks into the room below or damp rising behind tiles. Waterproofing is invisible once tiled, so it must be done and tested before finishes go on.",
-                        "image_id": 385,
+                        "image_id": 35,
                         "facts": [
                             {
                                 "label": "",
@@ -5956,7 +5956,7 @@
                         "eyebrow": "",
                         "heading": "Layout and storage",
                         "body": "Keep the wet zone (shower) apart from the dry zone (vanity and WC) with a glass screen and a level threshold. Place the WC away from the door line and give the vanity a deep drawer rather than open shelves. In compact bathrooms, a niche in the shower wall replaces bulky caddies.\n\nLighting matters more than it seems: a soft ceiling light, a mirror light at face height and a low night light make the room usable at any hour.",
-                        "image_id": 386,
+                        "image_id": 36,
                         "facts": []
                     },
                     "visible": true
@@ -6110,7 +6110,7 @@
                         "eyebrow": "Healthcare",
                         "heading": "Clinic Interior Design in Lahore",
                         "text": "A clinic must feel calm to patients and work efficiently for staff. Both come from planning, not decoration.",
-                        "image_id": 387,
+                        "image_id": 37,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -6200,7 +6200,7 @@
                         "eyebrow": "",
                         "heading": "Finishes and lighting",
                         "body": "Use warm, soft finishes in waiting areas and bright, even, colour-accurate light in treatment rooms. Avoid glare on screens and patient faces. Timber-look panels and plants make a clinic feel less clinical without hurting hygiene.",
-                        "image_id": 385,
+                        "image_id": 35,
                         "facts": []
                     },
                     "visible": true
@@ -6394,7 +6394,7 @@
                         "eyebrow": "Process",
                         "heading": "How a Woodex project runs",
                         "text": "The interior design process at Woodex, step by step: first call, site survey, concept, 3D views, quantities, build and handover.",
-                        "image_id": 388,
+                        "image_id": 38,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -6430,7 +6430,7 @@
                         "eyebrow": "",
                         "heading": "Site visit or drawings review",
                         "body": "Next we survey the site or review your drawings in detail. Measurements, structure, plumbing and electrical points, light and access are all checked.\n\nThis is where hidden conditions surface. Knowing about them early keeps the design honest and the budget stable.",
-                        "image_id": 357,
+                        "image_id": 22,
                         "facts": []
                     },
                     "visible": true
@@ -6653,7 +6653,7 @@
                         "eyebrow": "Lahore areas",
                         "heading": "Designing a House Interior in DHA Lahore: A Planning Guide",
                         "text": "DHA houses are large, layered and often built from scratch. Planning the interior early is the difference between a coordinated home and a collection of rooms.",
-                        "image_id": 372,
+                        "image_id": 39,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -6693,7 +6693,7 @@
                         "eyebrow": "",
                         "heading": "Start at grey structure",
                         "body": "The best time to involve an interior designer is while the house is still grey structure. Electrical points, AC positions, plumbing, ceiling heights and joinery recesses can all be placed to suit the design instead of being worked around later.",
-                        "image_id": 389,
+                        "image_id": 40,
                         "facts": [
                             {
                                 "label": "",
@@ -6747,7 +6747,7 @@
                         "eyebrow": "",
                         "heading": "Kitchens, suites and basements",
                         "body": "Many DHA homes use a show kitchen open to the lounge and a separate working kitchen for heavy cooking. Master suites usually combine a bedroom, dressing room and bathroom; see dressing room design. Basements work well as home cinemas, gyms or guest suites if ventilation, damp-proofing and lighting are planned properly.",
-                        "image_id": 390,
+                        "image_id": 41,
                         "facts": []
                     },
                     "visible": true
@@ -6921,7 +6921,7 @@
                         "eyebrow": "Lahore homes",
                         "heading": "DHA vs Bahria Town: Interior Costs and Style in Lahore",
                         "text": "The society does not set your interior price, but it shapes the house, the expectations and the logistics. Here is what changes between DHA and Bahria Town.",
-                        "image_id": 379,
+                        "image_id": 27,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -7019,7 +7019,7 @@
                         "eyebrow": "",
                         "heading": "Design tips for both",
                         "body": "In developer-built houses, budget for replacing standard fittings and improving lighting and storage. In custom builds, coordinate the interior with the architecture early so sockets, ceilings and windows suit the furniture. In both, plan for Lahore's heat, dust and monsoon with the right materials; see materials that survive Lahore's climate.",
-                        "image_id": 364,
+                        "image_id": 42,
                         "facts": []
                     },
                     "visible": true
@@ -7195,7 +7195,7 @@
                         "eyebrow": "Ceilings",
                         "heading": "False Ceiling Design and Cost in Lahore 2026",
                         "text": "A false ceiling hides services, shapes the room and carries the lighting. Its price depends on material, design and how much light it holds.",
-                        "image_id": 391,
+                        "image_id": 43,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -7289,7 +7289,7 @@
                         "eyebrow": "",
                         "heading": "Design tips for Lahore homes",
                         "body": "Keep enough height: a ceiling that drops too far makes rooms feel heavy. Coordinate AC ducts, wiring and lighting before boards go up. Use moisture-resistant board where steam rises, and plan the lighting in layers. Our lighting design layers article explains how.",
-                        "image_id": 367,
+                        "image_id": 44,
                         "facts": []
                     },
                     "visible": true
@@ -7497,7 +7497,7 @@
                         "eyebrow": "Ceilings",
                         "heading": "False Ceiling Ideas for Living Rooms in Pakistani Homes",
                         "text": "The ceiling is the largest surface in a living room. The right design shapes the space, hides services and sets the mood at night.",
-                        "image_id": 392,
+                        "image_id": 45,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -7559,7 +7559,7 @@
                         "eyebrow": "",
                         "heading": "Keep the room feeling tall",
                         "body": "Drop the ceiling only where needed: around the edge for cove light and AC ducts, keeping the centre at full height. Avoid deep bulkheads in rooms under about 10 feet. Light-coloured ceilings and uplighting make rooms feel taller.",
-                        "image_id": 391,
+                        "image_id": 43,
                         "facts": []
                     },
                     "visible": true
@@ -7598,7 +7598,7 @@
                         "eyebrow": "",
                         "heading": "AC, speakers and access",
                         "body": "Plan split or ducted AC routes, grille positions and access panels with the ceiling design. Speakers, smoke detectors and sensors should be placed on the same reflected ceiling plan so the result looks deliberate.",
-                        "image_id": 393,
+                        "image_id": 46,
                         "facts": []
                     },
                     "visible": true
@@ -7796,7 +7796,7 @@
                         "eyebrow": "Materials",
                         "heading": "Flooring Options in Pakistan: Porcelain, Marble, Wood and Vinyl",
                         "text": "Floors take the most wear in any home. In Pakistan's heat, dust and monsoon damp, the right material matters more than the trend.",
-                        "image_id": 394,
+                        "image_id": 47,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -7854,7 +7854,7 @@
                         "eyebrow": "",
                         "heading": "What drives the cost",
                         "body": "Ask for an itemised quote that separates material, preparation and labour so options can be compared fairly.",
-                        "image_id": 385,
+                        "image_id": 35,
                         "facts": [
                             {
                                 "label": "",
@@ -7890,7 +7890,7 @@
                         "eyebrow": "",
                         "heading": "Matching floor to room",
                         "body": "Use one main floor through connected living spaces, then change material at clear thresholds such as bedroom doors. Choose slip-resistant finishes in kitchens, baths and outdoor areas, and softer, warmer floors where people walk barefoot.",
-                        "image_id": 355,
+                        "image_id": 13,
                         "facts": []
                     },
                     "visible": true
@@ -8076,7 +8076,7 @@
                         "eyebrow": "Build",
                         "heading": "Grey Structure Finishing in Lahore: Stages and Cost Drivers",
                         "text": "Finishing turns a concrete shell into a home. It is where most decisions, and most budget surprises, happen.",
-                        "image_id": 395,
+                        "image_id": 48,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -8116,7 +8116,7 @@
                         "eyebrow": "",
                         "heading": "The stages in order",
                         "body": "Getting the order right avoids breaking finished work to add a missed pipe or wire.",
-                        "image_id": 368,
+                        "image_id": 30,
                         "facts": [
                             {
                                 "label": "",
@@ -8182,7 +8182,7 @@
                         "eyebrow": "",
                         "heading": "Electrical planning before plaster",
                         "body": "Fix every switch, socket, light and AC point on a drawing before conduits are chased. Think about furniture positions, bedside switches, TV walls, kitchen appliances and outdoor lights. Adding points after plaster means cutting walls.",
-                        "image_id": 355,
+                        "image_id": 13,
                         "facts": [
                             {
                                 "label": "",
@@ -8425,7 +8425,7 @@
                         "eyebrow": "Homes",
                         "heading": "Home Office Design Ideas for Pakistani Homes",
                         "text": "Remote and hybrid work is here to stay. A well-planned home office is more productive and kinder to your back.",
-                        "image_id": 396,
+                        "image_id": 49,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -8465,7 +8465,7 @@
                         "eyebrow": "",
                         "heading": "Desk and chair",
                         "body": "",
-                        "image_id": 333,
+                        "image_id": 1,
                         "facts": [
                             {
                                 "label": "",
@@ -8501,7 +8501,7 @@
                         "eyebrow": "",
                         "heading": "Storage and background",
                         "body": "Closed cabinets keep paperwork out of sight and your video background calm. Built-in shelves with a few books or plants work better than clutter. In small homes, a fold-down desk inside a wardrobe can hide the office after hours.",
-                        "image_id": 348,
+                        "image_id": 28,
                         "facts": []
                     },
                     "visible": true
@@ -8699,7 +8699,7 @@
                         "eyebrow": "Renovation",
                         "heading": "A calm home renovation checklist",
                         "text": "A calm home renovation checklist: survey first, freeze scope, hold a budget buffer, sequence the trades, and plan for living through it.",
-                        "image_id": 368,
+                        "image_id": 30,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -8735,7 +8735,7 @@
                         "eyebrow": "",
                         "heading": "Freeze scope, hold a buffer",
                         "body": "Decide the full scope and freeze it before work begins. Changes mid-build are the main reason renovations overrun.\n\nHold a buffer of 10 to 15 percent of the budget for what the walls reveal. If you do not spend it, it is yours.",
-                        "image_id": 369,
+                        "image_id": 50,
                         "facts": []
                     },
                     "visible": true
@@ -8974,7 +8974,7 @@
                         "eyebrow": "Renovation cost",
                         "heading": "House Renovation Cost in Lahore 2026: What Drives the Per-Sq-Ft Rate",
                         "text": "Two houses of the same size can land at very different renovation numbers. Here is what actually moves the per-sq-ft rate in Lahore, and how to plan a budget that holds.",
-                        "image_id": 395,
+                        "image_id": 48,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -9064,7 +9064,7 @@
                         "eyebrow": "",
                         "heading": "Costs owners forget to budget",
                         "body": "Plan a contingency from day one. In our experience the items that catch Lahore owners off guard are rarely the big ones:\n\nA good quotation names these lines even when the amount is provisional. If they are missing, ask.",
-                        "image_id": 355,
+                        "image_id": 13,
                         "facts": [
                             {
                                 "label": "",
@@ -9189,7 +9189,7 @@
                         "eyebrow": "Renovation planning",
                         "heading": "How Long Does a Full House Renovation Take?",
                         "text": "Owners want a date. The honest answer depends on the phases your project needs and the decisions you make on time. Here is how a renovation schedule really works.",
-                        "image_id": 368,
+                        "image_id": 30,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -9295,7 +9295,7 @@
                         "eyebrow": "",
                         "heading": "How to keep the schedule",
                         "body": "Our home renovation checklist walks through each step.",
-                        "image_id": 355,
+                        "image_id": 13,
                         "facts": [
                             {
                                 "label": "",
@@ -9472,7 +9472,7 @@
                         "eyebrow": "Hiring",
                         "heading": "How to Choose an Interior Designer in Lahore",
                         "text": "Choosing a designer is the most important decision in an interior project. Here is how to compare options clearly.",
-                        "image_id": 360,
+                        "image_id": 25,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -9512,7 +9512,7 @@
                         "eyebrow": "",
                         "heading": "Understand the process",
                         "body": "A clear process protects both sides. Ask what is included at each stage and how changes are handled.",
-                        "image_id": 383,
+                        "image_id": 33,
                         "facts": [
                             {
                                 "label": "",
@@ -9570,7 +9570,7 @@
                         "eyebrow": "",
                         "heading": "Questions to ask",
                         "body": "",
-                        "image_id": 389,
+                        "image_id": 40,
                         "facts": [
                             {
                                 "label": "",
@@ -9775,7 +9775,7 @@
                         "eyebrow": "Cost guide",
                         "heading": "What interior design costs in Pakistan",
                         "text": "Interior design cost in Pakistan: how design fees, room refreshes and full home or office projects are priced, and what moves the number.",
-                        "image_id": 369,
+                        "image_id": 50,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -9811,7 +9811,7 @@
                         "eyebrow": "",
                         "heading": "Build costs by space",
                         "body": "Fees are set in a written, itemised quote after a site visit.\n\nFees are set in a written, itemised quote after a site visit. These are rough guidance bands, not quotes. A site visit and drawings turn them into real numbers.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "facts": []
                     },
                     "visible": true
@@ -10002,7 +10002,7 @@
                         "eyebrow": "Trends",
                         "heading": "Interior Design Trends in Pakistan for 2027",
                         "text": "Trends are useful when they solve real problems: heat, dust, power and how families live. Here is what we expect in 2027.",
-                        "image_id": 355,
+                        "image_id": 13,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -10034,7 +10034,7 @@
                         "eyebrow": "",
                         "heading": "Materials: warm and natural",
                         "body": "The strongest interior design trends in Pakistan point towards natural textures: fluted timber, honed stone, terrazzo, lime-look plaster and handmade tiles. Local crafts, such as carved wood and block-printed textiles, are being used in cleaner, modern ways.",
-                        "image_id": 385,
+                        "image_id": 35,
                         "facts": []
                     },
                     "visible": true
@@ -10053,7 +10053,7 @@
                         "eyebrow": "",
                         "heading": "Lighting: layers, not grids",
                         "body": "Rows of downlights are being replaced by layered schemes with cove light, wall washers, pendants and lamps on dimmers. Warm colour temperatures make homes feel calmer in the evening. See our lighting guide.",
-                        "image_id": 393,
+                        "image_id": 46,
                         "facts": []
                     },
                     "visible": true
@@ -10295,7 +10295,7 @@
                         "eyebrow": "Design fees",
                         "heading": "Interior Designer Cost in Lahore 2026: Fee Models Explained",
                         "text": "Designer fees confuse people because studios charge in different ways. Here are the four common fee models in Lahore, what each one buys you, and which suits your project.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -10389,7 +10389,7 @@
                         "eyebrow": "",
                         "heading": "Design-only versus design-build",
                         "body": "Design-only gives you drawings to take to any contractor; you manage the build and the coordination. Design-build keeps design and execution with one team, which reduces gaps between what is drawn and what is built. We compare both routes honestly in interior designer vs contractor.\n\nSee how our interior design and 3D visualization services fit together.",
-                        "image_id": 379,
+                        "image_id": 27,
                         "facts": []
                     },
                     "visible": true
@@ -10541,7 +10541,7 @@
                         "eyebrow": "Choosing a team",
                         "heading": "Interior Designer vs Contractor in Lahore: Who Should You Hire?",
                         "text": "One draws the space, the other builds it. Choosing between an interior designer and a contractor, or both, decides how smooth your project will be.",
-                        "image_id": 357,
+                        "image_id": 22,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -10756,7 +10756,7 @@
                         "eyebrow": "Kitchens",
                         "heading": "Kitchen Cabinet Materials in Pakistan: Boards, Shutters and Tops",
                         "text": "A kitchen lives with heat, steam, oil and water every day. The materials you choose decide how long it looks good.",
-                        "image_id": 397,
+                        "image_id": 51,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -11077,7 +11077,7 @@
                         "eyebrow": "Kitchens",
                         "heading": "Kitchen Layouts That Work in Lahore Homes",
                         "text": "Pakistani kitchens work hard: heavy cooking, big pots, family helpers and a lot of masala. The right layout matters more than any finish.",
-                        "image_id": 398,
+                        "image_id": 52,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -11175,7 +11175,7 @@
                         "eyebrow": "",
                         "heading": "Ventilation, light and finishes",
                         "body": "A ducted chimney hood sized for the hob is non-negotiable for desi cooking. Pair it with task lighting under wall cabinets and finishes that wipe clean: quartz or granite counters, laminate or acrylic shutters, and a full-height splashback behind the hob.\n\nOur modular kitchen price guide explains which materials suit which zone, and our kitchen design service turns the plan into drawings.",
-                        "image_id": 364,
+                        "image_id": 42,
                         "facts": []
                     },
                     "visible": true
@@ -11333,7 +11333,7 @@
                         "eyebrow": "Kitchens",
                         "heading": "Kitchen Renovation Cost in Lahore 2026",
                         "text": "A kitchen renovation can be a cabinet refresh or a complete rebuild with new services. Knowing which you need is the first step to a realistic budget.",
-                        "image_id": 363,
+                        "image_id": 53,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -11435,7 +11435,7 @@
                         "eyebrow": "",
                         "heading": "Ways to get more for your budget",
                         "body": "Keep the sink and hob where they are to avoid new runs. Spend on boxes and hardware first, then upgrade finishes. Choose one strong feature, such as a quartz counter or a tall pantry, instead of upgrading everything. Our modular kitchen price guide explains material choices.",
-                        "image_id": 386,
+                        "image_id": 36,
                         "facts": []
                     },
                     "visible": true
@@ -11623,7 +11623,7 @@
                         "eyebrow": "Lighting",
                         "heading": "Lighting Design Layers, Explained",
                         "text": "Good lighting is not one bright light in the middle of the ceiling. It is layers working together. Here is how to plan them.",
-                        "image_id": 393,
+                        "image_id": 46,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -11655,7 +11655,7 @@
                         "eyebrow": "",
                         "heading": "Why layers matter",
                         "body": "Lighting design layers let a room change with the time of day and the task. One central light makes rooms flat and leaves shadows where you work. Layers give comfort, focus and mood with the same space.",
-                        "image_id": 391,
+                        "image_id": 43,
                         "facts": []
                     },
                     "visible": true
@@ -11692,7 +11692,7 @@
                         "eyebrow": "",
                         "heading": "Colour temperature and quality",
                         "body": "Keep colour temperature consistent within a room.",
-                        "image_id": 399,
+                        "image_id": 54,
                         "facts": [
                             {
                                 "label": "",
@@ -11903,7 +11903,7 @@
                         "eyebrow": "Materials",
                         "heading": "Materials That Survive Lahore's Climate",
                         "text": "Lahore asks a lot of materials: scorching summers, dusty air and humid monsoons. Choose finishes for the climate and they will still look good years later.",
-                        "image_id": 385,
+                        "image_id": 35,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -12001,7 +12001,7 @@
                         "eyebrow": "",
                         "heading": "Details that protect materials",
                         "body": "Good materials fail when details are poor. Leave expansion gaps for floors, waterproof wet areas properly, seal stone, and ventilate kitchens and baths. Let timber acclimatise on site before installing. These small steps decide how a finish ages.",
-                        "image_id": 400,
+                        "image_id": 55,
                         "facts": []
                     },
                     "visible": true
@@ -12189,7 +12189,7 @@
                         "eyebrow": "Kitchens",
                         "heading": "Modular Kitchen Price in Pakistan 2026: Materials, Hardware and Layout",
                         "text": "A modular kitchen quote is really four decisions stacked together: the box, the doors, the hardware and the counter. Get those right and the price makes sense.",
-                        "image_id": 363,
+                        "image_id": 53,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -12263,7 +12263,7 @@
                         "eyebrow": "",
                         "heading": "Hardware: the part you feel every day",
                         "body": "Branded hardware costs more but is the difference between a kitchen that works for years and one that needs adjusting every few months.",
-                        "image_id": 386,
+                        "image_id": 36,
                         "facts": [
                             {
                                 "label": "",
@@ -12424,7 +12424,7 @@
                         "eyebrow": "Build",
                         "heading": "New House Interior Checklist: From Grey Structure to Move-in",
                         "text": "Building a house involves hundreds of decisions. This checklist puts them in the right order so nothing is forgotten or redone.",
-                        "image_id": 375,
+                        "image_id": 56,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -12484,7 +12484,7 @@
                         "eyebrow": "",
                         "heading": "Before plaster",
                         "body": "",
-                        "image_id": 395,
+                        "image_id": 48,
                         "facts": [
                             {
                                 "label": "",
@@ -12570,7 +12570,7 @@
                         "eyebrow": "",
                         "heading": "Before move-in",
                         "body": "",
-                        "image_id": 389,
+                        "image_id": 40,
                         "facts": [
                             {
                                 "label": "",
@@ -12749,7 +12749,7 @@
                         "eyebrow": "Office fit-out",
                         "heading": "Office Fit-Out Cost in Pakistan 2026: Shell, Cat A and Cat B Explained",
                         "text": "Landlords talk about shell and Cat A. Contractors talk about Cat B. Here is what each means for your office fit-out cost in Pakistan, and where the money really goes.",
-                        "image_id": 388,
+                        "image_id": 38,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -12803,7 +12803,7 @@
                         "eyebrow": "",
                         "heading": "What Cat B actually includes",
                         "body": "Cat B is the part that makes an office yours: partitions, meeting rooms, reception, pantry, IT and power to desks, branded finishes and furniture. It is also where most of the budget variation sits, because two companies on identical Cat A floors can want very different workplaces.\n\nOur office fit-out service covers this stage end to end, from layout to handover.",
-                        "image_id": 366,
+                        "image_id": 57,
                         "facts": []
                     },
                     "visible": true
@@ -12842,7 +12842,7 @@
                         "eyebrow": "",
                         "heading": "Where companies overspend and underspend",
                         "body": "Overspending usually happens on visible items: feature walls, oversized receptions, decorative lighting. Underspending tends to hit the things staff feel every day, such as acoustics, task lighting and enough power outlets. Shift budget toward comfort and you get a workplace that keeps working after the photos.\n\nIf you are still choosing a space, our guide to office layout mistakes helps you test a floor plate before signing.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "facts": []
                     },
                     "visible": true
@@ -13000,7 +13000,7 @@
                         "eyebrow": "Workplace",
                         "heading": "An office that works as hard as you do",
                         "text": "Office interior design guide: focus, meeting and social zones, acoustics, daylight and brand cues for offices that work as hard as your team.",
-                        "image_id": 359,
+                        "image_id": 24,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -13036,7 +13036,7 @@
                         "eyebrow": "",
                         "heading": "Acoustics and daylight",
                         "body": "Open offices fail on noise, not looks. Acoustic panels, soft flooring and proper ceiling treatment keep conversations from carrying across the floor.\n\nDaylight belongs near desks. Meeting rooms and services can sit deeper in the plan, where borrowed light does the job.",
-                        "image_id": 366,
+                        "image_id": 57,
                         "facts": []
                     },
                     "visible": true
@@ -13267,7 +13267,7 @@
                         "eyebrow": "Workplace",
                         "heading": "Office Interior Design in Gulberg, Lahore",
                         "text": "Gulberg is Lahore's busiest business district. Offices here share buildings, lifts and rules, which shapes how the interior is planned.",
-                        "image_id": 388,
+                        "image_id": 38,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -13349,7 +13349,7 @@
                         "eyebrow": "",
                         "heading": "Acoustics and comfort",
                         "body": "Glass and hard floors make offices loud. Use acoustic ceiling tiles, carpet tiles in work zones, fabric panels and soft furniture. Plan air-conditioning returns and fresh air with the ceiling, and give every desk access to daylight or good task light.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "facts": []
                     },
                     "visible": true
@@ -13517,7 +13517,7 @@
                         "eyebrow": "Workplace",
                         "heading": "Office Layout Mistakes That Kill Productivity",
                         "text": "Most office problems are not about style. They are layout decisions made too fast. Here are the mistakes we see most, and how to fix them before move-in.",
-                        "image_id": 366,
+                        "image_id": 57,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -13557,7 +13557,7 @@
                         "eyebrow": "",
                         "heading": "Mistake 2: the wrong meeting room mix",
                         "body": "Offices often build one large boardroom that sits empty while four people fight over a small room. Most meetings are two to four people. Plan more small rooms than large ones, and give each one screens and power.",
-                        "image_id": 388,
+                        "image_id": 38,
                         "facts": []
                     },
                     "visible": true
@@ -13821,7 +13821,7 @@
                         "eyebrow": "Workplace",
                         "heading": "Office Renovation Checklist for Pakistani Businesses",
                         "text": "Renovating an office while the business keeps running needs careful planning. Use this checklist to keep it under control.",
-                        "image_id": 401,
+                        "image_id": 58,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -13881,7 +13881,7 @@
                         "eyebrow": "",
                         "heading": "Approvals and building rules",
                         "body": "Check the lease for alteration clauses, and the building handbook for working hours, fire safety and services. Many buildings require drawings for approval before work starts.",
-                        "image_id": 402,
+                        "image_id": 59,
                         "facts": []
                     },
                     "visible": true
@@ -13918,7 +13918,7 @@
                         "eyebrow": "",
                         "heading": "Services, IT and furniture",
                         "body": "",
-                        "image_id": 366,
+                        "image_id": 57,
                         "facts": [
                             {
                                 "label": "",
@@ -14141,7 +14141,7 @@
                         "eyebrow": "Colour",
                         "heading": "Paint Colours for Homes in Pakistan: How to Choose",
                         "text": "Paint is the fastest way to change a room, and the easiest to get wrong. Strong sun and dust in Pakistan change how colours behave.",
-                        "image_id": 403,
+                        "image_id": 60,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -14211,7 +14211,7 @@
                         "eyebrow": "",
                         "heading": "Choose the right finish",
                         "body": "Evening light changes colour too, so read our lighting layers guide before final choices.",
-                        "image_id": 393,
+                        "image_id": 46,
                         "facts": [
                             {
                                 "label": "",
@@ -14418,7 +14418,7 @@
                         "eyebrow": "Hospitality",
                         "heading": "Restaurant and Cafe Interior Cost in Lahore 2026",
                         "text": "A food business has to look good, work fast and survive heavy daily use. Here is what sets restaurant and cafe interior cost in Lahore, and where not to cut corners.",
-                        "image_id": 369,
+                        "image_id": 50,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -14480,7 +14480,7 @@
                         "eyebrow": "",
                         "heading": "Cafe vs full restaurant",
                         "body": "A cafe with a light menu needs a smaller kitchen and simpler exhaust than a full-service restaurant cooking desi or grill food. That difference alone can move the budget a lot. Define the menu before the design, because the kitchen follows the menu.",
-                        "image_id": 354,
+                        "image_id": 12,
                         "facts": []
                     },
                     "visible": true
@@ -14519,7 +14519,7 @@
                         "eyebrow": "",
                         "heading": "Design that pays back",
                         "body": "Plan the layout around service flow: the path from kitchen to tables should never cross guest queues. Invest in lighting that flatters food and faces, acoustics that keep conversation comfortable, and seating that suits how long guests stay. Our restaurant planning guide covers layout in detail.",
-                        "image_id": 399,
+                        "image_id": 54,
                         "facts": []
                     },
                     "visible": true
@@ -14707,7 +14707,7 @@
                         "eyebrow": "Hospitality",
                         "heading": "Planning a restaurant interior",
                         "text": "Restaurant interior design planning: service flow, seating mix, mood versus durability and kitchen adjacency for restaurants that work.",
-                        "image_id": 399,
+                        "image_id": 54,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -14743,7 +14743,7 @@
                         "eyebrow": "",
                         "heading": "Seating mix",
                         "body": "Revenue lives in the seating mix. Twos that combine into fours, a few larger tables, and bar seating for solo diners and waiting parties.\n\nComfort sets dwell time. Fast casual wants turnover-friendly seating; fine dining earns it back in longer, higher value covers.",
-                        "image_id": 404,
+                        "image_id": 61,
                         "facts": []
                     },
                     "visible": true
@@ -14974,7 +14974,7 @@
                         "eyebrow": "Retail",
                         "heading": "A shop interior that sells",
                         "text": "Shop interior design that sells: entrance, customer path, display, trial and checkout, plus lighting and materials that last in daily trade.",
-                        "image_id": 386,
+                        "image_id": 36,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -15010,7 +15010,7 @@
                         "eyebrow": "",
                         "heading": "The path through the shop",
                         "body": "Most customers turn one way and loop the perimeter. Plan the path deliberately so every category gets seen without forcing a maze.\n\nWidth matters. Aisles should stay comfortable when the shop is busy, not just when it is empty.",
-                        "image_id": 399,
+                        "image_id": 54,
                         "facts": []
                     },
                     "visible": true
@@ -15261,7 +15261,7 @@
                         "eyebrow": "Retail and beauty",
                         "heading": "Salon Interior Design in Lahore",
                         "text": "A salon sells how people look and feel. The interior has to flatter clients, support fast work and survive chemicals and water.",
-                        "image_id": 405,
+                        "image_id": 62,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -15323,7 +15323,7 @@
                         "eyebrow": "",
                         "heading": "Lighting flatters or fails",
                         "body": "Clients judge results in the mirror. Light faces evenly from the front and sides with high colour-accuracy lamps, and avoid harsh downlights that cast shadows. Add warm ambient light for comfort. See lighting layers explained.",
-                        "image_id": 393,
+                        "image_id": 46,
                         "facts": []
                     },
                     "visible": true
@@ -15362,7 +15362,7 @@
                         "eyebrow": "",
                         "heading": "Brand and atmosphere",
                         "body": "A salon's look should match its clients and prices. Colour, materials, music and scent all signal the brand. A strong feature at reception and a photogenic mirror wall help clients share their visit online.",
-                        "image_id": 369,
+                        "image_id": 50,
                         "facts": []
                     },
                     "visible": true
@@ -15558,7 +15558,7 @@
                         "eyebrow": "Bathrooms",
                         "heading": "Small Bathroom Design Ideas That Work",
                         "text": "Most bathrooms in Pakistani homes are compact. With the right choices, they can feel open, clean and easy to use.",
-                        "image_id": 384,
+                        "image_id": 34,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -15598,7 +15598,7 @@
                         "eyebrow": "",
                         "heading": "Fittings that save space",
                         "body": "",
-                        "image_id": 406,
+                        "image_id": 63,
                         "facts": [
                             {
                                 "label": "",
@@ -15839,7 +15839,7 @@
                         "eyebrow": "Small spaces",
                         "heading": "Small rooms that live large",
                         "text": "Small space interior ideas for compact homes: storage walls, clear sightlines, light and multipurpose zones that make small rooms live large.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -15875,7 +15875,7 @@
                         "eyebrow": "",
                         "heading": "Sightlines and light",
                         "body": "Small rooms feel bigger when you can see through them. Keep the line from the door to the window clear, and avoid tall pieces that cut the room in half.\n\nLight multiplies the effect. Pale surfaces bounce daylight deeper, and layered lighting keeps corners from going dead at night.",
-                        "image_id": 363,
+                        "image_id": 53,
                         "facts": []
                     },
                     "visible": true
@@ -16108,7 +16108,7 @@
                         "eyebrow": "Homes",
                         "heading": "How to Upgrade a Builder-Finished House in Lahore",
                         "text": "Many new houses in Lahore's societies come with standard builder finishes. A few targeted upgrades can make them feel custom without starting over.",
-                        "image_id": 370,
+                        "image_id": 64,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -16182,7 +16182,7 @@
                         "eyebrow": "",
                         "heading": "What to keep",
                         "body": "Sound floors, solid doors and working bathrooms can often stay. Repainting doors, changing handles and adding new mirrors and vanities can refresh them. Spend where you touch and see most every day.",
-                        "image_id": 392,
+                        "image_id": 45,
                         "facts": []
                     },
                     "visible": true
@@ -16400,7 +16400,7 @@
                         "eyebrow": "Joinery",
                         "heading": "Wardrobe Design Cost in Pakistan 2026: Shutters, Boards and Fittings",
                         "text": "A built-in wardrobe is one of the most used pieces in a home. Its price comes down to the box, the doors and what goes inside.",
-                        "image_id": 348,
+                        "image_id": 28,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -16478,7 +16478,7 @@
                         "eyebrow": "",
                         "heading": "Fittings inside",
                         "body": "Fittings add up quickly. Pick the few you will use every day.",
-                        "image_id": 378,
+                        "image_id": 26,
                         "facts": [
                             {
                                 "label": "",
@@ -16695,7 +16695,7 @@
                         "eyebrow": "Joinery",
                         "heading": "Built-in Wardrobe or Walk-in Dressing Room: Which Is Right?",
                         "text": "Both store clothes. The right choice depends on room size, how much you own and how you like to get ready.",
-                        "image_id": 390,
+                        "image_id": 41,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -16765,7 +16765,7 @@
                         "eyebrow": "",
                         "heading": "When a dressing room is worth it",
                         "body": "A dressing room makes sense when you have a large wardrobe, share the room with a partner on different schedules, or want a private space to dress. It works best between the bedroom and bathroom. Plan for daylight or very good artificial light, ventilation, and doors or glass fronts against Lahore dust. See dressing room design.",
-                        "image_id": 348,
+                        "image_id": 28,
                         "facts": []
                     },
                     "visible": true
@@ -16949,7 +16949,7 @@
             "title": "Interior Design Lahore | Rooms, Kitchens, Offices",
             "excerpt": "Woodex plans the layout, materials, furniture and light as one complete interior. Every design includes 3D visualization before work begins.",
             "status": "published",
-            "published_at": "2026-10-16T06:44:41+05:00",
+            "published_at": "2026-10-16T08:58:36+05:00",
             "seo": {
                 "title": "Interior Design Lahore | Rooms, Kitchens, Offices | Woodex",
                 "description": "Interior design in Lahore for kitchens, bedrooms, living rooms, offices and complete homes. Layouts, materials and 3D views by Woodex Interior.",
@@ -16967,7 +16967,7 @@
                         "eyebrow": "Interior design · Lahore",
                         "heading": "Every room, designed around you.",
                         "text": "Woodex plans the layout, materials, furniture and light as one complete interior. Every design includes 3D visualization before work begins.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "primary_label": "Get a consultation",
                         "primary_url": "#interior-contact",
                         "secondary_label": "WhatsApp",
@@ -17006,7 +17006,7 @@
                         "eyebrow": "",
                         "heading": "One clear plan for the whole interior",
                         "body": "Good design balances function, beauty and comfort.\n\nWe plan how the space flows, then coordinate the colours, finishes, furniture, lighting and built-in storage. The result is a complete design package that can move into construction without guesswork.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "facts": [
                             {
                                 "label": "Space planning",
@@ -17184,7 +17184,7 @@
                         "eyebrow": "Design by space",
                         "heading": "Homes and commercial interiors need different answers.",
                         "body": "Both follow one clear process: understand, plan, select, visualize and document.\n\nComfort, storage and personal routines guide every room.\n\nCustomer flow, team needs and brand standards shape the design.",
-                        "image_id": 335,
+                        "image_id": 10,
                         "facts": [
                             {
                                 "label": "",
@@ -17212,7 +17212,7 @@
                         "eyebrow": "",
                         "heading": "Six directions. One should feel like yours.",
                         "body": "These are starting points, not templates. Materials, proportion and detail are tailored to the space and the people using it.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "facts": [
                             {
                                 "label": "Modern",
@@ -17282,27 +17282,27 @@
                         "heading": "What you get with Interior Design",
                         "images": [
                             {
-                                "id": 336,
+                                "id": 3,
                                 "caption": "",
                                 "alt": "Space planning – Interior Design"
                             },
                             {
-                                "id": 339,
+                                "id": 6,
                                 "caption": "",
                                 "alt": "3D visualization – Interior Design"
                             },
                             {
-                                "id": 345,
+                                "id": 65,
                                 "caption": "",
                                 "alt": "Materials and finishes – Interior Design"
                             },
                             {
-                                "id": 346,
+                                "id": 66,
                                 "caption": "",
                                 "alt": "Lighting plan – Interior Design"
                             },
                             {
-                                "id": 338,
+                                "id": 5,
                                 "caption": "",
                                 "alt": "Custom furniture – Interior Design"
                             }
@@ -17316,7 +17316,7 @@
                         "eyebrow": "",
                         "heading": "Take the plan into delivery with one team.",
                         "body": "Interior design can stand alone, or connect directly with the Woodex teams that document, build, renovate and visualize the space.",
-                        "image_id": 334,
+                        "image_id": 2,
                         "facts": [
                             {
                                 "label": "Fit Out",
@@ -17414,7 +17414,7 @@
                         "eyebrow": "Where we work",
                         "heading": "Interior design in Islamabad",
                         "text": "Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Islamabad from here. Site visits are scheduled through each phase, moving sector homes, farmhouses and offices from grey structure to turnkey.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "primary_label": "Start a Islamabad project",
                         "primary_url": "/contact/",
                         "secondary_label": "How we work",
@@ -17560,7 +17560,7 @@
                         "eyebrow": "A local note",
                         "heading": "A note on working in Islamabad",
                         "body": "Islamabad suits the way we work. Planned sectors, clear plots and grey structures move neatly from design to turnkey. We take on E-7 and F-7 style homes, farmhouses and offices here, all managed from Lahore with site visits through each phase.",
-                        "image_id": 334,
+                        "image_id": 2,
                         "facts": []
                     },
                     "visible": true
@@ -17633,7 +17633,7 @@
                         "eyebrow": "Where we work",
                         "heading": "Interior design in Karachi",
                         "text": "Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Karachi in scheduled phases. Design, drawings and coordination run from Lahore, with site visits planned around each stage of your project.",
-                        "image_id": 334,
+                        "image_id": 2,
                         "primary_label": "Start a Karachi project",
                         "primary_url": "/contact/",
                         "secondary_label": "How we work",
@@ -17779,7 +17779,7 @@
                         "eyebrow": "A local note",
                         "heading": "A note on working in Karachi",
                         "body": "Karachi is the commercial capital, and most of our work here is retail, office and hospitality fit-outs. Projects are run from our Lahore studio in scheduled phases, with site visits planned around each stage. We do not keep an office in Karachi, so timelines are agreed before work begins and held to.",
-                        "image_id": 335,
+                        "image_id": 10,
                         "facts": []
                     },
                     "visible": true
@@ -17852,7 +17852,7 @@
                         "eyebrow": "Where we work",
                         "heading": "Interior design in Lahore",
                         "text": "Our studio sits at M-71, Zainab Tower, Model Town Link Road, Lahore, and this is our home city. Our design studio is here, and we work across DHA, Model Town, Gulberg and beyond.",
-                        "image_id": 335,
+                        "image_id": 10,
                         "primary_label": "Start a Lahore project",
                         "primary_url": "/contact/",
                         "secondary_label": "How we work",
@@ -18024,7 +18024,7 @@
                         "eyebrow": "A local note",
                         "heading": "A note on working in Lahore",
                         "body": "Lahore is our home studio city, so everything runs from here: the design team, our studio at Zainab Tower. Site visits are quick to arrange, and most clients visit us before work begins. We work across DHA, Model Town, Gulberg and beyond.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "facts": []
                     },
                     "visible": true
@@ -18097,7 +18097,7 @@
                         "eyebrow": "Where we work in Lahore",
                         "heading": "Interior design in Bahria Town Lahore",
                         "text": "Bahria Town has a wide mix of homes, from 5 marla houses to large villas. Many are newer builds that owners want to personalise, so our work often starts with a builder-finished house and turns it into a home that fits the family.",
-                        "image_id": 370,
+                        "image_id": 64,
                         "primary_label": "Start a Bahria Town project",
                         "primary_url": "#cta",
                         "secondary_label": "All services",
@@ -18208,7 +18208,7 @@
                         "eyebrow": "How it works",
                         "heading": "One accountable team, from visit to handover",
                         "body": "We start with a call or WhatsApp, then visit the site to measure and understand the brief. You see the design in photoreal 3D, approve a written, itemised quote, and one Woodex team coordinates the work through to handover.",
-                        "image_id": 370,
+                        "image_id": 64,
                         "facts": []
                     },
                     "visible": true
@@ -18281,7 +18281,7 @@
                         "eyebrow": "Where we work in Lahore",
                         "heading": "Interior design in Lahore Cantt",
                         "text": "Lahore Cantt and its nearby housing areas mix established houses with newer homes and apartments. Our work here is mostly home redesign, renovation, kitchens and wardrobes.",
-                        "image_id": 371,
+                        "image_id": 67,
                         "primary_label": "Start a Cantt project",
                         "primary_url": "#cta",
                         "secondary_label": "All services",
@@ -18392,7 +18392,7 @@
                         "eyebrow": "How it works",
                         "heading": "One accountable team, from visit to handover",
                         "body": "We start with a call or WhatsApp, then visit the site to measure and understand the brief. You see the design in photoreal 3D, approve a written, itemised quote, and one Woodex team coordinates the work through to handover.",
-                        "image_id": 371,
+                        "image_id": 67,
                         "facts": []
                     },
                     "visible": true
@@ -18465,7 +18465,7 @@
                         "eyebrow": "Where we work in Lahore",
                         "heading": "Interior design in DHA Lahore",
                         "text": "DHA is where many of our residential projects happen, from new kanal houses in the newer phases to renovations of older homes in Phases 1 to 5. We plan the interior early, so wiring, ceilings and joinery fit the design.",
-                        "image_id": 372,
+                        "image_id": 39,
                         "primary_label": "Start a DHA project",
                         "primary_url": "#cta",
                         "secondary_label": "All services",
@@ -18576,7 +18576,7 @@
                         "eyebrow": "How it works",
                         "heading": "One accountable team, from visit to handover",
                         "body": "We start with a call or WhatsApp, then visit the site to measure and understand the brief. You see the design in photoreal 3D, approve a written, itemised quote, and one Woodex team coordinates the work through to handover.",
-                        "image_id": 372,
+                        "image_id": 39,
                         "facts": []
                     },
                     "visible": true
@@ -18649,7 +18649,7 @@
                         "eyebrow": "Where we work in Lahore",
                         "heading": "Interior design in Gulberg Lahore",
                         "text": "Gulberg is Lahore's main business and dining district. Most of our work here is commercial: office floors in plazas and towers, restaurants and cafes along MM Alam Road, and retail on Main Boulevard, alongside renovations of older Gulberg houses.",
-                        "image_id": 373,
+                        "image_id": 68,
                         "primary_label": "Start a Gulberg project",
                         "primary_url": "#cta",
                         "secondary_label": "All services",
@@ -18760,7 +18760,7 @@
                         "eyebrow": "How it works",
                         "heading": "One accountable team, from visit to handover",
                         "body": "We start with a call or WhatsApp, then visit the site to measure and understand the brief. You see the design in photoreal 3D, approve a written, itemised quote, and one Woodex team coordinates the work through to handover.",
-                        "image_id": 373,
+                        "image_id": 68,
                         "facts": []
                     },
                     "visible": true
@@ -18833,7 +18833,7 @@
                         "eyebrow": "Where we work in Lahore",
                         "heading": "Interior design in Johar Town Lahore",
                         "text": "Johar Town is one of Lahore's largest residential areas, with family houses, apartments and a growing commercial strip. Our work here is mostly 5 to 10 marla and 1 kanal homes, kitchens, renovations and small offices.",
-                        "image_id": 374,
+                        "image_id": 69,
                         "primary_label": "Start a Johar Town project",
                         "primary_url": "#cta",
                         "secondary_label": "All services",
@@ -18944,7 +18944,7 @@
                         "eyebrow": "How it works",
                         "heading": "One accountable team, from visit to handover",
                         "body": "We start with a call or WhatsApp, then visit the site to measure and understand the brief. You see the design in photoreal 3D, approve a written, itemised quote, and one Woodex team coordinates the work through to handover.",
-                        "image_id": 374,
+                        "image_id": 69,
                         "facts": []
                     },
                     "visible": true
@@ -19017,7 +19017,7 @@
                         "eyebrow": "Where we work in Lahore",
                         "heading": "Interior design in Lake City Lahore",
                         "text": "Lake City on Raiwind Road is a newer gated community, so most of our work here is new houses: designing complete interiors from grey structure and turning modern plots into finished homes.",
-                        "image_id": 375,
+                        "image_id": 56,
                         "primary_label": "Start a Lake City project",
                         "primary_url": "#cta",
                         "secondary_label": "All services",
@@ -19128,7 +19128,7 @@
                         "eyebrow": "How it works",
                         "heading": "One accountable team, from visit to handover",
                         "body": "We start with a call or WhatsApp, then visit the site to measure and understand the brief. You see the design in photoreal 3D, approve a written, itemised quote, and one Woodex team coordinates the work through to handover.",
-                        "image_id": 375,
+                        "image_id": 56,
                         "facts": []
                     },
                     "visible": true
@@ -19201,7 +19201,7 @@
                         "eyebrow": "Where we work in Lahore",
                         "heading": "Interior design in Model Town Lahore",
                         "text": "Our studio is on Model Town Link Road, so Model Town is our neighbourhood. Its large, established plots and older houses lead to a lot of renovation and redesign work, as well as new houses replacing old ones.",
-                        "image_id": 376,
+                        "image_id": 70,
                         "primary_label": "Start a Model Town project",
                         "primary_url": "#cta",
                         "secondary_label": "All services",
@@ -19312,7 +19312,7 @@
                         "eyebrow": "How it works",
                         "heading": "One accountable team, from visit to handover",
                         "body": "We start with a call or WhatsApp, then visit the site to measure and understand the brief. You see the design in photoreal 3D, approve a written, itemised quote, and one Woodex team coordinates the work through to handover.",
-                        "image_id": 376,
+                        "image_id": 70,
                         "facts": []
                     },
                     "visible": true
@@ -19385,7 +19385,7 @@
                         "eyebrow": "Where we work in Lahore",
                         "heading": "Interior design in Wapda Town Lahore",
                         "text": "Wapda Town is a settled family neighbourhood with mostly 10 marla and 1 kanal houses. Our work here is practical: kitchens, wardrobes, bathrooms, ceilings and renovations that make family homes work better.",
-                        "image_id": 377,
+                        "image_id": 71,
                         "primary_label": "Start a Wapda Town project",
                         "primary_url": "#cta",
                         "secondary_label": "All services",
@@ -19496,7 +19496,7 @@
                         "eyebrow": "How it works",
                         "heading": "One accountable team, from visit to handover",
                         "body": "We start with a call or WhatsApp, then visit the site to measure and understand the brief. You see the design in photoreal 3D, approve a written, itemised quote, and one Woodex team coordinates the work through to handover.",
-                        "image_id": 377,
+                        "image_id": 71,
                         "facts": []
                     },
                     "visible": true
@@ -19569,7 +19569,7 @@
                         "eyebrow": "Where we work",
                         "heading": "Interior design in Multan",
                         "text": "Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Multan from it. Site visits are planned around each phase, with detailed drawings guiding the work between visits.",
-                        "image_id": 361,
+                        "image_id": 72,
                         "primary_label": "Start a Multan project",
                         "primary_url": "/contact/",
                         "secondary_label": "How we work",
@@ -19715,7 +19715,7 @@
                         "eyebrow": "A local note",
                         "heading": "A note on working in Multan",
                         "body": "In Multan we design for the climate first. Long summers and dust mean finishes are chosen for heat and daily cleaning, from flooring to joinery near the street. Homes and commercial spaces get the same care, run from our Lahore studio with scheduled visits.",
-                        "image_id": 362,
+                        "image_id": 73,
                         "facts": []
                     },
                     "visible": true
@@ -19788,7 +19788,7 @@
                         "eyebrow": "Where we work",
                         "heading": "Interior design in Peshawar",
                         "text": "Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Peshawar from it. We schedule site visits around key stages and keep drawings and quantities exact between visits.",
-                        "image_id": 363,
+                        "image_id": 53,
                         "primary_label": "Start a Peshawar project",
                         "primary_url": "/contact/",
                         "secondary_label": "How we work",
@@ -19934,7 +19934,7 @@
                         "eyebrow": "A local note",
                         "heading": "A note on working in Peshawar",
                         "body": "Peshawar is a trading city, so much of our work here is shops, offices and family homes built for heavy daily use. Finishes are specified for footfall and wear, not only for first impressions. Each project is managed from Lahore with site visits planned around key stages.",
-                        "image_id": 364,
+                        "image_id": 42,
                         "facts": []
                     },
                     "visible": true
@@ -19989,7 +19989,7 @@
             "title": "Privacy Policy",
             "excerpt": "This page explains what information Woodex Interior collects through this website, why we collect it, and the choices you have. It applies to our contact forms, cost estimator, live chat and WhatsApp enquiries.",
             "status": "published",
-            "published_at": "2026-10-16T06:44:45+05:00",
+            "published_at": "2026-10-16T08:58:37+05:00",
             "seo": {
                 "title": "Privacy Policy | Woodex Interior",
                 "description": "How Woodex Interior collects, uses and protects your information when you contact us, use the cost estimator or chat with our team.",
@@ -20249,7 +20249,7 @@
                         "eyebrow": "Illustrative design study",
                         "heading": "A café that holds a crowd",
                         "text": "A corner café reworked so it holds a crowd all day, not just at breakfast.",
-                        "image_id": 365,
+                        "image_id": 74,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -20403,7 +20403,7 @@
                         "eyebrow": "Illustrative design study",
                         "heading": "A clinic that calms",
                         "text": "A compact clinic where patients move in one direction and staff never cross them.",
-                        "image_id": 359,
+                        "image_id": 24,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -20557,7 +20557,7 @@
                         "eyebrow": "Illustrative design study",
                         "heading": "A house around a courtyard",
                         "text": "An older house re-planned around a small courtyard so light and air reach every room.",
-                        "image_id": 334,
+                        "image_id": 2,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -20711,7 +20711,7 @@
                         "eyebrow": "Illustrative design study",
                         "heading": "One floor, three ways of working",
                         "text": "One floor for quiet focus, closed meetings and a place to gather.",
-                        "image_id": 335,
+                        "image_id": 10,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -20865,7 +20865,7 @@
                         "eyebrow": "Illustrative design study",
                         "heading": "A corner shop that stops footfall",
                         "text": "A small corner shop staged in three clear moves, from pavement to till.",
-                        "image_id": 358,
+                        "image_id": 23,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -21019,7 +21019,7 @@
                         "eyebrow": "Illustrative design study",
                         "heading": "Sixty square metres, fully used",
                         "text": "Sixty square metres with a real kitchen, a place to work, and room to host.",
-                        "image_id": 368,
+                        "image_id": 30,
                         "primary_label": "",
                         "primary_url": "",
                         "secondary_label": "",
@@ -21173,7 +21173,7 @@
                         "eyebrow": "Where we work",
                         "heading": "Interior design in Quetta",
                         "text": "Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Quetta from it. Site visits are grouped into planned rounds, each covering a full stage of the work.",
-                        "image_id": 365,
+                        "image_id": 74,
                         "primary_label": "Start a Quetta project",
                         "primary_url": "/contact/",
                         "secondary_label": "How we work",
@@ -21319,7 +21319,7 @@
                         "eyebrow": "A local note",
                         "heading": "A note on working in Quetta",
                         "body": "Quetta projects are designed around cold winters and daily family life. Insulation, heating-friendly layouts and warm materials are settled before any decoration is discussed. We take on homes and select commercial work here, run from Lahore with scheduled site visits.",
-                        "image_id": 366,
+                        "image_id": 57,
                         "facts": []
                     },
                     "visible": true
@@ -21392,7 +21392,7 @@
                         "eyebrow": "Where we work",
                         "heading": "Interior design in Rawalpindi",
                         "text": "Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we cover Rawalpindi together with Islamabad. Sharing visit rounds between the twin cities keeps residential and commercial projects here efficient.",
-                        "image_id": 367,
+                        "image_id": 44,
                         "primary_label": "Start a Rawalpindi project",
                         "primary_url": "/contact/",
                         "secondary_label": "How we work",
@@ -21538,7 +21538,7 @@
                         "eyebrow": "A local note",
                         "heading": "A note on working in Rawalpindi",
                         "body": "We cover Rawalpindi together with Islamabad, which keeps site visits efficient for both cities. Most projects here are family homes and commercial spaces. The same team handles both cities, visits are scheduled in rounds, and the drawings carry the detail between visits.",
-                        "image_id": 368,
+                        "image_id": 30,
                         "facts": []
                     },
                     "visible": true
@@ -21593,7 +21593,7 @@
             "title": "Renovation Company Lahore | Offices, Homes & Retail",
             "excerpt": "For offices, commercial spaces and homes. Upgrade what exists through phased, low-disruption work by Woodex Interior.",
             "status": "published",
-            "published_at": "2026-10-16T06:44:44+05:00",
+            "published_at": "2026-10-16T08:58:37+05:00",
             "seo": {
                 "title": "Renovation Company Lahore | Offices, Homes & Retail | Woodex",
                 "description": "Renovation company in Lahore for homes, offices, retail, healthcare and restaurants: survey, design, phased works and handover by Woodex Interior.",
@@ -21611,7 +21611,7 @@
                         "eyebrow": "Keep what works. Improve what does not.",
                         "heading": "Renovation Company Lahore",
                         "text": "For offices, commercial spaces and homes. Upgrade what exists through phased, low-disruption work by Woodex Interior.",
-                        "image_id": 335,
+                        "image_id": 10,
                         "primary_label": "Request an assessment",
                         "primary_url": "#renovation-contact",
                         "secondary_label": "WhatsApp",
@@ -21650,7 +21650,7 @@
                         "eyebrow": "",
                         "heading": "Improve the space you already have",
                         "body": "Renovation modernizes an existing interior while protecting the parts that still work.\n\nWoodex audits the condition first, then plans the right mix of layout changes, services, finishes, joinery and furniture. When the space stays occupied, the work is sequenced by room, floor or working hours.",
-                        "image_id": 333,
+                        "image_id": 1,
                         "facts": [
                             {
                                 "label": "Condition first",
@@ -21866,27 +21866,27 @@
                         "heading": "What you get with Renovation Company",
                         "images": [
                             {
-                                "id": 338,
+                                "id": 5,
                                 "caption": "",
                                 "alt": "Condition survey – Renovation Company"
                             },
                             {
-                                "id": 336,
+                                "id": 3,
                                 "caption": "",
                                 "alt": "Scope and phasing – Renovation Company"
                             },
                             {
-                                "id": 339,
+                                "id": 6,
                                 "caption": "",
                                 "alt": "Design and 3D – Renovation Company"
                             },
                             {
-                                "id": 343,
+                                "id": 11,
                                 "caption": "",
                                 "alt": "Services upgrade – Renovation Company"
                             },
                             {
-                                "id": 342,
+                                "id": 9,
                                 "caption": "",
                                 "alt": "Clean handover – Renovation Company"
                             }
@@ -21927,7 +21927,7 @@
                         "eyebrow": "",
                         "heading": "Renovation needs more than a contractor",
                         "body": "",
-                        "image_id": 333,
+                        "image_id": 1,
                         "facts": [
                             {
                                 "label": "Core discipline",
@@ -22015,7 +22015,7 @@
             "title": "Interior Design & Fit-Out Services in Lahore",
             "excerpt": "Every Woodex service in one place: interior design, commercial interiors, hospitality and healthcare, fit-out, renovation, architecture and 3D visualization. Choose a service to see the scope, process and related projects.",
             "status": "published",
-            "published_at": "2026-10-16T06:44:26+05:00",
+            "published_at": "2026-10-16T08:58:37+05:00",
             "seo": {
                 "title": "Interior Design & Fit-Out Services in Lahore | Woodex",
                 "description": "All Woodex Interior services in Lahore: interior design, office and commercial interiors, fit-out, renovation, architecture and 3D visualization.",
@@ -22556,7 +22556,7 @@
                         "eyebrow": "Where we work",
                         "heading": "Interior design in Sialkot",
                         "text": "Our studio is at M-71, Zainab Tower, Model Town Link Road, Lahore, and we serve Sialkot from it. Offices, showrooms and homes run in scheduled phases with site visits at each milestone.",
-                        "image_id": 368,
+                        "image_id": 30,
                         "primary_label": "Start a Sialkot project",
                         "primary_url": "/contact/",
                         "secondary_label": "How we work",
@@ -22702,7 +22702,7 @@
                         "eyebrow": "A local note",
                         "heading": "A note on working in Sialkot",
                         "body": "Sialkot's export industry sets the standard here: offices, showrooms and owner homes with real pride in the detail. Clients often know exactly what they want visitors to see. We run these projects from Lahore with scheduled visits and clear milestones.",
-                        "image_id": 369,
+                        "image_id": 50,
                         "facts": []
                     },
                     "visible": true
@@ -22754,7 +22754,7 @@
     ],
     "media": [
         {
-            "id": 333,
+            "id": 1,
             "file": "img-c349a92a4ae0.webp",
             "alt": "Warm contemporary living room representing Woodex interior design",
             "title": null,
@@ -22763,7 +22763,7 @@
             "folder": "imported"
         },
         {
-            "id": 334,
+            "id": 2,
             "file": "img-dce06249b137.webp",
             "alt": "Contemporary residence representing Woodex architecture",
             "title": null,
@@ -22772,7 +22772,7 @@
             "folder": "imported"
         },
         {
-            "id": 336,
+            "id": 3,
             "file": "img-c349a92a4ae0-960.webp",
             "alt": "Photoreal stills – 3D Visualization",
             "title": null,
@@ -22781,7 +22781,7 @@
             "folder": "imported"
         },
         {
-            "id": 337,
+            "id": 4,
             "file": "img-dce06249b137-960.webp",
             "alt": "Walkthroughs – 3D Visualization",
             "title": null,
@@ -22790,7 +22790,7 @@
             "folder": "imported"
         },
         {
-            "id": 338,
+            "id": 5,
             "file": "img-1d6ad6c77d0f-960.webp",
             "alt": "360 views – 3D Visualization",
             "title": null,
@@ -22799,7 +22799,7 @@
             "folder": "imported"
         },
         {
-            "id": 339,
+            "id": 6,
             "file": "img-f655d51401e8-960.webp",
             "alt": "2 revision rounds – 3D Visualization",
             "title": null,
@@ -22808,7 +22808,7 @@
             "folder": "imported"
         },
         {
-            "id": 340,
+            "id": 7,
             "file": "img-5048d9095862-960.webp",
             "alt": "Material studies – 3D Visualization",
             "title": null,
@@ -22817,34 +22817,34 @@
             "folder": "imported"
         },
         {
-            "id": 341,
+            "id": 8,
             "file": "img-f941b08b9510.webp",
-            "alt": "img f941b08b9510",
+            "alt": "A Woodex Interior project photograph",
             "title": null,
             "width": 117,
             "height": 72,
             "folder": "imported"
         },
         {
-            "id": 342,
+            "id": 9,
             "file": "img-6f26e32ab200-960.webp",
-            "alt": "img 6f26e32ab200 960",
+            "alt": "A Woodex Interior project photograph",
             "title": null,
             "width": 960,
             "height": 640,
             "folder": "imported"
         },
         {
-            "id": 335,
+            "id": 10,
             "file": "img-1d6ad6c77d0f.webp",
-            "alt": "img 1d6ad6c77d0f",
+            "alt": "Interior design in Lahore",
             "title": null,
             "width": 1600,
             "height": 1067,
             "folder": "imported"
         },
         {
-            "id": 343,
+            "id": 11,
             "file": "img-fcc680fef653-960.webp",
             "alt": "Construction set – Architecture Services",
             "title": null,
@@ -22853,16 +22853,16 @@
             "folder": "imported"
         },
         {
-            "id": 354,
+            "id": 12,
             "file": "img-469cf01b2548.webp",
-            "alt": "img 469cf01b2548",
+            "alt": "Interior design in Bahawalpur",
             "title": null,
             "width": 1600,
             "height": 2133,
             "folder": "imported"
         },
         {
-            "id": 355,
+            "id": 13,
             "file": "img-e3ba33b612d6.webp",
             "alt": "Home interior, Interior Design in Bahawalpur",
             "title": null,
@@ -22871,7 +22871,7 @@
             "folder": "imported"
         },
         {
-            "id": 356,
+            "id": 14,
             "file": "img-42bae79b5c89.webp",
             "alt": "Commercial interior, Interior Design in Faisalabad",
             "title": null,
@@ -22880,7 +22880,7 @@
             "folder": "imported"
         },
         {
-            "id": 344,
+            "id": 15,
             "file": "img-c693554a31d5-960.webp",
             "alt": "Joinery and furniture – Fit-Out Company",
             "title": null,
@@ -22889,7 +22889,7 @@
             "folder": "imported"
         },
         {
-            "id": 347,
+            "id": 16,
             "file": "svc-wardrobe-design.webp",
             "alt": "Floor-to-ceiling walnut and cream built-in wardrobe, illustrative render",
             "title": null,
@@ -22898,7 +22898,7 @@
             "folder": "imported"
         },
         {
-            "id": 349,
+            "id": 17,
             "file": "svc-wardrobe-design-960.webp",
             "alt": "Space planning – Wardrobe Design",
             "title": null,
@@ -22907,7 +22907,7 @@
             "folder": "imported"
         },
         {
-            "id": 350,
+            "id": 18,
             "file": "img-a824b3688cd4-960.webp",
             "alt": "3D visualization – Wardrobe Design",
             "title": null,
@@ -22916,7 +22916,7 @@
             "folder": "imported"
         },
         {
-            "id": 351,
+            "id": 19,
             "file": "ins-materials-960.webp",
             "alt": "Materials and finishes – Wardrobe Design",
             "title": null,
@@ -22925,7 +22925,7 @@
             "folder": "imported"
         },
         {
-            "id": 352,
+            "id": 20,
             "file": "ins-lighting-960.webp",
             "alt": "Lighting plan – Wardrobe Design",
             "title": null,
@@ -22934,7 +22934,7 @@
             "folder": "imported"
         },
         {
-            "id": 353,
+            "id": 21,
             "file": "ins-wardrobe-960.webp",
             "alt": "Coordinated build – Wardrobe Design",
             "title": null,
@@ -22943,16 +22943,16 @@
             "folder": "imported"
         },
         {
-            "id": 357,
+            "id": 22,
             "file": "img-27c481fa9a3d.webp",
-            "alt": "img 27c481fa9a3d",
+            "alt": "Interior design in Gujranwala",
             "title": null,
             "width": 1600,
             "height": 1067,
             "folder": "imported"
         },
         {
-            "id": 358,
+            "id": 23,
             "file": "img-5194dc486e09.webp",
             "alt": "Retail style interior, Interior Design in Gujranwala",
             "title": null,
@@ -22961,16 +22961,16 @@
             "folder": "imported"
         },
         {
-            "id": 359,
+            "id": 24,
             "file": "img-5048d9095862.webp",
-            "alt": "img 5048d9095862",
+            "alt": "Interior design in Hyderabad",
             "title": null,
             "width": 1600,
             "height": 1067,
             "folder": "imported"
         },
         {
-            "id": 360,
+            "id": 25,
             "file": "img-a824b3688cd4.webp",
             "alt": "Office interior, Interior Design in Hyderabad",
             "title": null,
@@ -22979,7 +22979,7 @@
             "folder": "imported"
         },
         {
-            "id": 378,
+            "id": 26,
             "file": "img-853f9698149b.webp",
             "alt": "Children's bedroom with integrated bed and storage",
             "title": null,
@@ -22988,16 +22988,16 @@
             "folder": "imported"
         },
         {
-            "id": 379,
+            "id": 27,
             "file": "img-df7c7a7703ae.webp",
-            "alt": "img df7c7a7703ae",
+            "alt": "10 Marla house interior in Lahore",
             "title": null,
             "width": 1600,
             "height": 1067,
             "folder": "imported"
         },
         {
-            "id": 348,
+            "id": 28,
             "file": "ins-wardrobe.webp",
             "alt": "Wardrobe Design detail, illustrative",
             "title": null,
@@ -23006,7 +23006,7 @@
             "folder": "imported"
         },
         {
-            "id": 380,
+            "id": 29,
             "file": "img-e670623c742b.webp",
             "alt": "Woodex 3D render of a living space",
             "title": null,
@@ -23015,7 +23015,7 @@
             "folder": "imported"
         },
         {
-            "id": 368,
+            "id": 30,
             "file": "img-1f4b4ef86cb5.webp",
             "alt": "Interior detail, Interior Design in Rawalpindi",
             "title": null,
@@ -23024,7 +23024,7 @@
             "folder": "imported"
         },
         {
-            "id": 381,
+            "id": 31,
             "file": "svc-apartment-interior-design.webp",
             "alt": "svc apartment interior design",
             "title": null,
@@ -23033,7 +23033,7 @@
             "folder": "imported"
         },
         {
-            "id": 382,
+            "id": 32,
             "file": "ins-apartment.webp",
             "alt": "Compact apartment living area with wall storage, illustrative render",
             "title": null,
@@ -23042,7 +23042,7 @@
             "folder": "imported"
         },
         {
-            "id": 383,
+            "id": 33,
             "file": "ins-architect.webp",
             "alt": "ins architect",
             "title": null,
@@ -23051,7 +23051,7 @@
             "folder": "imported"
         },
         {
-            "id": 384,
+            "id": 34,
             "file": "ins-bathroom.webp",
             "alt": "ins bathroom",
             "title": null,
@@ -23060,7 +23060,7 @@
             "folder": "imported"
         },
         {
-            "id": 385,
+            "id": 35,
             "file": "ins-materials.webp",
             "alt": "Interior material samples including tile, stone, oak and brass, illustrative",
             "title": null,
@@ -23069,7 +23069,7 @@
             "folder": "imported"
         },
         {
-            "id": 386,
+            "id": 36,
             "file": "img-f655d51401e8.webp",
             "alt": "Vanity joinery and finish detail",
             "title": null,
@@ -23078,7 +23078,7 @@
             "folder": "imported"
         },
         {
-            "id": 387,
+            "id": 37,
             "file": "ins-clinic.webp",
             "alt": "ins clinic",
             "title": null,
@@ -23087,16 +23087,16 @@
             "folder": "imported"
         },
         {
-            "id": 388,
+            "id": 38,
             "file": "img-81b231a6c390.webp",
-            "alt": "img 81b231a6c390",
+            "alt": "A Woodex project, from brief to handover",
             "title": null,
             "width": 1600,
             "height": 1067,
             "folder": "imported"
         },
         {
-            "id": 372,
+            "id": 39,
             "file": "area-dha.webp",
             "alt": "Interior concept for a DHA Lahore project, illustrative",
             "title": null,
@@ -23105,7 +23105,7 @@
             "folder": "imported"
         },
         {
-            "id": 389,
+            "id": 40,
             "file": "svc-turnkey-design-build.webp",
             "alt": "Finished double-height lounge, illustrative",
             "title": null,
@@ -23114,7 +23114,7 @@
             "folder": "imported"
         },
         {
-            "id": 390,
+            "id": 41,
             "file": "svc-dressing-room-design.webp",
             "alt": "Walk-in dressing room, illustrative",
             "title": null,
@@ -23123,7 +23123,7 @@
             "folder": "imported"
         },
         {
-            "id": 364,
+            "id": 42,
             "file": "img-711f2ea6de04.webp",
             "alt": "Commercial interior, Interior Design in Peshawar",
             "title": null,
@@ -23132,7 +23132,7 @@
             "folder": "imported"
         },
         {
-            "id": 391,
+            "id": 43,
             "file": "ins-ceiling.webp",
             "alt": "ins ceiling",
             "title": null,
@@ -23141,16 +23141,16 @@
             "folder": "imported"
         },
         {
-            "id": 367,
+            "id": 44,
             "file": "img-00e6912a64f2.webp",
-            "alt": "img 00e6912a64f2",
+            "alt": "Interior design in Rawalpindi",
             "title": null,
             "width": 1600,
             "height": 1067,
             "folder": "imported"
         },
         {
-            "id": 392,
+            "id": 45,
             "file": "svc-false-ceiling-design.webp",
             "alt": "svc false ceiling design",
             "title": null,
@@ -23159,7 +23159,7 @@
             "folder": "imported"
         },
         {
-            "id": 393,
+            "id": 46,
             "file": "ins-lighting.webp",
             "alt": "Living and dining space showing layered lighting design, illustrative render",
             "title": null,
@@ -23168,7 +23168,7 @@
             "folder": "imported"
         },
         {
-            "id": 394,
+            "id": 47,
             "file": "ins-flooring.webp",
             "alt": "ins flooring",
             "title": null,
@@ -23177,7 +23177,7 @@
             "folder": "imported"
         },
         {
-            "id": 395,
+            "id": 48,
             "file": "ins-renovation.webp",
             "alt": "ins renovation",
             "title": null,
@@ -23186,7 +23186,7 @@
             "folder": "imported"
         },
         {
-            "id": 396,
+            "id": 49,
             "file": "ins-homeoffice.webp",
             "alt": "ins homeoffice",
             "title": null,
@@ -23195,7 +23195,7 @@
             "folder": "imported"
         },
         {
-            "id": 369,
+            "id": 50,
             "file": "img-774a712057fc.webp",
             "alt": "Showroom style interior, Interior Design in Sialkot",
             "title": null,
@@ -23204,7 +23204,7 @@
             "folder": "imported"
         },
         {
-            "id": 397,
+            "id": 51,
             "file": "svc-kitchen-renovation.webp",
             "alt": "svc kitchen renovation",
             "title": null,
@@ -23213,7 +23213,7 @@
             "folder": "imported"
         },
         {
-            "id": 398,
+            "id": 52,
             "file": "ins-kitchenlayout.webp",
             "alt": "ins kitchenlayout",
             "title": null,
@@ -23222,16 +23222,16 @@
             "folder": "imported"
         },
         {
-            "id": 363,
+            "id": 53,
             "file": "img-27ed3ac85189.webp",
-            "alt": "img 27ed3ac85189",
+            "alt": "Interior design in Peshawar",
             "title": null,
             "width": 1600,
             "height": 872,
             "folder": "imported"
         },
         {
-            "id": 399,
+            "id": 54,
             "file": "img-6f26e32ab200.webp",
             "alt": "Restaurant with warm accent lighting",
             "title": null,
@@ -23240,7 +23240,7 @@
             "folder": "imported"
         },
         {
-            "id": 400,
+            "id": 55,
             "file": "img-af83a84f72d2.webp",
             "alt": "Interior with warm stone and timber",
             "title": null,
@@ -23249,7 +23249,7 @@
             "folder": "imported"
         },
         {
-            "id": 375,
+            "id": 56,
             "file": "area-lake-city.webp",
             "alt": "Interior concept for a Lake City Lahore project, illustrative",
             "title": null,
@@ -23258,7 +23258,7 @@
             "folder": "imported"
         },
         {
-            "id": 366,
+            "id": 57,
             "file": "img-197da8ddab9b.webp",
             "alt": "Interior detail, Interior Design in Quetta",
             "title": null,
@@ -23267,7 +23267,7 @@
             "folder": "imported"
         },
         {
-            "id": 401,
+            "id": 58,
             "file": "svc-office-renovation.webp",
             "alt": "svc office renovation",
             "title": null,
@@ -23276,7 +23276,7 @@
             "folder": "imported"
         },
         {
-            "id": 402,
+            "id": 59,
             "file": "svc-office-fit-out.webp",
             "alt": "Completed office floor, illustrative",
             "title": null,
@@ -23285,7 +23285,7 @@
             "folder": "imported"
         },
         {
-            "id": 403,
+            "id": 60,
             "file": "ins-paint.webp",
             "alt": "ins paint",
             "title": null,
@@ -23294,7 +23294,7 @@
             "folder": "imported"
         },
         {
-            "id": 404,
+            "id": 61,
             "file": "img-cfcd9b53bb11.webp",
             "alt": "Restaurant seating with warm lighting",
             "title": null,
@@ -23303,7 +23303,7 @@
             "folder": "imported"
         },
         {
-            "id": 405,
+            "id": 62,
             "file": "ins-salon.webp",
             "alt": "ins salon",
             "title": null,
@@ -23312,7 +23312,7 @@
             "folder": "imported"
         },
         {
-            "id": 406,
+            "id": 63,
             "file": "svc-bathroom-design.webp",
             "alt": "Bathroom with backlit mirrors, illustrative",
             "title": null,
@@ -23321,7 +23321,7 @@
             "folder": "imported"
         },
         {
-            "id": 370,
+            "id": 64,
             "file": "area-bahria-town.webp",
             "alt": "Interior concept for a Bahria Town Lahore project, illustrative",
             "title": null,
@@ -23330,7 +23330,7 @@
             "folder": "imported"
         },
         {
-            "id": 345,
+            "id": 65,
             "file": "img-42bae79b5c89-960.webp",
             "alt": "Materials and finishes – Interior Design",
             "title": null,
@@ -23339,7 +23339,7 @@
             "folder": "imported"
         },
         {
-            "id": 346,
+            "id": 66,
             "file": "img-711f2ea6de04-960.webp",
             "alt": "Lighting plan – Interior Design",
             "title": null,
@@ -23348,7 +23348,7 @@
             "folder": "imported"
         },
         {
-            "id": 371,
+            "id": 67,
             "file": "area-cantt.webp",
             "alt": "Interior concept for a Lahore Cantt project, illustrative",
             "title": null,
@@ -23357,7 +23357,7 @@
             "folder": "imported"
         },
         {
-            "id": 373,
+            "id": 68,
             "file": "area-gulberg.webp",
             "alt": "Interior concept for a Gulberg Lahore project, illustrative",
             "title": null,
@@ -23366,7 +23366,7 @@
             "folder": "imported"
         },
         {
-            "id": 374,
+            "id": 69,
             "file": "area-johar-town.webp",
             "alt": "Interior concept for a Johar Town Lahore project, illustrative",
             "title": null,
@@ -23375,7 +23375,7 @@
             "folder": "imported"
         },
         {
-            "id": 376,
+            "id": 70,
             "file": "area-model-town.webp",
             "alt": "Interior concept for a Model Town Lahore project, illustrative",
             "title": null,
@@ -23384,7 +23384,7 @@
             "folder": "imported"
         },
         {
-            "id": 377,
+            "id": 71,
             "file": "area-wapda-town.webp",
             "alt": "Interior concept for a Wapda Town Lahore project, illustrative",
             "title": null,
@@ -23393,16 +23393,16 @@
             "folder": "imported"
         },
         {
-            "id": 361,
+            "id": 72,
             "file": "img-c693554a31d5.webp",
-            "alt": "img c693554a31d5",
+            "alt": "Interior design in Multan",
             "title": null,
             "width": 1600,
             "height": 800,
             "folder": "imported"
         },
         {
-            "id": 362,
+            "id": 73,
             "file": "img-95c63740752c.webp",
             "alt": "Residential interior, Interior Design in Multan",
             "title": null,
@@ -23411,9 +23411,9 @@
             "folder": "imported"
         },
         {
-            "id": 365,
+            "id": 74,
             "file": "img-c7d3a3ebd62b.webp",
-            "alt": "img c7d3a3ebd62b",
+            "alt": "Interior design in Quetta",
             "title": null,
             "width": 1600,
             "height": 900,

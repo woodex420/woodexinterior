@@ -267,6 +267,27 @@ it('uploads an image, requires alt text and serves it from the media library', f
     expect($media->fresh()->alt)->toBe('Living room with timber panelling and linen seating');
 });
 
+it('shows the new alt text on a published page at once', function () {
+    Storage::fake('public');
+    $image = Media::factory()->create(['alt' => 'A living room']);
+    $page = Page::factory()->published()->withSlug('/interior-design/')->create(['title' => 'Interior Design']);
+    PageBlock::factory()->for($page)->asType(BlockType::Hero, ['heading' => 'Interiors', 'image_id' => $image->id])->create(['position' => 0]);
+
+    // The page is read once, so it sits in the page cache.
+    expect($this->siteGet('/interior-design/')->assertOk()->getContent())->toContain('alt="A living room"');
+
+    $this->actingAs($this->editor);
+
+    Livewire::test(MediaLibrary::class)
+        ->set('alt.'.$image->id, 'Living room with timber panelling and linen seating')
+        ->call('updateMeta', $image->id);
+
+    // Alt text is printed by the page, not kept in a drawer: the cached copy must not be served any more.
+    expect($this->siteGet('/interior-design/')->assertOk()->getContent())
+        ->toContain('alt="Living room with timber panelling and linen seating"')
+        ->and($this->siteGet('/interior-design/')->getContent())->not->toContain('alt="A living room"');
+});
+
 it('refuses to delete an image that a page uses', function () {
     $image = Media::factory()->create();
     $page = Page::factory()->published()->withSlug('/fit-out/')->create();

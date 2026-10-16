@@ -63,6 +63,9 @@ final class ImportLegacyPage
         $html = new LegacyHtml((string) file_get_contents($file));
         $alts = [];
 
+        // Images the old site did not describe are named after the page they stand on.
+        $context = (string) $html->title();
+
         foreach ($html->images() as $image) {
             $alts[$image['src']] = $image['alt'];
         }
@@ -74,7 +77,7 @@ final class ImportLegacyPage
             $data = $block['data'];
 
             if (isset($data['image']) && is_string($data['image'])) {
-                $id = ($this->media)($root, $data['image'], $alts[$data['image']] ?? '');
+                $id = ($this->media)($root, $data['image'], $alts[$data['image']] ?? '', $context);
                 $images += $id === null ? 0 : 1;
                 $data['image_id'] = $id;
                 unset($data['image']);
@@ -82,12 +85,12 @@ final class ImportLegacyPage
 
             if (isset($data['images']) && is_array($data['images'])) {
                 $data['images'] = array_values(array_filter(array_map(
-                    function (mixed $image) use ($root, &$images): ?array {
+                    function (mixed $image) use ($root, &$images, $context): ?array {
                         if (! is_array($image) || ! isset($image['src']) || ! is_string($image['src'])) {
                             return null;
                         }
 
-                        $id = ($this->media)($root, $image['src'], (string) ($image['alt'] ?? ''));
+                        $id = ($this->media)($root, $image['src'], (string) ($image['alt'] ?? ''), $context);
 
                         if ($id === null) {
                             return null;

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Artisan;
 
@@ -12,6 +13,9 @@ use Illuminate\Support\Facades\Artisan;
  * (`woodex:export-website` writes it) and are imported here — which means the owner's one-click "Database update"
  * is all it takes to put them on the live site. The import is idempotent: it runs once per bundle and never
  * overwrites a page the owner has since edited.
+ *
+ * On a database with no owner yet there is nobody to write the pages as, so the installer imports them the moment
+ * the owner account exists (`woodex:install` and the web installer both do).
  */
 return new class extends Migration
 {
@@ -19,6 +23,10 @@ return new class extends Migration
     {
         // Content, not schema: tests bring their own pages, and a fresh test database must stay empty of them.
         if (app()->runningUnitTests() || ! is_file(base_path('database/data/website-bundle/pages.json'))) {
+            return;
+        }
+
+        if (! User::query()->exists()) {
             return;
         }
 

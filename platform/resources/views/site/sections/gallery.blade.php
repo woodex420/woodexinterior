@@ -8,7 +8,7 @@
             @if ($image)
                 <figure class="overflow-hidden rounded-2xl bg-soft ring-1 ring-line">
                     <img src="{{ $image->url() }}" width="{{ $image->width ?? 720 }}" height="{{ $image->height ?? 540 }}"
-                         loading="lazy" decoding="async" alt="{{ $item['alt'] ?? $image->alt }}" class="aspect-[4/3] w-full object-cover">
+                         loading="lazy" decoding="async" alt="{{ $item['alt'] ?: $image->alt }}" class="aspect-[4/3] w-full object-cover">
                     @if (! empty($item['caption']))<figcaption class="px-5 py-4 text-sm text-muted">{{ $item['caption'] }}</figcaption>@endif
                 </figure>
             @endif

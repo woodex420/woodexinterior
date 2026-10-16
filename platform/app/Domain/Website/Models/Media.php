@@ -6,6 +6,7 @@ namespace App\Domain\Website\Models;
 
 use App\Models\User;
 use Database\Factories\Website\MediaFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -55,5 +56,58 @@ class Media extends Model
             'name' => basename($this->path),
             'v' => $this->updated_at->timestamp,
         ]);
+    }
+
+    /**
+     * The pages that show this image: the ones with it in a section, and the ones that use it as their share
+     * image. Editing alt text changes what those published pages say, so their cached copies must go.
+     *
+     * @return Collection<int, Page>
+     */
+    public function pagesUsing(): Collection
+    {
+        $candidates = PageBlock::query()
+            ->where('data', 'like', '%'.$this->id.'%')
+            ->get(['id', 'page_id', 'data']);
+
+        $pageIds = $candidates
+            ->filter(fn (PageBlock $block): bool => in_array($this->id, self::idsIn((array) $block->data), true))
+            ->pluck('page_id')
+            ->all();
+
+        /** @var Collection<int, Page> $pages */
+        $pages = Page::query()
+            ->whereKey($pageIds)
+            ->orWhere('featured_image_id', $this->id)
+            ->orWhere('seo->og_image_id', $this->id)
+            ->get();
+
+        return $pages;
+    }
+
+    /**
+     * Every media id a section points at. The SQL above matches on the raw JSON, which is deliberately loose
+     * (the id 3 also occurs in 13 and 30), so each candidate is checked properly here.
+     *
+     * @param  array<string, mixed>  $data
+     * @return list<int>
+     */
+    private static function idsIn(array $data): array
+    {
+        $ids = [];
+
+        if (isset($data['image_id'])) {
+            $ids[] = (int) $data['image_id'];
+        }
+
+        foreach (['images', 'logos'] as $key) {
+            foreach ((array) ($data[$key] ?? []) as $item) {
+                if (is_array($item) && isset($item['id'])) {
+                    $ids[] = (int) $item['id'];
+                }
+            }
+        }
+
+        return $ids;
     }
 }

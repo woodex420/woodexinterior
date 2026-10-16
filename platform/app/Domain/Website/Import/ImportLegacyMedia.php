@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\Storage;
  * Copies one image of the old site into the media library (docs/09 §13 step 4).
  *
  * Images are deduplicated by their content: the same photograph appears on many old pages, and importing it once
- * keeps the library (and the disk) small. The old alt text is kept exactly as it was — it is the only description
- * we have, and the editor refuses to publish a page whose images have none.
+ * keeps the library (and the disk) small. The old alt text is kept exactly as it was; when the old site gave none,
+ * the page and the section it stands in name it instead of its file name, because the editor refuses to publish a
+ * page whose images have no description.
  */
 final class ImportLegacyMedia
 {
@@ -25,8 +26,12 @@ final class ImportLegacyMedia
     /** @var array<string, int|null> sha1 => media id, so a file used twice on a page is read from disk once */
     private array $seen = [];
 
-    /** Path relative to the old site root, as it appeared in the HTML (`assets/img/foo.webp`). */
-    public function __invoke(string $root, string $path, string $alt = ''): ?int
+    /**
+     * @param  string  $path  relative to the old site root, as it appeared in the HTML (`assets/img/foo.webp`)
+     * @param  string  $alt  the alt text the old HTML carried, when it carried one
+     * @param  string  $context  what the page is about ("Interior design in Lahore"), used when there is no alt
+     */
+    public function __invoke(string $root, string $path, string $alt = '', string $context = ''): ?int
     {
         $file = rtrim($root, '/').'/'.ltrim($path, '/');
 
@@ -63,7 +68,7 @@ final class ImportLegacyMedia
         $media = Media::query()->create([
             'disk' => 'public',
             'path' => $target,
-            'alt' => $alt !== '' ? $alt : $this->altFromName($file),
+            'alt' => $this->altFor($alt, $context, $file),
             'title' => null,
             'width' => $width,
             'height' => $height,
@@ -154,6 +159,16 @@ final class ImportLegacyMedia
         }
 
         return [$size[0], $size[1]];
+    }
+
+    /** The old alt text, then what the page is about, then the file name as a last resort. */
+    private function altFor(string $alt, string $context, string $file): string
+    {
+        return match (true) {
+            trim($alt) !== '' => trim($alt),
+            trim($context) !== '' => trim($context),
+            default => $this->altFromName($file),
+        };
     }
 
     /** A last resort for an image with no alt text: a readable sentence from its file name. */

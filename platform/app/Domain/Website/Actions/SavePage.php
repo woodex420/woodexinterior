@@ -24,7 +24,7 @@ final class SavePage
      * @param  array<string, mixed>  $input
      * @param  list<array<string, mixed>>  $blocks
      */
-    public function __invoke(Page $page, array $input, array $blocks, bool $publish, User $user): Page
+    public function __invoke(Page $page, array $input, array $blocks, bool $publish, ?User $user): Page
     {
         DB::transaction(function () use ($page, $input, $blocks, $publish, $user): void {
             $page->fill([
@@ -34,7 +34,7 @@ final class SavePage
                 'excerpt' => $input['excerpt'] ?: null,
                 'seo' => $input['seo'],
                 'schema_type' => $input['schema_type'] ?: $input['type']->schemaType(),
-                'author_id' => $page->author_id ?? $user->id,
+                'author_id' => $page->author_id ?? $user?->id,
                 'sort' => (int) ($input['sort'] ?? 0),
             ]);
 
@@ -127,11 +127,11 @@ final class SavePage
     }
 
     /** A snapshot of the page as it is published now: one click puts it back (docs/09 §2.1). */
-    private function snapshot(Page $page, User $user): void
+    private function snapshot(Page $page, ?User $user): void
     {
         PageVersion::query()->create([
             'page_id' => $page->id,
-            'user_id' => $user->id,
+            'user_id' => $user?->id,
             'data' => [
                 'title' => $page->title,
                 'excerpt' => $page->excerpt,

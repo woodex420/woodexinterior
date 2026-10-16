@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Domain\System\Actions\CreateOwnerAccount;
+use App\Domain\Website\Actions\ImportBundledWebsite;
 use App\Support\Install\Installer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -142,7 +143,7 @@ final class InstallController
         return $this->finishPage(code: $codeOk ? $text('setup_code') : (string) $this->installer->currentCode(), auto: true);
     }
 
-    public function finish(Request $request, CreateOwnerAccount $createOwner): Response
+    public function finish(Request $request, CreateOwnerAccount $createOwner, ImportBundledWebsite $importWebsite): Response
     {
         abort_unless($this->installer->site()->isConfigured() && $this->installer->hasCode(), 404);
 
@@ -153,7 +154,7 @@ final class InstallController
         }
 
         try {
-            $result = $this->installer->finish($createOwner);
+            $result = $this->installer->finish($createOwner, $importWebsite);
         } catch (Throwable $exception) {
             report($exception);
 

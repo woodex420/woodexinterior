@@ -8,6 +8,7 @@ use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\PageBlock;
 use App\Domain\Website\Services\Menus;
+use App\Domain\Website\Services\PageCache;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
@@ -95,6 +96,9 @@ class MediaLibrary extends Component
             'alt' => trim($this->alt[$mediaId] ?? $media->alt),
             'title' => trim($this->titles[$mediaId] ?? (string) $media->title),
         ])->save();
+
+        // Alt text is printed by the pages that show the image, so their cached copies are stale now.
+        PageCache::invalidateAll($media->pagesUsing());
 
         $this->toast('Saved.');
     }

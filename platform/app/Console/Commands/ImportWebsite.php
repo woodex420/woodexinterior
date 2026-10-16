@@ -11,6 +11,7 @@ use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Import\ImportAuthor;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
+use App\Domain\Website\Services\PageCache;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
@@ -27,9 +28,13 @@ final class ImportWebsite extends Command
 {
     private const TABLE = 'website-bundle';
 
+    /** How many photographs got a description they did not have before. */
+    private int $repaired = 0;
+
     protected $signature = 'woodex:import-website
         {--path=database/data/website-bundle : folder that holds pages.json and media/}
-        {--force : import again even when this bundle was already imported}';
+        {--force : import again even when this bundle was already imported}
+        {--media : only bring the media library up to date (alt text and missing photographs), and leave the pages alone}';
 
     protected $description = 'Import the pages, sections and images exported by woodex:export-website.';
 
@@ -48,12 +53,21 @@ final class ImportWebsite extends Command
         /** @var array{pages: list<array<string, mixed>>, media: list<array<string, mixed>>, exported_at?: string} $bundle */
         $bundle = json_decode((string) file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
         $checksum = (string) hash_file('sha256', $file);
+
+        $images = $this->importMedia($base, $bundle['media'] ?? []);
+
+        if ($this->option('media')) {
+            $this->components->info(sprintf('%d photographs checked · %d repaired.', count($images), $this->repaired));
+
+            return self::SUCCESS;
+        }
+
         $user = $author->first();
 
         if ($user === null) {
-            $this->components->error('There is no user yet: install the app before importing pages.');
-
-            return self::FAILURE;
+            // A brand-new database has no user yet, and the pages must arrive all the same: they are written
+            // without an author and take one as soon as somebody edits them (docs/09 §13).
+            $this->components->warn('There is no user yet, so the pages are imported without an author.');
         }
 
         $ref = LegacyRef::query()->where('legacy_table', self::TABLE)->where('legacy_id', 'pages.json')->first();
@@ -64,7 +78,6 @@ final class ImportWebsite extends Command
             return self::SUCCESS;
         }
 
-        $images = $this->importMedia($base, $bundle['media'] ?? []);
         $counts = ['created' => 0, 'updated' => 0, 'published' => 0];
 
         foreach ($bundle['pages'] as $row) {
@@ -152,6 +165,7 @@ final class ImportWebsite extends Command
 
             if ($existing !== null) {
                 $ids[(int) $row['id']] = (int) $existing;
+                $this->repairAlt((int) $existing, (string) ($row['alt'] ?? ''));
 
                 continue;
             }
@@ -185,6 +199,33 @@ final class ImportWebsite extends Command
         }
 
         return $ids;
+    }
+
+    /**
+     * An image that was imported before the importer could name it keeps a file name for alt text ("img 27c481fa9a3d").
+     * A later bundle knows better, so the description is put right here — never over one the owner has written.
+     */
+    private function repairAlt(int $id, string $alt): void
+    {
+        if ($alt === '') {
+            return;
+        }
+
+        $media = Media::query()->find($id);
+
+        if ($media === null || ! $this->isPlaceholder((string) $media->alt)) {
+            return;
+        }
+
+        $media->forceFill(['alt' => $alt])->save();
+        PageCache::invalidateAll($media->pagesUsing()); // the description is printed by the pages that show it
+        $this->repaired++;
+    }
+
+    /** Empty, or a file name the importer fell back on: "img 27c481fa9a3d", "img-27c481fa9a3d-960". */
+    private function isPlaceholder(string $alt): bool
+    {
+        return trim($alt) === '' || preg_match('/^img[\s_-]?[0-9a-f]{6,}\b/i', $alt) === 1;
     }
 
     /** Two exports can carry different photographs with the same file name. */

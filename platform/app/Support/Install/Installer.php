@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support\Install;
 
 use App\Domain\System\Actions\CreateOwnerAccount;
+use App\Domain\Website\Actions\ImportBundledWebsite;
 use App\Models\User;
 use Database\Seeders\ProductionSeeder;
 use Illuminate\Support\Facades\Artisan;
@@ -421,7 +422,7 @@ final class Installer
      *
      * @return array{owner: ?string, log: string}
      */
-    public function finish(CreateOwnerAccount $createOwner): array
+    public function finish(CreateOwnerAccount $createOwner, ImportBundledWebsite $importWebsite): array
     {
         @set_time_limit(600);
         ignore_user_abort(true);
@@ -445,6 +446,13 @@ final class Installer
 
             $owner = $createOwner->handle($pending['name'], $pending['email'], $pending['password_hash'])->email;
             $log[] = "Owner account created: {$owner}.";
+        }
+
+        // The pages of the website travel with the code: with an owner in the database they can be written now.
+        $pages = $importWebsite();
+
+        if ($pages !== null) {
+            $log[] = $pages === '' ? 'The pages of the website are up to date.' : $pages;
         }
 
         @unlink($this->pendingPath());
