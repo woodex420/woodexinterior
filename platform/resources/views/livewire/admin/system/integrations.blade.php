@@ -16,7 +16,7 @@
                     @if ($card['phase'])
                         <x-admin.badge color="gray">{{ $card['phase'] }}</x-admin.badge>
                     @elseif ($card['configured'])
-                        <x-admin.badge color="success">Connected</x-admin.badge>
+                        <x-admin.badge color="success">{{ $card['key'] === 'telegram' ? 'Configured' : 'Connected' }}</x-admin.badge>
                     @else
                         <x-admin.badge color="warning">Not set up</x-admin.badge>
                     @endif
@@ -30,6 +30,7 @@
                         @if ($card['key'] === 'telegram')
                             <x-admin.button variant="secondary" size="sm" icon="send" wire:click="testTelegram">Send me a test</x-admin.button>
                             <x-admin.button variant="secondary" size="sm" icon="link" wire:click="setTelegramWebhook">Connect webhook</x-admin.button>
+                            <x-admin.button variant="secondary" size="sm" wire:click="checkTelegramConnection" wire:loading.attr="disabled">Check live connection</x-admin.button>
                         @elseif ($card['key'] === 'mail')
                             <x-admin.button variant="secondary" size="sm" icon="mail" wire:click="testMail">Send me a test email</x-admin.button>
                         @elseif ($card['key'] === 'legacy')
@@ -39,6 +40,18 @@
                             @endcan
                         @endif
                     </div>
+                    @if ($card['key'] === 'telegram' && $telegramStatus !== null)
+                        <div class="mt-4 text-theme-xs text-gray-600 dark:text-gray-300" role="status">
+                            <p>Telegram API: {{ $telegramStatus['api_ok'] ? 'reachable' : 'failed — check token and outbound HTTPS in the log below' }}</p>
+                            <p>Bot: {{ $telegramStatus['bot_username'] ? '@'.$telegramStatus['bot_username'] : 'unavailable' }} · {{ $telegramStatus['bot_matches'] ? 'correct bot' : 'MISMATCH — check the token belongs to WoodexInteriorBot' }}</p>
+                            <p>Webhook: {{ ! $telegramStatus['webhook_set'] ? 'not registered' : ($telegramStatus['webhook_matches'] ? 'matches this site' : 'MISMATCH — press Connect webhook on this site') }}</p>
+                            <p>Pending updates: {{ $telegramStatus['pending_updates'] }}</p>
+                            <p>Last delivery error: {{ $telegramStatus['last_error'] ?: 'none reported' }}{{ $telegramStatus['last_error_at'] ? ' (Unix time '.$telegramStatus['last_error_at'].')' : '' }}</p>
+                            <p>Last received here: {{ $telegramStatus['last_received'] ?? 'none' }}</p>
+                            <p>Last processed here: {{ $telegramStatus['last_processed'] ?? 'none' }}</p>
+                            <p>Send /start to the bot, wait a few seconds, then check again. Registration alone does not prove delivery. A delivery error may be historical; compare its time with your latest message.</p>
+                        </div>
+                    @endif
                 @endif
             </x-admin.card>
         @endforeach

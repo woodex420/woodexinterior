@@ -86,7 +86,7 @@ final class TelegramWebhookController extends Controller
                 : 'This command arrives in the next release. Send /help to see what is available now.',
         };
 
-        $this->telegram->send($chatId, new TelegramMessage($reply));
+        $this->telegram->send($chatId, new TelegramMessage(TelegramMessage::escape($reply)));
     }
 
     private function link(Request $request, int $chatId, string $code): string

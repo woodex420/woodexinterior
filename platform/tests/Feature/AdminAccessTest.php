@@ -78,13 +78,13 @@ it('applies role permissions to admin screens', function () {
     $this->actingAs($admin)->get(route('admin.system.health'))->assertOk()->assertSee('Cron heartbeat');
 });
 
-it('forces two-factor setup for owners when enforcement is on', function () {
+it('forces two-factor setup for required staff roles when enforcement is on', function (string $role) {
     config(['woodex.security.enforce_2fa' => true]);
-    $owner = $this->userWithRole('owner');
+    $staff = $this->userWithRole($role);
 
-    $this->actingAs($owner)->get(route('admin.dashboard'))->assertRedirect(route('admin.profile.security'));
-    $this->actingAs($owner)->get(route('admin.profile.security'))->assertOk()->assertSee('Two-factor authentication');
-});
+    $this->actingAs($staff)->get(route('admin.dashboard'))->assertRedirect(route('admin.profile.security'));
+    $this->actingAs($staff)->get(route('admin.profile.security'))->assertOk()->assertSee('Two-factor authentication');
+})->with(['admin', 'accountant']);
 
 it('sends noindex headers on admin pages', function () {
     $this->actingAs(tap(User::factory()->create())->assignRole('sales'))

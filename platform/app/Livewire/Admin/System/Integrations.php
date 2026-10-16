@@ -8,6 +8,7 @@ use App\Domain\Crm\Enums\LeadSource;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\System\Models\IntegrationLog;
 use App\Domain\System\Models\TelegramLink;
+use App\Domain\System\Models\WebhookEvent;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
 use App\Integrations\Telegram\TelegramMessage;
 use App\Livewire\Concerns\InteractsWithAdmin;
@@ -15,6 +16,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -36,6 +38,29 @@ class Integrations extends Component
 
     #[Url(except: false)]
     public bool $failedOnly = false;
+
+    /** @var array<string, mixed>|null */
+    #[Locked]
+    public ?array $telegramStatus = null;
+
+    public function checkTelegramConnection(TelegramGateway $telegram): void
+    {
+        abort_unless($this->user()->can('integrations.manage'), 403);
+
+        if (! $telegram->isConfigured() || blank(config('services.telegram.webhook_secret'))) {
+            $this->toast('Set the bot token and webhook secret on the server first.', 'warning');
+
+            return;
+        }
+
+        $this->telegramStatus = $telegram->connectionStatus(
+            route('webhooks.telegram', ['secret' => config('services.telegram.webhook_secret')]),
+            (string) config('services.telegram.bot_username'),
+        );
+        $event = WebhookEvent::query()->where('provider', 'telegram')->latest('id')->first();
+        $this->telegramStatus['last_received'] = $event?->created_at?->toIso8601String();
+        $this->telegramStatus['last_processed'] = $event?->processed_at?->toIso8601String();
+    }
 
     public function mount(): void
     {
@@ -83,7 +108,7 @@ class Integrations extends Component
 
         $url = route('webhooks.telegram', ['secret' => $secret]);
         $ok = str_starts_with($url, 'https://') && $telegram->setWebhook($url, $secret);
-        $this->toast($ok ? 'Telegram webhook connected.' : 'Webhook not set: the site must be on https and reachable.', $ok ? 'success' : 'error');
+        $this->toast($ok ? 'Webhook registered. Now use Check live connection and send /start to verify delivery.' : 'Webhook not set: the site must be on https and reachable.', $ok ? 'success' : 'error');
     }
 
     public function testMail(): void
