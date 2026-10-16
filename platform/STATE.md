@@ -8,8 +8,8 @@ _Update at the end of every task (docs/03 Part A §7)._
   **v2 is not started** — its admin master plan (stack, theme builder, page builder, SEO) is the next document,
   and its decisions are recorded below and in docs/07 (D-105…D-110).
 - **Quotation is the work in hand, in three steps** (owner, 17 Oct): send on WhatsApp, then estimator → draft
-  quote, then follow-up automation. **Steps 1 and 2 are done and pushed** (`926ec75`, `f353412`); step 3 —
-  follow-up automation for quotations nobody answered — is next.
+  quote, then follow-up automation. **All three are done and pushed** (`926ec75`, `f353412`, `7062a5a`);
+  next is the v2 admin master plan document.
 - **A website estimate starts a real quotation** (QUO-017, step 2): `CreateQuoteFromEstimate` reads the service,
   size and finish the estimator captured, prices the line from the **rate book** rather than the range the website
   showed, and writes both numbers on the quotation's internal notes so whoever opens it can explain the difference.
@@ -31,9 +31,13 @@ _Update at the end of every task (docs/03 Part A §7)._
   and in both places a conversation is created.
 - **Merged another session's branch** (PR #2, owner setup, two-factor policy, Telegram diagnostics) by rebasing;
   the suite was re-run after the merge: **466 passed**, Larastan level 6 clean, Pint clean on 469 files.
-- **Verification:** Pest 466 passed (3 276 assertions) · Larastan level 6 clean · Pint clean on 469 files ·
-  preview checked (site, admin login, quotes) before pushing · 14 new tests for WhatsApp delivery and the
-  acceptance hint.
+- **A quotation nobody answered is chased, not forgotten** (AUT, step 3): `ChaseQuotations`, run daily at 09:00 by
+  the cron the studio already has, tells the team to call after three silent days, warns once before the price
+  lapses, and lets a stale quotation lapse on its own. **The system never writes to a client by itself** — it tells
+  the studio, and the studio calls. Each nudge is remembered on the quotation: chased once per period, three times
+  at most. Both rhythms are Settings (and chasing can be switched off).
+- **Verification:** Pest 480 passed (3 324 assertions) · Larastan level 6 clean · Pint clean on 475 files ·
+  preview checked (site, estimator, admin) before pushing · 34 new tests across the three quotation steps.
 
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after the original site went live and its forms were wired)
 
