@@ -29,6 +29,12 @@ use App\Livewire\Admin\System\Integrations;
 use App\Livewire\Admin\System\RecycleBin;
 use App\Livewire\Admin\System\SettingsPage;
 use App\Livewire\Admin\System\UsersIndex;
+use App\Livewire\Admin\Website\MediaLibrary;
+use App\Livewire\Admin\Website\MenusIndex;
+use App\Livewire\Admin\Website\PageEditor;
+use App\Livewire\Admin\Website\PagesIndex;
+use App\Livewire\Admin\Website\RedirectsIndex;
+use App\Livewire\Admin\Website\WebsiteSettings;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -62,6 +68,15 @@ Route::livewire('/rate-book', RateBook::class)->name('rate-book')->middleware('c
 
 // Private attachments (GLB-006)
 Route::get('/media/{media}/{conversion?}', MediaController::class)->name('media.show')->whereIn('conversion', ['thumb']);
+
+// Website (phase P6, docs/09): the public website is content, edited here.
+Route::livewire('/website/pages', PagesIndex::class)->name('website.pages')->middleware('can:website.edit');
+Route::livewire('/website/pages/new', PageEditor::class)->name('website.pages.create')->middleware('can:website.edit');
+Route::livewire('/website/pages/{page}', PageEditor::class)->name('website.pages.edit')->middleware('can:website.edit');
+Route::livewire('/website/media', MediaLibrary::class)->name('website.media')->middleware('can:website.edit');
+Route::livewire('/website/menus', MenusIndex::class)->name('website.menus')->middleware('can:website.edit');
+Route::livewire('/website/redirects', RedirectsIndex::class)->name('website.redirects')->middleware('can:website.edit');
+Route::livewire('/website/settings', WebsiteSettings::class)->name('website.settings')->middleware('can:settings.manage');
 
 // Profile
 Route::livewire('/profile/security', Security::class)->name('profile.security');

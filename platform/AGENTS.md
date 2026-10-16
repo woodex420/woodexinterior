@@ -60,14 +60,32 @@ Patterns used in the code (follow them):
   - Pages are **content, not code**: text, images, SEO fields, menus and redirects live in the database and are
     edited in the admin. Blade holds the section components only.
   - The old site's **142 URLs** are the contract: every one either answers 200 with its trailing-slash canonical
-    or 301s to a 200 page; the parity test (batch 1: `woodex:import-legacy` + a feature test that requests all 142
-    paths) runs before every batch.
+    or 301s to a 200 page; the parity test (`woodex:import-legacy` + a feature test that requests all 142 paths,
+    batch 2) runs before every batch.
+  - CMS (batch 1, D-71…D-77): a page is a `Page` with ordered `PageBlock` sections; rendering goes through
+    `App\Domain\Website\Services\PageRenderer` and is cached by `PageCache` (key = `updated_at`, so **forget
+    before `touch()`**). `SiteRouter` answers from the 404 handler (never a catch-all route) and is skipped for
+    JSON requests and on the admin domain.
+  - **Slugs end in `/`**: `Page::normalizeSlug()` stores it, the router 301s the bare form, and `Page::urlFor()`
+    builds canonical/OG/cross-link URLs by hand because `url()` and `redirect()` trim the trailing slash.
+    `url()`/`redirect()` are never used for a canonical URL.
+  - Editing: `App\Domain\Website\Actions\SavePage` is the only writer (versions + cache invalidation live
+    there); publishing goes through `PageValidator` (title ≤ 60, description 120–165, ≥ 2 sections, a hero or an
+    intro, alt text on every image). Drafts save freely; `save(true)` without `website.publish` is refused.
+  - Media rows live in `website_media` (never `media`, which Spatie owns); files go to the `public` disk under
+    `website/YYYY/MM/` and are served by `Site\WebsiteMediaController` at `/media/{id}/{name}` with immutable
+    headers + `?v=` — never through `public/storage`, because no `storage:link` runs on deploy. In production
+    `storage/` lives in `~/woodex-os/<site>/` (`SiteState`), so uploads survive a Git deploy.
+  - Analytics is `App\Settings\SiteSettings` + `views/site/partials/tracking.blade.php`: nothing renders while
+    tracking is off, while staff are signed in, or while no ID is filled in.
   - Never invent facts: no invented clients, staff, awards or reviews; testimonials are quoted verbatim.
   - Content rules (docs/09 §9): answer-first, concrete, local (Lahore, PKR, marla/kanal), no banned phrases.
   - Images: WebP, `srcset`, width/height, alt text required, lazy below the fold, hero preloaded; keep the
     per-page image budget in docs/09 §2.3.
   - `npm run build` and commit `public/build` after any change to a website view: the server has no Node.js.
-    `node ../tools/sandbox/home-check.mjs` checks the public site in a real browser (desktop, phone, JS off).
+    `node ../tools/sandbox/home-check.mjs` checks the public site in a real browser (desktop, phone, JS off),
+    `node ../tools/sandbox/page-check.mjs /slug/` does the same for one CMS page (layout, one H1, alt text and
+    dimensions on every image, JSON-LD, canonical, internal links that answer 200).
 - Hostinger Git deploy serves the repository as-is (D-56…D-58):
   - `platform/public/build` is committed: run `npm run build` and commit the result with every change to CSS, JS or
     the Tailwind classes in Blade. `tests/Unit/DeployManifestTest.php` checks the build is complete.

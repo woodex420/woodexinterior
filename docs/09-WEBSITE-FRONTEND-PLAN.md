@@ -324,16 +324,33 @@ updated / skipped / needs-review.
 
 | Batch | Content | Result |
 |---|---|---|
-| **1 — CMS** | Tables, admin editor, media library, redirects, menus, catch-all route, page cache, `woodex:import-legacy`, parity test | Any page can be created and edited in the dashboard |
-| **2 — Stop the 404s** | Import all 142 URLs (drafts), insert the 54 redirects, publish home + 6 services + about + contact + services index + privacy + 404 | 15 pages live, 54 URLs rescued, parity green |
+| **1 — CMS** | Tables, admin editor, media library, redirects, menus, routing, page cache | **Delivered 16 Oct 2026** (§14.1). The importer and the parity test moved to batch 2 |
+| **2 — Stop the 404s** | `woodex:import-legacy` + the 142-URL parity test, insert the 54 redirects, publish home + 6 services + about + contact + services index + privacy + 404 | 15 pages live, 54 URLs rescued, parity green |
 | **3 — Depth** | 12 cities + 8 Lahore areas + insights index; humanize home and the 6 services | Local search covered; the money pages read human |
 | **4 — Content** | 48 insights imported and humanized in 4 waves of 12; internal linking clusters | Topical authority |
 | **5 — Proof** | 6 project case studies + tracking + `llms.txt` + consent banner | Trust signals and measurement |
 | **6 — Tools** | Estimator and book-a-visit as real pages with the CRM | Lead quality up |
 
 **Definition of done per batch:** Pest green · Larastan green · Pint green · `browser-check.mjs`,
-`home-check.mjs`, `smoke.sh` and `iframe-check.mjs` green · parity test green · `npm run build` committed ·
-one commit pushed (which deploys to woodex.com.pk).
+`home-check.mjs`, `page-check.mjs`, `smoke.sh` and `iframe-check.mjs` green · parity test green (from batch 2) ·
+`npm run build` committed · one commit pushed (which deploys to woodex.com.pk).
+
+### 14.1 Batch 1 delivered (16 Oct 2026, D-71…D-77)
+
+- **Database:** `pages` (title, slug, type, status, excerpt, SEO fields, schema type, author, publish dates,
+  `updated_at` used as the cache key), `page_blocks` (section type, JSON `data`, `visible`, sort),
+  `page_versions` (a copy of the input before each save, capped), `website_media` (path, disk, mime, size,
+  dimensions, alt text, uploader), `redirects` (from → to, status, hit counter), `navigation_items`
+  (header/footer, nested, "pages" dropdown, CTA flag).
+- **Admin → Website:** Pages (search, filter by type/status, duplicate, take offline, delete), **Page editor**
+  (fields, sections with add/remove/reorder, SEO panel with a live Google preview, publish checklist, version
+  history with preview + restore), **Media** (upload, rename alt text, sees where an image is used),
+  **Menus** (header/footer, nested, CTA), **SEO & Redirects** (add, CSV import/export, hit counter,
+  the 404 log as a redirect suggestion), **Settings** (GA4, GTM, Search Console, Clarity, tracking on/off).
+- **Public:** published pages answer at their own URL with the canonical trailing slash, `/sitemap.xml`
+  lists them, and SEO & Redirects serves the 301s. Nothing is served for the admin domain.
+- **Not in batch 1:** the importer, the 142-URL parity test, the consent banner, `llms.txt`, the estimator and
+  book-a-visit pages (batch 5/6).
 
 ---
 

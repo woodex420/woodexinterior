@@ -8,6 +8,13 @@
 --}}
 @php
     $siteName = $business->brand_name;
+    $services ??= [];
+    $faqs ??= [];
+    $schemaType = $schemaType ?? 'WebPage';
+    $modified ??= now()->toDateString();
+    $ogImageAlt ??= $title;
+    $preload ??= null;
+    $robots ??= 'index, follow, max-image-preview:large, max-snippet:-1';
     $title = $title ?? $siteName.' · Interior Design, Fit-Out & Renovation in Lahore';
     $description = $description ?? 'Interior design and fit-out studio in Lahore since 2016: interiors, renovation, architecture, 3D visualisation and custom furniture. 200+ spaces, one team.';
     $pageId = $canonical.'#webpage';
@@ -20,8 +27,8 @@
     ];
     $offerCatalog = array_map(fn (array $service): array => [
         '@type' => 'Offer',
-        'itemOffered' => ['@type' => 'Service', 'name' => $service['name'], 'description' => $service['copy'], 'areaServed' => 'Pakistan'],
-    ], $services);
+        'itemOffered' => ['@type' => 'Service', 'name' => $service['name'], 'description' => $service['copy'] ?? '', 'areaServed' => 'Pakistan'],
+    ], array_values(array_filter($services, fn (array $service): bool => isset($service['name']))));
     $graph = [
         [
             '@type' => ['LocalBusiness', 'ProfessionalService'],
@@ -74,22 +81,33 @@
             '@type' => 'BreadcrumbList',
             'itemListElement' => [['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => $canonical]],
         ],
-        [
+    ];
+
+    if ($faqs !== []) {
+        $graph[] = [
             '@type' => 'FAQPage',
             'mainEntity' => array_map(fn (array $faq): array => [
                 '@type' => 'Question',
-                'name' => $faq['question'],
-                'acceptedAnswer' => ['@type' => 'Answer', 'text' => $faq['answer']],
-            ], $faqs),
-        ],
-    ];
+                'name' => $faq['question'] ?? '',
+                'acceptedAnswer' => ['@type' => 'Answer', 'text' => $faq['answer'] ?? ''],
+            ], array_values($faqs)),
+        ];
+    }
+
+    if ($offerCatalog === []) {
+        unset($graph[0]['hasOfferCatalog']);
+    }
+
+    if ($schemaType !== 'WebPage') {
+        $graph[2]['@type'] = [$schemaType, 'WebPage'];
+    }
 @endphp
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ $title }}</title>
 <meta name="description" content="{{ $description }}">
 <link rel="canonical" href="{{ $canonical }}">
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="robots" content="{{ $robots }}">
 <meta name="theme-color" content="#0f1e36">
 <meta name="author" content="{{ $business->legal_name }}">
 <meta name="geo.region" content="PK-PB">
@@ -105,13 +123,17 @@
 <meta property="og:image" content="{{ $ogImage }}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Warm contemporary living room with timber detailing and wide city views">
+<meta property="og:image:alt" content="{{ $ogImageAlt }}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ $title }}">
 <meta name="twitter:description" content="{{ $description }}">
 <meta name="twitter:image" content="{{ $ogImage }}">
 
-<link rel="preload" as="image" href="{{ asset('img/home-hero-1600.webp') }}" imagesrcset="{{ asset('img/home-hero-800.webp') }} 800w, {{ asset('img/home-hero-1600.webp') }} 1600w" imagesizes="100vw" fetchpriority="high">
+@if ($preload)
+    <link rel="preload" as="image" href="{{ $preload['href'] }}" imagesrcset="{{ $preload['srcset'] }}" imagesizes="{{ $preload['sizes'] }}" fetchpriority="high">
+@endif
 @vite(['resources/css/site.css', 'resources/js/site.js'])
+
+@include('site.partials.tracking')
 
 <script type="application/ld+json">{!! json_encode(['@context' => 'https://schema.org', '@graph' => $graph], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}</script>

@@ -165,6 +165,10 @@
 }
 
 /* ---- Admin form controls ---- */
+@utility wx-mini-btn {
+    @apply inline-flex size-7 items-center justify-center rounded-lg border border-gray-200 text-theme-xs text-gray-500 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5;
+}
+
 @utility wx-input {
   @apply h-10 w-full rounded-lg border border-gray-300 bg-white px-3.5 text-theme-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-navy-300 focus:shadow-focus-ring focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30;
 }

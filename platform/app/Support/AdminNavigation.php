@@ -59,10 +59,12 @@ final class AdminNavigation
                 self::item('Lead Ads', 'sparkles', null, null, 'P7'),
             ]),
             self::group('Website', [
-                self::item('Pages', 'layout', null, null, 'P6'),
+                self::item('Pages', 'layout', 'admin.website.pages', 'website.edit'),
+                self::item('Media', 'image', 'admin.website.media', 'website.edit'),
+                self::item('Menus', 'menu', 'admin.website.menus', 'website.edit'),
+                self::item('SEO & Redirects', 'globe', 'admin.website.redirects', 'website.edit'),
+                self::item('Website Settings', 'settings', 'admin.website.settings', 'settings.manage'),
                 self::item('Theme Builder', 'palette', null, null, 'P6'),
-                self::item('Media', 'image', null, null, 'P6'),
-                self::item('SEO & Redirects', 'globe', null, null, 'P6'),
             ]),
             self::group('Reports', [
                 self::item('Sales Funnel', 'chart', null, null, 'P3'),

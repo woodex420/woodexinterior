@@ -18,15 +18,14 @@
         'Coverage' => 'Lahore, with selected projects in Islamabad, Karachi and other cities',
     ];
 @endphp
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    @include('site.partials.head')
-</head>
-<body class="bg-paper">
-    @include('site.partials.header')
+@extends('layouts.site')
 
-    <main id="main">
+@php
+    $preload = ['href' => asset('img/home-hero-1600.webp'), 'srcset' => asset('img/home-hero-800.webp').' 800w, '.asset('img/home-hero-1600.webp').' 1600w', 'sizes' => '100vw'];
+    $ogImageAlt = 'Warm contemporary living room with timber detailing and wide city views';
+@endphp
+
+@section('content')
         {{-- Hero: the photograph is the LCP element, so it is a real <img> with fetchpriority, not a background. --}}
         <section class="relative isolate flex min-h-[86vh] items-end overflow-hidden bg-navy-900">
             <img src="{{ asset('img/home-hero-1600.webp') }}"
@@ -219,8 +218,4 @@
                 @include('site.partials.lead-form')
             </div>
         </section>
-    </main>
-
-    @include('site.partials.footer')
-</body>
-</html>
+@endsection

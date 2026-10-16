@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Website\Services\SiteRouter;
 use App\Http\Middleware\EnsureDatabaseIsCurrent;
 use App\Http\Middleware\EnsureTwoFactorIsEnabled;
 use App\Http\Middleware\EnsureUserIsActive;
@@ -12,6 +13,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -53,6 +55,11 @@ $app = Application::configure(basePath: dirname(__DIR__))
         // A failed sign-in (wrong password, lockout, empty field) always goes back to its own form. Laravel's
         // default is the Referer or the session's previous URL and, when both are missing (a proxy that drops
         // Referer, a lost session cookie), "/": the public website when the admin lives under ADMIN_PATH. D-51.
+        // A URL no route owns is a page from the CMS or one of the 301s from the previous website (docs/09 §3).
+        // Registered here rather than as a catch-all route: Fortify's login and Livewire register their routes
+        // after routes/web.php, and a catch-all there would shadow them.
+        $exceptions->render(fn (NotFoundHttpException $exception, Request $request) => app(SiteRouter::class)->respond($request));
+
         $exceptions->render(function (ValidationException $exception, Request $request) {
             foreach (['login.store' => 'login', 'two-factor.login.store' => 'two-factor.login', 'password.email' => 'password.request'] as $post => $form) {
                 if ($request->routeIs($post) && Route::has($form)) {

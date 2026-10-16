@@ -1,4 +1,17 @@
-{{-- Public site header. Until the other pages are built the menu points at sections of this page; no dead links. --}}
+{{--
+    Public site header. The menu comes from Website → Menus (docs/09 §2.1) when it is filled in; until then the
+    built-in links are used so no page ever shows a dead link.
+--}}
+@php
+    $navigation ??= [];
+    $links = $navigation !== [] ? $navigation : [
+        ['label' => 'Services', 'url' => '#services', 'target' => '_self'],
+        ['label' => 'Work', 'url' => '#work', 'target' => '_self'],
+        ['label' => 'How we work', 'url' => '#how-we-work', 'target' => '_self'],
+        ['label' => 'Reviews', 'url' => '#reviews', 'target' => '_self'],
+        ['label' => 'FAQ', 'url' => '#faq', 'target' => '_self'],
+    ];
+@endphp
 <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm">Skip to content</a>
 
 <header x-data="{ open: false }" class="sticky top-0 z-40 border-b border-line/70 bg-paper/90 backdrop-blur">
@@ -8,11 +21,9 @@
         </a>
 
         <nav aria-label="Main navigation" class="hidden items-center gap-7 text-sm text-body lg:flex">
-            <a href="#services" class="inline-block py-2.5 hover:text-ink">Services</a>
-            <a href="#work" class="inline-block py-2.5 hover:text-ink">Work</a>
-            <a href="#how-we-work" class="inline-block py-2.5 hover:text-ink">How we work</a>
-            <a href="#reviews" class="inline-block py-2.5 hover:text-ink">Reviews</a>
-            <a href="#faq" class="inline-block py-2.5 hover:text-ink">FAQ</a>
+            @foreach ($links as $link)
+                <a href="{{ $link['url'] }}" @if ($link['target'] === '_blank') target="_blank" rel="noopener" @endif class="inline-block py-2.5 hover:text-ink">{{ $link['label'] }}</a>
+            @endforeach
         </nav>
 
         <div class="flex items-center gap-3">
@@ -29,11 +40,9 @@
     <nav id="mobile-nav" x-cloak x-show="open" @click.outside="open = false" aria-label="Main navigation (mobile)"
          class="border-t border-line bg-paper px-5 py-3 text-sm lg:hidden">
         <ul class="space-y-1">
-            <li><a href="#services" class="block py-2" @click="open = false">Services</a></li>
-            <li><a href="#work" class="block py-2" @click="open = false">Work</a></li>
-            <li><a href="#how-we-work" class="block py-2" @click="open = false">How we work</a></li>
-            <li><a href="#reviews" class="block py-2" @click="open = false">Reviews</a></li>
-            <li><a href="#faq" class="block py-2" @click="open = false">FAQ</a></li>
+            @foreach ($links as $link)
+                <li><a href="{{ $link['url'] }}" @if ($link['target'] === '_blank') target="_blank" rel="noopener" @endif class="block py-2" @click="open = false">{{ $link['label'] }}</a></li>
+            @endforeach
         </ul>
     </nav>
 </header>

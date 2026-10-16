@@ -14,7 +14,7 @@
                 <h2 class="text-sm font-medium text-white">What we do</h2>
                 <ul class="mt-4 space-y-2 text-sm text-navy-100/80">
                     @foreach ($services as $service)
-                        <li><a href="#services" class="inline-block py-1.5 hover:text-white">{{ $service['name'] }}</a></li>
+                        <li><a href="{{ $service['url'] ?? '#services' }}" class="inline-block py-1.5 hover:text-white">{{ $service['name'] }}</a></li>
                     @endforeach
                 </ul>
             </div>

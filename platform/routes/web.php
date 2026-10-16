@@ -3,6 +3,7 @@
 use App\Http\Controllers\Portal\QuotePortalController;
 use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\Site\SitemapController;
+use App\Http\Controllers\Site\WebsiteMediaController;
 use App\Http\Controllers\Webhooks\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -55,5 +56,12 @@ Route::middleware('signed:relative')->prefix('q')->name('quotes.portal')->group(
 | in this phase; until then the menu on the home page points at its own sections (no dead links).
 */
 Route::get('/', HomeController::class)->name('home');
+
+/*
+| Website images (docs/09 §2.1). Served through the app rather than from a public symlink: on shared hosting the
+| deployment replaces the web folder, and uploads live in storage/ outside it so they survive every deploy.
+| The URL carries the image id and its change time, so browsers may cache it forever.
+*/
+Route::get('/media/{media}/{name}', WebsiteMediaController::class)->name('website.media.file')->whereNumber('media');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
