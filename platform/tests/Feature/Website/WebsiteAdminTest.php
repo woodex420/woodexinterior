@@ -302,15 +302,14 @@ it('refuses to delete an image that a page uses', function () {
 
 it('imports the redirect map from a CSV and answers each old URL with one 301', function () {
     $this->actingAs($this->editor);
+    $before = Redirect::query()->count();
 
     Livewire::test(RedirectsIndex::class)
-        // URLs of their own: the 54 redirects of the old site are seeded by a migration (LegacyUrlParityTest).
         ->set('csv', "/old-flat-design/,/interior-design/,301,was a service page\n/old-house-design/,/architecture/,301\nnot a url,/interior-design/")
         ->call('importCsv')
         ->assertSee('2 redirect(s) imported');
 
-    $seeded = Redirect::query()->count() - 2;
-    expect($seeded)->toBeGreaterThan(0);
+    expect(Redirect::query()->count())->toBe($before + 2);
 
     Page::factory()->published()->withSlug('/interior-design/')->create(['title' => 'Interior Design']);
     Page::factory()->published()->withSlug('/architecture/')->create(['title' => 'Architecture']);
@@ -320,7 +319,7 @@ it('imports the redirect map from a CSV and answers each old URL with one 301', 
 
     // A second import updates the rows instead of duplicating them.
     Livewire::test(RedirectsIndex::class)->set('csv', '/old-flat-design/,/architecture/,301')->call('importCsv');
-    expect(Redirect::query()->count())->toBe($seeded + 2)
+    expect(Redirect::query()->count())->toBe($before + 2)
         ->and(Redirect::query()->where('from_path', '/old-flat-design/')->first()->to_path)->toBe('/architecture/');
 });
 

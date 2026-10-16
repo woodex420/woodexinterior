@@ -58,14 +58,23 @@ it('answers every page URL of the old site with a published page', function () {
         expect($body, "no canonical on {$slug}")->toContain('<link rel="canonical" href="'.$this->siteUrl($slug).'">');
     }
 
-    expect($slugs)->toHaveCount(88);
+    expect($slugs)->toHaveCount(142);
 });
 
 it('sends every redirected URL of the old site to a page that answers', function () {
     publishLegacyPages();
     seedLegacyRedirects();
 
-    foreach (LegacyUrlMap::redirects() as $from => $to) {
+    // Since 17 Oct 2026 every URL of the old site is a page, so the map has no redirects of its own: the
+    // redirector itself is still checked, with a URL of ours.
+    $redirects = LegacyUrlMap::redirects();
+
+    if ($redirects === []) {
+        Redirect::query()->create(['from_path' => '/old-flat-design/', 'to_path' => '/interior-design/', 'code' => 301, 'hits' => 0]);
+        $redirects = ['/old-flat-design/' => '/interior-design/'];
+    }
+
+    foreach ($redirects as $from => $to) {
         $this->siteGet($from)
             ->assertStatus(301)
             ->assertRedirect($this->siteUrl($to));

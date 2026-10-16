@@ -4,13 +4,14 @@ use App\Domain\Website\Data\LegacyUrlMap;
 use App\Domain\Website\Enums\PageType;
 
 /*
-| The URL map is the contract with the previous website (docs/09 §3, D-68): 89 pages that stay and 54 URLs that
-| 301. If a redirect points at a page that does not exist, or a slug is both a page and a redirect, visitors get
-| a 404 where the old site had a page — so the map is checked itself, before anything is imported.
+| The URL map is the contract with the previous website (docs/09 §3, D-68): all 143 URLs are pages now (the owner
+| asked for the complete old website to run in the CMS, 17 Oct 2026). If a slug is both a page and a redirect, or
+| a redirect points at a page that does not exist, visitors get a 404 where the old site had a page — so the map
+| is checked itself, before anything is imported.
 */
-it('holds the pages and the redirects of the old site', function () {
-    expect(LegacyUrlMap::pages())->toHaveCount(89)
-        ->and(LegacyUrlMap::redirects())->toHaveCount(54)
+it('holds every URL of the old site as a page', function () {
+    expect(LegacyUrlMap::pages())->toHaveCount(143)
+        ->and(LegacyUrlMap::redirects())->toHaveCount(0)
         ->and(LegacyUrlMap::count())->toBe(143);
 });
 
@@ -27,21 +28,23 @@ it('redirects only to pages that exist in the map', function () {
     foreach (LegacyUrlMap::redirects() as $from => $to) {
         expect(LegacyUrlMap::pages())->toHaveKey($to, message: "{$from} redirects to {$to}, which is not a page");
     }
+
+    // Every old URL is a page now, so the map carries no redirects of its own (17 Oct 2026).
+    expect(LegacyUrlMap::redirects())->toBeArray();
 });
 
-it('sends the 54 old service URLs to the six core services', function () {
-    $targets = array_count_values(LegacyUrlMap::redirects());
+it('keeps the 54 old service URLs as service pages, each with its own old HTML', function () {
+    $services = array_keys(array_filter(
+        LegacyUrlMap::pages(),
+        fn (array $page): bool => $page['type'] === PageType::Service->value,
+    ));
 
-    expect($targets)->toBe([
-        '/interior-design/' => 21,
-        '/architecture/' => 13,
-        '/renovation/' => 10,
-        '/fit-out/' => 7,
-        '/furniture/' => 3,
-    ]);
+    // The six disciplines the studio sells, plus the 54 specialist URLs the old site had.
+    expect($services)->toHaveCount(60)
+        ->and($services)->toContain('/kitchen-design/', '/office-fit-out/', '/1-kanal-house-design/', '/wardrobe-design/');
 
-    foreach (['/interior-design/', '/fit-out/', '/renovation/', '/architecture/', '/3d-visualization/', '/furniture/'] as $service) {
-        expect(LegacyUrlMap::typeFor($service))->toBe(PageType::Service);
+    foreach ($services as $slug) {
+        expect(LegacyUrlMap::typeFor($slug))->toBe(PageType::Service);
     }
 });
 
@@ -67,7 +70,7 @@ it('keeps the home page and knows which page has no old file behind it', functio
         ->and(LegacyUrlMap::sourceFor('/interior-design/'))->toBe('interior-design/index.html')
         // The old site had no furniture page: it is written from the closest old page and then rewritten.
         ->and(LegacyUrlMap::sourceFor('/furniture/'))->toBeNull()
-        ->and(LegacyUrlMap::isRedirect('/wardrobe-design/'))->toBeTrue()
-        ->and(LegacyUrlMap::targetFor('/wardrobe-design/'))->toBe('/furniture/')
-        ->and(LegacyUrlMap::isRedirect('/furniture/'))->toBeFalse();
+        // A wardrobe page of its own: the complete old website runs in the CMS, so nothing 301s away (17 Oct 2026).
+        ->and(LegacyUrlMap::sourceFor('/wardrobe-design/'))->toBe('wardrobe-design/index.html')
+        ->and(LegacyUrlMap::isRedirect('/wardrobe-design/'))->toBeFalse();
 });

@@ -53,7 +53,18 @@ final class ImportLegacyMedia
             ->value('model_id');
 
         if ($existing !== null) {
-            return $this->seen[$hash] = (int) $existing;
+            // A ref can outlive the photograph it points at: the media library was emptied (`woodex:reset-website`)
+            // but the bookkeeping was not. Trusting the id then leaves every block pointing at nothing, so the
+            // row is checked before the ref is believed, and a dangling one is repaired with the file in hand.
+            if (Media::query()->whereKey($existing)->exists()
+                && Storage::disk('public')->exists((string) Media::query()->whereKey($existing)->value('path'))) {
+                return $this->seen[$hash] = (int) $existing;
+            }
+
+            LegacyRef::query()
+                ->where('legacy_table', self::TABLE)
+                ->where('legacy_id', $hash)
+                ->delete();
         }
 
         $target = 'website/imported/'.date('Y/m').'/'.basename($file);

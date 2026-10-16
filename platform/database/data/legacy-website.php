@@ -6,9 +6,11 @@ declare(strict_types=1);
  * The URL map of the previous website: every old URL and where it lands now (docs/09 section 3).
  *
  * Generated from the old site's 142 HTML files; checked by tests/Feature/Website/LegacyUrlMapTest.php.
+ * Since 17 Oct 2026 it holds 143 pages and no redirects: the 54 old service URLs are pages of their own.
  *
  * - `pages`     slug => page type + the old HTML file (relative to the old site root), null when the page is new.
- * - `redirects` old slug => the page it now 301s to.
+ * - `redirects` old slug => the page it now 301s to. Empty since 17 Oct 2026: the owner asked for the complete
+ *   old website to run in the CMS, so all 143 URLs are pages the studio can edit and nothing is thrown away.
  */
 return [
     'pages' => [
@@ -114,66 +116,70 @@ return [
         '/estimator/' => ['type' => 'estimator', 'source' => 'estimator/index.html'],
         // booking
         '/book-a-visit/' => ['type' => 'booking', 'source' => 'book-a-visit/index.html'],
+        // Every service URL of the old site keeps a page of its own (owner's decision, 17 Oct 2026).
+        // They are grouped by the core discipline they belong to, which is the breadcrumb a visitor sees.
+        // -> /interior-design/
+        '/apartment-interior-design/' => ['type' => 'service', 'source' => 'apartment-interior-design/index.html'],
+        '/bathroom-design/' => ['type' => 'service', 'source' => 'bathroom-design/index.html'],
+        '/beauty-salon-design/' => ['type' => 'service', 'source' => 'beauty-salon-design/index.html'],
+        '/cafe-interior-design/' => ['type' => 'service', 'source' => 'cafe-interior-design/index.html'],
+        '/commercial-interior/' => ['type' => 'service', 'source' => 'commercial-interior/index.html'],
+        '/coworking-space-design/' => ['type' => 'service', 'source' => 'coworking-space-design/index.html'],
+        '/false-ceiling-design/' => ['type' => 'service', 'source' => 'false-ceiling-design/index.html'],
+        '/gym-design/' => ['type' => 'service', 'source' => 'gym-design/index.html'],
+        '/healthcare-design/' => ['type' => 'service', 'source' => 'healthcare-design/index.html'],
+        '/hotel-interior-design/' => ['type' => 'service', 'source' => 'hotel-interior-design/index.html'],
+        '/office-interior-design/' => ['type' => 'service', 'source' => 'office-interior-design/index.html'],
+        '/residential-basement-design/' => ['type' => 'service', 'source' => 'residential-basement-design/index.html'],
+        '/residential-bedroom-design/' => ['type' => 'service', 'source' => 'residential-bedroom-design/index.html'],
+        '/residential-dining-room-design/' => ['type' => 'service', 'source' => 'residential-dining-room-design/index.html'],
+        '/residential-home-office-design/' => ['type' => 'service', 'source' => 'residential-home-office-design/index.html'],
+        '/residential-kids-room-design/' => ['type' => 'service', 'source' => 'residential-kids-room-design/index.html'],
+        '/residential-living-room-design/' => ['type' => 'service', 'source' => 'residential-living-room-design/index.html'],
+        '/restaurant-interior-design/' => ['type' => 'service', 'source' => 'restaurant-interior-design/index.html'],
+        '/retail-design/' => ['type' => 'service', 'source' => 'retail-design/index.html'],
+        '/showroom-design/' => ['type' => 'service', 'source' => 'showroom-design/index.html'],
+        '/spa-design/' => ['type' => 'service', 'source' => 'spa-design/index.html'],
+        // -> /architecture/
+        '/1-kanal-house-design/' => ['type' => 'service', 'source' => '1-kanal-house-design/index.html'],
+        '/10-marla-house-design/' => ['type' => 'service', 'source' => '10-marla-house-design/index.html'],
+        '/2-kanal-house-design/' => ['type' => 'service', 'source' => '2-kanal-house-design/index.html'],
+        '/5-marla-house-design/' => ['type' => 'service', 'source' => '5-marla-house-design/index.html'],
+        '/educational-buildings-design/' => ['type' => 'service', 'source' => 'educational-buildings-design/index.html'],
+        '/farmhouse-design/' => ['type' => 'service', 'source' => 'farmhouse-design/index.html'],
+        '/front-elevation-design/' => ['type' => 'service', 'source' => 'front-elevation-design/index.html'],
+        '/healthcare-facilities-design/' => ['type' => 'service', 'source' => 'healthcare-facilities-design/index.html'],
+        '/master-planning/' => ['type' => 'service', 'source' => 'master-planning/index.html'],
+        '/office-buildings-design/' => ['type' => 'service', 'source' => 'office-buildings-design/index.html'],
+        '/restaurant-cafe-building-design/' => ['type' => 'service', 'source' => 'restaurant-cafe-building-design/index.html'],
+        '/retail-buildings-design/' => ['type' => 'service', 'source' => 'retail-buildings-design/index.html'],
+        '/shopping-mall-design/' => ['type' => 'service', 'source' => 'shopping-mall-design/index.html'],
+        // -> /renovation/
+        '/commercial-renovation/' => ['type' => 'service', 'source' => 'commercial-renovation/index.html'],
+        '/complete-home-redesign/' => ['type' => 'service', 'source' => 'complete-home-redesign/index.html'],
+        '/healthcare-renovation/' => ['type' => 'service', 'source' => 'healthcare-renovation/index.html'],
+        '/interior-home-refurbishment/' => ['type' => 'service', 'source' => 'interior-home-refurbishment/index.html'],
+        '/kitchen-renovation/' => ['type' => 'service', 'source' => 'kitchen-renovation/index.html'],
+        '/office-renovation/' => ['type' => 'service', 'source' => 'office-renovation/index.html'],
+        '/residential-renovation/' => ['type' => 'service', 'source' => 'residential-renovation/index.html'],
+        '/restaurant-cafe-renovation/' => ['type' => 'service', 'source' => 'restaurant-cafe-renovation/index.html'],
+        '/retail-showroom-renovation/' => ['type' => 'service', 'source' => 'retail-showroom-renovation/index.html'],
+        '/specialized-renovation-services/' => ['type' => 'service', 'source' => 'specialized-renovation-services/index.html'],
+        // -> /fit-out/
+        '/commercial-fit-out/' => ['type' => 'service', 'source' => 'commercial-fit-out/index.html'],
+        '/healthcare-fit-out/' => ['type' => 'service', 'source' => 'healthcare-fit-out/index.html'],
+        '/office-fit-out/' => ['type' => 'service', 'source' => 'office-fit-out/index.html'],
+        '/pharmacy-fit-out/' => ['type' => 'service', 'source' => 'pharmacy-fit-out/index.html'],
+        '/restaurant-fit-out/' => ['type' => 'service', 'source' => 'restaurant-fit-out/index.html'],
+        '/retail-fit-out/' => ['type' => 'service', 'source' => 'retail-fit-out/index.html'],
+        '/turnkey-design-build/' => ['type' => 'service', 'source' => 'turnkey-design-build/index.html'],
+        // -> /furniture/
+        '/dressing-room-design/' => ['type' => 'service', 'source' => 'dressing-room-design/index.html'],
+        '/kitchen-design/' => ['type' => 'service', 'source' => 'kitchen-design/index.html'],
+        '/wardrobe-design/' => ['type' => 'service', 'source' => 'wardrobe-design/index.html'],
     ],
     'redirects' => [
-        // -> /interior-design/
-        '/apartment-interior-design/' => '/interior-design/',
-        '/bathroom-design/' => '/interior-design/',
-        '/beauty-salon-design/' => '/interior-design/',
-        '/cafe-interior-design/' => '/interior-design/',
-        '/commercial-interior/' => '/interior-design/',
-        '/coworking-space-design/' => '/interior-design/',
-        '/false-ceiling-design/' => '/interior-design/',
-        '/gym-design/' => '/interior-design/',
-        '/healthcare-design/' => '/interior-design/',
-        '/hotel-interior-design/' => '/interior-design/',
-        '/office-interior-design/' => '/interior-design/',
-        '/residential-basement-design/' => '/interior-design/',
-        '/residential-bedroom-design/' => '/interior-design/',
-        '/residential-dining-room-design/' => '/interior-design/',
-        '/residential-home-office-design/' => '/interior-design/',
-        '/residential-kids-room-design/' => '/interior-design/',
-        '/residential-living-room-design/' => '/interior-design/',
-        '/restaurant-interior-design/' => '/interior-design/',
-        '/retail-design/' => '/interior-design/',
-        '/showroom-design/' => '/interior-design/',
-        '/spa-design/' => '/interior-design/',
-        // -> /architecture/
-        '/1-kanal-house-design/' => '/architecture/',
-        '/10-marla-house-design/' => '/architecture/',
-        '/2-kanal-house-design/' => '/architecture/',
-        '/5-marla-house-design/' => '/architecture/',
-        '/educational-buildings-design/' => '/architecture/',
-        '/farmhouse-design/' => '/architecture/',
-        '/front-elevation-design/' => '/architecture/',
-        '/healthcare-facilities-design/' => '/architecture/',
-        '/master-planning/' => '/architecture/',
-        '/office-buildings-design/' => '/architecture/',
-        '/restaurant-cafe-building-design/' => '/architecture/',
-        '/retail-buildings-design/' => '/architecture/',
-        '/shopping-mall-design/' => '/architecture/',
-        // -> /renovation/
-        '/commercial-renovation/' => '/renovation/',
-        '/complete-home-redesign/' => '/renovation/',
-        '/healthcare-renovation/' => '/renovation/',
-        '/interior-home-refurbishment/' => '/renovation/',
-        '/kitchen-renovation/' => '/renovation/',
-        '/office-renovation/' => '/renovation/',
-        '/residential-renovation/' => '/renovation/',
-        '/restaurant-cafe-renovation/' => '/renovation/',
-        '/retail-showroom-renovation/' => '/renovation/',
-        '/specialized-renovation-services/' => '/renovation/',
-        // -> /fit-out/
-        '/commercial-fit-out/' => '/fit-out/',
-        '/healthcare-fit-out/' => '/fit-out/',
-        '/office-fit-out/' => '/fit-out/',
-        '/pharmacy-fit-out/' => '/fit-out/',
-        '/restaurant-fit-out/' => '/fit-out/',
-        '/retail-fit-out/' => '/fit-out/',
-        '/turnkey-design-build/' => '/fit-out/',
-        // -> /furniture/
-        '/dressing-room-design/' => '/furniture/',
-        '/kitchen-design/' => '/furniture/',
-        '/wardrobe-design/' => '/furniture/',
+        // Empty on purpose since 17 Oct 2026: every URL of the old site is a page now, so nothing 301s.
+        // A redirect added here (or in Admin -> Website -> SEO & Redirects) still works exactly the same way.
     ],
 ];

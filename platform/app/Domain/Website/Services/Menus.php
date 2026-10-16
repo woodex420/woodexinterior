@@ -16,6 +16,16 @@ use Illuminate\Support\Facades\Cache;
  */
 final class Menus
 {
+    /** The six disciplines the studio sells (docs/09 §3, D-68), in the order they are shown. */
+    private const array CORE_SERVICES = [
+        '/interior-design/',
+        '/fit-out/',
+        '/renovation/',
+        '/architecture/',
+        '/3d-visualization/',
+        '/furniture/',
+    ];
+
     /**
      * @return list<array{label: string, url: string, target: string}>
      */
@@ -73,6 +83,10 @@ final class Menus
     /**
      * The six disciplines, for the footer and the OfferCatalog in the structured data.
      *
+     * Since the complete old website arrived there are 60 service pages (every old URL is editable now), but a
+     * footer that lists sixty links is not a footer — and an OfferCatalog with sixty offers says nothing. The six
+     * the studio actually sells are shown; the rest are reachable from them and from the sitemap.
+     *
      * @return list<array{name: string, copy: string, url: string}>
      */
     public static function serviceLinks(): array
@@ -89,7 +103,19 @@ final class Menus
                 'url' => $page->path(),
             ])->all());
 
-        return $links;
+        $core = array_values(array_filter(
+            $links,
+            fn (array $link): bool => in_array($link['url'], self::CORE_SERVICES, true),
+        ));
+
+        if ($core === []) {
+            return $links; // A studio that renamed its disciplines still gets its services, in their own order.
+        }
+
+        usort($core, fn (array $a, array $b): int => array_search($a['url'], self::CORE_SERVICES, true)
+            <=> array_search($b['url'], self::CORE_SERVICES, true));
+
+        return $core;
     }
 
     /**
