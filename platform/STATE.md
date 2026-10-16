@@ -8,7 +8,13 @@ _Update at the end of every task (docs/03 Part A §7)._
   **v2 is not started** — its admin master plan (stack, theme builder, page builder, SEO) is the next document,
   and its decisions are recorded below and in docs/07 (D-105…D-110).
 - **Quotation is the work in hand, in three steps** (owner, 17 Oct): send on WhatsApp, then estimator → draft
-  quote, then follow-up automation. **Step 1 is done and pushed (commit 926ec75).**
+  quote, then follow-up automation. **Steps 1 and 2 are done and pushed** (`926ec75`, `f353412`); step 3 —
+  follow-up automation for quotations nobody answered — is next.
+- **A website estimate starts a real quotation** (QUO-017, step 2): `CreateQuoteFromEstimate` reads the service,
+  size and finish the estimator captured, prices the line from the **rate book** rather than the range the website
+  showed, and writes both numbers on the quotation's internal notes so whoever opens it can explain the difference.
+  The enquiry page offers it in one click and opens the new draft. **It stays a draft** — three form fields are not
+  a scope.
 - **A quotation now reaches the client on WhatsApp as a signed link, not a PDF** (QUO-008, D-111):
   `SendQuoteByWhatsApp` resolves or opens the conversation, sends the link inside Meta's 24-hour window and an
   approved template outside it, and writes `whatsapp_sent` / `whatsapp_failed` on the quote's timeline. A refusal
