@@ -42,8 +42,10 @@ final class AdminNavigation
                 self::item('Rate Book', 'book', 'admin.rate-book', 'quotes.view'),
             ]),
             self::group('Projects', [
-                self::item('Projects', 'hammer', null, null, 'P3'),
-                self::item('Client Updates', 'image', null, null, 'P8'),
+                self::item('Projects', 'hammer', 'admin.projects.index', 'projects.view'),
+                self::item('Board', 'kanban', 'admin.projects.board', 'projects.view'),
+                self::item('Client Portal', 'link', null, null, 'P4b'),
+                self::item('Handovers', 'check-circle', null, null, 'P4b'),
             ]),
             self::group('Inbox', [
                 self::item('Conversations', 'inbox', null, null, 'P4'),

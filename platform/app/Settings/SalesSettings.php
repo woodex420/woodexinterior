@@ -64,6 +64,9 @@ class SalesSettings extends Settings
 
     public string $invoice_terms;
 
+    /** Announce a project's stage change to the client by email (PRJ-002). */
+    public bool $project_stage_notifies_client;
+
     public function slaMinutesFor(string $source): int
     {
         return (int) ($this->sla_minutes_by_source[$source] ?? $this->sla_first_response_minutes);

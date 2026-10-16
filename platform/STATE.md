@@ -2,10 +2,28 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 16 Oct 2026 PKT, after P2 part 2b + P3 payments)
-- **Where we are:** P0-P2 are done and live; **P3 (get paid) is built and pushed** (commit below) but not yet
-  verified by the owner on the live site. **woodex.com.pk runs this branch** — every push redeploys it.
-- **P3 — get paid (this commit, INV-005/006, D-84…D-86):** money reaches the ledger two ways and both land in the
+## Resume here (project memory, saved 16 Oct 2026 PKT, after P3 payments + P4 part 1: the project workspace)
+- **Where we are:** P0-P3 are done and live; **P4 part 1 (the project workspace) is built and pushed**. The client
+  portal, the handover checklist and the case-study draft are **P4 part 2 — next**. **woodex.com.pk runs this
+  branch** — every push redeploys it.
+- **P4 part 1 — the project workspace (this commit, PRJ-002…PRJ-005, D-87…D-89):**
+  - **Admin → Projects** — every job with its stage, status, progress, next milestone, value, invoiced/collected
+    and target date (late jobs first); filter by stage, status and PM.
+  - **Admin → Projects → Board** — the same jobs as cards, one column per stage (planning → design → procurement
+    → execution → finishing → handover → completed). Drag a card to move the work on; *Completed* closes the job.
+    A move tells the client one line about the stage (email now, WhatsApp with the conversations phase) and is
+    switchable in Settings → Sales.
+  - **The project page** — the money (value / invoiced / collected / outstanding), the milestones (tick one to
+    mark it reached → progress moves; *Raise invoice* creates a **draft** invoice for it), the **site diary**
+    (text + photographs + progress, optionally tied to a milestone, shared with the client on purpose), the files
+    (drawings, approvals) and the internal notes.
+  - The quotation page's project card now links straight to the project.
+- **Verification of this commit:** Pest **386 passed, 2 811 assertions** (9 new in `tests/Feature/ProjectsTest.php`:
+  the project that acceptance opens, a board move and what the client is told, closing the job, an internal note
+  staying internal until it is shared, photographs + progress + the timeline, the milestone invoice raised once as
+  a draft, raising it from the screen, `projects.manage` vs `projects.view`, and the screens) · Larastan level 6
+  clean · Pint clean · PHP lint clean (407 files) · smoke 33 admin pages incl. both new ones.
+- **P3 — get paid (commit e982c91, INV-005/006, D-84…D-86):** money reaches the ledger two ways and both land in the
   same place.
   - **Record payment** (Admin → Sales → Payments): the studio saying the money is in the bank — verified at once,
     receipt `RC-2026-0001` written to storage, mailed to the client, the team notified on Telegram.
@@ -22,15 +40,17 @@ _Update at the end of every task (docs/03 Part A §7)._
   record + receipt + mail, spreading over two invoices with the remainder as credit, client proof, confirm, send
   back, the client page, the draft/paid guards, permissions and the Livewire screen) · Larastan level 6 clean ·
   Pint clean · PHP lint clean (392 files) · smoke 31 admin pages green including `/admin/payments`.
-- **Next (your call):** the remaining P2 part 2b items (QUO-012 reminders/expiry, QUO-019 quote options, v2.1 quote
-  import), then **P4 projects/execution**, or back to **website batch 3** (publish the 12 cities + 8 Lahore areas
-  + `/insights/` + `/projects/`, humanize home and the six services). Tell me which and I start it.
+- **Next (your call):** **P4 part 2** — the client portal (magic link by WhatsApp/email, no password: quotes,
+  invoices, receipts, the project timeline and its photographs, documents), the handover checklist with the
+  review request, and the case-study draft; or the remaining P2 items (QUO-012 reminders/expiry, QUO-019 quote
+  options, v2.1 quote import); or back to **website batch 3** (publish the 12 cities + 8 Lahore areas +
+  `/insights/` + `/projects/`, humanize home and the six services). Tell me which and I start it.
 - **Website (unchanged, still open):** 12 pages live from the CMS, **76 drafts waiting for a human**
   (12 cities, 8 Lahore areas, 48 insights, 6 projects), 54 old service URLs 301'd, parity test green.
 - **Open items P-01…P-16** (docs/07 section C): P-06 (rotate credentials) blocks go-live; P-12 (real project
   photographs) blocks the case studies; P-15 (GA4/GTM/Clarity IDs into Website → Settings) blocks tracking;
   P-16 (email + hours in Settings) should be done now.
-- **Rules to follow:** docs/07 (D-01…D-86), docs/09 and platform/AGENTS.md. The plan and specs are in docs/00-09.
+- **Rules to follow:** docs/07 (D-01…D-89), docs/09 and platform/AGENTS.md. The plan and specs are in docs/00-09.
 - **Code:** everything is on branch `arena/8be318a2-woodexinterior` and pushed. `master` is still d77016b; merge
   through a pull request when the owner approves.
 - **Preview (AI sandbox only):** after a VM reset run `sh tools/sandbox/setup.sh` (~3-4 min). Then start
@@ -41,6 +61,20 @@ _Update at the end of every task (docs/03 Part A §7)._
 - **Preview data:** demo seed (26 leads, 5 users, 4 quotations) + the 89 imported pages (12 published).
   Owner login `owner@woodex.test` / `Woodex-Preview-2026`. The preview database lives in `/tmp` and is rebuilt
   from the seeders after a VM reset (the pages then come from the committed bundle via `woodex:import-website`).
+
+### P4 part 1 delivered: the project workspace (16 Oct 2026, D-87…D-89)
+- **Screens** (`App\Livewire\Admin\Projects`): `ProjectsIndex` (list, filters, money per job), `ProjectBoard`
+  (Kanban by stage, drag a card → `moveProject` → `ChangeProjectStage`), `ProjectShow` (the workspace: stage and
+  status, the money strip, milestones, the site diary, files, notes).
+- **Actions** (`app/Domain/Projects/Actions/`): `ChangeProjectStage` (stage, closes the job at *Completed*, one
+  line to the client, a note on the timeline, a bell + Telegram alert to the team), `ReachProjectMilestone`
+  (reached_at + progress = the sum of the milestones reached), `RaiseMilestoneInvoice` (one **draft** invoice per
+  milestone, numbered `{project code}-{n}`), `PostProjectUpdate` and `ShareProjectUpdate` (the site diary).
+- **Model + schema:** `project_updates` (migration `2026_10_16_000800`) with a `photos` media collection;
+  `Project` gained `HasAttachments` (files), `updates()`, `company()`, `invoicedMinor()` / `collectedMinor()` /
+  `balanceMinor()`, `nextMilestone()` and `isOverdue()`; `project_update` added to the morph map.
+- **Settings:** `sales.project_stage_notifies_client` (default on) — Settings → Sales.
+- **Policy:** `ProjectPolicy` — `projects.view` to look, `projects.manage` to move, post, share and raise.
 
 ### P3 part 1 delivered: payments, proofs and receipts (16 Oct 2026, D-84…D-86)
 - **Actions** (`app/Domain/Sales/Actions/`): `RecordPayment` (verified at once, receipt number `RC-{year}-{0001}`
@@ -79,7 +113,8 @@ _Update at the end of every task (docs/03 Part A §7)._
   To re-import from the old HTML: `php artisan woodex:import-legacy --path=/path/to/frontend-v1`
   (`--publish --only=/slug/,...` publishes; without `--publish` everything lands as a draft).
 - **Owner to do:** after a deploy, sign in and press **System -> Database update** (it adds the new tables such as
-  `payments.invoice_id` and all 89 pages); add the **cron line** shown by the installer; set up 2FA.
+  `payments.invoice_id` and `project_updates`, and all 89 pages); add the **cron line** shown by the installer;
+  set up 2FA.
 - **Next (batch 3):** publish the 12 cities + 8 Lahore areas + `/insights/` + `/projects/` after reading them, and
     humanize home and the six services (docs/09 section 9). Then batch 4 (48 insights), 5 (projects + tracking +
     `llms.txt` + consent), 6 (estimator and book-a-visit as real tools).

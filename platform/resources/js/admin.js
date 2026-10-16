@@ -85,22 +85,25 @@ async function initKanban() {
 
     const { default: Sortable } = await import('sortablejs');
 
+    // The pipeline ships with these defaults; the project board overrides them per column with
+    // data-kanban-item / data-kanban-id-attr / data-kanban-method / data-kanban-group.
     columns.forEach((column) => {
         sortables.push(
             Sortable.create(column, {
-                group: 'pipeline',
+                group: column.dataset.kanbanGroup ?? 'pipeline',
                 animation: 150,
-                draggable: '[data-lead-id]',
+                draggable: column.dataset.kanbanItem ?? '[data-lead-id]',
                 ghostClass: 'sortable-ghost',
                 dragClass: 'sortable-drag',
                 onEnd(event) {
-                    const leadId = Number(event.item.dataset.leadId);
+                    const attr = column.dataset.kanbanIdAttr ?? 'leadId';
+                    const id = Number(event.item.dataset[attr]);
                     const toStage = event.to.dataset.kanbanColumn;
-                    if (!leadId || !toStage || event.to === event.from) return;
+                    if (!id || !toStage || event.to === event.from) return;
 
                     const root = event.to.closest('[wire\\:id]');
                     const component = root ? window.Livewire.find(root.getAttribute('wire:id')) : null;
-                    component?.call('moveLead', leadId, toStage);
+                    component?.call(column.dataset.kanbanMethod ?? 'moveLead', id, toStage);
                 },
             }),
         );

@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Domain\Projects\Models;
 
 use App\Domain\Crm\Enums\BusinessLine;
+use App\Domain\Crm\Models\Concerns\HasAttachments;
+use App\Domain\Crm\Models\Company;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Projects\Enums\ProjectStage;
 use App\Domain\Projects\Enums\ProjectStatus;
+use App\Domain\Sales\Enums\InvoiceStatus;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\Quote;
 use App\Models\User;
@@ -18,13 +21,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\HasMedia;
 
 /**
  * Project created from an accepted quotation (PRJ-001). Code = quotation number.
  */
-class Project extends Model
+class Project extends Model implements HasMedia
 {
-    use HasPublicId, SoftDeletes;
+    use HasAttachments, HasPublicId, SoftDeletes;
 
     protected $guarded = ['id'];
 
@@ -51,6 +55,14 @@ class Project extends Model
     public function contact(): BelongsTo
     {
         return $this->belongsTo(Contact::class);
+    }
+
+    /**
+     * @return BelongsTo<Company, $this>
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 
     /**
@@ -91,6 +103,58 @@ class Project extends Model
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    /**
+     * @return HasMany<ProjectUpdate, $this>
+     */
+    public function updates(): HasMany
+    {
+        return $this->hasMany(ProjectUpdate::class)->latest();
+    }
+
+    /** Invoiced so far: every invoice except the voided ones (PRJ-005). */
+    public function invoicedMinor(): int
+    {
+        $this->loadMissing('invoices');
+
+        return (int) $this->invoices
+            ->reject(fn (Invoice $invoice): bool => $invoice->status === InvoiceStatus::Void)
+            ->sum('total_minor');
+    }
+
+    /** Money actually received against this project's invoices. */
+    public function collectedMinor(): int
+    {
+        $this->loadMissing('invoices');
+
+        return (int) $this->invoices->sum('paid_minor');
+    }
+
+    /** Still owed on this project: invoiced, not void, not yet collected. */
+    public function balanceMinor(): int
+    {
+        $this->loadMissing('invoices');
+
+        return (int) $this->invoices
+            ->reject(fn (Invoice $invoice): bool => $invoice->status === InvoiceStatus::Void)
+            ->sum('balance_minor');
+    }
+
+    /** The next milestone still ahead of us: the one the team is working towards. */
+    public function nextMilestone(): ?ProjectMilestone
+    {
+        $this->loadMissing('milestones');
+
+        return $this->milestones->firstWhere('reached_at', null);
+    }
+
+    /** A project is late when its target date has passed and it is not finished. */
+    public function isOverdue(): bool
+    {
+        return $this->target_date !== null
+            && $this->target_date->lt(today())
+            && ! in_array($this->status, [ProjectStatus::Completed, ProjectStatus::Cancelled], true);
     }
 
     public function value(): Money

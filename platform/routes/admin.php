@@ -15,6 +15,9 @@ use App\Livewire\Admin\Crm\PipelineBoard;
 use App\Livewire\Admin\Crm\TasksIndex;
 use App\Livewire\Admin\Crm\VisitsIndex;
 use App\Livewire\Admin\Dashboard;
+use App\Livewire\Admin\Projects\ProjectBoard;
+use App\Livewire\Admin\Projects\ProjectsIndex;
+use App\Livewire\Admin\Projects\ProjectShow;
 use App\Livewire\Admin\MyDay;
 use App\Livewire\Admin\NotificationsPage;
 use App\Livewire\Admin\Profile\Security;
@@ -71,6 +74,11 @@ Route::livewire('/payments', PaymentsIndex::class)->name('payments.index')->midd
 Route::livewire('/approvals', Approvals::class)->name('approvals')->middleware('can:quotes.approve');
 Route::livewire('/quote-templates', QuoteTemplates::class)->name('quote-templates')->middleware('can:quotes.view');
 Route::livewire('/rate-book', RateBook::class)->name('rate-book')->middleware('can:quotes.view');
+
+// Projects (P4, PRJ-001…PRJ-005)
+Route::livewire('/projects', ProjectsIndex::class)->name('projects.index')->middleware('can:projects.view');
+Route::livewire('/projects/board', ProjectBoard::class)->name('projects.board')->middleware('can:projects.view');
+Route::livewire('/projects/{project}', ProjectShow::class)->name('projects.show')->whereNumber('project');
 
 // Private attachments (GLB-006)
 Route::get('/media/{media}/{conversion?}', MediaController::class)->name('media.show')->whereIn('conversion', ['thumb']);

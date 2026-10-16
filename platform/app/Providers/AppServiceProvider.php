@@ -16,6 +16,8 @@ use App\Domain\Crm\Policies\CompanyPolicy;
 use App\Domain\Crm\Policies\ContactPolicy;
 use App\Domain\Crm\Policies\LeadPolicy;
 use App\Domain\Projects\Models\Project;
+use App\Domain\Projects\Models\ProjectUpdate;
+use App\Domain\Projects\Policies\ProjectPolicy;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Models\Quote;
@@ -73,6 +75,7 @@ class AppServiceProvider extends ServiceProvider
             'invoice' => Invoice::class,
             'payment' => Payment::class,
             'project' => Project::class,
+            'project_update' => ProjectUpdate::class,
             'change_request' => ChangeRequest::class,
         ]);
 
@@ -82,6 +85,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Quote::class, QuotePolicy::class);
         Gate::policy(Invoice::class, InvoicePolicy::class);
         Gate::policy(Payment::class, PaymentPolicy::class);
+        Gate::policy(Project::class, ProjectPolicy::class);
 
         // The owner can do everything (PRD §7).
         Gate::before(fn (User $user): ?bool => $user->hasRole('owner') ? true : null);

@@ -465,7 +465,7 @@
                         <div class="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
                             <div class="flex items-center justify-between gap-3">
                                 <div class="min-w-0">
-                                    <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $project->name }}</p>
+                                    <a href="{{ route('admin.projects.show', $project) }}" wire:navigate class="text-theme-sm font-medium text-gray-800 hover:underline dark:text-white/90">{{ $project->name }}</a>
                                     <p class="text-theme-xs text-gray-500">{{ $project->code }} · {{ $project->stage->label() }} · {{ $project->status->label() }}</p>
                                 </div>
                                 <span class="text-theme-sm tabular-nums text-gray-600 dark:text-gray-300">{{ $money((int) $project->value_minor) }}</span>
