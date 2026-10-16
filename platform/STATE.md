@@ -2,6 +2,33 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT, after quotation step 1: WhatsApp delivery)
+
+- **The owner's order for the frontend, unchanged:** the original v1 site is live on woodex.com.pk and stays live;
+  **v2 is not started** — its admin master plan (stack, theme builder, page builder, SEO) is the next document,
+  and its decisions are recorded below and in docs/07 (D-105…D-110).
+- **Quotation is the work in hand, in three steps** (owner, 17 Oct): send on WhatsApp, then estimator → draft
+  quote, then follow-up automation. **Step 1 is done and pushed (commit 926ec75).**
+- **A quotation now reaches the client on WhatsApp as a signed link, not a PDF** (QUO-008, D-111):
+  `SendQuoteByWhatsApp` resolves or opens the conversation, sends the link inside Meta's 24-hour window and an
+  approved template outside it, and writes `whatsapp_sent` / `whatsapp_failed` on the quote's timeline. A refusal
+  from Meta never loses the quotation: the snapshot and link exist, and the team is told why the message did not
+  go. The send dialog offers WhatsApp only when the client has a number and the API is connected.
+- **A client's "ok" raises its hand instead of accepting the price** (D-112): `SuggestQuoteAcceptance` reads short
+  replies — English and the Roman Urdu clients write ("theek hai", "ji haan", "👍") — ignores questions and change
+  requests, remembers the message (`acceptance_hint_at`), notifies the team, and shows a banner on the quotation
+  with **Accept quotation** / **Not a yes**. `AcceptQuote` takes an optional user, so the timeline says who
+  confirmed it rather than pretending the client pressed the button.
+- **A latent bug this exposed and fixed:** a conversation opened by an *outbound* message had no unread counter in
+  memory, so the first message the studio sent — exactly what sending a quotation does — wrote NULL into a NOT NULL
+  column. Inbound only ever added to the counter, so it had never surfaced. Fixed in `Conversation::touchLastMessage`
+  and in both places a conversation is created.
+- **Merged another session's branch** (PR #2, owner setup, two-factor policy, Telegram diagnostics) by rebasing;
+  the suite was re-run after the merge: **466 passed**, Larastan level 6 clean, Pint clean on 469 files.
+- **Verification:** Pest 466 passed (3 276 assertions) · Larastan level 6 clean · Pint clean on 469 files ·
+  preview checked (site, admin login, quotes) before pushing · 14 new tests for WhatsApp delivery and the
+  acceptance hint.
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after the original site went live and its forms were wired)
 
 - **woodex.com.pk now serves the original v1 site, file for file (owner's decision): 142 pages copied verbatim**
