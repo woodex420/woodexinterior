@@ -441,6 +441,8 @@ class QuoteBuilder extends Component
             'lineCount' => $items->count(),
             'needsPricing' => $items->filter(fn (QuoteItem $item): bool => ! $item->is_optional && ((float) $item->qty <= 0 || $item->rate_minor <= 0))->count(),
             'milestoneTotal' => (int) $quote->milestones->sum('percent_bp'),
+            'project' => $quote->project()->with('milestones')->first(),
+            'invoices' => $quote->invoices()->with('projectMilestone')->latest('id')->get(),
             'catalogItems' => $this->showCatalog ? $this->catalogResults() : collect(),
             'catalogCategories' => $this->showCatalog ? CatalogItem::query()->where('is_active', true)->distinct()->orderBy('category')->pluck('category') : collect(),
             'templates' => $this->showTemplate ? QuoteTemplate::query()->orderBy('position')->get(['id', 'name']) : collect(),

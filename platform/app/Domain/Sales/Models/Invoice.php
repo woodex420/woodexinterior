@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Sales\Models;
 
 use App\Domain\Crm\Enums\BusinessLine;
+use App\Domain\Crm\Models\Company;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Projects\Models\Project;
+use App\Domain\Projects\Models\ProjectMilestone;
 use App\Domain\Sales\Enums\InvoiceKind;
 use App\Domain\Sales\Enums\InvoiceStatus;
 use App\Support\Concerns\HasPublicId;
@@ -83,6 +85,22 @@ class Invoice extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * @return BelongsTo<Company, $this>
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * @return BelongsTo<ProjectMilestone, $this>
+     */
+    public function projectMilestone(): BelongsTo
+    {
+        return $this->belongsTo(ProjectMilestone::class);
     }
 
     /**

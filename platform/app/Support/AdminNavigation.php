@@ -35,7 +35,7 @@ final class AdminNavigation
             ]),
             self::group('Sales', [
                 self::item('Quotations', 'quote', 'admin.quotes.index', 'quotes.view'),
-                self::item('Invoices', 'invoice', null, null, 'P3'),
+                self::item('Invoices', 'invoice', 'admin.invoices.index', 'invoices.view'),
                 self::item('Payments', 'wallet', null, null, 'P3'),
                 self::item('Receivables', 'clock', null, null, 'P3'),
                 self::item('Quote Templates', 'templates', 'admin.quote-templates', 'quotes.view'),

@@ -107,7 +107,24 @@ _Update at the end of every task (docs/03 Part A §7)._
 - `browser-check.mjs` passes, including the quote builder edit/restore and the phone width; `iframe-check.mjs`
   passes; the smoke test checks 21 admin pages.
 
-### P2 part 2 plan (items 1–4 and the first half of 5 are done: part 2a, D-60…D-64)
+### P2 part 2b delivered: project + advance invoice (16 Oct 2026, D-80…D-82)
+Accepting a quotation now opens the job and asks for its first payment, in the same transaction as the acceptance:
+
+- **Project (PRJ-001, `OpenProjectFromQuote`)** — code = the quotation number, so the client keeps the number they
+  know; value, client, line, site city/area from the lead, PM = the quote owner, and the quotation's payment stages
+  copied as project milestones. One project per quotation, however often acceptance is called.
+- **Advance invoice (INV-001/004, `RaiseAdvanceInvoice`)** — the milestone with the `on_acceptance` trigger becomes
+  the first invoice: 50% on an execution job, 75% on design, whatever the owner set on a custom plan. Number is the
+  quotation number with a suffix (`WI-10123-1`), tax keeps the quotation's rate, the bank account is the one for the
+  business line (Interior → WOODEX INTERIOR, Furniture → WOODEX FURNITURE), and it lands as **draft** or **issued**
+  according to `sales.advance_invoice_mode` (issue by default: never sent without a person saying so). An issued
+  invoice is frozen — snapshot + PDF stored with it.
+- **Screens** — Sales → Invoices lists every invoice with status, amount, balance and the overdue total; the
+  quotation page gained a "Project and invoices" card; the invoice PDF is served to the team from storage.
+- **Tests:** 8 new (`tests/Feature/AdvanceInvoiceTest.php`) covering the project, the three plans, idempotency,
+  draft mode, bank routing, the list + PDF permissions, the quote page card and tax.
+
+### P2 part 2 plan (items 1–4 and 5 are done: part 2a + 2b, D-60…D-64, D-80…D-82)
 1. **Approvals (QUO-007):** discount above the role limit (`discount_limits_bp`) or margin below `min_margin_bp` →
    pending approval; the owner or manager approves in the admin (and later on Telegram, TGM-002). Approvals menu.
 2. **Send + versions (QUO-008/013):** an immutable `quote_versions` snapshot and PDF hash on each send; a copyable
@@ -117,8 +134,9 @@ _Update at the end of every task (docs/03 Part A §7)._
    milestones, terms, bank details and signatories, page numbers.
 4. **Client page (QUO-009/010):** signed, expiring link with a Studio-branded view, PDF download, Accept (name +
    checkbox), Request changes and Ask on WhatsApp. View tracking with first-view and "hot" alerts.
-5. **Accept automation (QUO-011):** lead → Won, contact → client (done), a project record and the advance invoice
-   draft (P3 tables) in one transaction, then the notifications (part 2b, with P3).
+5. **Accept automation (QUO-011): done.** Lead → Won, contact → client, project opened, advance invoice raised, the
+   team alerted with the invoice number and amount — all in one transaction. Recording the payment against it and
+   sending it to the client are P3.
 6. **P2 part 3:** validity reminders and expiry (QUO-012), options A/B (QUO-019) and the v2.1 quotes/templates
    import.
 

@@ -7,6 +7,7 @@ namespace App\Domain\Sales\Actions;
 use App\Domain\Crm\Actions\MoveLeadToStage;
 use App\Domain\Crm\Enums\StageType;
 use App\Domain\Crm\Models\PipelineStage;
+use App\Domain\Projects\Actions\OpenProjectFromQuote;
 use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Models\Quote;
@@ -18,14 +19,16 @@ use Illuminate\Support\Facades\Notification;
 
 /**
  * The client accepts on the quotation page (QUO-009/011): typed name + confirmation. The quote is accepted, the
- * contact becomes a client and the lead moves to Won, in one transaction; then the team is alerted. The project
- * record and the advance invoice follow with P3 (invoicing).
+ * contact becomes a client, the lead moves to Won, the project is opened and the advance invoice is raised — all in
+ * one transaction. Recording the payment against that invoice is P3.
  */
 final class AcceptQuote
 {
     public function __construct(
         private readonly LogQuoteEvent $log,
         private readonly MoveLeadToStage $moveLead,
+        private readonly OpenProjectFromQuote $openProject,
+        private readonly RaiseAdvanceInvoice $raiseInvoice,
     ) {}
 
     public function handle(Quote $quote, string $name, ?string $phone, ?string $ip, ?string $userAgent): Quote
@@ -62,9 +65,28 @@ final class AcceptQuote
             if ($lead !== null && $won !== null && $lead->won_at === null && $lead->lost_at === null) {
                 $this->moveLead->handle($lead, $won);
             }
+
+            // The job starts here: the project carries the work, the advance invoice asks for its first payment.
+            $project = $this->openProject->handle($quote);
+            $invoice = $this->raiseInvoice->handle($quote);
+
+            if ($invoice !== null) {
+                $this->log->handle($quote, 'invoiced', null, sprintf(
+                    'Advance invoice %s of %s raised for project %s.',
+                    $invoice->number,
+                    $invoice->total(),
+                    $project->code,
+                ), ['invoice_id' => $invoice->id, 'total_minor' => (int) $invoice->total_minor], ['project_id' => $project->id]);
+            }
         });
 
-        Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'accepted', 'Accepted online by “'.trim($name).'”. Next: advance invoice (P3).'));
+        $invoice = $quote->refresh()->invoices()->latest('id')->first();
+
+        Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'accepted', 'Accepted online by “'.trim($name).'”. '.(
+            $invoice === null
+                ? 'No advance milestone: raise the first invoice when the work reaches one.'
+                : 'Advance invoice '.$invoice->number.' ('.$invoice->total()->format().') is '.$invoice->status->label().'.'
+        )));
 
         return $quote;
     }

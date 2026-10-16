@@ -458,6 +458,53 @@
                 </div>
             </x-admin.card>
 
+            {{-- What acceptance produced: the project that carries the work and the invoices that ask for payment --}}
+            @if ($project || $invoices->isNotEmpty())
+                <x-admin.card title="Project and invoices" :padding="false">
+                    @if ($project)
+                        <div class="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="min-w-0">
+                                    <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $project->name }}</p>
+                                    <p class="text-theme-xs text-gray-500">{{ $project->code }} · {{ $project->stage->label() }} · {{ $project->status->label() }}</p>
+                                </div>
+                                <span class="text-theme-sm tabular-nums text-gray-600 dark:text-gray-300">{{ $money((int) $project->value_minor) }}</span>
+                            </div>
+                            <ol class="mt-2 space-y-1">
+                                @foreach ($project->milestones as $milestone)
+                                    <li class="flex items-center justify-between gap-3 text-theme-xs text-gray-500">
+                                        <span class="truncate">{{ $milestone->name }}</span>
+                                        <span class="tabular-nums">{{ $money($milestone->amount_minor) }}</span>
+                                    </li>
+                                @endforeach
+                            </ol>
+                        </div>
+                    @endif
+                    <ul class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @foreach ($invoices as $invoice)
+                            <li class="flex items-center justify-between gap-3 px-4 py-3">
+                                <div class="min-w-0">
+                                    <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $invoice->number }}</p>
+                                    <p class="text-theme-xs text-gray-500">{{ $invoice->projectMilestone?->name ?? 'Invoice' }} · due {{ $invoice->due_date?->format('j M Y') ?? '—' }}</p>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-theme-sm tabular-nums text-gray-700 dark:text-gray-200">{{ $money((int) $invoice->total_minor) }}</span>
+                                    <x-admin.badge :color="$invoice->status->color()">{{ $invoice->status->label() }}</x-admin.badge>
+                                    @can('view', $invoice)
+                                        <a href="{{ route('admin.invoices.pdf', $invoice) }}" target="_blank" rel="noopener" class="text-theme-xs text-brand-600 hover:underline dark:text-brand-400">PDF</a>
+                                    @endcan
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                    @if ($invoices->isNotEmpty())
+                        <div class="px-4 py-3">
+                            <a href="{{ route('admin.invoices.index') }}" wire:navigate class="text-theme-xs font-medium text-navy-800 hover:underline dark:text-white">All invoices →</a>
+                        </div>
+                    @endif
+                </x-admin.card>
+            @endif
+
             <x-admin.card title="Terms and notes">
                 <div class="space-y-4">
                     <x-admin.field label="Terms and conditions" for="details.terms">

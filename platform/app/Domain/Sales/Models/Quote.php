@@ -146,6 +146,14 @@ class Quote extends Model
     }
 
     /**
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
      * @return HasMany<QuoteVersion, $this>
      */
     public function versions(): HasMany

@@ -59,6 +59,11 @@ class SalesSettings extends Settings
 
     public int $invoice_due_days;
 
+    /** What happens to the advance invoice when a quotation is accepted: draft, issue, or issue and send. */
+    public string $advance_invoice_mode;
+
+    public string $invoice_terms;
+
     public function slaMinutesFor(string $source): int
     {
         return (int) ($this->sla_minutes_by_source[$source] ?? $this->sla_first_response_minutes);
