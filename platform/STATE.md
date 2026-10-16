@@ -25,6 +25,18 @@ _Update at the end of every task (docs/03 Part A §7)._
   requests, remembers the message (`acceptance_hint_at`), notifies the team, and shows a banner on the quotation
   with **Accept quotation** / **Not a yes**. `AcceptQuote` takes an optional user, so the timeline says who
   confirmed it rather than pretending the client pressed the button.
+- **Nobody is chased twice, and nobody is forgotten** (step 3): `ChaseQuotations` runs daily at 09:00 and warns the
+  studio once when a quotation is about to lapse, lapses it when it does, and chases unanswered ones every
+  `quote_follow_up_days` (3) to a **maximum of three chases**. It never messages the client — it tells the studio
+  to call. `woodex:quote-follow-ups`, scheduled `dailyAt('09:00')->withoutOverlapping(30)`; off by default behind
+  `sales.quote_follow_ups_enabled` (`7062a5a`).
+- **Three planning documents are written, none of them built yet** (`9e4e829`, and the two pushed with this
+  entry): `docs/12-FRONTEND-V2-MASTER-PLAN.md` (the v2 stack, the six modules, the theme-import pipeline, the
+  Sveltia question, phases V2-1…V2-6), `docs/13-V1-TO-V2-CONVERSION-PLAN.md` (how the 142 live files are retired
+  group by group, home last, with the render-comparison gate each group must pass), and
+  `docs/14-PENDING-TASKS.md` (every pending P4, P5 and v2 task with its real status, checked against the code).
+  **Next work is the owner's choice** — the recommended order is in docs/14 §1: connect WhatsApp (WAP-001) and
+  manage its templates (WAP-005), then canned replies, then the follow-up sequence engine.
 - **A latent bug this exposed and fixed:** a conversation opened by an *outbound* message had no unread counter in
   memory, so the first message the studio sent — exactly what sending a quotation does — wrote NULL into a NOT NULL
   column. Inbound only ever added to the counter, so it had never surfaced. Fixed in `Conversation::touchLastMessage`
