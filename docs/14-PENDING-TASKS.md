@@ -70,6 +70,8 @@ WhatsApp (this week)** · **a client's "ok" noticed without accepting the price 
 
 ## 3 · P5 — Telegram command centre (≈ 1 week)
 
+_Implementation detail, ordered into buildable steps: docs/15 §P5. Started 17 Oct (owner's direction: P5 → P6 next)._
+
 | ID | What | Status |
 |---|---|---|
 | **TEL-1** | Staff linking (`/link`), alerts to the right people, quiet hours | **PART** — linking, alerts and quiet hours exist; the matrix is not complete |
@@ -85,6 +87,8 @@ Exit criterion for P5: **the owner completes a full day of approvals from Telegr
 ---
 
 ## 4 · v2 frontend — V2-1 … V2-6 (docs/12 §9)
+
+_Implementation detail, ordered into buildable steps: docs/15 §P6._
 
 | Phase | What | Status |
 |---|---|---|
