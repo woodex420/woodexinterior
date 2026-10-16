@@ -47,6 +47,10 @@ Options -Indexes
     RewriteCond %{REQUEST_URI} ^/(.+)/$
     RewriteRule ^ /%1 [L,R=301]
 
+    # robots.txt is answered by the app, per domain (D-95): Hostinger's Git deploy can leave a deleted static
+    # file behind on the server, and a stale "Disallow: /" is a whole website kept out of Google in silence.
+    RewriteRule ^robots\.txt$ index.php [L]
+
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
