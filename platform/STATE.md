@@ -2,6 +2,34 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT, after the original site went live and its forms were wired)
+
+- **woodex.com.pk now serves the original v1 site, file for file (owner's decision): 142 pages copied verbatim**
+  into `platform/public/**` — same folders, same paths, same HTML, CSS, JavaScript and images. Nothing
+  redesigned, nothing re-typed, nothing rebuilt. The CMS copy of the same 143 pages stays in the database as
+  editable content, but it is **not** what the public sees now; how edits go live is the owner's call, later.
+- **The two addresses the old JavaScript calls are answered by Woodex OS, so the pages needed no change at all**
+  (`LegacySiteBridgeController`, routes in `routes/api.php`):
+  - `GET /api/forms.php` → `{"ok":true,"turnstile":""}` (no captcha box is drawn; honeypot + rate limit instead).
+  - `POST /api/forms.php` → the enquiry is validated and written through **CaptureLead**, so it lands on the same
+    pipeline as every other lead, with its source set from the form that sent it (`whatsapp`, `estimator`,
+    `booking`, otherwise website form) and every extra field kept in `meta.fields`. Replies `{"ok":true,"id"}`.
+  - `action=wa_click` → `{"ok":true}`: a WhatsApp tap is a ping, not a lead.
+  - `action=book_create` → **kept as a lead with source `booking`**, then answered `ok`, which shows the page's own
+    "booking request received, our team will confirm on WhatsApp" panel. The slot is never promised.
+  - `action=book_cfg` / `book_slots` → booking is **off** (`{"ok":true,"on":false,"types":[]}`), so `/book-a-visit/`
+    shows its own pre-written "Online booking is paused" panel. Woodex OS has no diaries yet (PRD §5.6).
+  - `GET|POST /api/chat.php` → `{"ok":true,"on":false}`: the widget stays out of the way until website chat (P4).
+- **Rate limiting was split** so a page view cannot spend the enquiry budget: `throttle:public-site` (120/min)
+  guards all three bridge routes, and only writing a lead spends the 5-per-minute / 50-per-day budget, which is
+  now counted inside the controller (`legacy-leads-minute`, `legacy-leads-day`).
+- **Verification:** Pest **431 passed**, 3 098 assertions (12 new in `LegacySiteBridgeTest`, which is the contract
+  the pages depend on) · Larastan level 6 clean · Pint clean on 460 files · every endpoint checked with curl
+  (enquiry → lead, honeypot → silent ok, invalid → the visitor's message, WhatsApp tap, booking off, chat off) ·
+  preview checked on port 8000: `/`, `/kitchen-design/`, `/contact/` answer 200 and every asset the pages call
+  for answers 200. No browser in this sandbox, so the form was verified by contract, not by clicking.
+- **Next, in the owner's order:** the v1 → v2 conversion plan. Questions first, then the plan, then the work.
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after the complete old website went into the CMS)
 - **The complete frontend v1 is the website now: 143 pages, 0 redirects (owner's decision, D-102).** The old site's
   54 specialist URLs used to 301 to the nearest discipline; they are pages now, editable in Website -> Pages with

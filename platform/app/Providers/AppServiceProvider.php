@@ -109,6 +109,13 @@ class AppServiceProvider extends ServiceProvider
             Limit::perDay(50)->by('leads-day:'.$request->ip()),
         ]);
 
+        // The original pages ask for the form's configuration on every page view and poll the chat every few
+        // seconds, so those two answers need a room of their own: the lead limiter above is for writing a lead.
+        RateLimiter::for('public-site', fn (Request $request): array => [
+            Limit::perMinute(120)->by('site-min:'.$request->ip()),
+            Limit::perDay(20_000)->by('site-day:'.$request->ip()),
+        ]);
+
         RateLimiter::for('webhooks', fn (Request $request): Limit => Limit::perMinute(120)->by('webhook:'.$request->ip()));
 
         // Re-applied on every Livewire update request, not only on the first page load.
