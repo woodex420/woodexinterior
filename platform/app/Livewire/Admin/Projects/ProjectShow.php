@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Projects;
 
+use App\Domain\Projects\Actions\AcceptHandover;
 use App\Domain\Projects\Actions\ChangeProjectStage;
+use App\Domain\Projects\Actions\DraftCaseStudy;
+use App\Domain\Projects\Actions\StartHandover;
 use App\Domain\Projects\Actions\PostProjectUpdate;
 use App\Domain\Projects\Actions\RaiseMilestoneInvoice;
 use App\Domain\Projects\Actions\ReachProjectMilestone;
@@ -13,11 +16,15 @@ use App\Domain\Projects\Enums\ProjectStage;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectMilestone;
+use App\Domain\Projects\Mail\ProjectMail;
 use App\Domain\Projects\Models\ProjectUpdate;
+use App\Domain\Projects\Services\PortalLinks;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Models\User;
 use App\Settings\SalesSettings;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -54,6 +61,10 @@ class ProjectShow extends Component
     public bool $shareWithClient = false;
 
     public string $notes = '';
+
+    public string $newItem = '';
+
+    public string $signatureName = '';
 
     public function mount(Project $project): void
     {
@@ -224,9 +235,151 @@ class ProjectShow extends Component
         $this->toast('File deleted.');
     }
 
+    /** Email the client the door to their own page (PRJ-006). */
+    public function sendPortalLink(): void
+    {
+        $this->authorize('update', $this->project);
+
+        $email = $this->project->contact?->email;
+
+        if ($email === null || $email === '') {
+            $this->toast('This client has no email address on file: share the link on WhatsApp instead.', 'error');
+
+            return;
+        }
+
+        Mail::to($email)->queue(new ProjectMail(
+            projectId: $this->project->id,
+            heading: 'Follow '.$this->project->code.' as it happens',
+            body: sprintf(
+                "Here is your own page for %s: the photographs from the site, the drawings we share with you, your invoices and receipts, and the checklist we hand over with the keys.\n\nNothing to remember: this link is yours.",
+                $this->project->name,
+            ),
+            url: PortalLinks::absolute($this->project),
+            buttonLabel: 'Open my project',
+        ));
+
+        $this->toast('Portal link sent to '.$email.'.');
+    }
+
+    /** The checklist the studio hands the keys over with (PRJ-007). */
+    public function startHandover(bool $reset = false): void
+    {
+        $this->authorize('update', $this->project);
+
+        app(StartHandover::class)->handle($this->project, $reset);
+        $this->project->refresh();
+        $this->newItem = '';
+
+        $this->toast($reset ? 'Checklist reset to the studio list.' : 'Handover checklist started.');
+    }
+
+    public function addHandoverItem(): void
+    {
+        $this->authorize('update', $this->project);
+
+        $this->validate(['newItem' => ['required', 'string', 'max:200']], attributes: ['newItem' => 'item']);
+
+        $this->project->handoverItems()->create([
+            'label' => trim($this->newItem),
+            'position' => (int) ($this->project->handoverItems()->max('position') ?? 0) + 1,
+        ]);
+
+        $this->newItem = '';
+        $this->project->refresh();
+    }
+
+    public function tickHandoverItem(int $itemId): void
+    {
+        $this->authorize('update', $this->project);
+
+        $item = $this->project->handoverItems()->findOrFail($itemId);
+
+        $item->forceFill([
+            'done_at' => $item->done_at === null ? now() : null,
+            'done_by' => $item->done_at === null ? $this->user()->id : null,
+        ])->save();
+
+        $this->project->refresh();
+    }
+
+    public function removeHandoverItem(int $itemId): void
+    {
+        $this->authorize('update', $this->project);
+
+        $this->project->handoverItems()->findOrFail($itemId)->delete();
+        $this->project->refresh();
+    }
+
+    /** A file the client may see on the portal; the rest stay in the studio. */
+    public function toggleFileVisibility(int $mediaId): void
+    {
+        $this->authorize('update', $this->project);
+
+        $media = $this->project->media()->where('collection_name', 'files')->findOrFail($mediaId);
+        assert($media instanceof Media);
+
+        $visible = ! (bool) $media->getCustomProperty('visible_to_client');
+        $media->setCustomProperty('visible_to_client', $visible)->save();
+
+        $this->toast($visible ? 'The client can see this file now.' : 'Hidden from the client.');
+    }
+
+    public function toggleConsent(bool $consent): void
+    {
+        $this->authorize('update', $this->project);
+
+        $this->project->forceFill(['case_study_consent' => $consent])->save();
+        $this->project->refresh();
+    }
+
+    /** A finished job becomes a draft portfolio page for a person to write up (PRJ-008). */
+    public function draftCaseStudy(): void
+    {
+        $this->authorize('update', $this->project);
+        abort_unless($this->user()->can('website.edit'), 403);
+
+        if (! $this->project->case_study_consent) {
+            $this->toast('Tick the client consent first: a case study is published in their space.', 'error');
+
+            return;
+        }
+
+        $page = app(DraftCaseStudy::class)->handle($this->project, $this->user());
+        $this->project->refresh();
+
+        $this->toast('Draft case study created: '.$page->title.'.');
+    }
+
+    /** The client signed on paper or in person; record it here. */
+    public function recordHandoverSignature(): void
+    {
+        $this->authorize('update', $this->project);
+
+        $name = trim($this->signatureName);
+
+        if ($name === '') {
+            $this->toast('Type the name the client signed with.', 'error');
+
+            return;
+        }
+
+        try {
+            app(AcceptHandover::class)->handle($this->project, $name, $this->user());
+        $this->signatureName = '';
+        } catch (ValidationException $exception) {
+            $this->toast((string) collect($exception->errors())->flatten()->first(), 'error');
+
+            return;
+        }
+
+        $this->project->refresh();
+        $this->toast('Handover signed by '.$this->project->client_ok_name.'.');
+    }
+
     public function render(): View
     {
-        $project = $this->project->load(['contact', 'company', 'quote', 'lead', 'manager', 'invoices']);
+        $project = $this->project->load(['contact', 'company', 'quote', 'lead', 'manager', 'invoices', 'handoverItems.doneBy', 'caseStudyPage']);
 
         $updates = $project->updates()
             ->with(['author:id,name', 'milestone:id,name', 'media'])
@@ -240,6 +393,11 @@ class ProjectShow extends Component
             'stages' => ProjectStage::cases(),
             'statuses' => ProjectStatus::cases(),
             'staff' => User::query()->where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'portalUrl' => PortalLinks::absolute($this->project),
+            'portalRelative' => PortalLinks::portal($this->project),
+            'whatsappShare' => PortalLinks::whatsappShare($this->project),
+            'reviewDueOn' => app(\App\Domain\Projects\Actions\RequestClientReviews::class)->dueOn($this->project),
+            'progress' => $project->handoverProgress(),
             'lakh' => app(SalesSettings::class)->lakh_grouping,
         ])->title($project->code.' · '.$project->name);
     }

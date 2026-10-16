@@ -22,10 +22,11 @@ final class SiteRouter
 {
     /**
      * First segments that belong to the app, never to a page: `q` is the client's quotation link (QUO-009) and
-     * `i` the client's invoice link (INV-005), both signed routes that must keep their 404s to themselves.
+     * `i` the client's invoice link (INV-005) and `p` the client's project portal (PRJ-006), all signed routes
+ * that must keep their 404s to themselves; `portal` is the code page.
      */
     private const array RESERVED = [
-        'install', 'up', 'build', 'vendor', 'storage', 'api', 'webhooks', 'livewire', 'q', 'i', 'admin',
+        'install', 'up', 'build', 'vendor', 'storage', 'api', 'webhooks', 'livewire', 'q', 'i', 'p', 'portal', 'admin',
     ];
 
     public function __construct(private readonly PageRenderer $renderer) {}

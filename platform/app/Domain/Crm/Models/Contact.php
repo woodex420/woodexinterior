@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Crm\Models;
 
+use App\Domain\Projects\Models\Project;
+use App\Domain\Projects\Models\PortalAccessCode;
 use App\Domain\Crm\Enums\ClientType;
 use App\Domain\Crm\Models\Concerns\HasAttachments;
 use App\Domain\Crm\Policies\ContactPolicy;
@@ -79,6 +81,22 @@ class Contact extends Model implements HasMedia
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * @return HasMany<Project, $this>
+     */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class)->latest();
+    }
+
+    /**
+     * @return HasMany<PortalAccessCode, $this>
+     */
+    public function portalCodes(): HasMany
+    {
+        return $this->hasMany(PortalAccessCode::class);
     }
 
     /**

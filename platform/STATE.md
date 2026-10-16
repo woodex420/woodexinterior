@@ -2,11 +2,28 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 16 Oct 2026 PKT, after P3 payments + P4 part 1: the project workspace)
-- **Where we are:** P0-P3 are done and live; **P4 part 1 (the project workspace) is built and pushed**. The client
-  portal, the handover checklist and the case-study draft are **P4 part 2 — next**. **woodex.com.pk runs this
-  branch** — every push redeploys it.
-- **P4 part 1 — the project workspace (this commit, PRJ-002…PRJ-005, D-87…D-89):**
+## Resume here (project memory, saved 16 Oct 2026 PKT, after P3 payments + P4: projects & the client portal)
+- **Where we are:** P0-P3 are done and live; **P4 is complete**: the project workspace (part 1) and the client
+  portal, handover and case-study draft (part 2). **woodex.com.pk runs this branch** — every push redeploys it.
+- **P4 part 2 — the client's side (this commit, PRJ-006…PRJ-008, D-90…D-92):**
+  - **Client portal** `/p/{public_id}` (signed, 120 days): where the job stands, the diary with its photographs,
+    the drawings we chose to share, invoices (each opens its own signed invoice page), and the receipts.
+  - **No client password**: a client who has lost the link asks for six digits at `/portal` with the phone number
+    or email they booked with; the code is emailed, works once and dies in 15 minutes.
+  - **Handover**: the checklist starts from Settings → Sales, the team ticks it and adds lines, the client signs
+    with their name on the portal — and the job closes itself (stage completed, progress 100%).
+  - **Review request**: `woodex:review-requests` (daily 10:30 in the cron) emails the Google review link a few
+    days after the signature, once the owner has pasted their link into Settings → Business.
+  - **Case study**: with the client's consent, a finished job becomes a **draft** portfolio page in the CMS —
+    hero, the story from the shared diary, a gallery copied into the website's media library, and the facts.
+  - The project page gained a **Client portal** card (link, copy, WhatsApp, email the link, review status) and a
+    **Case study** card, and every file now has a *Private / On portal* toggle.
+- **Verification of this commit:** Pest **397 passed, 2 888 assertions** (11 new in `tests/Feature/ClientPortalTest.php`:
+  what the client sees and does not, the document that only appears once shared, the cancelled project, the
+  checklist, signing the handover, the six-digit code, the review email, the case-study draft, the portal link
+  email and the two "nothing is sent" guards) · Larastan level 6 clean · Pint clean · PHP lint clean (425 files) ·
+  smoke 33 admin pages · `/portal` answers 200.
+- **P4 part 1 — the project workspace (commit 90c8781, PRJ-002…PRJ-005, D-87…D-89):**
   - **Admin → Projects** — every job with its stage, status, progress, next milestone, value, invoiced/collected
     and target date (late jobs first); filter by stage, status and PM.
   - **Admin → Projects → Board** — the same jobs as cards, one column per stage (planning → design → procurement
@@ -40,17 +57,17 @@ _Update at the end of every task (docs/03 Part A §7)._
   record + receipt + mail, spreading over two invoices with the remainder as credit, client proof, confirm, send
   back, the client page, the draft/paid guards, permissions and the Livewire screen) · Larastan level 6 clean ·
   Pint clean · PHP lint clean (392 files) · smoke 31 admin pages green including `/admin/payments`.
-- **Next (your call):** **P4 part 2** — the client portal (magic link by WhatsApp/email, no password: quotes,
-  invoices, receipts, the project timeline and its photographs, documents), the handover checklist with the
-  review request, and the case-study draft; or the remaining P2 items (QUO-012 reminders/expiry, QUO-019 quote
-  options, v2.1 quote import); or back to **website batch 3** (publish the 12 cities + 8 Lahore areas +
-  `/insights/` + `/projects/`, humanize home and the six services). Tell me which and I start it.
+- **Next (your call):** the **conversations phase** (docs/03 P4: WhatsApp Cloud API, the unified inbox, the chat
+  bot, sequences) — that is what puts the portal link and the updates on WhatsApp instead of email; or the
+  remaining P2 items (QUO-012 reminders/expiry, QUO-019 quote options, v2.1 quote import); or **website batch 3**
+  (publish the 12 cities + 8 Lahore areas + `/insights/` + `/projects/`, humanize home and the six services).
+  Tell me which and I start it.
 - **Website (unchanged, still open):** 12 pages live from the CMS, **76 drafts waiting for a human**
   (12 cities, 8 Lahore areas, 48 insights, 6 projects), 54 old service URLs 301'd, parity test green.
 - **Open items P-01…P-16** (docs/07 section C): P-06 (rotate credentials) blocks go-live; P-12 (real project
   photographs) blocks the case studies; P-15 (GA4/GTM/Clarity IDs into Website → Settings) blocks tracking;
   P-16 (email + hours in Settings) should be done now.
-- **Rules to follow:** docs/07 (D-01…D-89), docs/09 and platform/AGENTS.md. The plan and specs are in docs/00-09.
+- **Rules to follow:** docs/07 (D-01…D-92), docs/09 and platform/AGENTS.md. The plan and specs are in docs/00-09.
 - **Code:** everything is on branch `arena/8be318a2-woodexinterior` and pushed. `master` is still d77016b; merge
   through a pull request when the owner approves.
 - **Preview (AI sandbox only):** after a VM reset run `sh tools/sandbox/setup.sh` (~3-4 min). Then start
@@ -61,6 +78,20 @@ _Update at the end of every task (docs/03 Part A §7)._
 - **Preview data:** demo seed (26 leads, 5 users, 4 quotations) + the 89 imported pages (12 published).
   Owner login `owner@woodex.test` / `Woodex-Preview-2026`. The preview database lives in `/tmp` and is rebuilt
   from the seeders after a VM reset (the pages then come from the committed bundle via `woodex:import-website`).
+
+### P4 part 2 delivered: the client portal, handover and case study (16 Oct 2026, D-90…D-92)
+- **Portal** (`/p/{project:public_id}`, signed 120 days): `Portal\ProjectPortalController` + `site/project-portal.blade.php`
+  — progress, the diary with its photographs, shared documents, invoices, receipts and the handover the client signs.
+  Files are streamed per route; a photograph of a shared update is client-visible by definition, a drawing only
+  when the team flips it to *On portal* in the admin.
+- **Code instead of a password** (`/portal`): `RequestPortalAccess` / `OpenPortalWithCode`, `portal_access_codes`,
+  a six-digit code by email (`PortalCodeMail`), one use, 15 minutes, five tries. Answer is the same either way.
+- **Handover** (PRJ-007): `project_handover_items` + `sales.handover_checklist`, `StartHandover` and
+  `AcceptHandover` (the client's typed name is the signature; the job closes itself), and `RequestClientReviews`
+  run daily by `woodex:review-requests` with `business.google_review_url`.
+- **Case study** (PRJ-008): `DraftCaseStudy` writes a **draft** `Page` (type project: hero, story, gallery, specs),
+  copies the shared photographs into the website media library, and is idempotent — only with the consent tick on.
+- `p` and `portal` are reserved in `SiteRouter` so the CMS 404 handler never answers for them.
 
 ### P4 part 1 delivered: the project workspace (16 Oct 2026, D-87…D-89)
 - **Screens** (`App\Livewire\Admin\Projects`): `ProjectsIndex` (list, filters, money per job), `ProjectBoard`
@@ -113,8 +144,9 @@ _Update at the end of every task (docs/03 Part A §7)._
   To re-import from the old HTML: `php artisan woodex:import-legacy --path=/path/to/frontend-v1`
   (`--publish --only=/slug/,...` publishes; without `--publish` everything lands as a draft).
 - **Owner to do:** after a deploy, sign in and press **System -> Database update** (it adds the new tables such as
-  `payments.invoice_id` and `project_updates`, and all 89 pages); add the **cron line** shown by the installer;
-  set up 2FA.
+  `project_updates`, `project_handover_items` and `portal_access_codes`, and all 89 pages); add the **cron line**
+  shown by the installer (it now also runs the daily review request); paste the **Google review link** into
+  Settings -> Business; set up 2FA.
 - **Next (batch 3):** publish the 12 cities + 8 Lahore areas + `/insights/` + `/projects/` after reading them, and
     humanize home and the six services (docs/09 section 9). Then batch 4 (48 insights), 5 (projects + tracking +
     `llms.txt` + consent), 6 (estimator and book-a-visit as real tools).

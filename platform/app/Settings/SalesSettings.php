@@ -67,6 +67,16 @@ class SalesSettings extends Settings
     /** Announce a project's stage change to the client by email (PRJ-002). */
     public bool $project_stage_notifies_client;
 
+    /**
+     * Lines a handover checklist starts with (PRJ-007); the team adds and ticks them on the project.
+     *
+     * @phpstan-var list<string>
+     */
+    public array $handover_checklist;
+
+    /** Days after the client signs the handover before we ask for a public review (PRJ-007). */
+    public int $review_request_days;
+
     public function slaMinutesFor(string $source): int
     {
         return (int) ($this->sla_minutes_by_source[$source] ?? $this->sla_first_response_minutes);

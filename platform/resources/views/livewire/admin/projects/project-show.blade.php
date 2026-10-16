@@ -122,6 +122,75 @@
                 </ul>
             </x-admin.card>
 
+            {{-- Handover: what the studio leaves behind, ticked off and signed for (PRJ-007) --}}
+            <x-admin.card title="Handover" :padding="false">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 dark:border-gray-800">
+                    <p class="text-theme-sm text-gray-600 dark:text-gray-300">
+                        @if ($project->handoverItems->isEmpty())
+                            Not started. The studio list is in Settings &rarr; Sales.
+                        @else
+                            <strong class="text-gray-800 dark:text-white/90">{{ $progress[0] }} of {{ $progress[1] }}</strong> done
+                            @if ($project->client_ok_at) · signed by {{ $project->client_ok_name }} on {{ $project->client_ok_at->format('j M Y') }} @endif
+                        @endif
+                    </p>
+                    @can('update', $project)
+                        <div class="flex items-center gap-2">
+                            @if ($project->handoverItems->isNotEmpty())
+                                <x-admin.button variant="ghost" size="sm" wire:click="startHandover(true)" wire:confirm="Reset the checklist to the studio list? Ticks are lost.">Reset</x-admin.button>
+                            @endif
+                            <x-admin.button variant="secondary" size="sm" icon="check" wire:click="startHandover(false)">
+                                {{ $project->handoverItems->isEmpty() ? 'Start checklist' : 'Add missing lines' }}
+                            </x-admin.button>
+                        </div>
+                    @endcan
+                </div>
+
+                @if ($project->handoverItems->isNotEmpty())
+                    <ul class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @foreach ($project->handoverItems as $item)
+                            <li wire:key="handover-{{ $item->id }}" class="flex items-center gap-3 px-4 py-2.5">
+                                @can('update', $project)
+                                    <button type="button" wire:click="tickHandoverItem({{ $item->id }})"
+                                            class="flex size-5 shrink-0 items-center justify-center rounded-full border {{ $item->isDone() ? 'border-success-500 bg-success-500 text-white' : 'border-gray-300 hover:border-navy-500 dark:border-gray-600' }}"
+                                            aria-pressed="{{ $item->isDone() ? 'true' : 'false' }}">
+                                        @if ($item->isDone())<x-icon name="check" class="size-3" />@endif
+                                    </button>
+                                @else
+                                    <span class="flex size-5 shrink-0 items-center justify-center rounded-full border {{ $item->isDone() ? 'border-success-500 bg-success-500 text-white' : 'border-gray-300 dark:border-gray-600' }}">
+                                        @if ($item->isDone())<x-icon name="check" class="size-3" />@endif
+                                    </span>
+                                @endcan
+                                <span class="min-w-0 flex-1 text-theme-sm {{ $item->isDone() ? 'text-gray-500 line-through' : 'text-gray-800 dark:text-white/90' }}">{{ $item->label }}</span>
+                                @if ($item->isDone() && $item->doneBy)
+                                    <span class="shrink-0 text-theme-xs text-gray-500">{{ $item->doneBy->name }}</span>
+                                @endif
+                                @can('update', $project)
+                                    <button type="button" wire:click="removeHandoverItem({{ $item->id }})" class="rounded-lg p-1.5 text-gray-400 hover:bg-error-50 hover:text-error-600" title="Remove">
+                                        <x-icon name="trash" class="size-4" />
+                                    </button>
+                                @endcan
+                            </li>
+                        @endforeach
+                    </ul>
+
+                    @can('update', $project)
+                        <form wire:submit="addHandoverItem" class="flex items-center gap-2 border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+                            <input type="text" wire:model="newItem" class="wx-input" placeholder="A line this project needs (e.g. AC vents cleaned)" aria-label="New checklist line">
+                            <x-admin.button variant="secondary" size="sm" type="submit" icon="plus">Add</x-admin.button>
+                        </form>
+                        @error('newItem') <p class="px-4 pb-3 text-theme-xs text-error-600">{{ $message }}</p> @enderror
+
+                        @if ($project->client_ok_at === null)
+                            <div class="flex items-center gap-2 border-t border-gray-100 px-4 py-3 dark:border-gray-800">
+                                <input type="text" wire:model="signatureName" class="wx-input" placeholder="Client's name (signed on site)" aria-label="Client name">
+                                <x-admin.button variant="primary" size="sm" icon="check" wire:click="recordHandoverSignature"
+                                                wire:confirm="Record the client's signature for the handover?">Record signature</x-admin.button>
+                            </div>
+                        @endif
+                    @endcan
+                @endif
+            </x-admin.card>
+
             {{-- The site diary --}}
             <x-admin.card title="Site diary" :padding="false">
                 @can('update', $project)
@@ -229,6 +298,59 @@
 
         {{-- Right: the paperwork --}}
         <div class="space-y-4">
+            {{-- The client's own page (PRJ-006): a signed link, or a code by email. No client password exists. --}}
+            <x-admin.card title="Client portal">
+                <label class="sr-only" for="portal-link">Client link</label>
+                <div class="flex items-center gap-2">
+                    <input id="portal-link" type="text" readonly value="{{ $portalUrl }}" class="wx-input text-theme-xs">
+                    <button type="button" x-data @click="navigator.clipboard?.writeText(@js($portalUrl))"
+                            class="shrink-0 rounded-lg border border-gray-200 px-2.5 py-2 text-gray-500 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/5"
+                            title="Copy the link"><x-icon name="copy" class="size-4" /></button>
+                </div>
+
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <x-admin.button variant="secondary" size="sm" icon="whatsapp" :href="$whatsappShare" target="_blank">WhatsApp</x-admin.button>
+                    @can('update', $project)
+                        <x-admin.button variant="secondary" size="sm" icon="mail" wire:click="sendPortalLink">Email the link</x-admin.button>
+                    @endcan
+                </div>
+                <p class="mt-2 text-theme-xs text-gray-500">If a client loses the link, they ask for a code at <span class="font-medium">/portal</span>.</p>
+
+                @if ($project->client_ok_at && $project->review_requested_at === null && $reviewDueOn)
+                    <p class="mt-3 text-theme-xs text-gray-500">Review request due {{ $reviewDueOn->format('j M Y') }} (<span class="font-medium">woodex:review-requests</span>, daily).</p>
+                @elseif ($project->review_requested_at)
+                    <p class="mt-3 text-theme-xs text-success-600">Review requested {{ $project->review_requested_at->format('j M Y') }}.</p>
+                @endif
+            </x-admin.card>
+
+            {{-- With the client's consent, a finished job becomes a portfolio page for a person to write (PRJ-008) --}}
+            <x-admin.card title="Case study">
+                @can('update', $project)
+                    <label class="flex items-start gap-2 text-theme-sm text-gray-700 dark:text-gray-300">
+                        <input type="checkbox" wire:click="toggleConsent({{ $project->case_study_consent ? 'false' : 'true' }})"
+                               @checked($project->case_study_consent) class="mt-0.5 size-4 rounded border-gray-300 text-navy-900 focus:ring-navy-500">
+                        <span>The client allows us to show this project on our website and in our portfolio.</span>
+                    </label>
+                @endcan
+
+                @if ($project->caseStudyPage)
+                    <p class="mt-3 text-theme-sm text-gray-700 dark:text-gray-300">
+                        Draft page: <a href="{{ route('admin.website.pages.edit', $project->caseStudyPage) }}" wire:navigate class="font-medium text-navy-700 hover:underline">{{ $project->caseStudyPage->title }}</a>
+                    </p>
+                    <p class="mt-1 text-theme-xs text-gray-500">{{ $project->caseStudyPage->status->label() }} · {{ $project->caseStudyPage->slug }}</p>
+                @endif
+
+                @can('update', $project)
+                    @can('website.edit')
+                        <div class="mt-3">
+                            <x-admin.button variant="secondary" size="sm" icon="image" wire:click="draftCaseStudy">
+                                {{ $project->caseStudyPage ? 'Refresh the draft' : 'Create draft page' }}
+                            </x-admin.button>
+                        </div>
+                    @endcan
+                @endcan
+            </x-admin.card>
+
             {{-- Invoices against this project --}}
             <x-admin.card title="Invoices ({{ $project->invoices->count() }})" :padding="false">
                 <ul class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -283,6 +405,11 @@
                                 <p class="text-theme-xs text-gray-500">{{ $file->human_readable_size }} · {{ $file->created_at?->format('j M Y') }}</p>
                             </div>
                             @can('update', $project)
+                                <button type="button" wire:click="toggleFileVisibility({{ $file->id }})"
+                                        class="rounded-lg px-2 py-1 text-theme-xs font-medium {{ $file->getCustomProperty('visible_to_client') ? 'bg-success-50 text-success-700' : 'text-gray-400 hover:bg-gray-100' }}"
+                                        title="{{ $file->getCustomProperty('visible_to_client') ? 'The client can see this on the portal — click to hide it' : 'Show this file to the client on the portal' }}">
+                                    {{ $file->getCustomProperty('visible_to_client') ? 'On portal' : 'Private' }}
+                                </button>
                                 <button type="button" wire:click="deleteFile({{ $file->id }})" wire:confirm="Delete this file?" class="rounded-lg p-1.5 text-gray-400 hover:bg-error-50 hover:text-error-600" title="Delete"><x-icon name="trash" class="size-4" /></button>
                             @endcan
                         </li>

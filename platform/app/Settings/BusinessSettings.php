@@ -53,6 +53,9 @@ class BusinessSettings extends Settings
     /** @phpstan-var list<array{date: string, name: string}> public holidays (AUT-004) */
     public array $holidays;
 
+    /** Google review link for the studio (PRJ-007): empty means no review email is ever sent. */
+    public string $google_review_url;
+
     public static function group(): string
     {
         return 'business';

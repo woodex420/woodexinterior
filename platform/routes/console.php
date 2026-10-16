@@ -24,6 +24,9 @@ Schedule::command('woodex:sla-check')->everyMinute()->withoutOverlapping(5);
 // Task reminders and site-visit reminders to staff (CRM-007, CRM-008).
 Schedule::command('woodex:reminders')->everyMinute()->withoutOverlapping(5);
 
+// Review requests a few days after a handover was signed (PRJ-007).
+Schedule::command('woodex:review-requests')->dailyAt('10:30');
+
 // Backups (spatie/laravel-backup) and housekeeping.
 Schedule::command('backup:run --only-db')->dailyAt('02:30');
 Schedule::command('backup:run')->weeklyOn(0, '03:00');

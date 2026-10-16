@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Portal\ClientPortalController;
 use App\Http\Controllers\Portal\InvoicePortalController;
+use App\Http\Controllers\Portal\ProjectPortalController;
 use App\Http\Controllers\Portal\QuotePortalController;
 use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\Site\SitemapController;
@@ -58,6 +60,28 @@ Route::middleware('signed:relative')->prefix('i')->name('invoices.portal')->grou
     Route::get('/{invoice:public_id}', [InvoicePortalController::class, 'show'])->name('');
     Route::get('/{invoice:public_id}/pdf', [InvoicePortalController::class, 'pdf'])->name('.pdf');
     Route::post('/{invoice:public_id}/proof', [InvoicePortalController::class, 'proof'])->name('.proof')->middleware('throttle:10,1');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Client project portal (PRJ-006/007): a signed link, or a six-digit code
+|--------------------------------------------------------------------------
+| The client's own page for a job: the diary from the site, the drawings we chose to show, invoices and
+| receipts, and the handover checklist they sign for. No client password exists anywhere (D-90).
+*/
+Route::middleware('signed:relative')->prefix('p')->name('projects.portal')->group(function (): void {
+    Route::get('/{project:public_id}', [ProjectPortalController::class, 'show'])->name('');
+    Route::get('/{project:public_id}/documents/{media}', [ProjectPortalController::class, 'document'])->name('.document')->whereNumber('media');
+    Route::get('/{project:public_id}/receipts/{payment}', [ProjectPortalController::class, 'receipt'])->name('.receipt')->whereNumber('payment');
+    Route::post('/{project:public_id}/handover', [ProjectPortalController::class, 'handover'])->name('.handover')->middleware('throttle:10,1');
+});
+
+// Ask for a code instead of a link: /portal.
+Route::prefix('portal')->name('portal')->group(function (): void {
+    Route::get('/', [ClientPortalController::class, 'form'])->name('');
+    Route::post('/code', [ClientPortalController::class, 'sendCode'])->name('.code')->middleware('throttle:5,1');
+    Route::post('/enter', [ClientPortalController::class, 'enter'])->name('.enter')->middleware('throttle:10,1');
+    Route::post('/leave', [ClientPortalController::class, 'leave'])->name('.leave');
 });
 
 /*
