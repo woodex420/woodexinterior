@@ -75,6 +75,9 @@ class SettingsPage extends Component
 
         $this->sales = [
             'quote_validity_days' => $sales->quote_validity_days,
+            'quote_follow_ups_enabled' => $sales->quote_follow_ups_enabled,
+            'quote_follow_up_days' => $sales->quote_follow_up_days,
+            'quote_expiry_warning_days' => $sales->quote_expiry_warning_days,
             'round_totals_to_rupee' => $sales->round_totals_to_rupee,
             'lakh_grouping' => $sales->lakh_grouping,
             'sla_first_response_minutes' => $sales->sla_first_response_minutes,
@@ -165,6 +168,8 @@ class SettingsPage extends Component
 
         $data = $this->validate([
             'sales.quote_validity_days' => ['required', 'integer', 'between:1,365'],
+            'sales.quote_follow_up_days' => ['required', 'integer', 'between:1,60'],
+            'sales.quote_expiry_warning_days' => ['required', 'integer', 'between:1,60'],
             'sales.round_totals_to_rupee' => ['boolean'],
             'sales.lakh_grouping' => ['boolean'],
             'sales.sla_first_response_minutes' => ['required', 'integer', 'between:5,1440'],
@@ -198,6 +203,9 @@ class SettingsPage extends Component
         }
 
         $settings->quote_validity_days = (int) $data['quote_validity_days'];
+        $settings->quote_follow_ups_enabled = (bool) ($data['quote_follow_ups_enabled'] ?? false);
+        $settings->quote_follow_up_days = max(1, (int) $data['quote_follow_up_days']);
+        $settings->quote_expiry_warning_days = max(1, (int) $data['quote_expiry_warning_days']);
         $settings->round_totals_to_rupee = (bool) ($data['round_totals_to_rupee'] ?? false);
         $settings->lakh_grouping = (bool) ($data['lakh_grouping'] ?? false);
         $settings->sla_first_response_minutes = (int) $data['sla_first_response_minutes'];

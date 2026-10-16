@@ -81,6 +81,9 @@
                     <x-admin.field label="Minimum margin % (optional)" for="sales.min_margin" hint="Quotations below this need approval."><input id="sales.min_margin" type="number" step="0.5" min="0" max="100" wire:model="sales.min_margin" class="wx-input"></x-admin.field>
                     <label class="flex items-center gap-2 text-theme-sm text-gray-700 dark:text-gray-300"><input type="checkbox" wire:model="sales.round_totals_to_rupee" class="rounded border-gray-300"> Round totals to whole rupees</label>
                     <label class="flex items-center gap-2 text-theme-sm text-gray-700 dark:text-gray-300 md:col-span-2"><input type="checkbox" wire:model="sales.lakh_grouping" class="rounded border-gray-300"> Show amounts in lakh format (12,50,000 instead of 1,250,000)</label>
+                    <label class="flex items-center gap-2 text-theme-sm text-gray-700 dark:text-gray-300 md:col-span-3"><input type="checkbox" wire:model="sales.quote_follow_ups_enabled" class="rounded border-gray-300"> Chase quotations nobody answered (the team is told to call; the system never writes to a client by itself)</label>
+                    <x-admin.field label="Chase after (quiet days)" for="sales.quote_follow_up_days" hint="How long a quotation may sit unanswered before the team is told to call. Three chases, then it is left alone."><input id="sales.quote_follow_up_days" type="number" min="1" max="60" wire:model="sales.quote_follow_up_days" class="wx-input"></x-admin.field>
+                    <x-admin.field label="Warn before it lapses (days)" for="sales.quote_expiry_warning_days" hint="Told once per quotation, while the price can still be saved."><input id="sales.quote_expiry_warning_days" type="number" min="1" max="60" wire:model="sales.quote_expiry_warning_days" class="wx-input"></x-admin.field>
                 </div>
             </x-admin.card>
 

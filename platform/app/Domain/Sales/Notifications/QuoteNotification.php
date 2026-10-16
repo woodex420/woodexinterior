@@ -27,6 +27,9 @@ final class QuoteNotification extends Notification
         'accepted' => ['🎉', 'Quotation accepted'],
         'changes_requested' => ['✏️', 'Changes requested'],
         'acceptance_suggested' => ['🤔', 'Client may have accepted'],
+        'follow_up' => ['📞', 'Quotation not answered'],
+        'expiry_warning' => ['⏳', 'Quotation expiring'],
+        'expired' => ['⌛', 'Quotation lapsed'],
     ];
 
     public function __construct(

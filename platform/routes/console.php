@@ -24,6 +24,9 @@ Schedule::command('woodex:sla-check')->everyMinute()->withoutOverlapping(5);
 // Task reminders and site-visit reminders to staff (CRM-007, CRM-008).
 Schedule::command('woodex:reminders')->everyMinute()->withoutOverlapping(5);
 
+// Quotations nobody answered: chase, warn before the price lapses, lapse what is stale (AUT).
+Schedule::command('woodex:quote-follow-ups')->dailyAt('09:00')->withoutOverlapping(30);
+
 // Review requests a few days after a handover was signed (PRJ-007).
 Schedule::command('woodex:review-requests')->dailyAt('10:30');
 

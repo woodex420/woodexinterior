@@ -16,6 +16,13 @@ class SalesSettings extends Settings
 {
     public int $quote_validity_days;
 
+    /** Chase a quotation nobody answered, and warn before its price lapses (AUT). */
+    public bool $quote_follow_ups_enabled;
+
+    public int $quote_follow_up_days;
+
+    public int $quote_expiry_warning_days;
+
     public bool $round_totals_to_rupee;
 
     public bool $lakh_grouping;
