@@ -2,7 +2,30 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 16 Oct 2026 PKT, after P4 + the full website going live in the CMS)
+## Resume here (project memory, saved 16 Oct 2026 PKT, after P4: conversations part 1 - the inbox)
+- **P4 part 1 — conversations: the pipes and the inbox (this commit, CNV-001/002/005, WAP-001…004/006):**
+  - **Admin -> Inbox** (`/admin/inbox`, `inbox.view` to read, `inbox.reply` to answer): conversations on the left,
+    the thread on the right with delivery ticks, assign, close/reopen, and internal notes that never leave.
+  - **WhatsApp Cloud API** behind `WhatsAppGateway` (`app/Integrations/WhatsApp/`): send text and templates, fetch
+    inbound media. Credentials come from the server `.env` (`WHATSAPP_TOKEN`, `_PHONE_NUMBER_ID`, `_APP_SECRET`,
+    `_VERIFY_TOKEN`, `_WABA_ID`) — never the settings table — and every call is written to the integration log.
+  - **Webhook** `/webhooks/whatsapp`: Meta's `GET` handshake, then `X-Hub-Signature-256` on every `POST`; each
+    event is stored once in `webhook_events`, so a replay costs one insert and changes nothing.
+  - **A client's message does the work**: it is matched to a contact by number (a stranger becomes one), opens or
+    reopens a conversation, and reopens Meta's 24-hour window. Outside the window the composer refuses free-form
+    text: only an approved template may go out. `STOP` / `UNSUBSCRIBE` / بند کریں are heard at once.
+  - A failed send is stored as a message with status *failed* and Meta's error beside it — never a silent lie.
+- **Verification of this commit:** Pest **412 passed, 2 867 assertions** (15 new in `tests/Feature/ConversationsTest.php`:
+  the handshake, a forged signature, an inbound message becoming a contact and a conversation, a second message
+  joining the same thread, a replayed message, opt-out, a closed thread reopening, a reply inside the window, a
+  refusal outside it, a failed send, an internal note, delivered/read receipts that never move backwards, media
+  stored on our side, and the two permission checks) - Larastan level 6 clean - Pint clean - PHP lint clean -
+  smoke **34 admin pages** - the website's 89 pages still answer 200.
+- **Still to come in P4:** the website chat widget + public chat API (CNV-001/008), the template manager and
+  broadcasts (WAP-005/007), the usage and cost meter (WAP-008), canned replies (CNV-004), the AI bot (BOT-001…010),
+  sequences (AUT-001/002/005/006) and broadcasting with a polling fallback (CNV-006).
+
+## Where we were (project memory, saved 16 Oct 2026 PKT, after P4 + the full website going live in the CMS)
 - **Where we are:** P0-P3 are done and live; **P4 is complete**: the project workspace (part 1) and the client
   portal, handover and case-study draft (part 2). **woodex.com.pk runs this branch** — every push redeploys it.
 - **The demo home page is gone; the whole website is the CMS (this commit, D-93…D-95):**

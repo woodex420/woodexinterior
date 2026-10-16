@@ -41,6 +41,18 @@ return [
         'api_base' => env('TELEGRAM_API_BASE', 'https://api.telegram.org'),
     ],
 
+    // WhatsApp Cloud API (WAP-001). Secrets stay in the server .env (docs/06 §4): the dashboard only ever says
+    // whether they are set, never what they are.
+    'whatsapp' => [
+        'token' => env('WHATSAPP_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'waba_id' => env('WHATSAPP_WABA_ID'),
+        'app_secret' => env('WHATSAPP_APP_SECRET'),
+        'verify_token' => env('WHATSAPP_VERIFY_TOKEN'),
+        'api_version' => env('WHATSAPP_API_VERSION', 'v23.0'),
+        'api_base' => env('WHATSAPP_API_BASE', 'https://graph.facebook.com'),
+    ],
+
     'turnstile' => [
         'site_key' => env('TURNSTILE_SITE_KEY'),
         'secret_key' => env('TURNSTILE_SECRET_KEY'),

@@ -6,7 +6,7 @@ this order:
 | # | Document | What it answers |
 |---|---|---|
 | 00 | [Deep analysis](00-DEEP-ANALYSIS.md) | What exists today (this repo + the old marketingwoodex platform), what is broken, what must be preserved (142 URLs, business rules) |
-| 07 | [Decisions](07-DECISIONS.md) | The owner's answers + technical decisions (D-01…D-95) + pending confirmations (P-01…P-16) |
+| 07 | [Decisions](07-DECISIONS.md) | The owner's answers + technical decisions (D-01…D-98) + pending confirmations (P-01…P-16) |
 | 01 | [Master plan](01-MASTER-PLAN.md) | Framework, architecture, admin navigation, core flows, integrations, phases P0–P9, effort, running costs, risks |
 | 02 | [Master PRD](02-MASTER-PRD.md) | Every requirement with an ID, priority, phase and acceptance criteria; permissions; notifications |
 | 03 | [Master system prompt](03-MASTER-SYSTEM-PROMPT.md) | Rules for AI agents/developers, phase cards, chat bot prompt, Telegram and WhatsApp specs |

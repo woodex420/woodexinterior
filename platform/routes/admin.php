@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\InvoicePdfController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\QuotePdfController;
 use App\Http\Controllers\Admin\SystemUpdateController;
+use App\Livewire\Admin\Conversations\Inbox;
 use App\Livewire\Admin\Crm\AssignmentRules;
 use App\Livewire\Admin\Crm\CompaniesIndex;
 use App\Livewire\Admin\Crm\CompanyShow;
@@ -79,6 +80,9 @@ Route::livewire('/rate-book', RateBook::class)->name('rate-book')->middleware('c
 Route::livewire('/projects', ProjectsIndex::class)->name('projects.index')->middleware('can:projects.view');
 Route::livewire('/projects/board', ProjectBoard::class)->name('projects.board')->middleware('can:projects.view');
 Route::livewire('/projects/{project}', ProjectShow::class)->name('projects.show')->whereNumber('project');
+
+// Conversations (P4, CNV-001/CNV-002, WAP-001…WAP-004): one inbox for WhatsApp and the website chat widget.
+Route::livewire('/inbox', Inbox::class)->name('inbox')->middleware('can:inbox.view');
 
 // Private attachments (GLB-006)
 Route::get('/media/{media}/{conversion?}', MediaController::class)->name('media.show')->whereIn('conversion', ['thumb']);

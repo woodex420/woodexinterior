@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domain\Conversations\Models\Conversation;
+use App\Domain\Conversations\Policies\ConversationPolicy;
 use App\Domain\Crm\Events\LeadCaptured;
 use App\Domain\Crm\Listeners\SendNewLeadAlerts;
 use App\Domain\Crm\Models\Activity;
@@ -28,6 +30,8 @@ use App\Domain\System\Models\ChangeRequest;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Integrations\Telegram\Clients\TelegramBotApi;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
+use App\Integrations\WhatsApp\Clients\WhatsAppCloudApi;
+use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Models\User;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -49,6 +53,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(TelegramGateway::class, fn (): TelegramGateway => new TelegramBotApi(
             config('services.telegram.bot_token'),
             (string) config('services.telegram.api_base', 'https://api.telegram.org'),
+        ));
+
+        $this->app->singleton(WhatsAppGateway::class, fn (): WhatsAppGateway => new WhatsAppCloudApi(
+            config('services.whatsapp.token'),
+            config('services.whatsapp.phone_number_id'),
+            (string) config('services.whatsapp.api_version', 'v23.0'),
+            (string) config('services.whatsapp.api_base', 'https://graph.facebook.com'),
         ));
     }
 
@@ -86,6 +97,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Invoice::class, InvoicePolicy::class);
         Gate::policy(Payment::class, PaymentPolicy::class);
         Gate::policy(Project::class, ProjectPolicy::class);
+        Gate::policy(Conversation::class, ConversationPolicy::class);
 
         // The owner can do everything (PRD §7).
         Gate::before(fn (User $user): ?bool => $user->hasRole('owner') ? true : null);

@@ -7,6 +7,7 @@ use App\Http\Controllers\Portal\QuotePortalController;
 use App\Http\Controllers\Site\SitemapController;
 use App\Http\Controllers\Site\WebsiteMediaController;
 use App\Http\Controllers\Webhooks\TelegramWebhookController;
+use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,6 +36,16 @@ $admin->group(base_path('routes/admin.php'));
 Route::post('/webhooks/telegram/{secret}', TelegramWebhookController::class)
     ->middleware('throttle:webhooks')
     ->name('webhooks.telegram');
+
+// WhatsApp Cloud API (WAP-002): Meta's GET handshake verifies the token, and every POST is checked against
+// X-Hub-Signature-256 inside the controller.
+Route::get('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'verify'])
+    ->middleware('throttle:webhooks')
+    ->name('webhooks.whatsapp.verify');
+
+Route::post('/webhooks/whatsapp', WhatsAppWebhookController::class)
+    ->middleware('throttle:webhooks')
+    ->name('webhooks.whatsapp');
 
 /*
 |--------------------------------------------------------------------------

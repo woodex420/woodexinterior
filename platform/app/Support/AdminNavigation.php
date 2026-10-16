@@ -48,7 +48,7 @@ final class AdminNavigation
                 self::item('Handovers', 'check-circle', null, null, 'P4b'),
             ]),
             self::group('Inbox', [
-                self::item('Conversations', 'inbox', null, null, 'P4'),
+                self::item('Conversations', 'inbox', 'admin.inbox', 'inbox.view'),
                 self::item('Chat Bot', 'bot', null, null, 'P4'),
             ]),
             self::group('Automation', [
