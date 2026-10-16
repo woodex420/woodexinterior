@@ -9,9 +9,13 @@ use App\Domain\Crm\Models\Lead;
 use App\Domain\System\Models\IntegrationLog;
 use App\Domain\System\Models\TelegramLink;
 use App\Domain\System\Models\WebhookEvent;
+use App\Domain\System\Models\WhatsAppTemplate;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
 use App\Integrations\Telegram\TelegramMessage;
+use App\Integrations\WhatsApp\Actions\TestWhatsAppConnection;
+use App\Integrations\WhatsApp\WhatsAppCredentials;
 use App\Livewire\Concerns\InteractsWithAdmin;
+use App\Settings\IntegrationSettings;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -42,6 +46,10 @@ class Integrations extends Component
     /** @var array<string, mixed>|null */
     #[Locked]
     public ?array $telegramStatus = null;
+
+    /** @var array<string, mixed>|null */
+    #[Locked]
+    public ?array $whatsappStatus = null;
 
     public function checkTelegramConnection(TelegramGateway $telegram): void
     {
@@ -111,6 +119,17 @@ class Integrations extends Component
         $this->toast($ok ? 'Webhook registered. Now use Check live connection and send /start to verify delivery.' : 'Webhook not set: the site must be on https and reachable.', $ok ? 'success' : 'error');
     }
 
+    /** Does Meta recognise this token and number? (WAP-001) */
+    public function testWhatsApp(TestWhatsAppConnection $test): void
+    {
+        abort_unless($this->user()->can('integrations.manage'), 403);
+
+        $this->whatsappStatus = $test->handle();
+        $this->toast($this->whatsappStatus['ok']
+            ? 'WhatsApp connected: Meta recognises the number.'
+            : (string) $this->whatsappStatus['error'], $this->whatsappStatus['ok'] ? 'success' : 'error');
+    }
+
     public function testMail(): void
     {
         abort_unless($this->user()->can('integrations.manage'), 403);
@@ -147,10 +166,53 @@ class Integrations extends Component
         }
     }
 
+    /**
+     * One line under the WhatsApp card: which number, how many templates, and how many of them can be sent.
+     */
+    private function whatsappDetail(WhatsAppCredentials $credentials): string
+    {
+        if (! $credentials->isConfigured()) {
+            return 'Inbox, quotations and follow-ups';
+        }
+
+        $parts = [];
+
+        if (in_array($credentials->source(), ['database', 'mixed'], true)) {
+            $parts[] = 'connected here';
+        }
+
+        try {
+            $name = app(IntegrationSettings::class)->whatsapp_verified_name;
+        } catch (Throwable) {
+            $name = null;
+        }
+
+        if (is_string($name) && $name !== '') {
+            $parts[] = $name;
+        }
+
+        $parts[] = sprintf(
+            '%d template%s, %d approved',
+            WhatsAppTemplate::query()->count(),
+            WhatsAppTemplate::query()->count() === 1 ? '' : 's',
+            WhatsAppTemplate::query()->usable()->count(),
+        );
+
+        return implode(' · ', $parts);
+    }
+
     public function render(): View
     {
         $last = fn (string $integration, bool $ok) => IntegrationLog::query()->where('integration', $integration)->where('ok', $ok)->latest('id')->value('created_at');
         $webSources = array_map(fn (LeadSource $source): string => $source->value, LeadSource::publicSources());
+
+        $credentials = app(WhatsAppCredentials::class);
+        $whatsapp = [
+            'key' => 'whatsapp', 'name' => 'WhatsApp Cloud API', 'icon' => 'whatsapp', 'phase' => null,
+            'configured' => $credentials->isConfigured(),
+            'detail' => $this->whatsappDetail($credentials),
+            'last_ok' => $last('whatsapp', true), 'last_error' => $last('whatsapp', false),
+        ];
 
         $cards = [
             [
@@ -181,7 +243,7 @@ class Integrations extends Component
                 'configured' => filled(config('database.connections.legacy.database')),
                 'detail' => 'Read-only source for the data import', 'last_ok' => null, 'last_error' => null,
             ],
-            ['key' => 'whatsapp', 'name' => 'WhatsApp Cloud API', 'icon' => 'whatsapp', 'phase' => 'P4', 'configured' => false, 'detail' => 'Inbox, templates and follow-ups', 'last_ok' => null, 'last_error' => null],
+            $whatsapp,
             ['key' => 'meta', 'name' => 'Facebook & Instagram', 'icon' => 'megaphone', 'phase' => 'P7', 'configured' => false, 'detail' => 'Messenger, DMs, comments, Lead Ads, scheduler', 'last_ok' => null, 'last_error' => null],
             ['key' => 'linkedin', 'name' => 'LinkedIn', 'icon' => 'users', 'phase' => 'P7', 'configured' => false, 'detail' => 'Lead Gen forms and page posts', 'last_ok' => null, 'last_error' => null],
         ];
@@ -194,6 +256,7 @@ class Integrations extends Component
 
         return view('livewire.admin.system.integrations', [
             'cards' => $cards,
+            'whatsappSource' => $credentials->source(),
             'logs' => $logs,
             'integrations' => IntegrationLog::query()->distinct()->orderBy('integration')->pluck('integration'),
         ]);

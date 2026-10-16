@@ -36,6 +36,7 @@ use App\Livewire\Admin\System\Integrations;
 use App\Livewire\Admin\System\RecycleBin;
 use App\Livewire\Admin\System\SettingsPage;
 use App\Livewire\Admin\System\UsersIndex;
+use App\Livewire\Admin\System\WhatsAppTemplates;
 use App\Livewire\Admin\Website\MediaLibrary;
 use App\Livewire\Admin\Website\MenusIndex;
 use App\Livewire\Admin\Website\PageEditor;
@@ -111,4 +112,5 @@ Route::post('/system/updates', [SystemUpdateController::class, 'apply'])->name('
     ->middleware('can:system.health')->withoutMiddleware(['db-current', 'two-factor']);
 Route::livewire('/recycle-bin', RecycleBin::class)->name('recycle-bin')->middleware('can:leads.delete');
 Route::livewire('/integrations', Integrations::class)->name('integrations')->middleware('can:integrations.manage');
+Route::livewire('/integrations/whatsapp-templates', WhatsAppTemplates::class)->name('whatsapp.templates')->middleware('can:integrations.manage');
 Route::livewire('/data-import', DataImport::class)->name('data-import')->middleware('can:system.import');

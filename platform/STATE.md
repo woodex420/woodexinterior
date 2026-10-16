@@ -2,14 +2,14 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 17 Oct 2026 PKT, after quotation step 1: WhatsApp delivery)
+## Resume here (project memory, saved 17 Oct 2026 PKT, after WAP-001 + WAP-005)
 
 - **The owner's order for the frontend, unchanged:** the original v1 site is live on woodex.com.pk and stays live;
   **v2 is not started** — its admin master plan (stack, theme builder, page builder, SEO) is the next document,
   and its decisions are recorded below and in docs/07 (D-105…D-110).
-- **Quotation is the work in hand, in three steps** (owner, 17 Oct): send on WhatsApp, then estimator → draft
-  quote, then follow-up automation. **All three are done and pushed** (`926ec75`, `f353412`, `7062a5a`);
-  next is the v2 admin master plan document.
+- **Quotation is finished** (owner's three steps, 17 Oct): send on WhatsApp, then estimator → draft quote, then
+  follow-up automation — all done and pushed (`926ec75`, `f353412`, `7062a5a`). The v2 admin master plan is
+  written too (`9e4e829`, docs/12–14).
 - **A website estimate starts a real quotation** (QUO-017, step 2): `CreateQuoteFromEstimate` reads the service,
   size and finish the estimator captured, prices the line from the **rate book** rather than the range the website
   showed, and writes both numbers on the quotation's internal notes so whoever opens it can explain the difference.
@@ -30,13 +30,35 @@ _Update at the end of every task (docs/03 Part A §7)._
   `quote_follow_up_days` (3) to a **maximum of three chases**. It never messages the client — it tells the studio
   to call. `woodex:quote-follow-ups`, scheduled `dailyAt('09:00')->withoutOverlapping(30)`; off by default behind
   `sales.quote_follow_ups_enabled` (`7062a5a`).
-- **Three planning documents are written, none of them built yet** (`9e4e829`, and the two pushed with this
-  entry): `docs/12-FRONTEND-V2-MASTER-PLAN.md` (the v2 stack, the six modules, the theme-import pipeline, the
-  Sveltia question, phases V2-1…V2-6), `docs/13-V1-TO-V2-CONVERSION-PLAN.md` (how the 142 live files are retired
-  group by group, home last, with the render-comparison gate each group must pass), and
-  `docs/14-PENDING-TASKS.md` (every pending P4, P5 and v2 task with its real status, checked against the code).
-  **Next work is the owner's choice** — the recommended order is in docs/14 §1: connect WhatsApp (WAP-001) and
-  manage its templates (WAP-005), then canned replies, then the follow-up sequence engine.
+- **The studio can connect WhatsApp itself now** (WAP-001, D-115): Settings → WhatsApp takes the phone-number
+  id, WABA id, token, app secret and verify token, **encrypts the three secrets with the app key**
+  (`App\Settings\Casts\EncryptedStringCast`, never in a Livewire property — the browser only ever sees a masked
+  hint like `EAAG••••••••abcd`), and keeps the server .env as a per-field fallback (`App\Integrations\WhatsApp\WhatsAppCredentials`
+  decides, so the gateway, the webhook signature check and the handshake all read one source). **Test connection**
+  asks Meta what it knows about the number (verified name, display number, quality rating) and, given a number,
+  sends one real message — because valid credentials prove nothing about delivery. The Integrations card no longer
+  hardcodes "not configured".
+- **WhatsApp templates are a screen, not a deployment** (WAP-005): Automation → WhatsApp Templates syncs what the
+  business account holds (paging followed, `rejected_reason` shown, a template Meta dropped is marked *Removed
+  from Meta* rather than deleted), submits new ones with one example per `{{n}}` (ordinary mistakes — bad name,
+  missing example, out-of-order variables — are caught here instead of at Meta), and maps each moment (quotation
+  ready, enquiry, visit reminder, invoice, payment reminder, follow-up) to one **approved** template. `SendQuoteByWhatsApp`
+  now sends whatever is mapped to *quotation ready* — in the template's own language — falling back to
+  `services.whatsapp.quotation_template` (finally added to config, default `quotation`). No template name lives in
+  code.
+- **Verified:** Pest **505 passed / 3 406 assertions** (25 new: `WhatsAppConnectionTest` 13, `WhatsAppTemplateManagerTest`
+  12 — including "the payload in the settings table never contains the plain token" and "a template Meta paused is
+  not sent") · Larastan level 6 clean · Pint clean on 489 files · preview checked: `/`, `/estimator/` 200;
+  `/admin/settings?tab=whatsapp`, `/admin/integrations`, `/admin/integrations/whatsapp-templates` render the new
+  screens. **Waiting on the owner:** live credentials in Settings → WhatsApp, then Test connection, sync, and
+  mapping a template to *quotation ready*.
+- **Three planning documents are written** (`9e4e829` + `434bb69`): `docs/12-FRONTEND-V2-MASTER-PLAN.md` (the
+  v2 stack, the six modules, the theme-import pipeline, the Sveltia question, phases V2-1…V2-6),
+  `docs/13-V1-TO-V2-CONVERSION-PLAN.md` (how the 142 live files are retired group by group, home last, with the
+  render-comparison gate each group must pass), and `docs/14-PENDING-TASKS.md` (every pending P4, P5 and v2 task
+  with its real status, checked against the code). The recommended order in docs/14 §1 was accepted by the owner
+  ("as you recommend"): WAP-001 + WAP-005 first — **done below** — then canned replies (CNV-004), then the
+  follow-up sequence engine (AUT-001/002/005/006).
 - **A latent bug this exposed and fixed:** a conversation opened by an *outbound* message had no unread counter in
   memory, so the first message the studio sent — exactly what sending a quotation does — wrote NULL into a NOT NULL
   column. Inbound only ever added to the counter, so it had never surfaced. Fixed in `Conversation::touchLastMessage`

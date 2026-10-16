@@ -32,6 +32,7 @@ use App\Integrations\Telegram\Clients\TelegramBotApi;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
 use App\Integrations\WhatsApp\Clients\WhatsAppCloudApi;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
+use App\Integrations\WhatsApp\WhatsAppCredentials;
 use App\Models\User;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -55,11 +56,9 @@ class AppServiceProvider extends ServiceProvider
             (string) config('services.telegram.api_base', 'https://api.telegram.org'),
         ));
 
+        $this->app->singleton(WhatsAppCredentials::class, fn (): WhatsAppCredentials => new WhatsAppCredentials);
         $this->app->singleton(WhatsAppGateway::class, fn (): WhatsAppGateway => new WhatsAppCloudApi(
-            config('services.whatsapp.token'),
-            config('services.whatsapp.phone_number_id'),
-            (string) config('services.whatsapp.api_version', 'v23.0'),
-            (string) config('services.whatsapp.api_base', 'https://graph.facebook.com'),
+            $this->app->make(WhatsAppCredentials::class),
         ));
     }
 

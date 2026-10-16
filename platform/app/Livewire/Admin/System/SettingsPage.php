@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\System;
 
+use App\Integrations\WhatsApp\Actions\TestWhatsAppConnection;
+use App\Integrations\WhatsApp\WhatsAppCredentials;
 use App\Livewire\Admin\Crm\ContactsIndex;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Settings\BusinessSettings;
+use App\Settings\IntegrationSettings;
 use App\Settings\NotificationSettings;
 use App\Settings\SalesSettings;
 use App\Support\Phone;
@@ -44,9 +47,21 @@ class SettingsPage extends Component
     /** @var array<string, mixed> */
     public array $notifications = [];
 
-    public function mount(BusinessSettings $business, SalesSettings $sales, NotificationSettings $notifications): void
+    /**
+     * WhatsApp credentials (WAP-001). The three secrets are deliberately never loaded into this array:
+     * a Livewire property travels to the browser, and a key that has been to the browser is no longer secret.
+     * The boxes start empty, show a masked hint of what is saved, and leaving one empty keeps what is there.
+     *
+     * @var array<string, mixed>
+     */
+    public array $whatsapp = [];
+
+    /** @var array<string, mixed>|null */
+    public ?array $whatsappStatus = null;
+
+    public function mount(BusinessSettings $business, SalesSettings $sales, NotificationSettings $notifications, IntegrationSettings $integrations): void
     {
-        abort_unless($this->user()->can('settings.manage'), 403);
+        abort_unless($this->user()->can('settings.manage') || $this->user()->can('integrations.manage'), 403);
 
         $this->business = [
             'legal_name' => $business->legal_name,
@@ -89,6 +104,16 @@ class SettingsPage extends Component
             'signatories' => array_values($sales->signatories),
             'execution_terms' => $sales->execution_terms,
             'design_terms' => $sales->design_terms,
+        ];
+
+        $this->whatsapp = [
+            'waba_id' => (string) ($integrations->whatsapp_waba_id ?? ''),
+            'phone_number_id' => (string) ($integrations->whatsapp_phone_number_id ?? ''),
+            'api_version' => (string) ($integrations->whatsapp_api_version ?: 'v23.0'),
+            'token' => '',
+            'app_secret' => '',
+            'verify_token' => '',
+            'probe_number' => '',
         ];
 
         $this->notifications = [
@@ -271,12 +296,124 @@ class SettingsPage extends Component
         $this->sales['signatories'] = array_values($this->sales['signatories']);
     }
 
+    /**
+     * Save the WhatsApp credentials (WAP-001). An empty secret box keeps the saved value, so the studio can
+     * change the phone number id without retyping the token — and so the token is never sent to the browser.
+     */
+    public function saveWhatsApp(IntegrationSettings $settings): void
+    {
+        abort_unless($this->user()->can('settings.manage') || $this->user()->can('integrations.manage'), 403);
+
+        $data = $this->validate([
+            'whatsapp.waba_id' => ['nullable', 'string', 'max:64', 'regex:/^\d*$/'],
+            'whatsapp.phone_number_id' => ['nullable', 'string', 'max:64', 'regex:/^\d*$/'],
+            'whatsapp.api_version' => ['required', 'string', 'regex:/^v\d+\.\d+$/'],
+            'whatsapp.token' => ['nullable', 'string', 'max:512'],
+            'whatsapp.app_secret' => ['nullable', 'string', 'max:256'],
+            'whatsapp.verify_token' => ['nullable', 'string', 'max:128'],
+        ], [
+            'whatsapp.waba_id.regex' => 'The business account id is a number, taken from Meta → WhatsApp → API Setup.',
+            'whatsapp.phone_number_id.regex' => 'The phone number id is a number, taken from Meta → WhatsApp → API Setup.',
+            'whatsapp.api_version.regex' => 'Write the version as Meta does, for example v23.0.',
+        ]);
+
+        $settings->whatsapp_waba_id = blank($data['whatsapp']['waba_id'] ?? null) ? null : trim((string) $data['whatsapp']['waba_id']);
+        $settings->whatsapp_phone_number_id = blank($data['whatsapp']['phone_number_id'] ?? null) ? null : trim((string) $data['whatsapp']['phone_number_id']);
+        $settings->whatsapp_api_version = trim((string) $data['whatsapp']['api_version']);
+
+        // Only a value that was typed replaces what is saved; an empty box means "keep it".
+        foreach (['token' => 'whatsapp_token', 'app_secret' => 'whatsapp_app_secret', 'verify_token' => 'whatsapp_verify_token'] as $field => $property) {
+            $typed = trim((string) ($data['whatsapp'][$field] ?? ''));
+
+            if ($typed !== '') {
+                $settings->{$property} = $typed;
+            }
+        }
+
+        $settings->save();
+
+        $this->whatsapp['token'] = '';
+        $this->whatsapp['app_secret'] = '';
+        $this->whatsapp['verify_token'] = '';
+        $this->toast('WhatsApp credentials saved.');
+    }
+
+    /** Ask Meta what it knows about this number, and — with a number — send one real message to it (WAP-001). */
+    public function testWhatsAppConnection(TestWhatsAppConnection $test): void
+    {
+        abort_unless($this->user()->can('settings.manage') || $this->user()->can('integrations.manage'), 403);
+
+        $this->validate(['whatsapp.probe_number' => ['nullable', 'string', 'max:32']]);
+
+        $result = $test->handle(blank($this->whatsapp['probe_number'] ?? null) ? null : trim((string) $this->whatsapp['probe_number']));
+
+        $this->whatsappStatus = $result;
+        $this->toast($result['ok']
+            ? ($result['probe'] === true
+                ? 'Connected, and the test message went out.'
+                : 'Connected: Meta recognises the token and phone number.')
+            : (string) $result['error'], $result['ok'] ? 'success' : 'error');
+    }
+
+    /** Forget the credentials saved here, so the server .env is used again. The .env itself is untouched. */
+    public function forgetWhatsApp(IntegrationSettings $settings): void
+    {
+        abort_unless($this->user()->can('settings.manage') || $this->user()->can('integrations.manage'), 403);
+
+        $settings->whatsapp_waba_id = null;
+        $settings->whatsapp_phone_number_id = null;
+        $settings->whatsapp_token = null;
+        $settings->whatsapp_app_secret = null;
+        $settings->whatsapp_verify_token = null;
+        $settings->whatsapp_verified_name = null;
+        $settings->whatsapp_display_phone = null;
+        $settings->whatsapp_quality_rating = null;
+        $settings->save();
+
+        $this->whatsapp['waba_id'] = '';
+        $this->whatsapp['phone_number_id'] = '';
+        $this->whatsappStatus = null;
+        $this->toast('Saved credentials removed. The server .env is used again if it holds any.');
+    }
+
     public function render(): View
     {
+        $credentials = app(WhatsAppCredentials::class);
+        $saved = [
+            'token' => (string) ($credentials->token() ?? ''),
+            'app_secret' => (string) ($credentials->appSecret() ?? ''),
+            'verify_token' => (string) ($credentials->verifyToken() ?? ''),
+        ];
+
         return view('livewire.admin.system.settings-page', [
+            'whatsappSaved' => array_map(fn (string $value): string => $this->mask($value), $saved),
+            'whatsappHints' => [
+                'token' => $saved['token'] !== ''
+                    ? 'Saved: '.$this->mask($saved['token']).' — leave empty to keep it.'
+                    : 'A system user token with whatsapp_business_messaging and whatsapp_business_management.',
+                'app_secret' => $saved['app_secret'] !== ''
+                    ? 'Saved: '.$this->mask($saved['app_secret']).' — leave empty to keep it.'
+                    : 'Used only to check that an incoming webhook really came from Meta.',
+                'verify_token' => $saved['verify_token'] !== ''
+                    ? 'Saved: '.$this->mask($saved['verify_token']).' — leave empty to keep it.'
+                    : 'Any string you choose; paste the same one into Meta.',
+            ],
+            'whatsappSource' => $credentials->isConfigured() ? $credentials->source() : null,
             'days' => [1 => 'Mon', 2 => 'Tue', 3 => 'Wed', 4 => 'Thu', 5 => 'Fri', 6 => 'Sat', 7 => 'Sun'],
             'roles' => UsersIndex::ROLES,
         ]);
+    }
+
+    /** Enough to recognise a key, never enough to use it. */
+    private function mask(string $value): string
+    {
+        if ($value === '') {
+            return '';
+        }
+
+        return strlen($value) <= 8
+            ? str_repeat('•', strlen($value))
+            : substr($value, 0, 4).str_repeat('•', 8).substr($value, -4);
     }
 
     /**

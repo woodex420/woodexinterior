@@ -3,7 +3,7 @@
                          :breadcrumbs="['System' => null, 'Settings' => null]" />
 
     <div class="mb-6 inline-flex rounded-lg border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-white/[0.03]" role="tablist">
-        @foreach (['business' => 'Business', 'sales' => 'Sales rules', 'leads' => 'Lead rules', 'notifications' => 'Notifications'] as $key => $label)
+        @foreach (['business' => 'Business', 'sales' => 'Sales rules', 'leads' => 'Lead rules', 'notifications' => 'Notifications', 'whatsapp' => 'WhatsApp'] as $key => $label)
             <button type="button" wire:click="$set('tab', '{{ $key }}')" role="tab" aria-selected="{{ $tab === $key ? 'true' : 'false' }}"
                     @class(['rounded-md px-4 py-1.5 text-theme-sm font-medium transition', 'bg-navy-900 text-white dark:bg-white dark:text-navy-900' => $tab === $key, 'text-gray-600 hover:text-gray-900 dark:text-gray-400' => $tab !== $key])>{{ $label }}</button>
         @endforeach
@@ -57,6 +57,8 @@
                 </x-admin.field>
             </x-admin.card>
 
+
+
             <x-admin.card title="Social profiles" description="Used in the website footer and structured data.">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     @foreach (\App\Livewire\Admin\System\SettingsPage::SOCIAL_NETWORKS as $key => $label)
@@ -72,6 +74,87 @@
     @endif
 
     {{-- Sales --}}
+    {{-- WhatsApp --}}
+    @if ($tab === 'whatsapp')
+        <form wire:submit="saveWhatsApp" class="space-y-6">
+            <x-admin.card title="WhatsApp Cloud API" description="The number the studio writes from. Saved here, it is encrypted in the database; left empty, the server .env is used instead. Nothing saved here is ever shown back.">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <x-admin.field label="Phone number id" for="whatsapp.phone_number_id" hint="Meta → WhatsApp → API Setup. A long number.">
+                        <input id="whatsapp.phone_number_id" type="text" wire:model="whatsapp.phone_number_id" class="wx-input" autocomplete="off" inputmode="numeric">
+                    </x-admin.field>
+                    <x-admin.field label="WhatsApp Business Account id" for="whatsapp.waba_id" hint="Needed to read and submit templates.">
+                        <input id="whatsapp.waba_id" type="text" wire:model="whatsapp.waba_id" class="wx-input" autocomplete="off" inputmode="numeric">
+                    </x-admin.field>
+                    <x-admin.field label="Access token" for="whatsapp.token" hint="{{ $whatsappHints['token'] }}">
+                        <input id="whatsapp.token" type="password" wire:model="whatsapp.token" class="wx-input" autocomplete="new-password" placeholder="{{ $whatsappSaved['token'] !== '' ? '•••••••• (saved, unchanged)' : '' }}">
+                    </x-admin.field>
+                    <x-admin.field label="App secret" for="whatsapp.app_secret" hint="{{ $whatsappHints['app_secret'] }}">
+                        <input id="whatsapp.app_secret" type="password" wire:model="whatsapp.app_secret" class="wx-input" autocomplete="new-password" placeholder="{{ $whatsappSaved['app_secret'] !== '' ? '•••••••• (saved, unchanged)' : '' }}">
+                    </x-admin.field>
+                    <x-admin.field label="Webhook verify token" for="whatsapp.verify_token" hint="{{ $whatsappHints['verify_token'] }}">
+                        <input id="whatsapp.verify_token" type="password" wire:model="whatsapp.verify_token" class="wx-input" autocomplete="new-password" placeholder="{{ $whatsappSaved['verify_token'] !== '' ? '•••••••• (saved, unchanged)' : '' }}">
+                    </x-admin.field>
+                    <x-admin.field label="Graph API version" for="whatsapp.api_version" hint="Meta retires old versions; keep it current.">
+                        <input id="whatsapp.api_version" type="text" wire:model="whatsapp.api_version" class="wx-input" placeholder="v23.0">
+                    </x-admin.field>
+                </div>
+
+                <div class="mt-5 flex flex-wrap items-center gap-2">
+                    <x-admin.button type="submit" icon="check">Save</x-admin.button>
+                    <x-admin.button variant="secondary" icon="trash" wire:click="forgetWhatsApp"
+                                    wire:confirm="Remove the saved credentials? The server .env will be used again.">Remove saved credentials</x-admin.button>
+                    @if ($whatsappSource === 'env')
+                        <span class="text-theme-xs text-gray-500">Using the server .env — nothing is saved here yet.</span>
+                    @endif
+                </div>
+            </x-admin.card>
+        </form>
+
+        <x-admin.card title="Webhook" description="Paste these into Meta → WhatsApp → Configuration. Meta calls the URL to deliver messages and delivery receipts.">
+            <dl class="grid grid-cols-1 gap-3 text-theme-sm">
+                <div>
+                    <dt class="text-gray-500">Callback URL</dt>
+                    <dd class="break-all font-mono text-theme-xs text-gray-800 dark:text-white/90">{{ route('webhooks.whatsapp') }}</dd>
+                </div>
+                <div>
+                    <dt class="text-gray-500">Verify token</dt>
+                    <dd class="text-gray-800 dark:text-white/90">{{ $whatsappSaved['verify_token'] !== '' ? 'the one saved above' : 'set it above, then paste the same value into Meta' }}</dd>
+                </div>
+            </dl>
+        </x-admin.card>
+
+        <x-admin.card title="Test connection" description="Credentials that are merely valid have never delivered a message. Give a WhatsApp number and Woodex OS will send one to it.">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
+                <x-admin.field label="Send a test message to" for="whatsapp.probe_number" hint="With country code, e.g. 923001234567. Leave empty to only check the credentials." class="w-full sm:max-w-sm">
+                    <input id="whatsapp.probe_number" type="text" wire:model="whatsapp.probe_number" class="wx-input" inputmode="tel" autocomplete="off">
+                </x-admin.field>
+                <x-admin.button variant="secondary" icon="send" wire:click="testWhatsAppConnection" wire:loading.attr="disabled">Test connection</x-admin.button>
+                <x-admin.button variant="secondary" icon="message" :href="route('admin.whatsapp.templates')" wire:navigate>Templates</x-admin.button>
+            </div>
+
+            @if ($whatsappStatus !== null)
+                <div class="mt-4 rounded-lg border border-gray-200 p-4 text-theme-xs text-gray-600 dark:border-gray-800 dark:text-gray-300" role="status">
+                    <p class="@if ($whatsappStatus['ok']) text-success-600 @else text-error-600 @endif font-medium">
+                        {{ $whatsappStatus['ok'] ? 'Connected' : 'Not connected' }}
+                    </p>
+                    @if ($whatsappStatus['name'] || $whatsappStatus['phone'])
+                        <p>Number: {{ $whatsappStatus['phone'] }}@if ($whatsappStatus['name']) · {{ $whatsappStatus['name'] }}@endif</p>
+                    @endif
+                    @if ($whatsappStatus['quality'])
+                        <p>Quality rating: {{ \Illuminate\Support\Str::headline($whatsappStatus['quality']) }}</p>
+                    @endif
+                    @if ($whatsappStatus['probe'] === true)
+                        <p>Test message: sent and accepted by Meta.</p>
+                    @elseif ($whatsappStatus['probe'] === false)
+                        <p>Test message: refused by Meta.</p>
+                    @endif
+                    @if ($whatsappStatus['error'])
+                        <p class="text-error-600">{{ $whatsappStatus['error'] }}</p>
+                    @endif
+                </div>
+            @endif
+        </x-admin.card>
+    @endif
     @if ($tab === 'sales')
         <form wire:submit="saveSales" class="space-y-6">
             <x-admin.card title="Quotations and invoices">

@@ -10,6 +10,7 @@ use App\Domain\Sales\Actions\SuggestQuoteAcceptance;
 use App\Domain\System\Enums\WebhookStatus;
 use App\Domain\System\Models\WebhookEvent;
 use App\Http\Controllers\Controller;
+use App\Integrations\WhatsApp\WhatsAppCredentials;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,12 +30,13 @@ final class WhatsAppWebhookController extends Controller
     public function __construct(
         private readonly ReceiveWhatsAppMessage $receive,
         private readonly RecordMessageStatus $status,
+        private readonly WhatsAppCredentials $credentials,
     ) {}
 
     /** Meta's handshake: it asks for the token we configured, and we echo its challenge back. */
     public function verify(Request $request): Response|JsonResponse
     {
-        $expected = (string) config('services.whatsapp.verify_token');
+        $expected = (string) $this->credentials->verifyToken();
         $mode = (string) $request->query('hub_mode');
         $token = (string) $request->query('hub_verify_token');
         $challenge = (string) $request->query('hub_challenge');
@@ -48,7 +50,7 @@ final class WhatsAppWebhookController extends Controller
 
     public function __invoke(Request $request): JsonResponse
     {
-        $secret = (string) config('services.whatsapp.app_secret');
+        $secret = (string) $this->credentials->appSecret();
         $signature = (string) $request->header('X-Hub-Signature-256', '');
 
         if ($secret === '' || ! $this->signatureMatches($secret, $signature, $request->getContent())) {

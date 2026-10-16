@@ -12,8 +12,8 @@ owner or on Meta.
 
 | # | Start | Why first |
 |---|---|---|
-| 1 | **P4 · WAP-001 connect + WAP-005 template manager** | WhatsApp credentials are still env-only and the Integrations page lists WhatsApp as "not configured". Connecting it (with a test message) and then seeing/syncing approved templates is what unblocks every automated message, including the quotation link. |
-| 2 | **P4 · CNV-004 canned replies** | Small, and it is what makes the inbox usable all day instead of typing the same four answers. |
+| 1 | ~~P4 · WAP-001 connect + WAP-005 template manager~~ **BUILT (17 Oct)** — pending only the owner entering live credentials | The screens exist: Settings → WhatsApp (credentials, test connection, webhook URL), Integrations → WhatsApp Templates (sync, submit, map). What is left needs the owner's Meta access, not code. |
+| 2 | **P4 · CNV-004 canned replies** | Next code to write. Small, and it is what makes the inbox usable all day instead of typing the same four answers. |
 | 3 | **P4 · AUT-001/002/005/006 follow-up sequences** | The engine that turns today's one-off quotation chase into the studio's whole follow-up rhythm. |
 | 4 | **P4 · CNV-006 real-time broadcasting** | The inbox currently polls; this removes the wait. |
 | 5 | **P5 · Telegram command centre** | One week, and it is how the owner actually runs the business from a phone. |
@@ -30,15 +30,19 @@ Inbox with assignment and internal notes (CNV-001/002, CNV-003 **without @mentio
 with the template fallback (CNV-005) · polling so a thread updates without a reload (CNV-006 partial) · receive
 text, image, document, audio, video, location, contacts, buttons, reactions (WAP-003) · send free-form and
 templates, with delivery/read/failed statuses (WAP-004) · signed webhook with idempotent processing (WAP-002) ·
-opt-out keywords (WAP-006) · **quotations sent on WhatsApp (this week)** · **a client's "ok" noticed without
-accepting the price (this week)**.
+opt-out keywords (WAP-006) · **connected from the dashboard (WAP-001, this week)**: credentials saved in
+Settings → WhatsApp, encrypted at rest, .env as fallback, a test that sends a real message · **the template
+manager (WAP-005, this week)**: templates synced from Meta with status and rejection reason, new templates
+submitted with per-variable examples, and each moment (quotation ready, visit reminder, …) mapped to an approved
+template — the quotation link now sends whatever is mapped, not a name from the code · **quotations sent on
+WhatsApp (this week)** · **a client's "ok" noticed without accepting the price (this week)**.
 
 ### 2.2 Pending
 
 | ID | What | Status | Notes / dependencies |
 |---|---|---|---|
-| **WAP-001** | Connect the WhatsApp Business account from the Integrations page: WABA ID, phone-number ID, system-user token, app secret, verify token, with a **Test connection** button that sends a real message and shows status and last error | **TODO** | Today the credentials are env-only and the page hardcodes "not configured". Prerequisite for WAP-005, WAP-007, WAP-008. |
-| **WAP-005** | Template manager: sync Meta's templates, submit new ones (EN/UR, variables, buttons), see approval status, map templates to system events (enquiry, quotation, visit reminder, invoice) | **TODO** | Highest value first. Needed by AUT-001 and by quotation sending: today the quotation goes out with a template name that nothing in the system can show, sync or submit. Owner must approve templates in Meta. |
+| **WAP-001** | ~~Connect WhatsApp from the dashboard~~ | **DONE** | Settings → WhatsApp holds the credentials encrypted (D-115); Test connection asks Meta about the number and can send one real message; the Integrations card shows the live status. Waiting on the owner's live credentials only. |
+| **WAP-005** | ~~Template manager: sync, submit, status, map to events~~ | **DONE** | Automation → WhatsApp Templates. Sync mirrors Meta (paging, rejection reasons, removals marked not deleted); submit validates and sends examples; mapping is one approved template per moment, and the quotation send uses it. |
 | **CNV-004** | Canned replies with variables (`{first_name}`, `{studio_hours}`, `{quote_link}`), EN/UR, `/` shortcut in the composer | **TODO** | Small; needs a table and a picker. |
 | **CNV-006** | Real-time: new message, typing and status pushed (Laravel broadcasting), keeping the 5 s/30 s poll as fallback | **PART** | Polling works today. Broadcasting needs a driver that works on Hostinger (Pusher/Ably key, or self-hosted Soketi) — **owner decision on the provider**. |
 | **CNV-007** | Conversation SLA: first reply and next reply targets, with escalation to Telegram | **TODO** | Mirrors the lead SLA that already exists. |

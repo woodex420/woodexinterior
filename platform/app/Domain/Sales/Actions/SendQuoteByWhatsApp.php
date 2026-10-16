@@ -14,6 +14,8 @@ use App\Domain\Sales\Data\WhatsAppDelivery;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteVersion;
 use App\Domain\Sales\Services\QuoteLinks;
+use App\Domain\System\Enums\WhatsAppTemplateEvent;
+use App\Domain\System\Models\WhatsAppTemplate;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Models\User;
 use Throwable;
@@ -56,11 +58,13 @@ final class SendQuoteByWhatsApp
         );
 
         try {
+            $template = $this->quotationTemplate();
+
             $message = $conversation->isInWindow()
                 ? $this->send->handle($conversation, QuoteLinks::whatsappBody($quote), $by)
-                : $this->send->template($conversation, $this->template(), [['type' => 'body', 'parameters' => [
+                : $this->send->template($conversation, $template['name'], [['type' => 'body', 'parameters' => [
                     ['type' => 'text', 'text' => QuoteLinks::portal($quote)],
-                ]]], 'en', $by);
+                ]]], $template['language'], $by);
         } catch (Throwable $exception) {
             return $this->record($quote, $version, $by, WhatsAppDelivery::failed($exception->getMessage()));
         }
@@ -72,10 +76,24 @@ final class SendQuoteByWhatsApp
         return $this->record($quote, $version, $by, $delivery, $message->id);
     }
 
-    /** The approved template Meta holds for quotations: one variable, the link (docs/06 §WhatsApp). */
-    private function template(): string
+    /**
+     * The approved template Meta holds for quotations: one variable, the link (docs/06 §WhatsApp).
+     *
+     * The studio maps one on the templates screen (WAP-005), so the wording lives in Meta and not in the code.
+     * Without a mapping the configured name is used, and failing that the plain name `quotation`, which is what
+     * the studio's first template was called.
+     *
+     * @return array{name: string, language: string}
+     */
+    private function quotationTemplate(): array
     {
-        return (string) config('services.whatsapp.quotation_template', 'quotation');
+        $mapped = WhatsAppTemplate::forEvent(WhatsAppTemplateEvent::Quotation);
+
+        if ($mapped !== null && $mapped->name !== '') {
+            return ['name' => $mapped->name, 'language' => $mapped->language !== '' ? $mapped->language : 'en'];
+        }
+
+        return ['name' => (string) config('services.whatsapp.quotation_template', 'quotation'), 'language' => 'en'];
     }
 
     private function record(Quote $quote, QuoteVersion $version, User $by, WhatsAppDelivery $delivery, ?int $messageId = null): WhatsAppDelivery

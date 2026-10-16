@@ -33,6 +33,10 @@
                             <x-admin.button variant="secondary" size="sm" wire:click="checkTelegramConnection" wire:loading.attr="disabled">Check live connection</x-admin.button>
                         @elseif ($card['key'] === 'mail')
                             <x-admin.button variant="secondary" size="sm" icon="mail" wire:click="testMail">Send me a test email</x-admin.button>
+                        @elseif ($card['key'] === 'whatsapp')
+                            <x-admin.button variant="secondary" size="sm" icon="settings" :href="route('admin.settings', ['tab' => 'whatsapp'])" wire:navigate>Set up</x-admin.button>
+                            <x-admin.button variant="secondary" size="sm" icon="send" wire:click="testWhatsApp" wire:loading.attr="disabled">Test connection</x-admin.button>
+                            <x-admin.button variant="secondary" size="sm" icon="message" :href="route('admin.whatsapp.templates')" wire:navigate>Templates</x-admin.button>
                         @elseif ($card['key'] === 'legacy')
                             <x-admin.button variant="secondary" size="sm" icon="database" wire:click="testLegacy">Test connection</x-admin.button>
                             @can('system.import')
@@ -40,6 +44,21 @@
                             @endcan
                         @endif
                     </div>
+                    @if ($card['key'] === 'whatsapp' && $whatsappStatus !== null)
+                        <div class="mt-4 text-theme-xs text-gray-600 dark:text-gray-300" role="status">
+                            <p class="@if ($whatsappStatus['ok']) text-success-600 @else text-error-600 @endif font-medium">{{ $whatsappStatus['ok'] ? 'Connected' : 'Not connected' }}</p>
+                            @if ($whatsappStatus['phone'] || $whatsappStatus['name'])
+                                <p>{{ $whatsappStatus['phone'] }}@if ($whatsappStatus['name']) · {{ $whatsappStatus['name'] }}@endif</p>
+                            @endif
+                            @if ($whatsappStatus['quality'])
+                                <p>Quality rating: {{ \Illuminate\Support\Str::headline($whatsappStatus['quality']) }}</p>
+                            @endif
+                            @if ($whatsappStatus['error'])
+                                <p class="text-error-600">{{ $whatsappStatus['error'] }}</p>
+                            @endif
+                            <p>Add a number in Settings → WhatsApp to send one real message and prove delivery.</p>
+                        </div>
+                    @endif
                     @if ($card['key'] === 'telegram' && $telegramStatus !== null)
                         <div class="mt-4 text-theme-xs text-gray-600 dark:text-gray-300" role="status">
                             <p>Telegram API: {{ $telegramStatus['api_ok'] ? 'reachable' : 'failed — check token and outbound HTTPS in the log below' }}</p>

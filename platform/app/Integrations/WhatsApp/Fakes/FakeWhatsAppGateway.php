@@ -16,6 +16,12 @@ final class FakeWhatsAppGateway implements WhatsAppGateway
     /** @var list<array{to: string, body: ?string, template: ?string, language: string, components: list<array<string, mixed>>}> */
     public array $sent = [];
 
+    /** @var list<array<string, mixed>> */
+    public array $submitted = [];
+
+    /** @var list<array<string, mixed>> */
+    private array $templates = [];
+
     public function __construct(
         private bool $configured = true,
         private bool $succeeds = true,
@@ -67,6 +73,45 @@ final class FakeWhatsAppGateway implements WhatsAppGateway
             'sha256' => 'abc',
             'file_size' => 1024,
         ];
+    }
+
+    public function accountInfo(): array
+    {
+        if (! $this->configured) {
+            return ['ok' => false, 'display_phone_number' => null, 'verified_name' => null, 'quality_rating' => null, 'error' => 'WhatsApp is not connected yet.'];
+        }
+
+        return [
+            'ok' => true,
+            'display_phone_number' => '+92 300 1234567',
+            'verified_name' => 'Woodex Interior',
+            'quality_rating' => 'GREEN',
+            'error' => null,
+        ];
+    }
+
+    public function templates(): array
+    {
+        return $this->templates;
+    }
+
+    public function submitTemplate(string $name, string $language, string $category, string $body, array $exampleValues = []): array
+    {
+        $this->submitted[] = ['name' => $name, 'language' => $language, 'category' => $category, 'body' => $body, 'examples' => $exampleValues];
+
+        return ['ok' => true, 'id' => 'meta-'.bin2hex(random_bytes(4)), 'status' => 'PENDING', 'error' => null];
+    }
+
+    /**
+     * What "Test connection" and the template sync will see.
+     *
+     * @param  list<array<string, mixed>>  $templates
+     */
+    public function withTemplates(array $templates): self
+    {
+        $this->templates = $templates;
+
+        return $this;
     }
 
     private function result(): SendResult

@@ -42,8 +42,8 @@ return [
         'api_base' => env('TELEGRAM_API_BASE', 'https://api.telegram.org'),
     ],
 
-    // WhatsApp Cloud API (WAP-001). Secrets stay in the server .env (docs/06 §4): the dashboard only ever says
-    // whether they are set, never what they are.
+    // WhatsApp Cloud API (WAP-001). The server .env is the fallback: credentials saved in the dashboard win, and
+    // the dashboard never shows them back (D-115).
     'whatsapp' => [
         'token' => env('WHATSAPP_TOKEN'),
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
@@ -52,6 +52,8 @@ return [
         'verify_token' => env('WHATSAPP_VERIFY_TOKEN'),
         'api_version' => env('WHATSAPP_API_VERSION', 'v23.0'),
         'api_base' => env('WHATSAPP_API_BASE', 'https://graph.facebook.com'),
+        // Used only when no approved template is mapped to an event on the templates screen (WAP-005).
+        'quotation_template' => env('WHATSAPP_QUOTATION_TEMPLATE', 'quotation'),
     ],
 
     'turnstile' => [
