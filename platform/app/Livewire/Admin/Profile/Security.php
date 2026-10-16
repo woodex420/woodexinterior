@@ -45,7 +45,7 @@ class Security extends Component
 
     public function confirmTwoFactor(): void
     {
-        $this->validate(['code' => ['required', 'string', 'min:6', 'max:10']]);
+        $this->validate(['code' => ['required', 'string', 'regex:/^[0-9]{6}$/']]);
 
         app(ConfirmTwoFactorAuthentication::class)($this->user(), $this->code);
 
@@ -71,7 +71,7 @@ class Security extends Component
 
         $user = $this->user();
 
-        if (config('woodex.security.enforce_2fa') && $user->hasAnyRole((array) config('woodex.security.require_2fa_roles', []))) {
+        if ($user->requiresTwoFactorAuthentication()) {
             throw ValidationException::withMessages(['password' => 'Your role requires two-factor authentication. It cannot be turned off.']);
         }
 
@@ -85,27 +85,43 @@ class Security extends Component
 
     public function createTelegramCode(): void
     {
+        if (! $this->telegramConfigured()) {
+            $this->dispatch('toast', message: 'Telegram is not configured. Ask an administrator to set the bot token and webhook secret, then connect the webhook in System → Integrations.', type: 'warning');
+
+            return;
+        }
+
         TelegramLink::issueCodeFor($this->user());
         $this->dispatch('toast', message: 'Code created. Send it to the Woodex bot within 30 minutes.');
     }
 
     public function unlinkTelegram(): void
     {
-        $this->user()->telegramLink()->update(['chat_id' => null, 'is_active' => false, 'linked_at' => null]);
+        $this->user()->telegramLink()->update(['chat_id' => null, 'is_active' => false, 'linked_at' => null, 'link_code' => null, 'link_code_expires_at' => null]);
         $this->dispatch('toast', message: 'Telegram unlinked.', type: 'warning');
     }
 
     public function render(): View
     {
         $user = $this->user();
-        $user->loadMissing('telegramLink');
+        $user->load('telegramLink');
 
         return view('livewire.admin.profile.security', [
             'user' => $user,
             'enabled' => $user->hasTwoFactorEnabled(),
+            'requiresTwoFactor' => $user->requiresTwoFactorAuthentication(),
             'pending' => $user->two_factor_secret !== null && $user->two_factor_confirmed_at === null,
             'telegram' => $user->telegramLink,
+            'telegramConfigured' => $this->telegramConfigured(),
+            'telegramBotUrl' => 'https://t.me/'.rawurlencode(ltrim((string) config('services.telegram.bot_username'), '@')),
+            'setupKey' => ! $user->hasTwoFactorEnabled() && $user->two_factor_secret !== null
+                ? decrypt($user->two_factor_secret) : null,
         ]);
+    }
+
+    private function telegramConfigured(): bool
+    {
+        return filled(config('services.telegram.bot_token')) && filled(config('services.telegram.webhook_secret'));
     }
 
     private function confirmPassword(): void

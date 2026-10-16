@@ -124,7 +124,7 @@
             </div>
             <label class="mt-4 flex items-start gap-2 text-theme-sm text-gray-700 dark:text-gray-300">
                 <input type="checkbox" name="enforce_2fa" value="1" @checked($input['enforce_2fa']) class="mt-0.5 size-4">
-                <span>Require two-factor sign-in (authenticator app) for owner, admin and accountant. <span class="text-gray-500">Recommended: the admin holds client data.</span></span>
+                <span>Require two-factor sign-in (authenticator app) for admin and accountant. Owners can enable 2FA voluntarily. <span class="text-gray-500">Recommended: the admin holds client data.</span></span>
             </label>
         </section>
 

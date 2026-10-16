@@ -97,7 +97,7 @@ it('lets the owner update before two-factor is set up, without a redirect loop',
     $this->actingAs($owner)->get('/admin')->assertRedirect(route('admin.system.updates'));
     $this->actingAs($owner)->get(route('admin.system.updates'))->assertOk();
     $this->actingAs($owner)->post(route('admin.system.updates.apply'))->assertRedirect(route('admin.system.updates'));
-    $this->actingAs($owner)->get('/admin')->assertRedirect(route('admin.profile.security'));
+    $this->actingAs($owner)->get('/admin')->assertOk(); // Owner enrolment is optional after updating too.
 });
 
 it('runs the real update (migrations, permissions, caches) from the button and over SSH', function () {

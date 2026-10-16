@@ -500,3 +500,45 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
   dry-run warnings list them. Budget text that names no amount stays in the lead details.
 - Nohemi font commercial licence to be confirmed before the public website launch (P-09).
 - Credentials exposed in the old public repository must be rotated before go-live (P-06).
+
+## Security & Telegram repair — 2026-10-16
+
+- Added manual TOTP setup-key fallback, time-sync/app guidance and exact six-digit confirmation validation.
+- Telegram linking now checks token/secret configuration, opens the configured bot with a `/start` deep link,
+  allows code regeneration, refreshes the loaded link state on render, and invalidates pending codes on unlink.
+  `TELEGRAM_BOT_USERNAME` defaults to the owner's public bot, `WoodexInteriorBot`.
+- Removed raw Telegram transport exception logging/reporting: the request URL can contain the bot token.
+- Report/runbook: `docs/TELEGRAM-SECURITY-REPAIR.md`. Exposed bot token must be rotated in BotFather and the new
+  token placed only in the private production environment; production webhook registration remains outstanding.
+- Verification: 25 targeted Pest tests / 143 assertions, Pint, production build, targeted desktop/phone security
+  browser check and both iframe modes passed. The general browser check still fails on unrelated public-homepage
+  `/api/chat.php` 404s and missing expected enquiry form. No production/live bot verification: Telegram and the
+  hosting domain are outside the sandbox's network allowlist. No deployment performed.
+
+## Telegram runtime follow-up — 2026-10-17
+
+- Owner reports previous patch deployed, replacement token saved, webhook registration succeeds; screenshots show
+  no replies to plain `/start`. Production cause remains unverified (network allowlist prevents direct checks).
+- Added admin-only, locked **Check live connection** diagnostics: server-side getMe/getWebhookInfo, expected bot
+  and webhook comparison, pending count, redacted delivery error and local inbound timestamps. No secrets shown.
+- Corrected misleading token-present "Connected" label to "Configured" and registration success wording.
+- Fixed HTML escaping of command replies (`/help` placeholders and staff names); preserved pending updates on
+  webhook re-registration. Neither fix is claimed as a verified cure for production plain `/start` silence.
+- 32 targeted tests / 171 assertions, Pint, Vite build, targeted desktop/mobile diagnostics browser check and both
+  iframe-cookie modes passed. Full general browser check remains subject to the public-homepage issues above.
+- Production next step: deploy, use /admin/integrations → Check live connection, send a fresh /start and recheck.
+  Runtime interpretation table added to docs/TELEGRAM-SECURITY-REPAIR.md. No production deployment performed here.
+
+## Owner-only optional 2FA enrolment — 2026-10-17
+
+- Owner explicitly selected optional 2FA for owner accounts only. D-20 updated: owners can open admin pages and
+  integrate Telegram before authenticator setup; admin/accountant enforcement is unchanged when enabled.
+- Centralized the effective requirement in User::requiresTwoFactorAuthentication(); middleware, cancellation/
+  disable guard and page wording use the same rule. Explicit owner exemption covers old cached role lists and
+  multi-role owners. No global ENFORCE_2FA change, no database secrets cleared automatically, no Fortify bypass.
+- Confirmed owner 2FA still challenges at sign-in. Unconfirmed setup can be cancelled with the account password;
+  linking Telegram does not turn 2FA on or make it mandatory. Installer wording reflects the role policy.
+- Verification: 45 targeted tests / 238 assertions, Pint, Vite build, real browser navigation while enforcement
+  is on with pending owner QR setup (dashboard/leads/integrations/security), password-protected cancellation,
+  desktop/mobile layout and both iframe-cookie checks passed. General homepage check has the unrelated known
+  failures documented above. Production not modified: deploying this branch is required for the live fix.

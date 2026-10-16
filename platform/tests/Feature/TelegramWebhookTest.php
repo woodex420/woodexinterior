@@ -58,3 +58,18 @@ it('turns /idea from a linked user into a change request', function () {
         ->and($request->source)->toBe('telegram')
         ->and($this->telegram->textsFor(900)[0])->toContain('CR-0001');
 });
+
+it('replies to plain start without requiring a link code', function () {
+    $this->postJson('/webhooks/telegram/hook-secret', telegramUpdate(40, 888, '/start'))->assertOk();
+    expect($this->telegram->textsFor(888)[0])->toContain('Welcome to Woodex OS');
+});
+
+it('escapes command help and staff names for Telegram HTML parse mode', function () {
+    $this->postJson('/webhooks/telegram/hook-secret', telegramUpdate(41, 888, '/help'))->assertOk();
+    expect($this->telegram->textsFor(888)[0])->toContain('&lt;text&gt;')->not->toContain('<text>');
+
+    $user = $this->userWithRole('sales', ['name' => 'Ali & Sons <Owner>']);
+    $link = TelegramLink::issueCodeFor($user);
+    $this->postJson('/webhooks/telegram/hook-secret', telegramUpdate(42, 889, '/start '.$link->link_code))->assertOk();
+    expect($this->telegram->textsFor(889)[0])->toContain('Ali &amp; Sons &lt;Owner&gt;');
+});
