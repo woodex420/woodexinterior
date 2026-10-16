@@ -78,6 +78,14 @@ Patterns used in the code (follow them):
     `storage/` lives in `~/woodex-os/<site>/` (`SiteState`), so uploads survive a Git deploy.
   - Analytics is `App\Settings\SiteSettings` + `views/site/partials/tracking.blade.php`: nothing renders while
     tracking is off, while staff are signed in, or while no ID is filled in.
+  - **The URL map is the contract:** `App\Domain\Website\Data\LegacyUrlMap` (data in
+    `database/data/legacy-website.php`) is the only place that says which old URL is a page and which one 301s.
+    Add a URL there first, then to the importer, the redirect seeder or the parity test.
+  - **Importing:** `woodex:import-legacy --path=<old site>` (HTML) and `woodex:import-website` (the committed
+    bundle) both go through `App\Domain\Website\Import\*`, are idempotent through `legacy_refs` (one row per
+    slug with a checksum of what was imported) and land pages as **drafts** — nothing is published by an import
+    unless `--publish` is given. `woodex:export-website` rewrites the committed bundle, which is how the pages
+    reach the server (a migration runs the import with the owner's "Database update").
   - Never invent facts: no invented clients, staff, awards or reviews; testimonials are quoted verbatim.
   - Content rules (docs/09 §9): answer-first, concrete, local (Lahore, PKR, marla/kanal), no banned phrases.
   - Images: WebP, `srcset`, width/height, alt text required, lazy below the fold, hero preloaded; keep the

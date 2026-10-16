@@ -283,22 +283,24 @@ it('imports the redirect map from a CSV and answers each old URL with one 301', 
     $this->actingAs($this->editor);
 
     Livewire::test(RedirectsIndex::class)
-        ->set('csv', "/apartment-interior-design/,/interior-design/,301,was a service page\n/1-kanal-house-design/,/architecture/,301\nnot a url,/interior-design/")
+        // URLs of their own: the 54 redirects of the old site are seeded by a migration (LegacyUrlParityTest).
+        ->set('csv', "/old-flat-design/,/interior-design/,301,was a service page\n/old-house-design/,/architecture/,301\nnot a url,/interior-design/")
         ->call('importCsv')
         ->assertSee('2 redirect(s) imported');
 
-    expect(Redirect::query()->count())->toBe(2);
+    $seeded = Redirect::query()->count() - 2;
+    expect($seeded)->toBeGreaterThan(0);
 
     Page::factory()->published()->withSlug('/interior-design/')->create(['title' => 'Interior Design']);
     Page::factory()->published()->withSlug('/architecture/')->create(['title' => 'Architecture']);
 
-    $this->siteGet('/apartment-interior-design/')->assertRedirect($this->siteUrl('/interior-design/'))->assertStatus(301);
-    $this->siteGet('/1-kanal-house-design/')->assertRedirect($this->siteUrl('/architecture/'))->assertStatus(301);
+    $this->siteGet('/old-flat-design/')->assertRedirect($this->siteUrl('/interior-design/'))->assertStatus(301);
+    $this->siteGet('/old-house-design/')->assertRedirect($this->siteUrl('/architecture/'))->assertStatus(301);
 
     // A second import updates the rows instead of duplicating them.
-    Livewire::test(RedirectsIndex::class)->set('csv', '/apartment-interior-design/,/architecture/,301')->call('importCsv');
-    expect(Redirect::query()->count())->toBe(2)
-        ->and(Redirect::query()->where('from_path', '/apartment-interior-design/')->first()->to_path)->toBe('/architecture/');
+    Livewire::test(RedirectsIndex::class)->set('csv', '/old-flat-design/,/architecture/,301')->call('importCsv');
+    expect(Redirect::query()->count())->toBe($seeded + 2)
+        ->and(Redirect::query()->where('from_path', '/old-flat-design/')->first()->to_path)->toBe('/architecture/');
 });
 
 it('exports the redirect map as a CSV', function () {

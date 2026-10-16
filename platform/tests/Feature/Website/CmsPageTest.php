@@ -85,19 +85,20 @@ it('hides drafts and pages scheduled for later from visitors', function () {
 
 it('sends an old URL to its new page with one 301 and counts the hit', function () {
     Page::factory()->published()->withSlug('/interior-design/')->create(['title' => 'Interior Design']);
+    // A URL of its own: the 54 redirects of the old site are seeded by a migration and have their own test.
     $redirect = Redirect::factory()->create([
-        'from_path' => '/apartment-interior-design/',
+        'from_path' => '/old-flat-design/',
         'to_path' => '/interior-design/',
         'code' => 301,
     ]);
 
-    $this->siteGet('/apartment-interior-design/')
+    $this->siteGet('/old-flat-design/')
         ->assertRedirect($this->siteUrl('/interior-design/'))
         ->assertStatus(301);
 
     expect($redirect->fresh()->hits)->toBe(1);
 
-    $this->siteGet('/apartment-interior-design/')->assertStatus(301);
+    $this->siteGet('/old-flat-design/')->assertStatus(301);
     expect($redirect->fresh()->hits)->toBe(2);
 });
 

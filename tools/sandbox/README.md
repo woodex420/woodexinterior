@@ -38,12 +38,17 @@ Demo login on the preview: `owner@woodex.test` / `Woodex-Preview-2026` (sandbox 
 
 ```sh
 node tools/sandbox/home-check.mjs          # home page: desktop, phone, JavaScript off
+node tools/sandbox/page-check.mjs /interior-design/ /about/   # any page of the site, one or many
 ```
 
-It checks: no console errors or 404s; no horizontal scrolling at 1440px and 390px; the hero photograph loads; the
-`h1` really picks up the clamp size and the Nohemi heading font (a missing `npm run build` shows up as a 15px `h1`);
-and without JavaScript the enquiry fields, its button, the FAQ answer and the menu are all visible (D-49). Screenshots
-land in `/tmp/woodex-run/shots/`.
+`home-check.mjs` checks: no console errors or 404s; no horizontal scrolling at 1440px and 390px; the hero photograph
+loads; the `h1` really picks up the clamp size and the Nohemi heading font (a missing `npm run build` shows up as a
+15px `h1`); and without JavaScript the enquiry fields, its button, the FAQ answer and the menu are all visible (D-49).
+
+`page-check.mjs` does the same for one or more pages of the site (a CMS page, by default `/interior-design/`): one
+`h1`, an `h2`, no horizontal scrolling, alt text and width/height on every image, JSON-LD that parses, a canonical
+URL, and every internal link that answers 200 (or one redirect to a page that does). Screenshots land in
+`/tmp/woodex-run/shots/`.
 
 ## Installer check (Hostinger Git deploy, D-56…D-58)
 

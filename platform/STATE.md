@@ -2,40 +2,42 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 16 Oct 2026 PKT, after website batch 1: the CMS)
-- **Where we are:** P0-P2 part 2a are done and live. **woodex.com.pk runs this branch**: the installer finished,
-  `/admin/login` works, `/` serves the new **public home page** (`54f04c4`). **Batch 1 of the website (the CMS) is
-  built and pushed**: pages, sections, media, redirects, menus and page versions live in the database and are
-  edited in the admin (Website menu). A published page answers at its own URL; the 404 handler looks up a page or
-  a 301 first (`App\Domain\Website\Services\SiteRouter`).
-- **How a page reaches a visitor:** `/interior-design/` -> no route matches -> the 404 handler asks
-  `SiteRouter` -> the page renders from `views/site/page.blade.php` with its sections -> the answer is cached
-  (keyed on `updated_at`, dropped on save/publish). `/interior-design` (no slash) 301s once to the canonical form.
-  `url()` and `redirect()` **trim the trailing slash**: canonical URLs go through `Page::canonical()` /
-  `Page::urlFor()`, and redirects are built by hand (`getSchemeAndHttpHost().getBaseUrl()`).
-- **Website screens:** Pages (list, duplicate, take offline, delete), Page editor (fields + sections +
-  SEO + history), Media (upload, alt text required), Menus (header/footer), SEO & Redirects (CSV import/export),
-  Website Settings (GA4, GTM, Search Console, Clarity — nothing loads until an ID is filled in).
-- **Gates before a page can go live** (`PageValidator`): SEO title <= 60, description 120-165, a summary, at least
-  two sections, a hero or intro, and **alt text on every image**. Drafts can be saved at any time.
-- **Next (batch 2):** the 54 legacy redirects (CSV import, mapping in docs/09 §3) + `woodex:import-legacy` +
-  the **142-URL parity test**, then publish the first 15 pages (home in CMS, about, contact, privacy, estimator,
-  book-a-visit, 6 services, 3 cities) and humanize the money pages (docs/09 §9).
-- **Owner to do:** add the **cron line** shown by the installer (hPanel -> Advanced -> Cron Jobs); sign in and set
-  up 2FA; after later deploys, System -> Database update when asked.
+## Resume here (project memory, saved 16 Oct 2026 PKT, after website batch 2: the import)
+- **Where we are:** P0-P2 part 2a are done and live. **woodex.com.pk runs this branch.** The website CMS
+  (batch 1) and the import of the old site (batch 2) are built and pushed:
+  - **Live:** the home page (`/`, still its own Blade page) plus 12 pages from the CMS: the six core services
+    (`/interior-design/`, `/fit-out/`, `/renovation/`, `/architecture/`, `/3d-visualization/`, `/furniture/`),
+    `/services/`, `/about/`, `/contact/`, `/privacy/`, `/estimator/`, `/book-a-visit/`.
+  - **Draft in the admin:** 76 more pages (12 cities, 8 Lahore areas, 48 insights, 6 projects, `/insights/`,
+    `/projects/`) - publish them per batch after a person has read them (Admin -> Website -> Pages).
+  - **54 old service URLs 301** to the service that answers them, with a hit counter
+    (Admin -> Website -> SEO & Redirects).
+  - **Parity test green:** `tests/Feature/Website/LegacyUrlParityTest.php` requests all 143 URLs (3.7s).
+- **How content reaches the server:** the old HTML lives on a laptop, so `php artisan woodex:export-website`
+  writes `platform/database/data/website-bundle` (pages.json + 68 photographs, 9.5 MB, committed), and the
+  migration `2026_10_16_000400_import_website_content` calls `woodex:import-website` - the owner's one-click
+  "Database update" does the rest. Both importers are idempotent (`legacy_refs`, checksum per slug).
+  To re-import from the old HTML: `php artisan woodex:import-legacy --path=/path/to/frontend-v1`
+  (`--publish --only=/slug/,...` publishes; without `--publish` everything lands as a draft).
+- **Owner to do:** after this deploy, sign in and press **System -> Database update** (it adds the website tables,
+  the 54 redirects and all 89 pages); add the **cron line** shown by the installer; set up 2FA.
+- **Next (batch 3):** publish the 12 cities + 8 Lahore areas + `/insights/` + `/projects/` after reading them, and
+  humanize home and the six services (docs/09 section 9). Then batch 4 (48 insights), 5 (projects + tracking +
+  `llms.txt` + consent), 6 (estimator and book-a-visit as real tools).
 - **Open items P-01...P-16** (docs/07 section C): P-06 (rotate credentials) blocks go-live; P-12 (real project
-  photos) blocks the case studies; P-14 (GA4/GTM/Clarity IDs into Website -> Settings) and
-  P-16 (email + hours in Settings) should be done before batch 2.
-- **Rules to follow:** docs/07 (D-01...D-70), docs/09 and platform/AGENTS.md. The plan and specs are in docs/00-09.
+  photographs) blocks the case studies; P-15 (GA4/GTM/Clarity IDs into Website -> Settings) blocks tracking;
+  P-16 (email + hours in Settings) should be done now.
+- **Rules to follow:** docs/07 (D-01...D-79), docs/09 and platform/AGENTS.md. The plan and specs are in docs/00-09.
 - **Code:** everything is on branch `arena/8be318a2-woodexinterior` and pushed. `master` is still d77016b; merge
   through a pull request when the owner approves.
 - **Preview (AI sandbox only):** after a VM reset run `sh tools/sandbox/setup.sh` (~3-4 min). Then start
   `PORT=8080 node --stack-size=8000 tools/sandbox/server.mjs` from `/tmp/woodex-run`. Checks: `smoke.sh`,
   `browser-check.mjs`, `home-check.mjs`, `page-check.mjs`, `iframe-check.mjs`, `installer-check.mjs`
-  (tools/sandbox/README.md).
-- **Preview data:** demo seed (26 leads, 5 users, 4 quotations) plus one demo page (`/interior-design/`, created
-  by `/tmp/seed-page.php`, sandbox only). Owner login `owner@woodex.test` / `Woodex-Preview-2026`. The preview
-  database lives in `/tmp` and is rebuilt from the seeders after a VM reset.
+  (tools/sandbox/README.md). The preview's database holds the imported pages; `/tmp/ref/frontend-v1` is the
+  read-only clone of the old site and `/tmp/ref` is never pushed to.
+- **Preview data:** demo seed (26 leads, 5 users, 4 quotations) + the 89 imported pages (12 published).
+  Owner login `owner@woodex.test` / `Woodex-Preview-2026`. The preview database lives in `/tmp` and is rebuilt
+  from the seeders after a VM reset (the pages then come from the committed bundle via `woodex:import-website`).
 
 ## Hostinger deploy fix (16 Oct 2026, D-56…D-58)
 - **What happened (15 Oct, deploy of 3155343):** hPanel's Git deploy copied the repository into the **main domain's**

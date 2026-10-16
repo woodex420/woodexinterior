@@ -8,7 +8,7 @@ mkdir -p "$DST"
 
 # Files are overwritten in place (php-wasm caches stat data of deleted paths, so never delete-and-recreate
 # while the preview runs); files deleted in the repo are removed from the copy afterwards.
-for dir in app bootstrap/app.php bootstrap/providers.php config database/factories database/migrations database/seeders database/settings lang resources routes tests public; do
+for dir in app bootstrap/app.php bootstrap/providers.php config database/data database/factories database/migrations database/seeders database/settings lang resources routes tests public; do
     if [ -d "$SRC/$dir" ]; then
         mkdir -p "$DST/$dir"
         cp -R "$SRC/$dir/." "$DST/$dir/"

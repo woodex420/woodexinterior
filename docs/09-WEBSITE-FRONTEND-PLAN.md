@@ -73,7 +73,13 @@ least one content section exist. The editor blocks publishing otherwise (and the
 
 ---
 
-## 3. URL map: 89 live pages + 54 redirects = the old 142
+## 3. URL map: 89 live pages + 54 redirects = 143 URLs
+
+_The map itself is `platform/database/data/legacy-website.php` (read through `App\Domain\Website\Data\LegacyUrlMap`);
+`tests/Feature/Website/LegacyUrlMapTest.php` checks it and `LegacyUrlParityTest.php` requests all 143 URLs._
+
+One URL is new: `/furniture/` did not exist on the old site and now holds the wardrobe, kitchen and dressing room
+work, so the old site's 142 URLs are joined by the one page the plan added.
 
 **Live pages (89)**
 
@@ -83,7 +89,7 @@ least one content section exist. The editor blocks publishing otherwise (and the
 | Utility | 6 | `/services/`, `/about/`, `/contact/`, `/estimator/`, `/book-a-visit/`, `/privacy/` |
 | Core services | 6 | `/interior-design/`, `/fit-out/`, `/renovation/`, `/architecture/`, `/3d-visualization/`, `/furniture/` |
 | Cities | 12 | `/lahore/`, `/karachi/`, `/islamabad/`, `/rawalpindi/`, `/faisalabad/`, `/multan/`, `/peshawar/`, `/quetta/`, `/sialkot/`, `/hyderabad/`, `/gujranwala/`, `/bahawalpur/` |
-| Lahore areas | 8 | `/lahore/dha/`, `/lahore/gulberg/`, `/lahore/bahria-town/`, `/lahore/cantt/`, `/lahore/johar-town/`, `/lahore/model-town/`, `/lahore/dha-phase-6/`, `/lahore/wapda-town/` |
+| Lahore areas | 8 | `/lahore/dha/`, `/lahore/gulberg/`, `/lahore/bahria-town/`, `/lahore/cantt/`, `/lahore/johar-town/`, `/lahore/model-town/`, `/lahore/lake-city/`, `/lahore/wapda-town/` |
 | Insights | 49 | `/insights/` + 48 articles (slugs unchanged) |
 | Projects | 7 | `/projects/` + 6 case studies (slugs unchanged) |
 
@@ -302,21 +308,32 @@ AI referrals, LCP/CLS, 404s and redirect hits.
 ## 13. Import pipeline (frontend-v1 → CMS)
 
 1. **Extract** — parse each of the 142 HTML files: title, meta description, canonical, H1–H3, paragraphs, lists,
-   images (with alt), links, FAQ pairs, schema already present.
-2. **Classify** — map to a page type and slug using §3. Unknown → review queue, never published blind.
-3. **Convert to blocks** — text → `text`, image groups → `gallery`, Q&A → `faq`, cards → `services`,
-   process lists → `process`. Old inline styles and scripts are dropped; only the token classes remain.
-4. **Images** — copy to `media`, convert to WebP, keep the original alt text, deduplicate by content hash.
-5. **SEO** — carry over title/description; regenerate canonical; add the schema of §11.2.
-6. **Review queue** — every imported page is `draft` with a checklist (H1, description, image alt, unique
-   content ≥ 3 facts for city pages, no banned phrases). Publish is per page or per batch.
-7. **Redirects** — the 54 rows of §3 are inserted as 301s with `hits = 0`.
-8. **Parity test** — a test requests all 142 old paths and asserts: live pages 200 with the canonical trailing
-   slash, redirected URLs 301 to a 200 page, no 404s, no redirect chains. This test runs in CI and before every
-   batch (WEB-001 in docs/02).
+   images (with alt), links, FAQ pairs, tables, schema already present.
+2. **Classify** — map to a page type and slug using §3 (the map, not a guess). Unknown → review queue, never
+   published blind.
+3. **Convert to blocks** — from what a section *contains*, not from its CSS classes: a section with an H1 is the
+   hero, `.faq-item`s are questions, a grid of headings with copy becomes services, an ordered list the process,
+   a table the price bands, a list of links to other pages the "related" section, a form the enquiry block. An
+   article keeps its whole body in one `<section>`, so a long one is split at its H2s and each sub-heading becomes
+   its own block. Old inline styles and scripts are dropped; only the token classes remain.
+4. **Images** — copied to `media`, scaled to 1600px and re-encoded as WebP, keeping the original alt text and
+   deduplicated by content (68 photographs carry the whole site).
+5. **SEO** — carried over: title (≤ 60), description (120–165) and canonical. All 88 imported pages passed the
+   editor's checklist without a rewrite, which is why they could be published straight away.
+6. **Review queue** — every imported page is a **draft** with the editor's checklist (H1, description, image alt,
+   unique content ≥ 3 facts for city pages, no banned phrases). Publish is per page or per batch.
+7. **Redirects** — the 54 rows of §3 are inserted as 301s with `hits = 0` (a migration seeds them, the owner can
+   edit them in the admin).
+8. **Links** — a second pass points every imported link at a page that exists: an old URL that is now a redirect
+   points at its target, and a card that links to the page it stands on loses its link.
+9. **Parity test** — `tests/Feature/Website/LegacyUrlParityTest.php` requests all 143 URLs and asserts: pages 200
+   with the canonical trailing slash, redirected URLs one 301 to a 200 page, no 404s, no chains.
 
-The importer is an artisan command (`woodex:import-legacy`), idempotent, and reports per URL: created /
-updated / skipped / needs-review.
+**How the content reaches the server.** The old HTML lives on a laptop, not on the server, so
+`woodex:export-website` writes `database/data/website-bundle` (pages.json + the photographs) into the repository,
+`woodex:import-website` reads it back, and the migration that ships it runs with the owner's one-click
+"Database update". Both imports are idempotent (`legacy_refs`: one row per slug with a checksum of what was
+imported), so a re-import never overwrites a page the owner has since edited.
 
 ---
 
@@ -324,8 +341,8 @@ updated / skipped / needs-review.
 
 | Batch | Content | Result |
 |---|---|---|
-| **1 — CMS** | Tables, admin editor, media library, redirects, menus, routing, page cache | **Delivered 16 Oct 2026** (§14.1). The importer and the parity test moved to batch 2 |
-| **2 — Stop the 404s** | `woodex:import-legacy` + the 142-URL parity test, insert the 54 redirects, publish home + 6 services + about + contact + services index + privacy + 404 | 15 pages live, 54 URLs rescued, parity green |
+| **1 — CMS** | Tables, admin editor, media library, redirects, menus, routing, page cache | **Delivered 16 Oct 2026** (§14.1) |
+| **2 — Stop the 404s** | `woodex:import-legacy` + the 143-URL parity test, insert the 54 redirects, publish 6 services + services index + about + contact + privacy + estimator + book-a-visit | **Delivered 16 Oct 2026** (§14.2): 12 pages live, 54 URLs rescued, 89 drafts waiting in the admin, parity green |
 | **3 — Depth** | 12 cities + 8 Lahore areas + insights index; humanize home and the 6 services | Local search covered; the money pages read human |
 | **4 — Content** | 48 insights imported and humanized in 4 waves of 12; internal linking clusters | Topical authority |
 | **5 — Proof** | 6 project case studies + tracking + `llms.txt` + consent banner | Trust signals and measurement |
@@ -349,8 +366,20 @@ updated / skipped / needs-review.
   the 404 log as a redirect suggestion), **Settings** (GA4, GTM, Search Console, Clarity, tracking on/off).
 - **Public:** published pages answer at their own URL with the canonical trailing slash, `/sitemap.xml`
   lists them, and SEO & Redirects serves the 301s. Nothing is served for the admin domain.
-- **Not in batch 1:** the importer, the 142-URL parity test, the consent banner, `llms.txt`, the estimator and
-  book-a-visit pages (batch 5/6).
+- **Not in batch 1:** the importer (batch 2), the consent banner, `llms.txt` and the estimator and book-a-visit
+  pages as real tools (batch 5/6).
+
+### 14.2 Batch 2 delivered (16 Oct 2026, D-78…D-79)
+
+- **All 142 old URLs are in the CMS:** 89 pages with 955 sections and 68 photographs, imported from the old HTML
+  and stored as drafts. `/furniture/` was written by hand from the wardrobe, kitchen and dressing room pages it
+  replaces.
+- **Live now (12 pages + the home page):** the six core services, `/services/`, `/about/`, `/contact/`,
+  `/privacy/`, `/estimator/` and `/book-a-visit/`.
+- **54 URLs rescued:** every old service URL 301s to the service that answers it, with a hit counter.
+- **Still draft (76 pages):** 12 cities, 8 Lahore areas, 48 insights, 6 projects and the two remaining index
+  pages — they go live per batch once a person has read them (batch 3 and 4).
+- **Parity:** `LegacyUrlParityTest` requests all 143 URLs in one test run (3.7s) and is green.
 
 ---
 
