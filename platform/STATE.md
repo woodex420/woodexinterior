@@ -2,7 +2,7 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 17 Oct 2026 PKT, after WAP-001 + WAP-005)
+## Resume here (project memory, saved 17 Oct 2026 PKT, after P5 S1 + S2)
 
 - **The owner's order for the frontend, unchanged:** the original v1 site is live on woodex.com.pk and stays live;
   **v2 is not started** — its admin master plan (stack, theme builder, page builder, SEO) is the next document,
@@ -30,6 +30,28 @@ _Update at the end of every task (docs/03 Part A §7)._
   `quote_follow_up_days` (3) to a **maximum of three chases**. It never messages the client — it tells the studio
   to call. `woodex:quote-follow-ups`, scheduled `dailyAt('09:00')->withoutOverlapping(30)`; off by default behind
   `sales.quote_follow_ups_enabled` (`7062a5a`).
+- **The owner redirected the order (17 Oct): P5 → P6 next** ("start next p5 to p6 create complate list
+  to start impliment"). The P4 remainder (canned replies, sequences, broadcasting, bot) stays on docs/14 and
+  resumes where the owner directs. The complete, ordered P5→P6 list is `docs/15-P5-P6-IMPLEMENTATION-LIST.md`
+  (`c29d5bb`): P5 in eight steps S1–S8 (framework → read commands → action commands → digests → health →
+  change-requests board → alert rules → hardening), P6 as V2-1…V2-6 (docs/12) plus the PRD rows docs/12 leaves
+  open (performance WEB-011, accessibility, GA4 cards RPT-007). **V2-1 is gated on the owner's theme-path
+  decision** (docs/12 §6).
+- **The Telegram bot is a command centre now** (P5 S1 + S2, TGM-004): a `TelegramCommandBus`
+  (`app/Domain/System/Telegram/`) with one class per command behind the linked user's own permissions —
+  unlinked chats and missing roles get one honest line, a throwing command is reported and answered, never a
+  500 (Meta retries those forever), and a chat is limited to 30 commands/minute. `/help` is generated from the
+  registry so it cannot go stale. **Commands live:** `/today` (visits, SLA-overdue leads, own tasks; payments
+  and approvals only for roles who can act), `/leads [new|mine|unassigned]`, `/lead <ref|phone>` (phone in any
+  format, E.164 stored, displayed readably), `/find <text>`, `/quotes [pending|viewed]`, `/quote <no>`, `/due`
+  (overdue + due this week with balances), `/visits [today|tomorrow]`, `/report [day|week|month]`, `/health`
+  (same collectors as the Health screen), `/mute <hours|off>` (the same `muted_until` the alerts respect).
+  **P5 remaining (docs/15):** S3 action commands + inline buttons (approvals, assign, note; callback-query
+  routing), S4 digests, S5 health completion (DB size, last backup, scheduled-task last runs), S6 change-requests
+  board, S7 alert rules, S8 hardening.
+- **Verified for S1+S2:** Pest **520 passed / 3 530 assertions** (15 new in `TelegramCommandCentreTest`;
+  the old linking/idea tests untouched and green) · Larastan level 6 clean · Pint clean on 503 files. The
+  webhook is exercised the way Meta sends it: POST + secret, replies asserted through the fake gateway.
 - **The studio can connect WhatsApp itself now** (WAP-001, D-115): Settings → WhatsApp takes the phone-number
   id, WABA id, token, app secret and verify token, **encrypts the three secrets with the app key**
   (`App\Settings\Casts\EncryptedStringCast`, never in a Livewire property — the browser only ever sees a masked

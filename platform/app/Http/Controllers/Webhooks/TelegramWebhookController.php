@@ -10,21 +10,30 @@ use App\Domain\System\Enums\WebhookStatus;
 use App\Domain\System\Models\ChangeRequest;
 use App\Domain\System\Models\TelegramLink;
 use App\Domain\System\Models\WebhookEvent;
+use App\Domain\System\Telegram\TelegramCommandBus;
 use App\Http\Controllers\Controller;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
 use App\Integrations\Telegram\TelegramMessage;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 /**
- * Telegram bot webhook (TGM-001, TGM-006). P0 handles account linking (/start CODE), /help and
- * change requests from mobile (/idea, /issue). The full command set arrives in P5.
+ * Telegram bot webhook (TGM-001, TGM-004, TGM-006): linking (/start CODE), change requests from mobile
+ * (/idea, /issue) and the command centre — every business command lives in the TelegramCommandBus, one class
+ * per command, behind the linked user's own permissions.
  */
 final class TelegramWebhookController extends Controller
 {
-    public function __construct(private readonly TelegramGateway $telegram) {}
+    /** Commands one chat may run per minute before the bot asks for a pause (TGM-007). */
+    private const COMMANDS_PER_MINUTE = 30;
+
+    public function __construct(
+        private readonly TelegramGateway $telegram,
+        private readonly TelegramCommandBus $bus,
+    ) {}
 
     public function __invoke(Request $request, string $secret): JsonResponse
     {
@@ -77,13 +86,21 @@ final class TelegramWebhookController extends Controller
         $command = Str::lower((string) Str::before($command, '@'));
         $argument = trim((string) $argument);
 
+        if (RateLimiter::tooManyAttempts('telegram-command:'.$chatId, self::COMMANDS_PER_MINUTE)) {
+            $this->telegram->send($chatId, new TelegramMessage('Too many commands in one minute — give it a moment and try again.'));
+
+            return;
+        }
+
+        RateLimiter::hit('telegram-command:'.$chatId);
+
+        $user = $this->linkedUserOrNull($chatId)?->user;
+
         $reply = match ($command) {
             '/start', '/link' => $this->link($request, $chatId, $argument),
-            '/help' => $this->help(),
             '/idea', '/issue' => $this->changeRequest($chatId, $command === '/idea' ? ChangeRequestType::Idea : ChangeRequestType::Issue, $argument, (int) $request->input('message.message_id')),
-            default => $this->linkedUserOrNull($chatId) === null
-                ? 'This chat is not linked to Woodex OS yet. Open your profile in the admin and tap "Link Telegram".'
-                : 'This command arrives in the next release. Send /help to see what is available now.',
+            '/help' => $this->bus->help(),
+            default => $this->bus->dispatch($user, $command, $argument),
         };
 
         $this->telegram->send($chatId, new TelegramMessage(TelegramMessage::escape($reply)));
@@ -123,17 +140,6 @@ final class TelegramWebhookController extends Controller
         $name = $link->user()->value('name') ?? 'the Woodex team';
 
         return "✅ Linked to Woodex OS as {$name}. You will receive alerts here. Send /help for commands.";
-    }
-
-    private function help(): string
-    {
-        return implode("\n", [
-            'Woodex OS bot',
-            '/idea <text>: suggest an improvement',
-            '/issue <text>: report a problem',
-            '/help: this list',
-            'Coming next: /today /leads /lead /quotes /due /visits /report /health /approve',
-        ]);
     }
 
     private function changeRequest(int $chatId, ChangeRequestType $type, string $text, int $messageId): string
