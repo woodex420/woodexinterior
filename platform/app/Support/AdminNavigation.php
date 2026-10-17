@@ -39,6 +39,8 @@ final class AdminNavigation
                 self::item('Payments', 'wallet', 'admin.payments.index', 'invoices.view'),
                 self::item('Due Payments', 'clock', 'admin.sales.dues', 'invoices.view'),
                 self::item('Estimations', 'calculator', 'admin.estimations.index', 'estimates.view'),
+                self::item('Quote Tracking', 'compass', 'admin.sales.tracking.quotes', 'quotes.view'),
+                self::item('Invoice Tracking', 'clock', 'admin.sales.tracking.invoices', 'invoices.view'),
                 self::item('Receivables', 'clock', 'admin.reports.receivables', 'invoices.view'),
                 self::item('Quote Templates', 'templates', 'admin.quote-templates', 'quotes.view'),
                 self::item('Rate Book', 'book', 'admin.rate-book', 'quotes.view'),

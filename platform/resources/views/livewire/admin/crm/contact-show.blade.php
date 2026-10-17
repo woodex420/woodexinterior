@@ -9,6 +9,9 @@
 <div>
     <x-admin.page-header :title="$contact->name" :breadcrumbs="['CRM' => null, 'Contacts' => route('admin.contacts.index'), $contact->name => null]">
         <x-slot:actions>
+            @can('invoices.view')
+                <a href="{{ route('admin.contacts.statement', $contact) }}" target="_blank" rel="noopener"><x-admin.button variant="secondary" icon="document">Statement</x-admin.button></a>
+            @endcan
             @if ($contact->phone)
                 <x-admin.button variant="secondary" icon="phone" :href="Phone::telUrl($contact->phone)">Call</x-admin.button>
             @endif

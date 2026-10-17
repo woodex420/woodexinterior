@@ -35,7 +35,7 @@ beforeEach(function () {
     ]);
 });
 
-function commandUpdate(int $updateId, int $chatId, string $text): array
+function centreUpdate(int $updateId, int $chatId, string $text): array
 {
     return [
         'update_id' => $updateId,
@@ -48,11 +48,11 @@ function commandUpdate(int $updateId, int $chatId, string $text): array
     ];
 }
 
-function sendCommand(string $text, int $chatId = 500): string
+function centreSend(string $text, int $chatId = 500): string
 {
     $updateId = 1000 + count(test()->telegram->sent);
 
-    test()->postJson('/webhooks/telegram/hook-secret', commandUpdate($updateId, $chatId, $text), headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])->assertOk();
+    test()->postJson('/webhooks/telegram/hook-secret', centreUpdate($updateId, $chatId, $text), headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])->assertOk();
 
     // The latest reply to this chat, not the first one it ever received.
     $replies = test()->telegram->textsFor($chatId);
@@ -61,7 +61,7 @@ function sendCommand(string $text, int $chatId = 500): string
 }
 
 it('lists every command in help, generated from the registry so it cannot go stale', function () {
-    $reply = sendCommand('/help');
+    $reply = centreSend('/help');
 
     foreach (['/today', '/leads', '/lead', '/find', '/quotes', '/quote', '/due', '/visits', '/report', '/health', '/mute', '/idea', '/issue'] as $command) {
         expect($reply)->toContain($command);
@@ -69,24 +69,24 @@ it('lists every command in help, generated from the registry so it cannot go sta
 });
 
 it('answers an unknown command with the help pointer, not silence', function () {
-    expect(sendCommand('/fly-me-to-the-moon'))->toContain('Unknown command');
+    expect(centreSend('/fly-me-to-the-moon'))->toContain('Unknown command');
 });
 
 it('keeps business commands away from a chat that is not linked', function () {
-    expect(sendCommand('/today', 606))->toContain('not linked');
+    expect(centreSend('/today', 606))->toContain('not linked');
 });
 
 it('refuses a command the linked role does not hold', function () {
     $support = $this->userWithRole('support');
     TelegramLink::query()->create(['user_id' => $support->id, 'chat_id' => 501, 'is_active' => true, 'linked_at' => now()]);
 
-    expect(sendCommand('/due', 501))->toContain('Your role does not include this command');
+    expect(centreSend('/due', 501))->toContain('Your role does not include this command');
 });
 
 it('shows the morning view: visits, overdue leads, tasks, payments, approvals', function () {
     $lead = Lead::factory()->create(['owner_id' => $this->owner->id, 'sla_due_at' => now()->subHour(), 'first_response_at' => null]);
 
-    $reply = sendCommand('/today');
+    $reply = centreSend('/today');
 
     expect($reply)->toContain('Today')
         ->and($reply)->toContain($lead->ref)
@@ -100,7 +100,7 @@ it('keeps payments and approvals out of /today for a role that cannot act on the
     $sales = $this->userWithRole('sales');
     TelegramLink::query()->create(['user_id' => $sales->id, 'chat_id' => 502, 'is_active' => true, 'linked_at' => now()]);
 
-    $reply = sendCommand('/today', 502);
+    $reply = centreSend('/today', 502);
 
     expect($reply)->toContain('Visits:')
         ->and($reply)->not->toContain('Payments to verify:')
@@ -111,33 +111,33 @@ it('lists the latest leads and the unassigned slice', function () {
     $assigned = Lead::factory()->create(['owner_id' => $this->owner->id]);
     $floating = Lead::factory()->create(['owner_id' => null, 'lost_at' => null, 'won_at' => null]);
 
-    $reply = sendCommand('/leads');
+    $reply = centreSend('/leads');
 
     expect($reply)->toContain('Latest leads')
         ->and($reply)->toContain($assigned->ref)
         ->and($reply)->toContain($floating->ref);
 
-    expect(sendCommand('/leads unassigned'))->toContain('Unassigned leads')
-        ->and(sendCommand('/leads unassigned'))->toContain($floating->ref)
-        ->and(sendCommand('/leads unassigned'))->not->toContain($assigned->ref);
+    expect(centreSend('/leads unassigned'))->toContain('Unassigned leads')
+        ->and(centreSend('/leads unassigned'))->toContain($floating->ref)
+        ->and(centreSend('/leads unassigned'))->not->toContain($assigned->ref);
 });
 
 it('shows one lead by reference and finds it by phone in any format', function () {
     $lead = Lead::factory()->create(['owner_id' => $this->owner->id, 'expected_value_minor' => 2_500_000_00]);
     $lead->contact->update(['phone' => '+923224000768']);
 
-    $byRef = sendCommand('/lead '.$lead->ref);
+    $byRef = centreSend('/lead '.$lead->ref);
 
     expect($byRef)->toContain($lead->ref)
         ->and($byRef)->toContain('Stage:')
         ->and($byRef)->toContain('Rs 2,500,000')
         ->and($byRef)->toContain('+92 322 4000768'); // stored E.164, shown the way people read it
 
-    $byPhone = sendCommand('/lead 0322 4000768');
+    $byPhone = centreSend('/lead 0322 4000768');
 
     expect($byPhone)->toContain($lead->ref);
 
-    expect(sendCommand('/lead L-1999-000001'))->toContain('No lead matches');
+    expect(centreSend('/lead L-1999-000001'))->toContain('No lead matches');
 });
 
 it('hides a lead the caller may not see, as if it did not exist', function () {
@@ -146,20 +146,20 @@ it('hides a lead the caller may not see, as if it did not exist', function () {
 
     $someoneElses = Lead::factory()->create(['owner_id' => $this->owner->id]);
 
-    expect(sendCommand('/lead '.$someoneElses->ref, 503))->toContain('No lead matches');
+    expect(centreSend('/lead '.$someoneElses->ref, 503))->toContain('No lead matches');
 });
 
 it('lists quotations with amounts and status', function () {
     $quote = telegramQuote();
 
-    $reply = sendCommand('/quotes');
+    $reply = centreSend('/quotes');
 
     expect($reply)->toContain('Recent quotations')
         ->and($reply)->toContain($quote->label())
         ->and($reply)->toContain($quote->total()->format());
 
-    expect(sendCommand('/quote '.$quote->number))->toContain('Sent')
-        ->and(sendCommand('/quote WI-99999'))->toContain('No quotation');
+    expect(centreSend('/quote '.$quote->number))->toContain('Sent')
+        ->and(centreSend('/quote WI-99999'))->toContain('No quotation');
 });
 
 /** A sent quotation with one priced line, the way the studio makes them. */
@@ -192,7 +192,7 @@ it('lists overdue and upcoming invoices with balances', function () {
         'due_date' => now()->subDays(3)->toDateString(),
     ]);
 
-    $reply = sendCommand('/due');
+    $reply = centreSend('/due');
 
     expect($reply)->toContain('Overdue:')
         ->and($reply)->toContain($invoice->number)
@@ -203,18 +203,18 @@ it('lists overdue and upcoming invoices with balances', function () {
 it('reports the period from the same tables the dashboard reads', function () {
     Lead::factory()->count(3)->create(['owner_id' => $this->owner->id, 'created_at' => now()]);
 
-    $reply = sendCommand('/report');
+    $reply = centreSend('/report');
 
     expect($reply)->toContain('Today:')
         ->and($reply)->toContain('Leads: 3')
         ->and($reply)->toContain('Quotes sent:')
         ->and($reply)->toContain('Collected:');
 
-    expect(sendCommand('/report week'))->toContain('This week:');
+    expect(centreSend('/report week'))->toContain('This week:');
 });
 
 it('shows system health in one message', function () {
-    $reply = sendCommand('/health');
+    $reply = centreSend('/health');
 
     expect($reply)->toContain('Cron:')
         ->and($reply)->toContain('Queue:')
@@ -223,29 +223,29 @@ it('shows system health in one message', function () {
 });
 
 it('mutes and unmutes the chat, using the same switch the alerts respect', function () {
-    $reply = sendCommand('/mute 8');
+    $reply = centreSend('/mute 8');
 
     expect($reply)->toContain('muted for 8 hour(s)')
         ->and($this->owner->fresh()->telegramLink->muted_until)->not->toBeNull();
 
-    expect(sendCommand('/mute off'))->toContain('on again')
+    expect(centreSend('/mute off'))->toContain('on again')
         ->and($this->owner->fresh()->telegramLink->muted_until)->toBeNull();
 
-    expect(sendCommand('/mute forever'))->toContain('How many hours?');
+    expect(centreSend('/mute forever'))->toContain('How many hours?');
 });
 
 it('refuses a chat that fires commands without pause, and Telegram retries later', function () {
     // The hardened webhook (agent security review, 17 Oct) rate-limits at the door: 30 commands per
     // minute per sender. The 31st gets a 429, so Telegram keeps it and retries — no reply is sent here.
     for ($i = 0; $i < 30; $i++) {
-        sendCommand('/help');
+        centreSend('/help');
     }
 
     expect(test()->telegram->textsFor(500))->toHaveCount(30);
 
     $updateId = 1000 + count(test()->telegram->sent);
 
-    test()->postJson('/webhooks/telegram/hook-secret', commandUpdate($updateId, 500, '/help'), headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])
+    test()->postJson('/webhooks/telegram/hook-secret', centreUpdate($updateId, 500, '/help'), headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])
         ->assertStatus(429);
 
     expect(test()->telegram->textsFor(500))->toHaveCount(30);

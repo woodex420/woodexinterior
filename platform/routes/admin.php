@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ClientStatementController;
 use App\Http\Controllers\Admin\InvoicePdfController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\QuotePdfController;
@@ -37,11 +38,13 @@ use App\Livewire\Admin\Sales\DuePayments;
 use App\Livewire\Admin\Sales\EstimateBuilder;
 use App\Livewire\Admin\Sales\EstimationsIndex;
 use App\Livewire\Admin\Sales\InvoicesIndex;
+use App\Livewire\Admin\Sales\InvoiceTrackingBoard;
 use App\Livewire\Admin\Sales\PaymentsIndex;
 use App\Livewire\Admin\Sales\QuoteBuilder;
 use App\Livewire\Admin\Sales\QuoteCreate;
 use App\Livewire\Admin\Sales\QuotesIndex;
 use App\Livewire\Admin\Sales\QuoteTemplates;
+use App\Livewire\Admin\Sales\QuoteTrackingBoard;
 use App\Livewire\Admin\Sales\RateBook;
 use App\Livewire\Admin\System\AuditLog;
 use App\Livewire\Admin\System\ChangeRequests;
@@ -93,6 +96,9 @@ Route::livewire('/sales/dues', DuePayments::class)->name('sales.dues')->middlewa
 Route::livewire('/estimations', EstimationsIndex::class)->name('estimations.index')->middleware('can:estimates.view');
 Route::livewire('/estimations/new', EstimateBuilder::class)->name('estimations.create')->middleware('can:estimates.view');
 Route::livewire('/estimations/{estimate}', EstimateBuilder::class)->name('estimations.show')->middleware('can:estimates.view')->whereNumber('estimate');
+Route::livewire('/sales/tracking/quotes', QuoteTrackingBoard::class)->name('sales.tracking.quotes')->middleware('can:quotes.view');
+Route::livewire('/sales/tracking/invoices', InvoiceTrackingBoard::class)->name('sales.tracking.invoices')->middleware('can:invoices.view');
+Route::get('/clients/{contact}/statement.pdf', ClientStatementController::class)->name('contacts.statement')->middleware('can:invoices.view')->whereNumber('contact');
 Route::livewire('/accounts/chart', ChartOfAccounts::class)->name('accounts.chart')->middleware('can:accounts.view');
 Route::livewire('/accounts/journals', JournalsIndex::class)->name('accounts.journals')->middleware('can:accounts.view');
 Route::livewire('/accounts/periods', PeriodsIndex::class)->name('accounts.periods')->middleware('can:accounts.view');

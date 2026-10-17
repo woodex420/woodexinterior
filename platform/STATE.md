@@ -1155,3 +1155,51 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
   kitchen/wardrobe estimate definition (no rate source yet). P8.3's brand/template layer was
   already active from P8.0 (description library, document designer, rate book with pictures,
   quote templates).
+
+## P8.4 Sales tracking boards + client statements — 2026-10-17
+
+- Owner decisions (ask_user, 4/4 recommendations taken): grouped LIST boards, not drag-and-drop
+  Kanban; the quote board is EVENT-DRIVEN (reuses the auto-chaser rules, no new columns or states);
+  the invoice board carries the real actions (inline Collect via P8.2 CollectPayment,
+  consent-gated Remind via P8.2 SendPaymentReminder, statement/PDF links); client statements are
+  a branded PDF DOWNLOAD only (no sending this phase).
+- Quote tracking (/admin/sales/tracking/quotes, quotes.view): six groups exactly mirroring
+  ChaseQuotations — follow-up due (sent > SalesSettings.quote_follow_up_days ago, <3 follow_up
+  events, last chase older than the window), awaiting reply, stale (≥3 unanswered chases since
+  sent_at — an answer in itself), expiring soon (valid_until within quote_expiry_warning_days),
+  recent wins (accepted in 30 days), lost (declined/expired in 30 days). Group cards with counts +
+  value; Log-chase action writes a 'follow_up' QuoteEvent via LogQuoteEvent (quotes.manage) with a
+  note — same event the chaser counts, so board and automation can never disagree.
+- Invoice tracking (/admin/sales/tracking/invoices, invoices.view): overdue > due ≤7d > current
+  priority, partially-paid overlay group, recently-settled (last 10). Inline collect = the P8.2
+  one-act CollectPayment (records + verifies + numbers a receipt + posts the ledger entry), gated
+  behind payments.record+verify; reminds are consent-gated by SendPaymentReason's own rules with
+  the honest reason toasted on refusal.
+- Client statements: GET /admin/clients/{contact}/statement.pdf?from=&to= (invoices.view) renders
+  live (never stored) a branded letterhead PDF (clone of the receipt template) — every issued/
+  partial/paid invoice and receipted payment in the period with a running balance, totals,
+  outstanding and aging buckets (Current/1-30/31-60/61+ by due_date). Statement button on the
+  contact page header; per-row statement link on the invoice board.
+- REAL BUG the tests caught: 'date'-cast columns (payments.received_on, invoices.issue_date) store
+  'Y-m-d H:i:s' strings, so raw-SQL comparisons against bare 'Y-m-d' strings silently miss
+  same-day rows (a statement window ending today excluded an invoice issued today; a payment
+  received today was invisible). ClientStatementPdf now compares against Carbon day boundaries.
+  DuePayments was safe (whereDate), the boards group in PHP on cast carbons.
+- No migrations, no new statuses, no new permissions — the boards read existing truth. 13 tests /
+  50 assertions (TrackingBoardsTest): grouping incl. time travel, stale-after-3, chase logging +
+  permission 403, invoice grouping, end-to-end collect (receipt + journal entry), over-balance
+  refusal, payments permission gate, consented + refused remind (FakeWhatsAppGateway), statement
+  numbers/aging/filename/inline disposition/404/permission, period filter.
+- Sandbox notes: second VM reset mid-build (recovered: fetch + reset --soft; staged diff was
+  exactly the P8.4 files + stale public/build deletions that the setup npm build regenerates).
+  shard-gate.sh was wiped with /tmp — recreated and now PERSISTED in tools/sandbox/ so the next
+  reset can restore it. Screenshots of the three screens saved to /home/user/p84-shots/.
+- Gate: 89 files / 934 passed / 1 env-conditional skip / 0 failed (shards), Pint clean on all
+  touched files, Larastan 0. The gate also exposed a latent suite hazard: CollectStatementTest and
+  TelegramCommandCentreTest both declared global commandUpdate()/sendCommand() helpers — fatal
+  whenever one process loaded both. Renamed the command-centre pair to centreUpdate()/centreSend()
+  (identical bodies) and TrackingBoardsTest's helper to trackedQuote() so any shard order is safe.
+  Live preview: both boards + statement.pdf (with ?from period) 200 as owner; INV-LIVE-1 visible
+  on the board; Statement button present on the contact page.
+- Not in this batch (per owner decisions): statement sending (consent-gated) — a later phase;
+  drag-Kanban and manual follow-up-date columns explicitly rejected.

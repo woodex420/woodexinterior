@@ -1,6 +1,6 @@
 # Woodex OS — Project Status & Quick Start
 
-**Updated:** 17 Oct 2026 (evening) · **Status: P8.3 Estimates module complete — the estimator became a versioned document with one-click quote conversion.**
+**Updated:** 17 Oct 2026 (evening) · **Status: P8.4 Sales tracking boards + client statements complete — the pipeline answers back, and the books speak to the client.**
 
 One line: CRM + quotations + invoicing + payments + inbox + Telegram + website CMS + double-entry ledger core are live and gated; invoices and receipts now post to the general ledger automatically, dues have a screen with consent-gated reminders, and money can be collected from the phone. Remaining: two-brand documents/estimation, tracking boards, automation agents, MySQL migration, handover.
 
@@ -26,7 +26,8 @@ One line: CRM + quotations + invoicing + payments + inbox + Telegram + website C
 | **System (P5)** | Telegram **15-command centre** + inline action buttons, health collector, audit-log viewer, change-requests board, optional owner 2FA, settings, users & roles |
 | **Website CMS** | Pages/sections with drag-reorder, media, menus, SEO + redirects, theme builder + design tokens, **v2.1 legacy import with URL parity (142 URLs)**, website export/import |
 | **Accounts ERP — batch C (P8.1)** | Chart of accounts (starter PKR set, ~31 accounts, business-line dimensions), monthly periods (open/close), **immutable balanced journal entries with two-way linked reversals**, integer-paisa amounts, JE-{year}-{seq} numbering, idempotent posting (`unique(source_type, source_id)`), OPEN-period rule |
-| **Estimates module (P8.3)** ⬅ newest | Persistent versioned estimates for all 6 estimator services — one server-side pricing engine (chosen finish + honest essential→premium band + rate book lines + explicit contingency), frozen rate snapshots, EST-{year}-{seq} numbers, deliberate review act, **idempotent one-click conversion to a quote draft** linked both ways (Sales → Estimations) |
+| **Sales tracking boards + statements (P8.4)** ⬅ newest | Event-driven **quote tracking board** (six groups mirroring the auto-chaser: follow-up due / awaiting reply / stale after 3 chases / expiring / won / lost) with a Log-chase action that writes the same follow_up event the chaser counts · **invoice tracking board** (overdue / due this week / current / partially paid / recently settled) with **inline one-act Collect** (records + verifies + receipts + books the ledger entry) and consent-gated Remind · **client statements** — branded letterhead PDF per contact with period filter, running balance, outstanding + aging, downloadable from the contact page and the board |
+| **Estimates module (P8.3)** | Persistent versioned estimates for all 6 estimator services — one server-side pricing engine (chosen finish + honest essential→premium band + rate book lines + explicit contingency), frozen rate snapshots, EST-{year}-{seq} numbers, deliberate review act, **idempotent one-click conversion to a quote draft** linked both ways (Sales → Estimations) |
 | **Payments & cash (P8.2)** | Issued invoices + verified receipts **auto-post to the GL** (receivable/revenue by business line, tax to taxes payable; receipts debit the method's mapped cash/bank account) · method→account mapping screen (Accounts → Payment methods) · **Due Payments screen** (aging buckets, client exposure, consent-gated WhatsApp reminders) · **Telegram `/collect`** (confirm → verified + receipted + booked) and **`/statement`** |
 
 ### Safety & security (A0 law, enforced everywhere)
@@ -45,7 +46,6 @@ One line: CRM + quotations + invoicing + payments + inbox + Telegram + website C
 ### Roadmap (docs/26 — each batch ships behind the full gate + owner sign-off)
 | Batch | Scope |
 |---|---|
-| **P8.4 Sales tracking** ← next | Quotation tracking board (follow-ups, stale alerts), invoice tracking board (issued → paid → overdue), client statements |
 | **P8.5 Automation & agents** | New-client alert + ask-for-number flow, **web chat widget now** (WhatsApp Cloud API replies once the business number is approved), monthly CRM report, automation control dashboard; rule-based only — LLM layer optional later |
 | **P8.6 Runtime, portal & handover** | **MySQL migration** (production only, after GL stabilises, before 2025 financial staging), projects board, client portal, handover pack |
 | **P9 tail** | Security review, load pass, restore drill, Urdu templates, training, final v2.1 sync |
