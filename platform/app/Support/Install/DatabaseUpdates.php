@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support\Install;
 
+use Database\Seeders\ChartOfAccountsSeeder;
 use Database\Seeders\NumberSequenceSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Contracts\Cache\Repository as Cache;
@@ -41,7 +42,11 @@ class DatabaseUpdates
     }
 
     /**
-     * Migrations, then the reference data that only ever adds what is missing (permissions, number sequences).
+     * Migrations, then the reference data that only ever adds what is missing (permissions, number
+     * sequences, chart of accounts + payment-method ledger mappings). The chart seeder keys every
+     * row by its stable code and never overwrites an owner's edit, so a database that already has
+     * accounts is untouched — and one that got the accounts TABLES from an earlier one-click update
+     * but never the seeded rows finally receives the defaults the payments module needs to post.
      */
     public function apply(): string
     {
@@ -53,7 +58,8 @@ class DatabaseUpdates
         $output[] = trim(Artisan::output());
         Artisan::call('db:seed', ['--class' => RolesAndPermissionsSeeder::class, '--force' => true]);
         Artisan::call('db:seed', ['--class' => NumberSequenceSeeder::class, '--force' => true]);
-        $output[] = 'Permissions and number sequences checked.';
+        Artisan::call('db:seed', ['--class' => ChartOfAccountsSeeder::class, '--force' => true]);
+        $output[] = 'Permissions, number sequences and the chart of accounts checked.';
 
         $this->clearCaches();
         $output[] = 'Caches cleared.';

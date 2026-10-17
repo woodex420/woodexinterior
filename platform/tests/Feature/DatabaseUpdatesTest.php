@@ -114,7 +114,7 @@ it('runs the real update (migrations, permissions, caches) from the button and o
     app()->instance(DatabaseUpdates::class, $updates);
     Permission::findByName('quotes.approve')->delete();
 
-    expect($updates->apply())->toContain('Permissions and number sequences checked.')
+    expect($updates->apply())->toContain('Permissions, number sequences and the chart of accounts checked.')
         ->and(Permission::where('name', 'quotes.approve')->exists())->toBeTrue()
         ->and(Artisan::call('woodex:update'))->toBe(0)
         ->and($updates->cleared)->toBe(2)

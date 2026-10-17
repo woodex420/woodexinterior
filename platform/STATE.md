@@ -1203,3 +1203,32 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
   on the board; Statement button present on the contact page.
 - Not in this batch (per owner decisions): statement sending (consent-gated) — a later phase;
   drag-Kanban and manual follow-up-date columns explicitly rejected.
+
+## Production database update stuck — resumable migrations — 2026-10-17
+
+- Production (u128159657_woodexint, MySQL/Hostinger) hit "Base table or view already exists:
+  1050 Table 'payment_method_accounts' already exists" on the one-click Database update. Root
+  cause: MySQL DDL is NOT transactional — an interrupted first attempt (timeout/aborted
+  request/racing clicks) had already created the table but never wrote its migrations row, so
+  the retry re-ran CREATE TABLE. Pending at the time: 160000 payment_method_accounts,
+  170000 estimates.
+- Fix: both pending migrations are now RESUMABLE — up() guards each step (hasTable for the
+  creates, hasColumn for quotes.estimate_id), so a retry records the migration and moves on
+  instead of fatalling. The table could only have been created by the same migration's DDL, so
+  its shape is already right. New rule for every future migration: guard DDL steps (MySQL has
+  no transactional DDL; the one-click update must always be re-runnable).
+- DatabaseUpdates::apply() now also seeds ChartOfAccountsSeeder after permissions/sequences:
+  it is firstOrCreate keyed on stable account codes and method names, never overwrites owner
+  edits, and it is what gives production the payment-method → ledger mappings P8.2 needs to
+  post receipts (a database that got the accounts TABLES from an earlier update but never the
+  seeded rows — possible, apply() never seeded them — receives the defaults now).
+- Regression test tests/Feature/ResumableMigrationsTest.php reproduces the exact stuck state
+  (tables present, migrations rows deleted, a pre-existing mapping row) and proves migrate
+  exits 0, re-records both rows, preserves data, and the next run is a plain no-op.
+  DatabaseUpdatesTest's wording assertion updated for the new log line. Verified: Installer +
+  DatabaseUpdates + SystemHealth + Estimates + DuePayments + TrackingBoards + Telegram collect
+  all green (50 passed in the focused run), Pint clean, Larastan 0, and a real `woodex:update`
+  on the runtime DB reports "Nothing to migrate … up to date".
+- Owner recovery: redeploy the branch on hPanel (if auto-deploy is off) → open the site →
+  Apply the database update — it should now complete, seed permissions/sequences/chart, clear
+  caches, and the staff "updating" notice clears on its own.

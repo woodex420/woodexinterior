@@ -14,6 +14,14 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // MySQL DDL is not transactional: an interrupted first attempt (timeout, aborted request,
+        // two clicks racing) can leave the table created but the migrations row unwritten, and the
+        // retry then fatals on "table already exists" — the exact state this guard resumes from.
+        // The table can only have been created by this migration's own DDL, so its shape is right.
+        if (Schema::hasTable('payment_method_accounts')) {
+            return;
+        }
+
         Schema::create('payment_method_accounts', function (Blueprint $table): void {
             $table->id();
             $table->string('method', 40)->unique();
