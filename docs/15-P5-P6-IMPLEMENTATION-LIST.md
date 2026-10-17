@@ -86,10 +86,12 @@ written by a listener on `ScheduledTaskFinished`, pruned after 14 days), mail te
 versions. One collector (`App\Domain\System\Health\SystemHealthReport`) feeds both the screen and the
 command — never two truths.
 
-### S6 · Change-requests board (SYS-010, ~0.5 d)
+### S6 · Change-requests board (SYS-010, ~0.5 d) — DONE 17 Oct (`ChangeRequests` board, 5 tests)
 
 System → Change Requests: list `/idea` `/issue` entries with status (new → accepted → planned → done/rejected),
-phase link, requester; status change notifies the requester on Telegram. `CR-0001` reference already exists.
+phase link, requester; status change notifies the requester on Telegram (`ChangeRequestUpdatedNotification`,
+bell + Telegram). `CR-0001` reference already existed. The flow is a board, not a jump menu: each card offers
+only its next moves; closing a card requires a note, which the requester reads on their phone.
 
 ### S7 · Alert rules builder (AUT-003, ~1 d)
 

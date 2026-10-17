@@ -29,7 +29,7 @@ class RolesAndPermissionsSeeder extends Seeder
         'social.manage',
         'reports.view', 'reports.finance',
         'settings.manage', 'users.manage', 'integrations.manage',
-        'system.health', 'system.import', 'audit.view', 'backups.manage',
+        'system.health', 'system.change_requests', 'system.import', 'audit.view', 'backups.manage',
     ];
 
     public function run(): void

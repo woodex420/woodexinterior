@@ -2,6 +2,27 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT, after P5 S6 — the change-requests board)
+
+- **P5 S6 is DONE and shipped (SYS-010):** System → Change Requests board (`app/Livewire/Admin/System/
+  ChangeRequests.php` + view, route `admin.system.change-requests`, permission `system.change_requests`
+  seeded for owner/admin — the nav placeholder is gone). Cards flow new → accepted → planned → in progress →
+  done/rejected, each offering only its next move; closing requires a note. `SetChangeRequestStatus` action +
+  `ChangeRequestUpdatedNotification` (bell + Telegram to the requester, never to the mover). Search covers
+  title/body and CR-numbers; filters open/all/by-status. Tests: `tests/Feature/ChangeRequestsBoardTest.php`
+  (5, incl. the /idea → board → phone loop). Gate green at 540 passed / 3 628 assertions, Larastan clean,
+  Pint clean 518 files. `woodex:update` migrates + reseeds permissions, so the server picks it up on apply.
+- **P5 shipped so far:** S1+S2 (framework + reads, `3fc70c7`), S3 (actions + inline buttons, `1fe9d08`),
+  S5 (health completion, `3429465`), S6 (this board). S4 digests + S7 alert-rules builder are the automation
+  agent's lane (docs/16 §1); S8 hardening leftovers (unlink on user deactivation, quiet-hours batching) remain
+  small and unscheduled — do them with Wave 2.
+- **NEXT — Wave 2 per docs/16 §10: the P3 reports kit.** Three screens behind the null routes in
+  AdminNavigation lines 40/72/73: Receivables (RPT-005, per-client balances 30/60/90), Sales Funnel (RPT-002,
+  leads → quotes → wins by source/line + period filter), Revenue & Collections (RPT-009-ish, invoiced vs
+  collected per month) + the CSV export kit (INV-005b/RPT-002 export). Then SYS-007 audit-log viewer (uses
+  existing `audit.view` permission), then CNV-004. P5 exit test: the owner completes a full day of approvals
+  from Telegram — remind them to link their chat (profile → Link Telegram) and try /today /approvals /idea.
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after P5 S5 — health completion)
 
 - **P5 S5 is DONE and shipped (SYS-008):** one collector `app/Domain/System/Health/SystemHealthReport.php`

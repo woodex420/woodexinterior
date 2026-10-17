@@ -80,7 +80,7 @@ final class AdminNavigation
                 self::item('Data Import', 'database', 'admin.data-import', 'system.import'),
                 self::item('Recycle Bin', 'archive', 'admin.recycle-bin', 'leads.delete'),
                 self::item('Health', 'health', 'admin.system.health', 'system.health'),
-                self::item('Change Requests', 'lightbulb', null, null, 'P5'),
+                self::item('Change Requests', 'lightbulb', 'admin.system.change-requests', 'system.change_requests'),
             ]),
         ];
     }
