@@ -1,0 +1,136 @@
+<?php
+// AUDIT SNAPSHOT, NOT REGRESSION EXPECTATIONS: passing asserts the observed DEFECT, not desired behavior.
+// Copy to an isolated Laravel runtime as tests/Feature/AutomationAuditProbeTest.php and run only that file.
+// Uses the existing Pest.php / TestCase with seeded in-memory SQLite; no production DB or provider calls.
+
+use App\Domain\Conversations\Enums\MessageStatus;
+use App\Domain\Conversations\Models\Message;
+use App\Domain\Crm\Models\Contact;
+use App\Domain\Sales\Actions\AllocatePayment;
+use App\Domain\Sales\Actions\RecordPayment;
+use App\Domain\Sales\Actions\VerifyPayment;
+use App\Domain\Sales\Enums\InvoiceStatus;
+use App\Domain\Sales\Enums\PaymentStatus;
+use App\Domain\Sales\Models\Invoice;
+use App\Domain\Sales\Models\Payment;
+use App\Domain\System\Models\WebhookEvent;
+use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
+use App\Integrations\WhatsApp\Fakes\FakeWhatsAppGateway;
+use App\Livewire\Admin\Sales\PaymentsIndex;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
+
+beforeEach(function () {
+    $this->travelTo(now()->setDate(2026, 10, 17)->setTime(11, 0));
+    Storage::fake('local'); Mail::fake(); Notification::fake(); Http::preventStrayRequests();
+    $this->accountant = $this->userWithRole('accountant');
+    $this->client = Contact::factory()->create(['email' => 'audit@example.test']);
+    $this->app->instance(WhatsAppGateway::class, new FakeWhatsAppGateway);
+    config()->set('services.whatsapp.app_secret', 'audit-fixture-secret');
+});
+
+function auditInvoice(Contact $client, string $number, string $due = '2026-10-20', InvoiceStatus $status = InvoiceStatus::Issued): Invoice
+{
+    return Invoice::query()->create([
+        'number' => $number, 'kind' => 'milestone', 'status' => $status,
+        'contact_id' => $client->id, 'business_line' => 'interior', 'currency' => 'PKR',
+        'subtotal_minor' => 10000, 'total_minor' => 10000, 'paid_minor' => 0, 'balance_minor' => 10000,
+        'issue_date' => '2026-10-17', 'due_date' => $due,
+    ]);
+}
+function auditPayment(Contact $client, ?Invoice $invoice = null, string $status = 'verified'): Payment
+{
+    return Payment::query()->create([
+        'contact_id' => $client->id, 'invoice_id' => $invoice?->id, 'amount_minor' => 10000,
+        'received_on' => '2026-10-17', 'method' => 'bank_transfer', 'status' => $status, 'submitted_by' => 'client',
+    ]);
+}
+function auditSignedWhatsApp(array $value): void
+{
+    $body = json_encode(['object' => 'whatsapp_business_account', 'entry' => [['changes' => [['value' => $value]]]]], JSON_THROW_ON_ERROR);
+    test()->call('POST', '/webhooks/whatsapp', [], [], [], [
+        'HTTP_X_HUB_SIGNATURE_256' => 'sha256='.hash_hmac('sha256', $body, 'audit-fixture-secret'),
+        'CONTENT_TYPE' => 'application/json',
+    ], $body)->assertOk();
+}
+
+it('AUDIT F01 observes the payment UI accepting a different clients invoice ID', function () {
+    $other = Contact::factory()->create();
+    $invoice = auditInvoice($other, 'AUDIT-CROSS-1');
+    Livewire::actingAs($this->accountant)->test(PaymentsIndex::class)
+        ->set('contactId', $this->client->id)->set('invoiceId', $invoice->id)
+        ->set('amount', '100')->set('receivedOn', '2026-10-17')->set('method', 'cash')
+        ->call('save')->assertHasNoErrors();
+    $payment = Payment::query()->sole();
+    expect($payment->contact_id)->toBe($this->client->id)
+        ->and($payment->allocations()->sole()->invoice_id)->toBe($invoice->id)
+        ->and($invoice->refresh()->status)->toBe(InvoiceStatus::Paid);
+});
+
+it('AUDIT F02 observes a targeted allocation resurrecting a void invoice', function () {
+    $invoice = auditInvoice($this->client, 'AUDIT-VOID-1', status: InvoiceStatus::Void);
+    app(AllocatePayment::class)->handle(auditPayment($this->client), [$invoice->id => 10000]);
+    expect($invoice->refresh()->status)->toBe(InvoiceStatus::Paid);
+});
+
+it('AUDIT F03 observes stale verification replacing an already issued receipt', function () {
+    $invoice = auditInvoice($this->client, 'AUDIT-VERIFY-1');
+    $payment = auditPayment($this->client, $invoice, 'pending_verification');
+    $copyA = Payment::query()->findOrFail($payment->id);
+    $copyB = Payment::query()->findOrFail($payment->id);
+    app(VerifyPayment::class)->handle($copyA, $this->accountant);
+    $first = $payment->fresh()->receipt_number;
+    app(VerifyPayment::class)->handle($copyB, $this->accountant);
+    expect($payment->refresh()->status)->toBe(PaymentStatus::Verified)
+        ->and($payment->receipt_number)->not->toBe($first)
+        ->and($payment->allocations()->count())->toBe(1);
+});
+
+it('AUDIT F04 observes RecordPayment ignoring its documented explicit allocation map', function () {
+    $old = auditInvoice($this->client, 'AUDIT-MAP-OLD', '2026-10-18');
+    $chosen = auditInvoice($this->client, 'AUDIT-MAP-CHOSEN', '2026-10-22');
+    $payment = app(RecordPayment::class)->handle([
+        'contact_id' => $this->client->id, 'amount_minor' => 10000, 'received_on' => '2026-10-17',
+        'method' => 'cash', 'allocations' => [$chosen->id => 10000],
+    ], $this->accountant);
+    expect($payment->allocations()->sole()->invoice_id)->toBe($old->id)
+        ->and($chosen->refresh()->paid_minor)->toBe(0);
+});
+
+it('AUDIT F05 observes targeted excess remaining credit instead of settling the next open invoice', function () {
+    $first = auditInvoice($this->client, 'AUDIT-EXCESS-1');
+    $second = auditInvoice($this->client, 'AUDIT-EXCESS-2');
+    $payment = app(RecordPayment::class)->handle([
+        'contact_id' => $this->client->id, 'invoice_id' => $first->id, 'amount_minor' => 15000,
+        'received_on' => '2026-10-17', 'method' => 'cash',
+    ], $this->accountant);
+    expect((int) $payment->allocations()->sum('amount_minor'))->toBe(10000)
+        ->and($second->refresh()->paid_minor)->toBe(0);
+});
+
+it('AUDIT F06 observes batched inbound messages losing the second event and replay not repairing it', function () {
+    $value = ['contacts' => [['profile' => ['name' => 'Audit Fixture']]], 'messages' => [
+        ['id' => 'wamid.audit-1', 'from' => '923000000001', 'type' => 'text', 'text' => ['body' => 'First']],
+        ['id' => 'wamid.audit-2', 'from' => '923000000002', 'type' => 'text', 'text' => ['body' => 'Second']],
+    ]];
+    auditSignedWhatsApp($value);
+    expect(Message::query()->count())->toBe(1)
+        ->and(Message::query()->where('external_id', 'wamid.audit-2')->exists())->toBeFalse()
+        ->and(WebhookEvent::query()->where('external_id', 'wamid.audit-2')->firstOrFail()->status->value)->toBe('failed');
+    auditSignedWhatsApp($value);
+    expect(Message::query()->count())->toBe(1);
+});
+
+it('AUDIT F07 observes batched status events marking both processed while the second message stays sent', function () {
+    $a = Message::factory()->outbound()->create(['external_id' => 'wamid.audit-status-a']);
+    $b = Message::factory()->outbound()->create(['external_id' => 'wamid.audit-status-b']);
+    auditSignedWhatsApp(['statuses' => [
+        ['id' => $a->external_id, 'status' => 'read'], ['id' => $b->external_id, 'status' => 'read'],
+    ]]);
+    expect($a->refresh()->status)->toBe(MessageStatus::Read)
+        ->and($b->refresh()->status)->toBe(MessageStatus::Sent)
+        ->and(WebhookEvent::query()->where('status', 'processed')->count())->toBe(2);
+});

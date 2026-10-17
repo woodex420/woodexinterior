@@ -13,3 +13,12 @@ graphify-out/
 # OS
 .DS_Store
 Thumbs.db
+
+# Hostinger deploy manifest (composer.json in the root installs into platform/vendor)
+/composer.lock
+/vendor/
+# Installer setup code copy (written on the server, deleted after installation)
+/WOODEX-SETUP-CODE.txt
+
+# Website audit output (tools/website/audit.php)
+tools/website/audit.json
