@@ -2,7 +2,7 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 17 Oct 2026 PKT, after P5 S1 + S2)
+## Resume here (project memory, saved 17 Oct 2026 PKT, after the master pending list P1→P7)
 
 - **The owner's order for the frontend, unchanged:** the original v1 site is live on woodex.com.pk and stays live;
   **v2 is not started** — its admin master plan (stack, theme builder, page builder, SEO) is the next document,
@@ -30,6 +30,19 @@ _Update at the end of every task (docs/03 Part A §7)._
   `quote_follow_up_days` (3) to a **maximum of three chases**. It never messages the client — it tells the studio
   to call. `woodex:quote-follow-ups`, scheduled `dailyAt('09:00')->withoutOverlapping(30)`; off by default behind
   `sales.quote_follow_ups_enabled` (`7062a5a`).
+- **A second agent is working on automation** (owner, 17 Oct): their deliverables are a P1–P3 audit, a master
+  agent architecture (Telegram control, approval rules, specialist agents, funnel) and a 75-package completion
+  backlog. **None of it is in this repo yet** (checked 17 Oct). The team protocol, lane split and the review
+  checklist for their work are in `docs/16-MASTER-PENDING-LIST.md` §1: their lane is `app/Domain/Automation/`
+  + bot + alert rules + their docs; this workspace keeps Telegram commands (the `TelegramCommandBus` is the
+  interface they extend), inbox, reports and the whole frontend v2. Every claim of "built" gets checked against
+  this codebase; decisions go to docs/07; their code arrives with the full gate green.
+- **The master pending list P1→P7 is written** (`docs/16-MASTER-PENDING-LIST.md`, `c80a391`), code-verified:
+  P3's three report screens are genuinely placeholders (Sales Funnel, Revenue & Collections, Receivables —
+  RPT-002/005, the real P3 gap); the audit-log viewer (SYS-007) does not exist despite its permission; backups
+  run but have no off-site destination yet; booking is paused pending real slots. WhatsApp live connection is
+  **no-go for now** per the owner — nothing code-side blocks on it. Run order for both agents in four waves is
+  in §10; standing questions for the owner in §11.
 - **The owner redirected the order (17 Oct): P5 → P6 next** ("start next p5 to p6 create complate list
   to start impliment"). The P4 remainder (canned replies, sequences, broadcasting, bot) stays on docs/14 and
   resumes where the owner directs. The complete, ordered P5→P6 list is `docs/15-P5-P6-IMPLEMENTATION-LIST.md`
