@@ -121,7 +121,7 @@ From docs/07 (P-items). None of these need code; all of them block something:
 | **P-15** GA4 / GTM / Clarity IDs | Analytics, and the v1/v2 comparison (docs/13 §8) |
 | **P-13** Search Console access | Watching a group after it switches |
 | **P-12** Real project photographs | Projects group, "Selected work" proof |
-| **P-09** Nohemi font licence confirmed | Theme tokens |
+| **P-09** ~~Nohemi font licence~~ | No longer gates theme tokens — v1's own design (Plus Jakarta Sans) was chosen (D-116); Nohemi only if the studio ever switches to it |
 | **P-11** Real Google Business Profile URL | Local SEO and rating schema |
 | **P-16** Settings: email `info@woodex.com.pk`, hours 09:30–18:30 | NAP consistency everywhere |
 | **New** WhatsApp templates approved in Meta (quotation first) | WAP-005, quotation sending outside the 24-hour window |

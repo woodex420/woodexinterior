@@ -78,7 +78,7 @@ Remaining, split for two agents:
 
 | ID | Task | Lane |
 |---|---|---|
-| CNV-004 | Canned replies with variables, EN/UR, `/` shortcut | W |
+| ~~CNV-004~~ | Canned replies — **DONE 17 Oct** (`5c626f5`) | W |
 | CNV-003b | @mentions in internal notes | W |
 | CNV-006 | Real-time broadcasting (needs the owner's Pusher/Ably decision) + poll fallback | W + O |
 | CNV-007/008 | Conversation SLA; media sending out | W |
@@ -102,7 +102,7 @@ Remaining, split for two agents:
 
 | Phase | Task | Lane |
 |---|---|---|
-| V2-1 | Design tokens + theme builder | W — **un-gated: the owner chose v1's own design as the token source (D-116, 17 Oct)** |
+| ~~V2-1~~ | Design tokens + theme builder — **DONE 17 Oct** (`ba8323f`): tokens in the live CSS's own vocabulary, `/assets/theme.css` re-skins the live v1 pages with no deploy | W |
 | V2-2 | Section library + page builder (drag, preview, publish) | W |
 | V2-3 | Global blocks, collections, media, menus completion | W |
 | V2-4 | SEO layer + auditor + AI crawler rules + `llms.txt` | W |
