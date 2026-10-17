@@ -1,6 +1,8 @@
 # 14 · Pending tasks — P4, P5 and the v2 frontend
 
-_One list, current as of 17 Oct 2026. Status is checked against the code, not against the plan documents._
+_One list, current as of 17 Oct 2026. Status is checked against the code, not against the plan documents.
+**The master index across all phases P1–P7, with owners per item and the two-agent run order, is
+docs/16-MASTER-PENDING-LIST.md** — this file stays as the P4/P5 detail._
 _Done work is listed only where something pending depends on it._
 
 Legend — **DONE** shipped and tested · **PART** partly there · **TODO** not started · **BLOCKED** waiting on the
