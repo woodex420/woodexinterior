@@ -133,6 +133,8 @@
     <link rel="preload" as="image" href="{{ $preload['href'] }}" imagesrcset="{{ $preload['srcset'] }}" imagesizes="{{ $preload['sizes'] }}" fetchpriority="high">
 @endif
 @vite(['resources/css/site.css', 'resources/js/site.js'])
+@use('App\Domain\Website\Support\ThemeCss')
+<link rel="stylesheet" href="{{ app(ThemeCss::class)->url() }}">
 
 @include('site.partials.tracking')
 

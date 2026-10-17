@@ -2,6 +2,37 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT, after V2-1 — theme tokens + theme builder)
+
+- **V2-1 is DONE and shipped (owner decisions: live v1 values, wire the live site — both confirmed via
+  ask_user):** `theme_tokens` table (group/key/value/label/type/sort) + `ThemeToken` model
+  (`app/Domain/Website/Models/`) seeded by `ThemeTokensSeeder` (15 tokens in the LIVE CSS's own
+  vocabulary — `--navy #0C1628`, `--wood #B8956A`, `--surface #F4EFE7`, `--ink #12151C`, `--muted
+  #6A6560`, `--wx-font` Plus Jakarta Sans stack, `--r-lg 16px` — from the final :root cascade of
+  site-p21.css → v1-p21.css → the inline wx-crit layer). `ThemeCss`
+  (`app/Domain/Website/Support/`) renders tokens + ALIASES (`--wx-navy`, `--beige`, `--wx-r-*` …) +
+  DERIVED v2 vocabulary (`--color-navy-900: var(--navy)`, tints via color-mix, `--font-heading`,
+  `--radius-ui`) into one :root block, cached a day (`woodex:theme-css`), content-hashed.
+- **Two URLs, one theme:** (1) `/assets/theme.css` — the stylesheet every v1 static page ALREADY links
+  last (it beat the inline wx-crit styles in the cascade); the static `:root{}` stub was DELETED so the
+  app serves it (60 s cache) → saving a token in the Theme Builder re-skins the LIVE woodex.com.pk with
+  no deploy (verified live in the preview). Deploy safety: `tools/deploy/after-composer.php` deletes the
+  stale stub Hostinger would leave behind (deploy replaces but never deletes). (2) `/theme/{hash}.css` —
+  what v2 pages link (head.blade.php, after @vite); hash = content so fresh URLs are immutable, old
+  hashed URLs serve current tokens no-cache.
+- **Theme Builder:** Website → Theme Builder (`admin.website.theme`, `theme.manage`) — grouped colour
+  pickers (hex) + text inputs (rgba/shadow) + font/radius, Save (flushes cache, mints hash), "Back to
+  v1 palette" (resetToV1 re-applies the seeder's values), "Open the site". Nav placeholder wired.
+  Registered `ThemeTokensSeeder` in ProductionSeeder (7th) so `woodex:update` installs it.
+- **NEXT — V2-2: the section builder / page builder** (docs/12 §5.2, V2-2): drag-and-drop (Livewire 4
+  `wire:sort` is available), device preview, draft → publish. The 15 section templates already read
+  tokens. Then V2-3 header/footer builder. P5 exit: owner completes a full day of approvals from
+  Telegram — S1–S3+S5+S6 shipped; S4/S7 = automation agent's lane.
+- Tests: `tests/Feature/ThemeTokensTest.php` (6). Gate green at 561 passed / 3 766 assertions,
+  Larastan clean, Pint clean 540 files. Preview verified: login 302, `/`, `/furniture/` (v2 page,
+  links /theme/{hash}.css), `/admin/website/theme`, `/assets/theme.css` all good; a navy change showed
+  up live and was reverted.
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after CNV-004 — canned replies)
 
 - **CNV-004 is DONE and shipped:** canned replies with variables. `canned_replies` table (title, body, locale

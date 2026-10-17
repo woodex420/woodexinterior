@@ -21,6 +21,7 @@ class ProductionSeeder extends Seeder
             RateBookSeeder::class,
             QuoteTemplateSeeder::class,
             CannedRepliesSeeder::class,
+            ThemeTokensSeeder::class,
         ]);
     }
 }

@@ -66,7 +66,7 @@ final class AdminNavigation
                 self::item('Menus', 'menu', 'admin.website.menus', 'website.edit'),
                 self::item('SEO & Redirects', 'globe', 'admin.website.redirects', 'website.edit'),
                 self::item('Website Settings', 'settings', 'admin.website.settings', 'settings.manage'),
-                self::item('Theme Builder', 'palette', null, null, 'P6'),
+                self::item('Theme Builder', 'palette', 'admin.website.theme', 'theme.manage'),
             ]),
             self::group('Reports', [
                 self::item('Sales Funnel', 'chart', 'admin.reports.funnel', 'reports.view'),

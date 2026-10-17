@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Website\Support\ThemeCss;
 use App\Http\Controllers\Portal\ClientPortalController;
 use App\Http\Controllers\Portal\InvoicePortalController;
 use App\Http\Controllers\Portal\ProjectPortalController;
@@ -18,6 +19,19 @@ use Illuminate\Support\Facades\Route;
 | Local/CI: http://localhost:8000/admin · Production: https://admin.woodex.com.pk
 */
 // db-current before two-factor: after a deploy with new migrations the owner applies the update first (D-58).
+// The site's theme tokens as CSS (V2-1, docs/12 §5.1, D-116). Two URLs, one theme:
+//  - /assets/theme.css is linked last by every v1 page: serving it from the database (the static stub was
+//    removed) means a token saved in the Theme Builder re-skins the live site, no deploy.
+//  - /theme/{hash}.css is what the v2 pages link; the hash is the content, so a saved change mints a fresh
+//    immutable URL while pages still holding an old URL get the current tokens and re-skin anyway.
+Route::get('/assets/theme.css', function (ThemeCss $theme) {
+    return response($theme->css(), 200, $theme->liveHeaders());
+})->name('theme.live');
+
+Route::get('/theme/{hash}.css', function (string $hash, ThemeCss $theme) {
+    return response($theme->css(), 200, $theme->headersFor($hash));
+})->name('theme.css');
+
 $admin = Route::middleware(['auth', 'active', 'db-current', 'two-factor'])
     ->prefix(config('woodex.admin.path'))
     ->name('admin.');
