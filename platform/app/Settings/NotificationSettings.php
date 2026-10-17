@@ -16,6 +16,9 @@ class NotificationSettings extends Settings
 {
     public bool $telegram_enabled;
 
+    /** P10.2: play a sound when a website chat message arrives (studio-wide, default off). */
+    public bool $chat_alert_sound = false;
+
     public string $quiet_hours_start;
 
     public string $quiet_hours_end;

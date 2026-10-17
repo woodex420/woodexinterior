@@ -21,6 +21,7 @@
         </button>
 
         {{-- Notifications (GLB-008) --}}
+        <livewire:admin.conversations.live-chat-bell />
         <livewire:admin.notification-bell />
 
         {{-- User menu --}}

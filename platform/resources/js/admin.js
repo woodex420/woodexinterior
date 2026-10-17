@@ -70,10 +70,10 @@ document.addEventListener('alpine:init', () => {
 
     Alpine.store('toasts', {
         items: [],
-        push(message, type = 'success') {
+        push(message, type = 'success', action = null) {
             const id = Date.now() + Math.random();
-            this.items.push({ id, message, type });
-            setTimeout(() => this.remove(id), 4500);
+            this.items.push({ id, message, type, action });
+            setTimeout(() => this.remove(id), action ? 8000 : 4500);
         },
         remove(id) {
             this.items = this.items.filter((toast) => toast.id !== id);
@@ -85,6 +85,27 @@ document.addEventListener('alpine:init', () => {
 window.addEventListener('toast', (event) => {
     const detail = Array.isArray(event.detail) ? event.detail[0] : event.detail;
     window.Alpine?.store('toasts')?.push(detail?.message ?? 'Saved', detail?.type ?? 'success');
+});
+
+/* ---------- Live website chat (P10.2): toast + optional sound when a visitor texts the bubble.
+   The drawer never opens by itself (owner decision); the toast's Open button does it on request. ---------- */
+window.addEventListener('chat-alert', (event) => {
+    const detail = Array.isArray(event.detail) ? event.detail[0] : event.detail;
+    const name = detail?.name ?? 'Website visitor';
+    const preview = detail?.preview ?? 'New message';
+    window.Alpine?.store('toasts')?.push(`Website chat — ${name}: ${preview}`, 'chat', {
+        label: 'Open chat',
+        event: 'open-live-chat',
+    });
+
+    if (detail?.sound) {
+        // The studio-wide switch (Settings → Notifications, default off) travels with the event.
+        try {
+            new Audio('/sounds/chat-alert.wav').play().catch(() => {});
+        } catch {
+            /* A blocked autoplay is fine: the toast alone still tells the story. */
+        }
+    }
 });
 
 /* ---------- Pipeline board (SortableJS) ---------- */

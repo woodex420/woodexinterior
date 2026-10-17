@@ -118,6 +118,7 @@ class SettingsPage extends Component
 
         $this->notifications = [
             'telegram_enabled' => $notifications->telegram_enabled,
+            'chat_alert_sound' => $notifications->chat_alert_sound,
             'quiet_hours_start' => $notifications->quiet_hours_start,
             'quiet_hours_end' => $notifications->quiet_hours_end,
             'daily_digest_time' => $notifications->daily_digest_time,
@@ -254,6 +255,7 @@ class SettingsPage extends Component
 
         $data = $this->validate([
             'notifications.telegram_enabled' => ['boolean'],
+            'notifications.chat_alert_sound' => ['boolean'],
             'notifications.quiet_hours_start' => ['required', 'date_format:H:i'],
             'notifications.quiet_hours_end' => ['required', 'date_format:H:i'],
             'notifications.daily_digest_time' => ['required', 'date_format:H:i'],
@@ -264,6 +266,7 @@ class SettingsPage extends Component
         ], attributes: ['notifications.unassigned_lead_roles' => 'escalation roles', 'notifications.sla_final_roles' => 'final escalation roles'])['notifications'];
 
         $settings->telegram_enabled = (bool) ($data['telegram_enabled'] ?? false);
+        $settings->chat_alert_sound = (bool) ($data['chat_alert_sound'] ?? false);
         $settings->quiet_hours_start = $data['quiet_hours_start'];
         $settings->quiet_hours_end = $data['quiet_hours_end'];
         $settings->daily_digest_time = $data['daily_digest_time'];

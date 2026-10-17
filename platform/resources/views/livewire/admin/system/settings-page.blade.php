@@ -250,6 +250,7 @@
             <x-admin.card title="Telegram alerts" description="Each person links their own Telegram under Security & Telegram.">
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <label class="flex items-center gap-2 text-theme-sm text-gray-700 md:col-span-3 dark:text-gray-300"><input type="checkbox" wire:model="notifications.telegram_enabled" class="rounded border-gray-300"> Send alerts to Telegram</label>
+                    <label class="flex items-center gap-2 text-theme-sm text-gray-700 md:col-span-3 dark:text-gray-300"><input type="checkbox" wire:model="notifications.chat_alert_sound" class="rounded border-gray-300"> Play a sound when a website chat message arrives</label>
                     <x-admin.field label="Quiet hours start" for="notifications.quiet_hours_start" hint="Non-urgent alerts wait until quiet hours end."><input id="notifications.quiet_hours_start" type="time" wire:model="notifications.quiet_hours_start" class="wx-input"></x-admin.field>
                     <x-admin.field label="Quiet hours end" for="notifications.quiet_hours_end"><input id="notifications.quiet_hours_end" type="time" wire:model="notifications.quiet_hours_end" class="wx-input"></x-admin.field>
                     <x-admin.field label="Daily summary at" for="notifications.daily_digest_time"><input id="notifications.daily_digest_time" type="time" wire:model="notifications.daily_digest_time" class="wx-input"></x-admin.field>

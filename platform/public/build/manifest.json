@@ -12,7 +12,7 @@
     "isDynamicEntry": true
   },
   "resources/css/admin.css": {
-    "file": "assets/admin-AHcF9OHY.css",
+    "file": "assets/admin-Bf0fMvAI.css",
     "name": "admin",
     "names": [
       "admin.css"
@@ -27,7 +27,7 @@
     ]
   },
   "resources/css/site.css": {
-    "file": "assets/site-BEBEE2nc.css",
+    "file": "assets/site-CxCZCkdy.css",
     "name": "site",
     "names": [
       "site.css"
@@ -58,7 +58,7 @@
     "src": "resources/fonts/Nohemi-SemiBold.otf"
   },
   "resources/js/admin.js": {
-    "file": "assets/admin-CaE8g08-.js",
+    "file": "assets/admin-BX8CFXnE.js",
     "name": "admin",
     "src": "resources/js/admin.js",
     "isEntry": true,

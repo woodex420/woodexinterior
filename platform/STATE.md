@@ -1476,3 +1476,48 @@ wrap in a plain HTML span; (2) CaptureLead dedupes by phone, so tests need disti
 lead; (3) `now()->addHours(3)` crosses midnight near end of day — freeze the clock in board tests;
 (4) the preview's php -S needs `-t public` with a router that checks `is_file(public.$uri)` or
 hashed assets 404 and the Alpine store never registers (sidebar goes blank).
+
+## 48. P10.2 — Live website chat runtime (17–18 Oct 2026 night)
+
+Owner's ask: know a website visitor is texting the bubble from any admin page, answer from
+there, no page reloads, never auto-open anything. Shipped as a header bell + drawer.
+
+- `LiveChatBell` component (`app/Livewire/Admin/Conversations/LiveChatBell.php`) mounted in the
+  admin header before the notification bell: unread badge (counts web_chat conversations with
+  unread > 0), green dot while a visitor messaged within the last 2 minutes, `wire:poll.10s.visible`
+  refresh, and a slide-over drawer listing live web_chat threads (open/pending, newest first, 30 max)
+  with the full message thread and an inline reply box. The whole blade is guarded by
+  `canUse` (inbox.view): staff without it render an inert empty root — the drawer markup never
+  reaches their page (test asserts `Website chat` is absent).
+- Toast, not interruption: each render compares `newestUnread()->last_message_at` against the
+  per-user session baseline `livechat.seen_at` (set on first render — history never replays) and
+  dispatches `chat-alert {name, preview, sound}`. admin.js pushes an 8-second toast with an
+  **Open chat** button that fires the `open-live-chat` window event → drawer opens, newest thread
+  auto-selected, `markRead` claims it (unread → 0, teammates' badges fall too). A teammate reading
+  the thread first suppresses the toast for everyone. The drawer NEVER opens by itself (owner
+  decision P10-C).
+- Reply path: `send()` runs SendConversationMessage with the new `web_chat` branch — message
+  stored direction=out/status=sent, no external transport, conversation touched. Verified in the
+  browser: reply appears in-thread instantly, draft clears.
+- Sound: studio-wide `notifications.chat_alert_sound` (settings migration
+  `2026_10_18_000100`, **default off**). Toggled from the drawer footer (settings.manage gate,
+  403 otherwise) or Settings → Notifications checkbox. When on, the browser plays
+  `public/sounds/chat-alert.wav` (0.35s two-tone ding) on chat-alert; autoplay blocks are caught.
+- Tests: `P10LiveChatTest` — 12 green: permission wall, badge + live dot, 2-minute quiet window,
+  web_chat-only drawer, no history replays, toast-once-then-baseline, teammate-read suppression,
+  drawer-open marks read, inline reply, sound default/permission, sound round-trip, rides-along
+  on every admin page. Gate: **97 files / 1034 passed / 0 failed** · Pint clean · Larastan 0.
+- Live: preview E2E in a real browser — visitor message injected mid-session; poll carried it,
+  toast showed "Website chat — Bilal Akhtar: …" with Open chat, drawer opened on click, badge
+  dropped 2 → 1, reply sent. Shots in /home/user/p101-shots/ (live-chat-bell, live-chat-toast,
+  live-chat-drawer, live-chat-reply).
+
+Gotchas hit: (1) assertSeeHtml on a `<template x-teleport>` drawer — Livewire's test html()
+strips template contents, so the drawer renders inline (no teleport; fixed positioning works,
+header subtree has no transform ancestors); (2) Livewire action aborts surface as
+`assertStatus(403)` on `->call()`, not `->throws(HttpException)`; (3) DB timestamps are
+second-precision — seeding a baseline conversation BEFORE the first render (and nudging the new
+message a second into the future) avoids the same-second `gt()` trap; (4) a silent python
+str.replace miss left admin.js unedited while everything else shipped — verify edits with
+grep before building; (5) the toast lives 8 seconds — E2E checks must wait for the event,
+then assert immediately.

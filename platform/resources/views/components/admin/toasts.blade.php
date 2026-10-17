@@ -9,6 +9,9 @@
                 'border-gray-200 text-gray-700 dark:border-gray-800 dark:text-gray-300': !['success','error','warning'].includes(toast.type),
              }">
             <span class="flex-1" x-text="toast.message"></span>
+            <button type="button" x-show="toast.action" x-text="toast.action?.label ?? 'Open'"
+                    @click="toast.action?.event && window.dispatchEvent(new CustomEvent(toast.action.event)); $store.toasts.remove(toast.id)"
+                    class="shrink-0 rounded-md px-2 py-0.5 text-theme-xs font-medium text-navy-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"></button>
             <button type="button" class="text-gray-400 hover:text-gray-600" @click="$store.toasts.remove(toast.id)" aria-label="Dismiss">
                 <x-icon name="x" class="size-4" />
             </button>
