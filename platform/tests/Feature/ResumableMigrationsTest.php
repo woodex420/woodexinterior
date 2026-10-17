@@ -21,6 +21,7 @@ it('resumes a migration whose table exists without its migrations row', function
     $forgotten = [
         '2026_10_17_160000_create_payment_method_accounts',
         '2026_10_17_170000_create_estimates',
+        '2026_10_17_180000_create_automations',
     ];
     DB::table('migrations')->whereIn('migration', $forgotten)->delete();
 
@@ -33,7 +34,7 @@ it('resumes a migration whose table exists without its migrations row', function
     $exit = Artisan::call('migrate', ['--force' => true]);
 
     expect($exit)->toBe(0)
-        ->and(DB::table('migrations')->whereIn('migration', $forgotten)->count())->toBe(2)
+        ->and(DB::table('migrations')->whereIn('migration', $forgotten)->count())->toBe(3)
         ->and(PaymentMethodAccount::query()->where('method', 'cash')->exists())->toBeTrue();
 
     // And the very next run is a plain no-op.

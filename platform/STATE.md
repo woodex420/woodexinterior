@@ -1263,3 +1263,28 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
 - Sandbox gotcha (new): running `artisan view:clear` while the preview server is serving breaks
   the running process (wasm FS stat cache serves dead compiled-view paths → 500s on every
   Blade page). Fix: restart the preview process. Do not view:clear under the live preview.
+
+## Production update stuck again on automations — serialized updates — 2026-10-17 (night)
+
+- The 01a836f resumable fix worked (payment_method_accounts and estimates recorded — they left
+  the pending list), but the new 180000 automations migration hit "the same error" on production.
+  The deployed file HAD the hasTable guard, so a sequential retry could not fatal — the only
+  remaining window is CONCURRENCY: two Apply clicks in flight (double-click, two tabs, two
+  admins) both pass hasTable() before either commits CREATE TABLE, the loser fatals 1050 and can
+  leave table-created-without-row. That race is also the most plausible cause of the ORIGINAL
+  160000 incident. Production's engine also accepted the INT→BIGINT FKs in estimates, so the
+  engine is the lenient kind (MariaDB) and the FK was never the blocker.
+- Hardening shipped:
+  1. DatabaseUpdates::apply() is now SERIALIZED by an atomic cache lock (10-minute TTL, released
+     in finally). A second click while an update runs gets an honest "An update is already
+     running — wait, then reload" instead of racing. A cache store without lock support must not
+     block updates at all (lock failures degrade to running unprotected).
+  2. The automations migration drops its foreign key on toggled_by (kept as a correctly-typed
+     foreignId column, no constraint): a constraint on a handful of audit rows is not worth a
+     failed deploy. The rule stands — the one-click update must survive anything.
+  3. ResumableMigrationsTest now covers 180000 too; new DatabaseUpdatesTest case proves the lock
+     blocks a second update and that apply() releases its own lock (this test caught a real bug:
+     inside DatabaseUpdates, `Cache` is the Repository interface alias — the lock call threw and
+     was swallowed by the lock-failure fallback, silently running unprotected. Now CacheFacade).
+- Manual escape hatch if anything still fails on production: the automations table holds only
+  toggle overrides (production has none yet) — DROP TABLE automations in phpMyAdmin, then Apply.

@@ -9,6 +9,7 @@ use Database\Seeders\ProductionSeeder;
 use Database\Seeders\QuoteTemplateSeeder;
 use Database\Seeders\RateBookSeeder;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Permission;
 
 /*
@@ -119,6 +120,28 @@ it('runs the real update (migrations, permissions, caches) from the button and o
         ->and(Artisan::call('woodex:update'))->toBe(0)
         ->and($updates->cleared)->toBe(2)
         ->and($updates->isCurrent())->toBeTrue();
+});
+
+it('refuses to run two updates at once, and runs again once the first finishes', function () {
+    $updates = new class(app('migrator'), app('cache')->store()) extends DatabaseUpdates
+    {
+        protected function clearCaches(): void {}
+    };
+
+    // Someone else's update is still in flight (the 17 Oct double-click).
+    $lock = Cache::lock('woodex:database-update', 600);
+    expect($lock->get())->toBeTrue();
+
+    expect(fn (): string => $updates->apply())
+        ->toThrow(RuntimeException::class, 'An update is already running');
+
+    $lock->release();
+
+    // With the lock free the very same call completes.
+    expect($updates->apply())->toContain('Nothing to migrate');
+
+    // And the lock is released by apply() itself, so a third call also works.
+    expect($updates->apply())->toContain('Nothing to migrate');
 });
 
 it('reports pending migrations on the Health page', function () {

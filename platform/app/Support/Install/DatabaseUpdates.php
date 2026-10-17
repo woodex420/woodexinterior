@@ -10,6 +10,9 @@ use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache as CacheFacade;
+use RuntimeException;
+use Throwable;
 
 /**
  * Database changes that arrive with a deploy (D-58). Hostinger's Git deploy cannot run "php artisan migrate", so the
@@ -47,8 +50,42 @@ class DatabaseUpdates
      * row by its stable code and never overwrites an owner's edit, so a database that already has
      * accounts is untouched — and one that got the accounts TABLES from an earlier one-click update
      * but never the seeded rows finally receives the defaults the payments module needs to post.
+     *
+     * Serialized by a lock: MySQL DDL is not transactional, so two update clicks racing each other
+     * (the production incidents of 17 Oct) both pass the resumable-migration guards before either
+     * commits its CREATE TABLE — the loser fatals with "table already exists" and can leave the
+     * table created without its migrations row. One update runs at a time; a second click gets an
+     * honest answer instead of a race.
      */
     public function apply(): string
+    {
+        $lock = null;
+        $acquired = false;
+
+        try {
+            $lock = CacheFacade::lock('woodex:database-update', 600);
+            $acquired = $lock->get();
+        } catch (Throwable) {
+            $lock = null; // A cache store without lock support must not block updates at all.
+            $acquired = true;
+        }
+
+        if (! $acquired) {
+            throw new RuntimeException('An update is already running — on shared hosting it can take a few minutes. Wait, then reload this page. Do not click Update again.');
+        }
+
+        try {
+            return $this->run();
+        } finally {
+            try {
+                $lock?->release();
+            } catch (Throwable) {
+                // An expired lock releases itself; never let cleanup fail a finished update.
+            }
+        }
+    }
+
+    private function run(): string
     {
         @set_time_limit(600);
         ignore_user_abort(true);
