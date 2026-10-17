@@ -8,15 +8,18 @@ use App\Domain\Conversations\Actions\SendConversationMessage;
 use App\Domain\Conversations\Enums\Channel;
 use App\Domain\Conversations\Enums\ConversationStatus;
 use App\Domain\Conversations\Exceptions\OutsideWindow;
+use App\Domain\Conversations\Models\CannedReply;
 use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Models\Message;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Models\User;
+use App\Settings\BusinessSettings;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -97,6 +100,50 @@ class Inbox extends Component
         $this->draft = '';
         $this->note = '';
         $conversation->markRead();
+    }
+
+    /**
+     * Saved replies matching what was typed after "/" (CNV-004): the picker under the composer.
+     *
+     * @return list<array{id: int, title: string, locale: string, snippet: string}>
+     */
+    #[Computed]
+    public function cannedMatches(): array
+    {
+        if ($this->selectedId === null || ! str_starts_with($this->draft, '/')) {
+            return [];
+        }
+
+        return array_map(
+            static fn (CannedReply $reply): array => [
+                'id' => $reply->id,
+                'title' => $reply->title,
+                'locale' => $reply->locale,
+                'snippet' => str($reply->body)->limit(72)->toString(),
+            ],
+            CannedReply::matchesFor(substr($this->draft, 1)),
+        );
+    }
+
+    /**
+     * Pick a saved reply: it lands in the composer filled in for this client, ready to edit before sending.
+     */
+    public function useCanned(int $id, BusinessSettings $business): void
+    {
+        $conversation = $this->selected();
+
+        if ($conversation === null) {
+            return;
+        }
+
+        $reply = CannedReply::query()->active()->find($id);
+
+        if ($reply === null) {
+            return;
+        }
+
+        $this->draft = $reply->renderFor($conversation, $business);
+        $reply->increment('usage_count');
     }
 
     public function send(SendConversationMessage $action): void

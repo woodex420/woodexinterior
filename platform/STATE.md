@@ -2,6 +2,27 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT, after CNV-004 — canned replies)
+
+- **CNV-004 is DONE and shipped:** canned replies with variables. `canned_replies` table (title, body, locale
+  en/ur, keywords, usage_count, is_active, position) + `CannedReply` model
+  (`app/Domain/Conversations/Models/`) — `matchesFor()` filters by title/keywords/body for the "/" picker;
+  `renderFor()` fills {first_name} (first word of the contact name), {studio_name} (brand_name),
+  {studio_hours} (BusinessHours compressed to "Mon–Sat, 10:00–19:00"), {quote_link} (latest sent/viewed/
+  accepted/expired quote's `QuoteLinks::portal()` link; empty when none). Inbox composer: typing "/" shows
+  the picker; picking fills the draft and counts usage. Management: Settings → Canned replies
+  (`admin.canned-replies`, settings.manage) — add/edit/hide. `CannedRepliesSeeder` (7 defaults, EN + Roman
+  Urdu) runs in ProductionSeeder so `woodex:update` installs it on the server. Tests:
+  `tests/Feature/CannedRepliesTest.php` (6). Gate green at 555 passed / 3 720 assertions, Larastan clean,
+  Pint clean 534 files.
+- **NEXT — Wave 3: V2-1, the design tokens from v1's own design (D-116).** v1's HTML is IN THE REPO:
+  `platform/database/migrations/2026_10_17_000200_reload_the_complete_website.php` (the complete website
+  reloaded into the CMS) — extract the palette/typography/spacing/radii from it into the v2 Tailwind v4
+  `@theme` tokens (docs/12 §6: assisted parse → tokens → sections). `/tmp/v1` is GONE (VM reset) — use the
+  migration, or re-export from the CMS pages table. Then V2-2 (the section builder). Wave 2 is complete
+  (reports kit + SYS-007). P5 exit: owner completes a full day of approvals from Telegram — S1–S3+S5+S6
+  shipped; S4/S7 = automation agent's lane.
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after SYS-007 — the audit-log viewer)
 
 - **SYS-007 is DONE and shipped:** System → Audit log (`app/Livewire/Admin/System/AuditLog.php`, route

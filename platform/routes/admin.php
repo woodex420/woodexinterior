@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\InvoicePdfController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\QuotePdfController;
 use App\Http\Controllers\Admin\SystemUpdateController;
+use App\Livewire\Admin\Conversations\CannedRepliesIndex;
 use App\Livewire\Admin\Conversations\Inbox;
 use App\Livewire\Admin\Crm\AssignmentRules;
 use App\Livewire\Admin\Crm\CompaniesIndex;
@@ -112,6 +113,7 @@ Route::livewire('/receivables', Receivables::class)->name('reports.receivables')
 
 // System
 Route::livewire('/settings', SettingsPage::class)->name('settings')->middleware('can:settings.manage');
+Route::livewire('/settings/canned-replies', CannedRepliesIndex::class)->name('canned-replies')->middleware('can:settings.manage');
 Route::livewire('/settings/lead-assignment', AssignmentRules::class)->name('assignment-rules')->middleware('can:settings.manage');
 Route::livewire('/users', UsersIndex::class)->name('users.index')->middleware('can:users.manage');
 Route::livewire('/system/health', Health::class)->name('system.health')->middleware('can:system.health');

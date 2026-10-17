@@ -76,6 +76,7 @@ final class AdminNavigation
                 self::item('Settings', 'settings', 'admin.settings', 'settings.manage'),
                 self::item('Users & Roles', 'shield', 'admin.users.index', 'users.manage'),
                 self::item('Lead Assignment', 'users', 'admin.assignment-rules', 'settings.manage'),
+                self::item('Canned replies', 'message', 'admin.canned-replies', 'settings.manage'),
                 self::item('Integrations', 'link', 'admin.integrations', 'integrations.manage'),
                 self::item('Data Import', 'database', 'admin.data-import', 'system.import'),
                 self::item('Recycle Bin', 'archive', 'admin.recycle-bin', 'leads.delete'),

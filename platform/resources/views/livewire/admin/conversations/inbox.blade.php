@@ -154,8 +154,23 @@
                         <p class="mb-2 text-theme-xs text-gray-400">Free replies for {{ $selected->windowMinutesLeft() }} more minutes.</p>
                     @endif
 
+                    @if ($this->cannedMatches !== [])
+                        <div class="mb-2 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+                            <p class="border-b border-gray-100 bg-gray-50 px-3 py-1.5 text-theme-xs text-gray-500 dark:border-gray-800 dark:bg-white/5">Saved replies — click one to fill it in for this client:</p>
+                            @foreach ($this->cannedMatches as $match)
+                                <button type="button" wire:click="useCanned({{ $match['id'] }})" wire:key="canned-{{ $match['id'] }}"
+                                        class="block w-full border-b border-gray-100 px-3 py-2 text-left last:border-0 hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-white/5">
+                                    <span class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $match['title'] }}
+                                        @if ($match['locale'] !== 'en')<x-admin.badge color="gray">{{ strtoupper($match['locale']) }}</x-admin.badge>@endif
+                                    </span>
+                                    <span class="block text-theme-xs text-gray-500">{{ $match['snippet'] }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
+
                     <div class="flex items-end gap-2">
-                        <textarea wire:model="draft" rows="2" placeholder="Write a reply…" class="wx-input" aria-label="Reply" @disabled(! $selected->isInWindow())></textarea>
+                        <textarea wire:model="draft" rows="2" placeholder="Write a reply… (type / for saved replies)" class="wx-input" aria-label="Reply" @disabled(! $selected->isInWindow())></textarea>
                         <x-admin.button variant="primary" wire:click="send" icon="send" :disabled="! $selected->isInWindow()">Send</x-admin.button>
                     </div>
 

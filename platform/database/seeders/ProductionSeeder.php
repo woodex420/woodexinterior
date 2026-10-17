@@ -20,6 +20,7 @@ class ProductionSeeder extends Seeder
             NumberSequenceSeeder::class,
             RateBookSeeder::class,
             QuoteTemplateSeeder::class,
+            CannedRepliesSeeder::class,
         ]);
     }
 }
