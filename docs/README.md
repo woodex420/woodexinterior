@@ -16,6 +16,8 @@ this order:
 | 08 | [v2.1 import runbook](08-V21-IMPORT-RUNBOOK.md) | Moving users, clients, leads, notes and bookings from the old system: dry run, real run, checks, value conversions |
 | 09 | [Website frontend plan](09-WEBSITE-FRONTEND-PLAN.md) | The complete website: CMS architecture, the 142-URL map and 54 redirects, page types and section blueprints, the six service definitions, city/insight/project rules, SEO + AIO/GEO + E-E-A-T, tracking, the import pipeline and the delivery batches |
 | ci | [GitHub Actions workflows](ci/README.md) | Ready-to-activate CI (tests, style, build) and one-click Hostinger deploy |
+| 16 | [Master pending list](16-MASTER-PENDING-LIST.md) | Every open item P1→P7, owner and lane |
+| 17 | [P9 master plan](17-P9-MASTER-PLAN.md) | Accounting, documents/estimates, agents, WhatsApp/live chat, MySQL — phase cards with acceptance and the full P1→P9 register |
 
 **Code:** the Laravel application lives in [`../platform`](../platform). Progress is tracked in
 [`../platform/STATE.md`](../platform/STATE.md). The original static studio site in [`../woodex`](../woodex) is

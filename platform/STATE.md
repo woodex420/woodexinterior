@@ -2,6 +2,50 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT — P9-A accounting spine, first slice)
+
+- **Owner answers recorded:** start with accounting; build the ledger now and import 2025 when the files arrive;
+  registered for 18% sales tax; MySQL verification via GitHub Actions **and** docker-compose. The "recovery" link
+  supplied points at `marketingwoodex-cloud/-marketingwoodex` PR #4 — a **closed** admin-v2.1 release in a
+  different repo, not the 17 Oct export. The export is still missing; do not import that PR as the export.
+- **P9-A landed (first slice):** `2026_10_17_090000_create_accounting_tables` + `app/Domain/Accounting/`
+  (enums, models, `ChartOfAccounts`, `PostJournalEntry`, `ReverseJournalEntry`, `LedgerPoster`). Default chart of
+  25 accounts (`1010` cash, `1020` bank, `1100` AR, `1150` input tax, `2100` tax payable, `4000/4010/4020`
+  revenue, `5000/5010` COGS, `6000+` opex), tax codes `GST18`/`ITX18` at 1800 bp, monthly periods with a lock,
+  and a `journal` number sequence (`JE-YYYY-00001`).
+- **What posts today:** advance + milestone invoices when **issued** (Dr AR / Cr revenue by business line + tax);
+  every receipt (Dr bank or cash / Cr AR) whether recorded by staff or verified from a client proof; a rejected
+  payment reverses its entry. Idempotency = unique `(source_type, source_id, source_event)`; corrections are
+  reversals, never edits. Nothing posts for drafts.
+- **Screens:** Accounting group → Chart of accounts (balances, create/edit, system accounts protected), Journal
+  (filters, view lines, manual entry, reverse), Periods (close/reopen behind `accounting.close`). Permissions
+  `accounting.view|manage|close` (accountant gets all three; sales_manager view only).
+- **Gate (this slice):** 581 passed / 3,902 assertions / 1 skipped; Larastan clean; Pint clean 565 files. Preview
+  verified 200 on the three screens as `owner@woodex.test`.
+- **P9-000 groundwork:** `.github/workflows/platform-ci.yml` (SQLite job + **MySQL 8.4 service** job + assets) and
+  `docker-compose.yml` + `platform/Dockerfile`. The sandbox still cannot run Docker/MySQL; CI is the proof.
+- **Next (P9-A remainder):** opening-balance journal command, credit-note/void invoice action + posting, trial
+  balance & books-health screen, and the 2025 import batch table (file hash, row counts, reconciliation). Then
+  P9-B expenses/payables.
+
+## Resume here (project memory, saved 17 Oct 2026 PKT — P9 master plan written, awaiting owner answers)
+
+- **The forward plan is `docs/17-P9-MASTER-PLAN.md`** (P9-000 recovery → P9-A accounting → P9-B expenses/payables
+  → P9-C reports/2025 reconciliation → P9-D documents → P9-E descriptions/rates → P9-F estimation/BOQ → P9-G
+  agents/Telegram → P9-H WhatsApp/live chat → P9-I furniture → P9-J hardening). It carries the full P1→P9
+  register, the accounting schema/posting rules, the document-design and agent designs, and the verification
+  strategy. docs/16 now points at it.
+- **Verified against code before planning:** no accounting at all (0 refs to journal/ledger/expense/period),
+  letterheads are Blade files (no design system), no description library, estimator only opens a draft quote,
+  no agent runtime, no live chat, no CI in the repo. 499 declared tests; 70 preview tables.
+- **Sandbox reality:** no Docker socket, no apt network, packagist blocked. PHP runs on php-wasm + SQLite via
+  `tools/sandbox/setup.sh` (rebuild ~2 min). MySQL verification is planned through GitHub Actions + a
+  docker-compose file; the sandbox is the fast loop, not the proof.
+- **Open owner decisions (asked, not yet answered):** (1) how the 17 Oct export zip is handed over; (2) which
+  track starts first — accounting (recommended), documents/estimates, or automation; (3) build ledger now and
+  import 2025 later, or wait for the files; (4) tax treatment (registered? rate?); (5) MySQL verification route.
+- Preview running: process `woodex-os-preview-73ecf593`, port 8080, `owner@woodex.test` / `Woodex-Preview-2026`.
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT — deploy prep + agent-work recovery plan)
 
 - **DEPLOY DECISIONS (owner, via ask_user):** (1) the agent's unpublished 744-test work is recovered by

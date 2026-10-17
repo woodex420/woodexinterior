@@ -18,6 +18,7 @@ class ProductionSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             PipelineStageSeeder::class,
             NumberSequenceSeeder::class,
+            ChartOfAccountsSeeder::class,
             RateBookSeeder::class,
             QuoteTemplateSeeder::class,
             CannedRepliesSeeder::class,

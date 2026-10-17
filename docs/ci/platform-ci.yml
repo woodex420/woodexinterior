@@ -1,8 +1,10 @@
 name: Platform CI
 
-# Tests the Laravel application in platform/ on every push and pull request.
-# ACTIVATE: copy this file to .github/workflows/platform-ci.yml (see docs/ci/README.md).
-# Hostinger has no Node.js, so this workflow is also where front-end assets are built (docs/07 D-10, D-28).
+# P9-000: CI is the place where "verified" means something (docs/17 §12).
+#  - `sqlite`  — the fast suite, same as the sandbox loop.
+#  - `mysql`   — the suite against MySQL 8.4, where numbering, allocations and period locks behave like Hostinger.
+#  - `assets`  — Vite/Tailwind build, uploaded for the Hostinger deploy.
+# A composer.lock is not committed yet (see docs/ci/README.md); the job resolves and prints it.
 
 on:
   push:
@@ -28,9 +30,9 @@ defaults:
 
 jobs:
   tests:
-    name: PHP 8.4 · Pest
+    name: PHP 8.4 · Pest (SQLite)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -41,8 +43,7 @@ jobs:
           coverage: none
           tools: composer:v2
 
-      - name: Composer cache
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: ~/.cache/composer/files
           key: composer-${{ runner.os }}-${{ hashFiles('platform/composer.json', 'platform/composer.lock') }}
@@ -57,16 +58,6 @@ jobs:
             composer update --no-interaction --prefer-dist --no-progress
           fi
 
-      - name: Print resolved composer.lock (until it is committed)
-        if: ${{ hashFiles('platform/composer.lock') == '' }}
-        run: |
-          echo "Resolved package versions:"
-          composer show --direct --format=text || true
-          echo "WOODEX_LOCK_BEGIN"
-          gzip -9 -c composer.lock | base64 -w0
-          echo
-          echo "WOODEX_LOCK_END"
-
       - name: Prepare environment
         run: |
           cp .env.example .env
@@ -78,13 +69,67 @@ jobs:
       - name: Code style (Pint)
         run: vendor/bin/pint --test -v
 
-      - name: Static analysis (Larastan level 6, blocking from P1)
+      - name: Static analysis (Larastan level 6)
         run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+  mysql:
+    name: PHP 8.4 · Pest (MySQL 8.4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: woodex_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: woodex_test
+      DB_USERNAME: root
+      DB_PASSWORD: root
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, gd, zip, exif, bcmath, pdo_mysql, fileinfo
+          coverage: none
+          tools: composer:v2
+
+      - name: Install PHP dependencies
+        run: |
+          if [ -f composer.lock ]; then
+            composer install --no-interaction --prefer-dist --no-progress
+          else
+            composer update --no-interaction --prefer-dist --no-progress
+          fi
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Tests on MySQL
+        run: vendor/bin/pest --colors=always
+
+      - name: Concurrency suite (numbering, allocations, periods)
+        if: ${{ hashFiles('platform/tests/Feature/ConcurrencyTest.php') != '' }}
+        run: vendor/bin/pest tests/Feature/ConcurrencyTest.php --colors=always
 
   assets:
     name: Front-end build (Vite + Tailwind 4 + Preline 5)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 

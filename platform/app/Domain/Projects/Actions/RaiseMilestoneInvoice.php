@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Projects\Actions;
 
+use App\Domain\Accounting\Services\LedgerPoster;
 use App\Domain\Projects\Models\ProjectMilestone;
 use App\Domain\Sales\Enums\InvoiceKind;
 use App\Domain\Sales\Enums\InvoiceStatus;
@@ -30,6 +31,7 @@ final class RaiseMilestoneInvoice
         private readonly SalesSettings $sales,
         private readonly InvoiceSnapshot $snapshot,
         private readonly InvoicePdf $pdf,
+        private readonly LedgerPoster $ledger,
     ) {}
 
     public function handle(ProjectMilestone $milestone, User $by, bool $issue = false): Invoice
@@ -108,6 +110,8 @@ final class RaiseMilestoneInvoice
                     'pdf_path' => $path,
                     'pdf_sha256' => hash('sha256', $bytes),
                 ])->save();
+
+                $this->ledger->invoiceIssued($invoice->fresh(['contact']) ?? $invoice, $by);
             }
 
             return $invoice;

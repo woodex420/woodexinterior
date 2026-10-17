@@ -1,5 +1,9 @@
 # 16 · Master pending list — P1 → P7
 
+> **17 Oct 2026:** the forward plan moved to [docs/17 · P9 master plan](17-P9-MASTER-PLAN.md). That file carries
+> the complete P1→P9 register, the accounting/document/agent designs and the phase cards. This index remains the
+> per-ID source for P1–P7 until each row is folded into P9.
+
 _The one list both agents run from. Owner of every item is named; status is checked against the code, not
 against the plan documents. Detail lives in docs/14 (P4/P5 overview) and docs/15 (P5/P6 steps) — this file is
 the master index and the team plan._

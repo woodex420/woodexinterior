@@ -23,6 +23,7 @@ class RolesAndPermissionsSeeder extends Seeder
         'invoices.view', 'invoices.manage', 'invoices.void',
         'payments.record', 'payments.verify',
         'projects.view', 'projects.manage',
+        'accounting.view', 'accounting.manage', 'accounting.close',
         'inbox.view', 'inbox.reply',
         'automation.manage',
         'website.edit', 'website.publish', 'theme.manage',
@@ -51,6 +52,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'contacts.view', 'contacts.update', 'contacts.merge',
                 'quotes.view', 'quotes.manage', 'quotes.send', 'quotes.approve', 'quotes.catalog',
                 'invoices.view', 'projects.view', 'projects.manage',
+                'accounting.view',
                 'inbox.view', 'inbox.reply', 'automation.manage',
                 'website.edit', 'website.publish', 'social.manage', 'reports.view',
             ],
@@ -67,6 +69,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'accountant' => [
                 'dashboard.view', 'contacts.view', 'quotes.view',
                 'invoices.view', 'invoices.manage', 'payments.record', 'payments.verify',
+                'accounting.view', 'accounting.manage', 'accounting.close',
                 'projects.view', 'reports.view', 'reports.finance', 'leads.export',
             ],
             'editor' => ['dashboard.view', 'website.edit', 'social.manage'],

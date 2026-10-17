@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Actions;
 
+use App\Domain\Accounting\Services\LedgerPoster;
 use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Sales\Enums\InvoiceKind;
 use App\Domain\Sales\Enums\InvoiceStatus;
@@ -34,6 +35,7 @@ final class RaiseAdvanceInvoice
         private readonly SalesSettings $sales,
         private readonly InvoiceSnapshot $snapshot,
         private readonly InvoicePdf $pdf,
+        private readonly LedgerPoster $ledger,
     ) {}
 
     public function handle(Quote $quote, ?User $by = null): ?Invoice
@@ -117,6 +119,9 @@ final class RaiseAdvanceInvoice
             // An issued invoice is frozen: its PDF and snapshot are stored with it.
             if ($issued) {
                 $this->freeze($invoice);
+
+                // …and it posts to the ledger exactly once (P9-A, docs/17 §4.3).
+                $this->ledger->invoiceIssued($invoice->fresh(['contact']) ?? $invoice, $by);
             }
 
             return $invoice;

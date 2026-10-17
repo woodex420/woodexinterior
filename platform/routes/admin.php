@@ -4,6 +4,9 @@ use App\Http\Controllers\Admin\InvoicePdfController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\QuotePdfController;
 use App\Http\Controllers\Admin\SystemUpdateController;
+use App\Livewire\Admin\Accounting\ChartOfAccounts;
+use App\Livewire\Admin\Accounting\Journal;
+use App\Livewire\Admin\Accounting\Periods;
 use App\Livewire\Admin\Conversations\CannedRepliesIndex;
 use App\Livewire\Admin\Conversations\Inbox;
 use App\Livewire\Admin\Crm\AssignmentRules;
@@ -112,6 +115,13 @@ Route::livewire('/profile/security', Security::class)->name('profile.security');
 Route::livewire('/reports/sales-funnel', SalesFunnel::class)->name('reports.funnel')->middleware('can:reports.view');
 Route::livewire('/reports/revenue-collections', RevenueCollections::class)->name('reports.revenue')->middleware('can:reports.finance');
 Route::livewire('/receivables', Receivables::class)->name('reports.receivables')->middleware('can:invoices.view');
+
+/*
+| Accounting (P9-A, docs/17 §4). The ledger is posted by the domain service, never from these screens.
+*/
+Route::livewire('/accounting/chart', ChartOfAccounts::class)->name('accounting.chart')->middleware('can:accounting.view');
+Route::livewire('/accounting/journal', Journal::class)->name('accounting.journal')->middleware('can:accounting.view');
+Route::livewire('/accounting/periods', Periods::class)->name('accounting.periods')->middleware('can:accounting.view');
 
 // System
 Route::livewire('/settings', SettingsPage::class)->name('settings')->middleware('can:settings.manage');

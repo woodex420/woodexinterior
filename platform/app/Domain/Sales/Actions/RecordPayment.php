@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Actions;
 
+use App\Domain\Accounting\Services\LedgerPoster;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Sales\Enums\PaymentMethod;
 use App\Domain\Sales\Enums\PaymentStatus;
@@ -30,6 +31,7 @@ final class RecordPayment
         private readonly AllocatePayment $allocate,
         private readonly Numbering $numbering,
         private readonly ReceiptPdf $receipts,
+        private readonly LedgerPoster $ledger,
     ) {}
 
     /**
@@ -84,6 +86,9 @@ final class RecordPayment
         Storage::disk('local')->put($path, $bytes);
 
         $payment->forceFill(['receipt_pdf_path' => $path])->save();
+
+        // Every receipt that exists is money in the bank: post it once, idempotent by payment id (P9-A).
+        $this->ledger->paymentVerified($payment->refresh(), $by);
 
         $payment->loadMissing('contact');
 

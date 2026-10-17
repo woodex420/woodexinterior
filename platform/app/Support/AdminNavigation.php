@@ -68,6 +68,11 @@ final class AdminNavigation
                 self::item('Website Settings', 'settings', 'admin.website.settings', 'settings.manage'),
                 self::item('Theme Builder', 'palette', 'admin.website.theme', 'theme.manage'),
             ]),
+            self::group('Accounting', [
+                self::item('Chart of accounts', 'book', 'admin.accounting.chart', 'accounting.view'),
+                self::item('Journal', 'activity', 'admin.accounting.journal', 'accounting.view'),
+                self::item('Periods', 'calendar', 'admin.accounting.periods', 'accounting.view'),
+            ]),
             self::group('Reports', [
                 self::item('Sales Funnel', 'chart', 'admin.reports.funnel', 'reports.view'),
                 self::item('Revenue & Collections', 'banknote', 'admin.reports.revenue', 'reports.finance'),

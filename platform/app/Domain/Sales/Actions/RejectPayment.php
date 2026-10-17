@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Actions;
 
+use App\Domain\Accounting\Services\LedgerPoster;
 use App\Domain\Sales\Enums\PaymentStatus;
 use App\Domain\Sales\Mail\PaymentMail;
 use App\Domain\Sales\Models\Payment;
@@ -19,6 +20,8 @@ use Illuminate\Support\Facades\Notification;
  */
 final class RejectPayment
 {
+    public function __construct(private readonly LedgerPoster $ledger) {}
+
     public function handle(Payment $payment, string $reason, User $by): Payment
     {
         return DB::transaction(function () use ($payment, $reason, $by): Payment {
@@ -28,6 +31,9 @@ final class RejectPayment
                 'verified_by' => $by->id,
                 'verified_at' => now(),
             ])->save();
+
+            // If it had been posted, set the ledger straight with a reversal (nothing is edited).
+            $this->ledger->paymentRejected($payment, $by);
 
             $payment->loadMissing('contact');
 

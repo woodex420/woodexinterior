@@ -41,7 +41,9 @@ final class VerifyPayment
             $this->allocate->handle($payment, $allocations);
 
             // The receipt is numbered and written, and the client gets their copy (INV-007).
-            return $this->record->receipt($payment, $by)->refresh();
+            $payment = $this->record->receipt($payment, $by)->refresh();
+
+            return $payment;
         });
     }
 }
