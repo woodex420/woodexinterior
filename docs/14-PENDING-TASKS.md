@@ -95,7 +95,7 @@ _Implementation detail, ordered into buildable steps: docs/15 §P6._
 | Phase | What | Status |
 |---|---|---|
 | **V2-1** | Design tokens + theme builder; all 15 section templates read tokens only | **DONE** — tokens are the live CSS's own vocabulary (D-116); `/assets/theme.css` re-skins the live v1 pages with no deploy, v2 pages link the hashed `/theme/{hash}.css` |
-| **V2-2** | Section library + page builder (drag, device preview, draft → publish) | **TODO** — the editor exists without drag-and-drop |
+| **V2-2** | Section library + page builder (drag, device preview, draft → publish) | **PART** — library with categories + descriptions, saved-by-the-studio sections, drag-to-reorder (wire:sort), duplicate, device preview (desktop/tablet/mobile), shareable 24 h signed preview links shipped; remaining: campaign free-canvas mode, inline text editing |
 | **V2-3** | Header/footer builder, media improvements, Pages/Menus completion | **PART** — media, menus and pages screens exist |
 | **V2-4** | SEO: crawler rules, sitemap, canonicals, schema, then the auditor | **PART** — sitemap, canonicals and schema exist per page |
 | **V2-5** | The conversion itself, group by group (docs/13) | **TODO** — blocked by V2-1 and V2-2 |

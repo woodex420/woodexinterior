@@ -69,25 +69,68 @@
                 </div>
             </x-admin.card>
 
-            <x-admin.card title="Sections" description="One section per card, in the order visitors read them. A section you untick keeps its content but stops showing.">
+            <x-admin.card title="Section library" description="Click a section to add it to the page below — the studio's shelves, in reading order.">
                 <div class="space-y-4">
+                    @foreach ($library as $category => $entries)
+                        <div>
+                            <p class="mb-2 text-theme-xs font-semibold tracking-wider text-gray-400 uppercase">{{ $category }}</p>
+                            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                @foreach ($entries as $entry)
+                                    <button type="button" wire:click="addBlock('{{ $entry['value'] }}')"
+                                            class="group rounded-xl border border-gray-200 p-3 text-left transition hover:border-brand-500 hover:bg-brand-50/50 dark:border-gray-800 dark:hover:border-brand-500/60 dark:hover:bg-white/5">
+                                        <span class="flex items-center justify-between gap-2">
+                                            <span class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $entry['label'] }}</span>
+                                            <span class="text-gray-300 transition group-hover:text-brand-600" aria-hidden="true">+</span>
+                                        </span>
+                                        <span class="mt-0.5 block text-theme-xs text-gray-500">{{ $entry['description'] }}</span>
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+
+                    <div>
+                        <p class="mb-2 text-theme-xs font-semibold tracking-wider text-gray-400 uppercase">Saved by the studio</p>
+                        @forelse ($savedSections as $saved)
+                            <div class="flex items-center justify-between gap-3 rounded-xl border border-dashed border-gray-200 px-3 py-2 dark:border-gray-800">
+                                <div class="min-w-0">
+                                    <p class="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $saved->name }}</p>
+                                    <p class="text-theme-xs text-gray-500">{{ $saved->type->label() }} · saved {{ $saved->created_at?->format('d M Y') }} by {{ $saved->creator?->name ?? '—' }}</p>
+                                </div>
+                                <div class="flex shrink-0 items-center gap-1">
+                                    <button type="button" wire:click="insertSavedSection({{ $saved->id }})" class="wx-mini-btn" title="Add to this page">Insert</button>
+                                    <button type="button" wire:click="deleteSavedSection({{ $saved->id }})" wire:confirm="Remove “{{ $saved->name }}” from the library?" class="wx-mini-btn text-error-600" aria-label="Delete saved section">✕</button>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-theme-xs text-gray-400">Nothing saved yet. Configure a section below and press “Save as section” — it lands here for every page.</p>
+                        @endforelse
+                    </div>
+                </div>
+            </x-admin.card>
+
+            <x-admin.card title="Sections" description="Drag the handle to reorder. One section per card, in the order visitors read them. A section you untick keeps its content but stops showing.">
+                <div class="space-y-4" wire:sort="sortBlocks" wire:sort.options="{ handle: '.section-handle', animation: 150 }">
                     @forelse ($blocks as $index => $block)
                         @php $blockType = BlockType::from($block['type']); @endphp
-                        <div wire:key="block-{{ $index }}" @class([
+                        <div wire:key="blk-{{ $block['key'] }}" @class([
                             'rounded-xl border',
                             'border-gray-200 dark:border-gray-800' => $block['visible'] ?? true,
                             'border-dashed border-gray-300 opacity-70' => ! ($block['visible'] ?? true),
                         ])>
                             <header class="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-2.5 dark:border-gray-800">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $blockType->label() }}</span>
-                                    <label class="flex items-center gap-1.5 text-theme-xs text-gray-500">
+                                <div class="flex min-w-0 items-center gap-2">
+                                    <span class="section-handle cursor-grab select-none text-gray-300 hover:text-gray-500 active:cursor-grabbing" title="Drag to reorder" aria-hidden="true">⠿</span>
+                                    <span class="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $blockType->label() }}</span>
+                                    <label class="flex shrink-0 items-center gap-1.5 text-theme-xs text-gray-500">
                                         <input type="checkbox" wire:click="toggleBlock({{ $index }})" @checked($block['visible'] ?? true) class="rounded border-gray-300"> visible
                                     </label>
                                 </div>
-                                <div class="flex items-center gap-1">
+                                <div class="flex shrink-0 items-center gap-1">
                                     <button type="button" wire:click="moveBlock({{ $index }}, -1)" class="wx-mini-btn" aria-label="Move up" @if ($index === 0) disabled @endif>↑</button>
                                     <button type="button" wire:click="moveBlock({{ $index }}, 1)" class="wx-mini-btn" aria-label="Move down" @if ($index === count($blocks) - 1) disabled @endif>↓</button>
+                                    <button type="button" wire:click="duplicateBlock({{ $index }})" class="wx-mini-btn" title="Duplicate this section" aria-label="Duplicate section">⧉</button>
+                                    <button type="button" wire:click="openSectionModal({{ $index }})" class="wx-mini-btn" title="Save to the library for reuse" aria-label="Save as section">★</button>
                                     <button type="button" wire:click="removeBlock({{ $index }})" class="wx-mini-btn text-error-600" aria-label="Delete section">✕</button>
                                 </div>
                             </header>
@@ -170,22 +213,53 @@
                         <x-admin.empty title="No sections yet" description="Add a hero or an intro section first, then the rest." />
                     @endforelse
                 </div>
-
-                <div class="mt-4 flex items-end gap-3">
-                    <x-admin.field label="Add a section" class="grow">
-                        <select wire:model.live="newBlockType" class="wx-input">
-                            <option value="">Choose a section…</option>
-                            @foreach ($blockTypes as $value => $label)
-                                <option value="{{ $value }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </x-admin.field>
-                    <x-admin.button variant="secondary" icon="plus" wire:click="addSelectedBlock" :disabled="$newBlockType === ''">Add</x-admin.button>
-                </div>
             </x-admin.card>
         </div>
 
         <div class="space-y-6">
+            @if ($saved)
+                <x-admin.card title="Preview" description="How the page looks — saved changes only; press Save draft first.">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" wire:click="setPreviewDevice('{{ $previewDevice === 'desktop' ? '' : 'desktop' }}')"
+                                @class(['wx-mini-btn' => true, 'border-brand-500 text-brand-700 dark:text-brand-300' => $previewDevice === 'desktop'])>Desktop</button>
+                        <button type="button" wire:click="setPreviewDevice('{{ $previewDevice === 'tablet' ? '' : 'tablet' }}')"
+                                @class(['wx-mini-btn' => true, 'border-brand-500 text-brand-700 dark:text-brand-300' => $previewDevice === 'tablet'])>Tablet</button>
+                        <button type="button" wire:click="setPreviewDevice('{{ $previewDevice === 'mobile' ? '' : 'mobile' }}')"
+                                @class(['wx-mini-btn' => true, 'border-brand-500 text-brand-700 dark:text-brand-300' => $previewDevice === 'mobile'])>Mobile</button>
+                        <a href="{{ $page->path() }}?preview=1" target="_blank" rel="noopener" class="wx-mini-btn">Open ↗</a>
+                    </div>
+
+                    @if ($previewDevice !== '')
+                        @php
+                            $frame = match ($previewDevice) {
+                                'tablet' => ['w' => 820, 'scale' => 0.42],
+                                'mobile' => ['w' => 390, 'scale' => 0.92],
+                                default => ['w' => 1280, 'scale' => 0.28],
+                            };
+                            $frameH = (int) ceil(420 / $frame['scale']);
+                        @endphp
+                        <div class="mt-3 h-[420px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950" wire:loading.class="opacity-50">
+                            <iframe src="{{ $page->path() }}?preview=1" title="Draft preview ({{ $previewDevice }})"
+                                    class="origin-top-left border-0 bg-white"
+                                    style="width: {{ $frame['w'] }}px; height: {{ $frameH }}px; transform: scale({{ $frame['scale'] }});"
+                                    sandbox="allow-same-origin"></iframe>
+                        </div>
+                    @endif
+
+                    <div class="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+                        @if ($shareUrl === '')
+                            <button type="button" wire:click="makeShareLink" class="text-theme-sm text-brand-600 hover:underline">Make a shareable preview link (valid 24 h)</button>
+                        @else
+                            <p class="wx-label">Shareable for 24 hours — no login needed:</p>
+                            <div class="flex items-center gap-2" x-data>
+                                <input type="text" readonly value="{{ $shareUrl }}" x-ref="link" class="wx-input text-theme-xs" onfocus="this.select()">
+                                <button type="button" class="wx-mini-btn shrink-0" @click="navigator.clipboard.writeText($refs.link.value)">Copy</button>
+                            </div>
+                        @endif
+                    </div>
+                </x-admin.card>
+            @endif
+
             <x-admin.card title="Search engine">
                 <div class="space-y-4">
                     <x-admin.field label="SEO title" for="seoTitle" hint="{{ strlen($seoTitle) }}/60 · how it appears as the blue link in Google.">
@@ -253,4 +327,12 @@
             @endif
         </div>
     </div>
+
+    @if ($showSectionModal)
+        <x-admin.modal name="showSectionModal" title="Save as a section" description="It lands in the library, ready to drop onto any page — content and all." submit="storeSection">
+            <x-admin.field label="Name" for="sectionName">
+                <input id="sectionName" type="text" wire:model="sectionName" class="wx-input" placeholder="Signature hero">
+            </x-admin.field>
+        </x-admin.modal>
+    @endif
 </div>

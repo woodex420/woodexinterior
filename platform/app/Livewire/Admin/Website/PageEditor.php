@@ -12,8 +12,10 @@ use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\PageVersion;
+use App\Domain\Website\Models\SavedSection;
 use App\Domain\Website\Services\PageCache;
 use App\Domain\Website\Services\PageValidator;
+use App\Domain\Website\Support\PreviewLink;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Str;
@@ -57,13 +59,25 @@ class PageEditor extends Component
 
     public ?int $ogImageId = null;
 
-    /** @var list<array{id: ?int, type: string, visible: bool, data: array<string, mixed>}> */
+    /** @var list<array{id: ?int, key: string, type: string, visible: bool, data: array<string, mixed>}> */
     public array $blocks = [];
 
     public string $newBlockType = '';
 
     /** @var list<string> What still stands between this page and publishing. */
     public array $issues = [];
+
+    /** V2-2 (docs/12 §5.2/§5.3): the section library, drag-to-reorder, duplication, device preview. */
+    public bool $showSectionModal = false;
+
+    public int $sectionIndex = 0;
+
+    public string $sectionName = '';
+
+    /** '', desktop, tablet or mobile — the width of the inline preview frame. */
+    public string $previewDevice = '';
+
+    public string $shareUrl = '';
 
     public bool $showVersions = false;
 
@@ -95,6 +109,7 @@ class PageEditor extends Component
 
         $this->blocks[] = [
             'id' => null,
+            'key' => $this->newKey(),
             'type' => $block->value,
             'visible' => true,
             'data' => $block->fields(),
@@ -124,6 +139,113 @@ class PageEditor extends Component
     public function toggleBlock(int $index): void
     {
         $this->blocks[$index]['visible'] = ! (bool) ($this->blocks[$index]['visible'] ?? true);
+    }
+
+    /**
+     * Drag-to-reorder (docs/12 §5.3): Livewire's wire:sort hands over the block keys in their new order.
+     *
+     * @param  list<string>  $orderedKeys
+     */
+    public function sortBlocks(array $orderedKeys): void
+    {
+        $byKey = collect($this->blocks)->keyBy(fn (array $block): string => (string) $block['key']);
+
+        $this->blocks = collect($orderedKeys)
+            ->filter(fn (string $key): bool => $byKey->has($key))
+            ->map(fn (string $key): array => (array) $byKey->get($key))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * A copy of a section that works, placed right under it — the cheapest way to build a long page.
+     */
+    public function duplicateBlock(int $index): void
+    {
+        if (! isset($this->blocks[$index])) {
+            return;
+        }
+
+        $copy = $this->blocks[$index];
+        $copy['id'] = null;
+        $copy['key'] = $this->newKey();
+
+        array_splice($this->blocks, $index + 1, 0, [$copy]);
+    }
+
+    /**
+     * Save this section under a name, for reuse on any page (docs/12 §5.2 saved sections).
+     */
+    public function openSectionModal(int $index): void
+    {
+        if (! isset($this->blocks[$index])) {
+            return;
+        }
+
+        $this->sectionIndex = $index;
+        $this->sectionName = BlockType::from((string) $this->blocks[$index]['type'])->label();
+        $this->showSectionModal = true;
+    }
+
+    public function storeSection(): void
+    {
+        $this->validateOnly('sectionName', ['sectionName' => ['required', 'string', 'max:120']]);
+
+        $block = $this->blocks[$this->sectionIndex] ?? null;
+
+        if ($block === null) {
+            $this->showSectionModal = false;
+
+            return;
+        }
+
+        SavedSection::query()->create([
+            'name' => trim($this->sectionName),
+            'type' => BlockType::from((string) $block['type']),
+            'data' => (array) $block['data'],
+            'created_by' => $this->user()->id,
+        ]);
+
+        $this->showSectionModal = false;
+        $this->toast('Saved to the library as “'.trim($this->sectionName).'”.');
+    }
+
+    /**
+     * Drop a saved section onto the page — content and all.
+     */
+    public function insertSavedSection(int $savedId): void
+    {
+        $saved = SavedSection::query()->findOrFail($savedId);
+
+        $this->blocks[] = [
+            'id' => null,
+            'key' => $this->newKey(),
+            'type' => $saved->type->value,
+            'visible' => true,
+            'data' => $saved->data,
+        ];
+    }
+
+    public function deleteSavedSection(int $savedId): void
+    {
+        SavedSection::query()->findOrFail($savedId)->delete();
+    }
+
+    /**
+     * The inline preview width (docs/12 §5.3): desktop, tablet or mobile.
+     */
+    public function setPreviewDevice(string $device): void
+    {
+        $this->previewDevice = in_array($device, ['desktop', 'tablet', 'mobile'], true) ? $device : '';
+    }
+
+    /**
+     * A link the owner can open on their phone, no login, for a day.
+     */
+    public function makeShareLink(): void
+    {
+        $page = Page::query()->findOrFail($this->pageId);
+        $this->shareUrl = PreviewLink::make($page, now()->addDay());
     }
 
     public function addItem(int $index, string $key): void
@@ -216,9 +338,19 @@ class PageEditor extends Component
             'page' => $this->pageId !== null ? Page::query()->with(['versions.user'])->find($this->pageId) : null,
             'types' => collect(PageType::cases())->mapWithKeys(fn (PageType $type): array => [$type->value => $type->label()])->all(),
             'blockTypes' => collect(BlockType::cases())->mapWithKeys(fn (BlockType $type): array => [$type->value => $type->label()])->all(),
+            'library' => collect(BlockType::cases())
+                ->map(fn (BlockType $type): array => ['value' => $type->value, 'label' => $type->label(), 'description' => $type->description(), 'category' => $type->category()])
+                ->groupBy('category'),
+            'savedSections' => SavedSection::query()->with('creator')->orderBy('name')->get(),
             'pages' => Page::query()->orderBy('title')->get(['id', 'title', 'slug']),
             'media' => Media::query()->orderByDesc('id')->get(['id', 'title', 'alt', 'path']),
         ]);
+    }
+
+    /** A key Livewire's drag-to-reorder can hold on to across requests; never persisted. */
+    private function newKey(): string
+    {
+        return 'b'.Str::random(8);
     }
 
     private function page(): Page
@@ -275,6 +407,7 @@ class PageEditor extends Component
         $this->ogImageId = $page->seo['og_image_id'] ?? null;
         $this->blocks = $page->blocks->map(fn ($block): array => [
             'id' => $block->id,
+            'key' => $this->newKey(),
             'type' => $block->type->value,
             'visible' => $block->visible,
             'data' => $block->data ?? $block->type->fields(),

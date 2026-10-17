@@ -2,6 +2,30 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT, after V2-2 part 1 — section library + page builder)
+
+- **V2-2 part 1 is DONE and shipped:** the section library and the page-builder upgrades (docs/12 §5.2/§5.3).
+  `BlockType::description()` + `category()` (Hero/Proof/Content/Conversion) drive the library card in the page
+  editor — one declaration, library + editor both use it. `saved_sections` table + `SavedSection` model
+  (type cast to BlockType, data JSON, created_by): configure a section once, ★ "Save as section", it appears
+  under "Saved by the studio", Insert drops a copy (id=null) on any page, Delete removes it. Drag-to-reorder
+  via Livewire 4 `wire:sort="sortBlocks"` (ephemeral `key` per block, assigned in reload/add/insert/duplicate,
+  never persisted — SavePage ignores it); ⧉ duplicate; ↑↓ kept as fallback. Device preview in the right
+  column (desktop 1280/tablet 820/mobile 390, scaled iframe, `?preview=1`). Shareable preview links:
+  `PreviewLink` (Domain/Website/Support) = slug + expires + HMAC(app.key) signature — nothing stored, dies on
+  its own; `SiteRouter::mayPreview(request, page)` accepts staff session OR valid token (V2-2 §5.3 "shareable
+  preview link"). Tests: `tests/Feature/Website/SectionLibraryTest.php` (7).
+- **Test gotcha confirmed:** Laravel's HTTP test client TRIMS the trailing slash — public-page tests must use
+  `siteGet()` from `InteractsWithPublicWebsite` (calls SiteRouter directly), and `url()` also trims it, so
+  PreviewLink builds via `Page::urlFor()` (keeps the canonical slash). BelongsTo docblocks: use
+  `@return BelongsTo<User, $this>` (not `self`/concrete class).
+- **V2-2 remaining (next):** campaign free-canvas mode (docs/12 §5.3, landing pages only, excluded from token
+  re-skins), inline text editing in the rendered page, section thumbnails. Then V2-3 header/footer builder.
+- **Preview restarted fully updated** (process `woodex-os-preview-b24e9189`, port 8080): migrate +
+  ProductionSeeder run; `/`, `/admin`, inbox, reports, canned replies, theme builder, pages, audit, furniture
+  editor all 200; theme tokens 15 rows navy #0C1628.
+- Gate green at 568 passed / 3 850 assertions, Larastan clean, Pint clean 544 files.
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after V2-1 — theme tokens + theme builder)
 
 - **V2-1 is DONE and shipped (owner decisions: live v1 values, wire the live site — both confirmed via

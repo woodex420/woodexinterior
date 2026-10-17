@@ -47,6 +47,45 @@ enum BlockType: string
     }
 
     /**
+     * One line that tells a non-technical editor what this section is for — the section library's blurb
+     * (docs/12 §5.2). One declaration, two uses: the library panel and the editor header.
+     */
+    public function description(): string
+    {
+        return match ($this) {
+            self::Hero => 'The opening: a big heading, a photo and the studio\'s first promise.',
+            self::Intro => 'A short paragraph plus key figures — what this page is about.',
+            self::Text => 'A heading and free text: the workhorse for telling any story.',
+            self::Services => 'A grid of services with a line each.',
+            self::Process => 'The studio\'s stages, numbered from first call to handover.',
+            self::Gallery => 'A grid of photographs picked from the media library.',
+            self::Faq => 'Questions and answers — they also feed Google\'s rich results.',
+            self::Related => 'Cards linking to other pages: services, cities, insights.',
+            self::Form => 'The enquiry form with consent, wired straight into the CRM.',
+            self::Reviews => 'Client reviews with names, ratings and dates.',
+            self::Specs => 'A specifications table: what is included, area, timeline.',
+            self::PriceTable => 'Price bands with what each band includes.',
+            self::Author => 'The person behind the studio: photo, bio, credentials.',
+            self::Map => 'The studio\'s address on a map, with phone and hours.',
+            self::Clients => 'Client logos — the quiet trust signal.',
+        };
+    }
+
+    /**
+     * The section library's groups (docs/12 §5.2): Hero first, then proof, content and the sections that
+     * ask for the enquiry. `label()` names the section; this places it on the shelf.
+     */
+    public function category(): string
+    {
+        return match ($this) {
+            self::Hero => 'Hero',
+            self::Clients, self::Reviews, self::Gallery, self::Related, self::Author => 'Proof',
+            self::Intro, self::Text, self::Services, self::Process, self::Specs, self::PriceTable, self::Faq => 'Content',
+            self::Form, self::Map => 'Conversion',
+        };
+    }
+
+    /**
      * Fields the editor shows, with the empty value used when a section is added.
      *
      * @return array<string, mixed>

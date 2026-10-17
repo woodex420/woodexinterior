@@ -6,6 +6,7 @@ namespace App\Domain\Website\Services;
 
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\Redirect;
+use App\Domain\Website\Support\PreviewLink;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -56,7 +57,7 @@ final class SiteRouter
         $page = Page::query()->where('slug', $slug)->first();
 
         if ($page !== null) {
-            if (! $page->isPublished() && ! $this->mayPreview($request)) {
+            if (! $page->isPublished() && ! $this->mayPreview($request, $page)) {
                 return null;
             }
 
@@ -119,10 +120,23 @@ final class SiteRouter
     }
 
     /** Staff who may edit the website can open a draft or a scheduled page before it goes live. */
-    private function mayPreview(Request $request): bool
+    /**
+     * Who may see an unpublished page (V2-2, docs/12 §5.3): a signed-in editor, or anyone holding one of the
+     * owner's shareable preview links — a signed token with an expiry, so the draft can be checked on a phone
+     * without a login and the link dies on its own.
+     */
+    private function mayPreview(Request $request, Page $page): bool
     {
+        if (! $request->boolean('preview')) {
+            return false;
+        }
+
         $user = $request->user();
 
-        return $request->boolean('preview') && $user !== null && $user->can('website.edit');
+        if ($user !== null && $user->can('website.edit')) {
+            return true;
+        }
+
+        return PreviewLink::valid($page, $request->query('token'), $request->integer('expires'));
     }
 }
