@@ -20,8 +20,8 @@ fs.mkdirSync(SHOTS, { recursive: true });
 // The sending step changes demo data (an approval decided, a frozen version, a quotation accepted, its lead won). On
 // the local preview the SQLite file is copied first and put back when the check ends, so the check can run again and
 // the demo stays as seeded.
-const DB_FILE = '/tmp/woodex-run/app/database/database.sqlite';
-const DB_COPY = '/tmp/woodex-run/database-before-browser-check.sqlite';
+const DB_FILE = process.env.BROWSER_DB_FILE || '/tmp/woodex-run/app/database/database.sqlite';
+const DB_COPY = process.env.BROWSER_DB_COPY || `${DB_FILE}.before-browser-check`;
 const restoreDb = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(BASE) && fs.existsSync(DB_FILE);
 if (restoreDb) fs.copyFileSync(DB_FILE, DB_COPY);
 process.on('exit', () => { if (restoreDb) fs.copyFileSync(DB_COPY, DB_FILE); });

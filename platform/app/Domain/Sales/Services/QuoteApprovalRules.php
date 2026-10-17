@@ -8,6 +8,7 @@ use App\Domain\Sales\Data\ApprovalAssessment;
 use App\Domain\Sales\Models\Quote;
 use App\Models\User;
 use App\Settings\SalesSettings;
+use Illuminate\Support\Facades\DB;
 
 /**
  * When a quotation needs approval before it is sent (QUO-007): the total discount (line discounts + quote discount,
@@ -75,9 +76,18 @@ final class QuoteApprovalRules
     /** The figures an approval covers: changing any of them needs a new approval. */
     private function fingerprint(Quote $quote, int $lineDiscounts): string
     {
-        return hash('sha256', implode('|', [
-            $quote->id, $quote->revision, $quote->subtotal_minor, $lineDiscounts, $quote->discount_minor,
-            $quote->total_minor, $quote->internal_cost_minor, $quote->margin_bp ?? '-',
-        ]));
+        $content = [
+            'schema' => 2,
+            'quote' => $quote->only(['id', 'revision', 'number', 'title', 'option_label', 'contact_id', 'company_id', 'owner_id', 'business_line', 'currency', 'valid_until', 'subtotal_minor', 'discount_type', 'discount_value', 'discount_minor', 'other_charges_label', 'other_charges_minor', 'tax_bp', 'tax_minor', 'rounding_minor', 'total_minor', 'internal_cost_minor', 'margin_bp', 'scope_html', 'terms', 'notes', 'signatories']),
+            'document_design' => $quote->meta['document_design'] ?? null,
+            'line_discounts' => $lineDiscounts,
+            'recipient' => $quote->contact()->withTrashed()->first()?->only(['id', 'name', 'phone', 'whatsapp', 'email', 'company_id', 'address', 'city', 'area']),
+            'company' => $quote->company()->first()?->only(['id', 'name']),
+            'sections' => DB::table('quote_sections')->where('quote_id', $quote->id)->orderBy('id')->get(['id', 'name', 'note', 'position'])->all(),
+            'items' => DB::table('quote_items')->where('quote_id', $quote->id)->orderBy('id')->get(['id', 'quote_section_id', 'position', 'description', 'unit', 'qty', 'rate_minor', 'discount_type', 'discount_value', 'discount_minor', 'line_total_minor', 'is_optional', 'internal_cost_minor'])->all(),
+            'milestones' => DB::table('quote_milestones')->where('quote_id', $quote->id)->orderBy('id')->get(['id', 'name', 'position', 'percent_bp', 'amount_minor', 'trigger'])->all(),
+        ];
+
+        return hash('sha256', json_encode($content, JSON_THROW_ON_ERROR));
     }
 }

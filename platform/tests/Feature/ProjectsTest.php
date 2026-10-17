@@ -48,7 +48,7 @@ beforeEach(function () {
     BankAccount::query()->create(['business_line' => BusinessLine::Interior, 'title' => 'WOODEX INTERIOR', 'bank_name' => 'Bank Alfalah', 'account_number' => '0000-0000-0000', 'iban' => 'PK00ALFA0000000000000000', 'is_default' => true, 'is_active' => true]);
 
     $this->quote = sentProjectQuote($this->lead, $this->sales);
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $this->quote), ['name' => 'Ayesha Khan', 'confirm' => '1'])->assertRedirect();
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $this->quote), ['revision' => $this->quote->revision, 'name' => 'Ayesha Khan', 'confirm' => '1'])->assertRedirect();
 
     $this->project = Project::query()->sole();
 });

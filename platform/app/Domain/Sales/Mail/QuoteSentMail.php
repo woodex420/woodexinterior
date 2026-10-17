@@ -23,7 +23,10 @@ final class QuoteSentMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public readonly int $quoteId, public readonly int $versionId) {}
+    public function __construct(public readonly int $quoteId, public readonly int $versionId)
+    {
+        $this->afterCommit();
+    }
 
     public function envelope(): Envelope
     {

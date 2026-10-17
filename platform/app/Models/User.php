@@ -64,6 +64,17 @@ class User extends Authenticatable
         return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
     }
 
+    /**
+     * Owner enrolment is optional; confirmed 2FA is still challenged by Fortify at sign-in.
+     * The explicit exemption also applies to multi-role owners and existing cached role lists.
+     */
+    public function requiresTwoFactorAuthentication(): bool
+    {
+        return ! $this->hasRole('owner')
+            && (bool) config('woodex.security.enforce_2fa')
+            && $this->hasAnyRole((array) config('woodex.security.require_2fa_roles', []));
+    }
+
     public function initials(): string
     {
         return Str::of($this->name)
@@ -81,7 +92,8 @@ class User extends Authenticatable
     {
         $link = $this->telegramLink;
 
-        if ($link === null || ! $link->is_active || $link->chat_id === null) {
+        if (! $this->is_active || $link === null || ! $link->is_active || $link->chat_id === null
+            || $link->chat_id <= 0 || ($link->chat_type !== null && $link->chat_type !== 'private')) {
             return null;
         }
 

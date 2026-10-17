@@ -6,12 +6,14 @@ namespace App\Domain\Sales\Actions;
 
 use App\Domain\Sales\Data\LineInput;
 use App\Domain\Sales\Data\QuoteTotals;
+use App\Domain\Sales\Exceptions\QuoteLocked;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteItem;
 use App\Domain\Sales\Models\QuoteMilestone;
 use App\Domain\Sales\Models\QuoteSection;
 use App\Domain\Sales\Services\MilestonePlan;
 use App\Domain\Sales\Services\QuoteCalculator;
+use App\Domain\Sales\Services\QuoteWriteLock;
 use App\Settings\SalesSettings;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +32,10 @@ final class RecalculateQuote
     public function handle(Quote $quote): QuoteTotals
     {
         return DB::transaction(function () use ($quote): QuoteTotals {
+            QuoteWriteLock::refresh($quote);
+            if (! $quote->isEditable()) {
+                throw QuoteLocked::for($quote);
+            }
             $sections = $quote->sections()->with('items')->get();
 
             $input = $sections->map(fn (QuoteSection $section): array => $section->items->map(fn (QuoteItem $item): LineInput => new LineInput(

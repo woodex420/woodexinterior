@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Integrations\Telegram;
 
 use App\Integrations\Telegram\Contracts\TelegramGateway;
+use App\Models\User;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -18,6 +20,13 @@ final class TelegramChannel
 
     public function send(object $notifiable, Notification $notification): void
     {
+        if ($notifiable instanceof User) {
+            $notifiable = User::query()->with('telegramLink')->find($notifiable->id);
+            if ($notifiable === null || ! $notifiable->is_active) {
+                return;
+            }
+        }
+
         if (! method_exists($notifiable, 'routeNotificationFor') || ! method_exists($notification, 'toTelegram')) {
             return;
         }
@@ -31,7 +40,7 @@ final class TelegramChannel
         try {
             $this->gateway->send($chatId, $notification->toTelegram($notifiable));
         } catch (Throwable $exception) {
-            report($exception);
+            Log::warning('Telegram notification delivery failed.', ['exception' => $exception::class]);
         }
     }
 }

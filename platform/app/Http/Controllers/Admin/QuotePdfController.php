@@ -22,8 +22,10 @@ final class QuotePdfController
     {
         Gate::authorize('view', $quote);
 
-        if ($request->filled('revision')) {
-            $version = $quote->versions()->where('revision', (int) $request->query('revision'))->firstOrFail();
+        if ($request->filled('revision') || in_array($quote->status->value, ['sent', 'viewed', 'accepted', 'declined', 'expired', 'superseded', 'void'], true)) {
+            $version = $request->filled('revision')
+                ? $quote->versions()->where('revision', (int) $request->query('revision'))->firstOrFail()
+                : $quote->versions()->reorder('revision', 'desc')->firstOrFail();
             abort_if($version->pdf_path === null || ! Storage::disk('local')->exists($version->pdf_path), 404);
 
             return Storage::disk('local')->response($version->pdf_path, QuotePdf::filename($version->snapshot), ['Content-Type' => 'application/pdf']);

@@ -18,7 +18,8 @@ return [
 
     'security' => [
         'enforce_2fa' => (bool) env('ENFORCE_2FA', false),
-        'require_2fa_roles' => ['owner', 'admin', 'accountant'],
+        // Owners opt in to enrolment; confirmed authenticator sign-in remains enforced.
+        'require_2fa_roles' => ['admin', 'accountant'],
         // X-Frame-Options value; empty disables the header (only for embedded previews).
         'frame_options' => env('SECURITY_FRAME_OPTIONS', 'SAMEORIGIN'),
     ],

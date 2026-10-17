@@ -8,13 +8,23 @@ use App\Domain\Crm\Enums\LeadSource;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\System\Models\IntegrationLog;
 use App\Domain\System\Models\TelegramLink;
+use App\Domain\System\Models\WebhookEvent;
+use App\Integrations\Google\GoogleConnection;
+use App\Integrations\Google\GoogleOAuth;
+use App\Integrations\Mcp\IntegrationCatalog;
+use App\Integrations\Mcp\IssueMcpToken;
+use App\Integrations\Mcp\McpAccessToken;
+use App\Integrations\Mcp\RevokeMcpToken;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
+use App\Integrations\Telegram\TelegramConfiguration;
 use App\Integrations\Telegram\TelegramMessage;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -37,6 +47,133 @@ class Integrations extends Component
     #[Url(except: false)]
     public bool $failedOnly = false;
 
+    /** @var array<string, mixed>|null */
+    #[Locked]
+    public ?array $telegramStatus = null;
+
+    #[Locked]
+    public bool $showTelegramConfiguration = false;
+
+    public function checkTelegramConfiguration(): void
+    {
+        abort_unless($this->user()->hasRole('owner') && $this->user()->can('integrations.manage'), 403);
+        $this->showTelegramConfiguration = true;
+    }
+
+    public function reloadTelegramConfiguration(): void
+    {
+        abort_unless($this->user()->hasRole('owner') && $this->user()->can('integrations.manage'), 403);
+
+        try {
+            $exit = Artisan::call('config:clear');
+            clearstatcache(true, app()->getCachedConfigPath());
+
+            if ($exit !== 0 || app()->configurationIsCached()) {
+                $this->toast('Configuration cache could not be cleared. Ask hosting support to check cache-file permissions.', 'error');
+
+                return;
+            }
+        } catch (Throwable) {
+            $this->toast('Configuration cache could not be cleared. Ask hosting support to check cache-file permissions.', 'error');
+
+            return;
+        }
+
+        // Only a full new request rebuilds services and reloads the active .env. Do not mutate
+        // config in this request or call Telegram using the already-resolved gateway singleton.
+        session()->flash('status', 'Server configuration cache cleared. Saved secrets were not changed; retry your integration connection.');
+        $this->redirectRoute('admin.integrations');
+    }
+
+    public function checkTelegramConnection(TelegramGateway $telegram): void
+    {
+        abort_unless($this->user()->can('integrations.manage'), 403);
+
+        if (! $telegram->isConfigured() || blank(config('services.telegram.webhook_secret'))) {
+            $this->telegramSetupRequired();
+
+            return;
+        }
+
+        $this->telegramStatus = $telegram->connectionStatus(
+            route('webhooks.telegram'),
+            (string) config('services.telegram.bot_username'),
+        );
+        $event = WebhookEvent::query()->where('provider', 'telegram')->latest('id')->first();
+        $this->telegramStatus['last_received'] = $event?->created_at?->toIso8601String();
+        $this->telegramStatus['last_processed'] = $event?->processed_at?->toIso8601String();
+    }
+
+    public string $appSearch = '';
+
+    public string $appCategory = 'all';
+
+    public bool $showIntegrationDetails = false;
+
+    #[Locked]
+    public string $detailsKey = '';
+
+    public bool $showGoogleSetup = false;
+
+    public function openGoogleSetup(): void
+    {
+        abort_unless($this->user()->can('integrations.manage'), 403);
+        $this->showIntegrationDetails = false;
+        $this->showGoogleSetup = true;
+    }
+
+    public bool $showMcpSetup = false;
+
+    public string $bridgeName = '';
+
+    public string $bridgePassword = '';
+
+    public int $bridgeDays = 30;
+
+    /** @var list<string> */
+    public array $bridgeAbilities = ['status.read'];
+
+    #[Locked]
+    public ?string $newBridgeToken = null;
+
+    public function hydrate(): void
+    {
+        // The plain key is only shown in its creation response, never restored from storage.
+        $this->newBridgeToken = null;
+    }
+
+    public function openIntegrationDetails(string $key): void
+    {
+        abort_unless($this->user()->can('integrations.manage'), 403);
+        abort_unless(collect(IntegrationCatalog::planned())->contains('key', $key), 404);
+        $this->detailsKey = $key;
+        $this->showIntegrationDetails = true;
+    }
+
+    public function openMcpSetup(): void
+    {
+        abort_unless($this->user()->can('integrations.manage'), 403);
+        $this->showMcpSetup = true;
+    }
+
+    public function createBridgeKey(IssueMcpToken $issue): void
+    {
+        try {
+            $this->newBridgeToken = $issue->handle($this->user(), $this->bridgePassword,
+                $this->bridgeName, $this->bridgeAbilities, $this->bridgeDays);
+        } finally {
+            $this->bridgePassword = '';
+        }
+        $this->bridgeName = '';
+        $this->toast('Read-only bridge key created. Save it now; it cannot be retrieved later.');
+    }
+
+    public function revokeBridgeKey(int $id, RevokeMcpToken $revoke): void
+    {
+        $revoke->handle($this->user(), $id);
+        $this->toast('Bridge key revoked. The adapter can no longer use it.');
+    }
+
     public function mount(): void
     {
         abort_unless($this->user()->can('integrations.manage'), 403);
@@ -55,7 +192,7 @@ class Integrations extends Component
         $chatId = $this->user()->routeNotificationForTelegram();
 
         if (! $telegram->isConfigured()) {
-            $this->toast('Add TELEGRAM_BOT_TOKEN to the server .env first.', 'error');
+            $this->telegramSetupRequired();
 
             return;
         }
@@ -76,14 +213,23 @@ class Integrations extends Component
         $secret = (string) config('services.telegram.webhook_secret');
 
         if (! $telegram->isConfigured() || $secret === '') {
-            $this->toast('Add TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET to the server .env first.', 'error');
+            $this->telegramSetupRequired();
 
             return;
         }
 
-        $url = route('webhooks.telegram', ['secret' => $secret]);
+        $url = route('webhooks.telegram');
         $ok = str_starts_with($url, 'https://') && $telegram->setWebhook($url, $secret);
-        $this->toast($ok ? 'Telegram webhook connected.' : 'Webhook not set: the site must be on https and reachable.', $ok ? 'success' : 'error');
+        $this->toast($ok ? 'Webhook registered. Now use Check live connection and send /start to verify delivery.' : 'Webhook not set: the site must be on https and reachable.', $ok ? 'success' : 'error');
+    }
+
+    private function telegramSetupRequired(): void
+    {
+        if ($this->user()->hasRole('owner')) {
+            $this->showTelegramConfiguration = true;
+        }
+
+        $this->toast('Telegram credentials are not loaded. The owner can use Check server configuration to find the active settings file and reload cached configuration.', 'warning');
     }
 
     public function testMail(): void
@@ -161,6 +307,29 @@ class Integrations extends Component
             ['key' => 'linkedin', 'name' => 'LinkedIn', 'icon' => 'users', 'phase' => 'P7', 'configured' => false, 'detail' => 'Lead Gen forms and page posts', 'last_ok' => null, 'last_error' => null],
         ];
 
+        // Keep working server integrations; replace old marketing placeholders with an explicit roadmap.
+        $cards = array_values(array_filter($cards, fn (array $card): bool => $card['phase'] === null));
+        foreach ($cards as &$card) {
+            $card['category'] = in_array($card['key'], ['telegram', 'mail', 'whatsapp'], true) ? 'communication' : 'system';
+            if ($card['key'] === 'whatsapp') {
+                $card['phase'] = 'Planned';
+            }
+        }
+        unset($card);
+        $googleConnection = GoogleConnection::query()->find(1, ['id', 'email', 'scopes', 'status', 'connected_at', 'last_checked_at']);
+        array_unshift($cards, ['key' => 'google_account', 'name' => 'Google account', 'icon' => 'globe',
+            'phase' => null, 'configured' => $googleConnection?->status === 'active', 'category' => 'workspace',
+            'detail' => $googleConnection->email ?? 'Authorize a company account securely with Google. Basic identity access only.',
+            'last_ok' => $googleConnection?->last_checked_at, 'last_error' => null]);
+        $cards = array_merge($cards, IntegrationCatalog::planned());
+        $availableCount = count(array_filter($cards, fn (array $card): bool => $card['phase'] === null));
+        $plannedCount = count($cards) - $availableCount;
+        $cards = array_values(array_filter($cards, fn (array $card): bool => ($this->appCategory === 'all' || $card['category'] === $this->appCategory)
+            && ($this->appSearch === '' || str_contains(strtolower($card['name'].' '.$card['detail']), strtolower($this->appSearch)))
+        ));
+        $bridgeKeys = $this->user()->hasRole('owner')
+            ? McpAccessToken::query()->with('user:id,name')->latest('id')->limit(30)->get() : collect();
+
         $logs = IntegrationLog::query()
             ->when($this->logIntegration !== '', fn ($q) => $q->where('integration', $this->logIntegration))
             ->when($this->failedOnly, fn ($q) => $q->where('ok', false))
@@ -169,6 +338,16 @@ class Integrations extends Component
 
         return view('livewire.admin.system.integrations', [
             'cards' => $cards,
+            'googleConnection' => $googleConnection,
+            'googleConfigured' => GoogleOAuth::configured(),
+            'googleLoginEnabled' => GoogleOAuth::loginEnabled(),
+            'availableCount' => $availableCount,
+            'plannedCount' => $plannedCount,
+            'bridgeKeys' => $bridgeKeys,
+            'activeBridgeCount' => McpAccessToken::query()->whereNull('revoked_at')->where('expires_at', '>', now())->count(),
+            'details' => collect(IntegrationCatalog::planned())->firstWhere('key', $this->detailsKey),
+            'telegramConfiguration' => $this->showTelegramConfiguration && $this->user()->hasRole('owner')
+                ? app(TelegramConfiguration::class)->inspect() : null,
             'logs' => $logs,
             'integrations' => IntegrationLog::query()->distinct()->orderBy('integration')->pluck('integration'),
         ]);

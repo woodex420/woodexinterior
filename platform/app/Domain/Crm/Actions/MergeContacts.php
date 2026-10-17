@@ -28,6 +28,10 @@ final class MergeContacts
         }
 
         return DB::transaction(function () use ($target, $duplicate, $by): Contact {
+            $locked = Contact::query()->whereKey([$target->id, $duplicate->id])->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+            $target = $locked->get($target->id) ?? abort(404);
+            $duplicate = $locked->get($duplicate->id) ?? abort(404);
+
             foreach (self::RELATED_TABLES as $table) {
                 DB::table($table)->where('contact_id', $duplicate->id)->update(['contact_id' => $target->id]);
             }
@@ -49,8 +53,9 @@ final class MergeContacts
 
             $target->is_client = $target->is_client || $duplicate->is_client;
             $target->became_client_at ??= $duplicate->became_client_at;
-            $target->consent_whatsapp = $target->consent_whatsapp || $duplicate->consent_whatsapp;
-            $target->consent_marketing = $target->consent_marketing || $duplicate->consent_marketing;
+            $target->opted_out_at ??= $duplicate->opted_out_at;
+            $target->consent_whatsapp = $target->opted_out_at === null && ($target->consent_whatsapp || $duplicate->consent_whatsapp);
+            $target->consent_marketing = $target->opted_out_at === null && ($target->consent_marketing || $duplicate->consent_marketing);
 
             if (filled($duplicate->notes)) {
                 $target->notes = trim(($target->notes ?? '')."\n".$duplicate->notes);

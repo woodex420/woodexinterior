@@ -9,6 +9,8 @@ use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Notifications\QuoteNotification;
 use App\Domain\Sales\Services\QuoteLinks;
+use App\Domain\Sales\Services\QuoteWriteLock;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
@@ -20,20 +22,29 @@ final class RequestQuoteChanges
 {
     public function __construct(private readonly LogQuoteEvent $log) {}
 
-    public function handle(Quote $quote, string $comment, ?string $ip, ?string $userAgent): Quote
+    public function handle(Quote $quote, string $comment, ?string $ip, ?string $userAgent, ?int $revision = null): Quote
     {
-        if (! in_array($quote->status, [QuoteStatus::Sent, QuoteStatus::Viewed], true)) {
-            throw new QuoteActionDenied('This quotation is not open for comments right now. Please contact us.');
-        }
+        $expectedRevision = $revision ?? (int) $quote->revision;
 
-        $comment = trim($comment);
-        $quote->update(['status' => QuoteStatus::ChangesRequested]);
-        $this->log->handle($quote, 'changes_requested', null, "{$quote->contact->name} asked for changes to {$quote->label()}: “{$comment}”", [
-            'comment' => $comment,
-        ], ['channel' => 'link', 'ip' => $ip, 'user_agent' => mb_substr((string) $userAgent, 0, 250)]);
+        return DB::transaction(function () use ($quote, $comment, $ip, $userAgent, $expectedRevision): Quote {
+            QuoteWriteLock::refresh($quote);
+            if ((int) $quote->revision !== $expectedRevision) {
+                throw new QuoteActionDenied('The revision changed. Reload and review the quotation.');
+            }
 
-        Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'changes_requested', '“'.Str::limit($comment, 300).'”'));
+            if (! in_array($quote->status, [QuoteStatus::Sent, QuoteStatus::Viewed], true)) {
+                throw new QuoteActionDenied('This quotation is not open for comments right now. Please contact us.');
+            }
 
-        return $quote;
+            $comment = trim($comment);
+            $quote->update(['status' => QuoteStatus::ChangesRequested]);
+            $this->log->handle($quote, 'changes_requested', null, "{$quote->contact->name} asked for changes to {$quote->label()}: “{$comment}”", [
+                'comment' => $comment,
+            ], ['channel' => 'link', 'ip' => $ip, 'user_agent' => mb_substr((string) $userAgent, 0, 250)]);
+
+            Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'changes_requested', '“'.Str::limit($comment, 300).'”'));
+
+            return $quote;
+        });
     }
 }

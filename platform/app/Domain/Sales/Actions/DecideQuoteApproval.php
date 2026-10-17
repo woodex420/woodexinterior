@@ -27,25 +27,46 @@ final class DecideQuoteApproval
 
     public function handle(Approval $approval, User $by, bool $approve, ?string $reason = null): Quote
     {
-        $quote = $approval->approvable;
-
-        if (! $quote instanceof Quote || $approval->status !== ApprovalStatus::Pending || $quote->status !== QuoteStatus::PendingApproval) {
-            throw new QuoteActionDenied('This approval was already decided or withdrawn.');
+        $context = Approval::query()->findOrFail($approval->id);
+        if ($context->approvable_type !== (new Quote)->getMorphClass()) {
+            throw new QuoteActionDenied('This is not a quotation approval.');
         }
 
-        if (! $by->can('quotes.approve')) {
-            throw new QuoteActionDenied('Only the owner or a sales manager can decide approvals.');
-        }
+        return DB::transaction(function () use ($context, $approval, $by, $approve, $reason): Quote {
+            $quote = Quote::query()->whereKey($context->approvable_id)->lockForUpdate()->firstOrFail();
+            $locked = Approval::query()->whereKey($approval->id)->lockForUpdate()->firstOrFail();
+            if ($locked->approvable_type !== $context->approvable_type || $locked->approvable_id !== $quote->id) {
+                throw new QuoteActionDenied('The approval changed. Reload and review the quotation.');
+            }
+            $approval->setRawAttributes($locked->getAttributes(), true);
+            $approval->unsetRelations();
+            $by = User::query()->findOrFail($by->id);
+            abort_unless($by->is_active, 403);
 
-        if ($approval->requested_by === $by->id && ! $by->hasRole('owner')) {
-            throw new QuoteActionDenied('You cannot approve your own request: ask the owner or another manager.');
-        }
+            if (! $quote instanceof Quote || $approval->status !== ApprovalStatus::Pending || $quote->status !== QuoteStatus::PendingApproval) {
+                throw new QuoteActionDenied('This approval was already decided or withdrawn.');
+            }
 
-        if (! $approve && blank($reason)) {
-            throw new QuoteActionDenied('Please say why, so the sales person knows what to change.');
-        }
+            if (! $by->can('quotes.approve')) {
+                throw new QuoteActionDenied('Only the owner or a sales manager can decide approvals.');
+            }
 
-        DB::transaction(function () use ($approval, $quote, $by, $approve, $reason): void {
+            if ($approval->requested_by === $by->id && ! $by->hasRole('owner')) {
+                throw new QuoteActionDenied('You cannot approve your own request: ask the owner or another manager.');
+            }
+
+            if (! $approve && blank($reason)) {
+                throw new QuoteActionDenied('Please say why, so the sales person knows what to change.');
+            }
+
+            if ($approve) {
+                $requested = $approval->payload['fingerprint'] ?? null;
+                $current = $this->rules->assess($quote, $by)->fingerprint;
+                if (! is_string($requested) || ! hash_equals($requested, $current)) {
+                    throw new QuoteActionDenied('The requested quotation changed. Withdraw it and request approval again.');
+                }
+            }
+
             $approval->update([
                 'status' => $approve ? ApprovalStatus::Approved : ApprovalStatus::Rejected,
                 'decided_by' => $by->id,
@@ -65,12 +86,12 @@ final class DecideQuoteApproval
                 $quote->update(['status' => QuoteStatus::Draft, 'approved_by' => null, 'approved_at' => null, 'meta' => $meta]);
                 $this->log->handle($quote, 'approval_rejected', $by, "Approval for {$quote->label()} declined by {$by->name}: ".trim((string) $reason));
             }
+
+            $approval->loadMissing('requester.telegramLink');
+            $approval->requester?->notify(new QuoteNotification($quote->refresh(), $approve ? 'approved' : 'rejected',
+                ($approve ? 'Approved by ' : 'Declined by ').$by->name.($approve ? ': you can send it now.' : ': '.trim((string) $reason))));
+
+            return $quote;
         });
-
-        $approval->loadMissing('requester.telegramLink');
-        $approval->requester?->notify(new QuoteNotification($quote->refresh(), $approve ? 'approved' : 'rejected',
-            ($approve ? 'Approved by ' : 'Declined by ').$by->name.($approve ? ': you can send it now.' : ': '.trim((string) $reason))));
-
-        return $quote;
     }
 }

@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Schedule;
 |--------------------------------------------------------------------------
 */
 
+// Recover durable WhatsApp events before draining the same database queue.
+Schedule::command('woodex:retry-whatsapp-webhooks')->everyMinute()->withoutOverlapping(5);
+
 // Drain the database queue without a daemon (D-17).
 Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3')
     ->everyMinute()

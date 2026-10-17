@@ -52,7 +52,7 @@ function whatsappPayload(string $from = '923224007688', string $body = 'Assalam 
                     'messages' => [[
                         'from' => $from,
                         'id' => $id,
-                        'timestamp' => '1700000000',
+                        'timestamp' => (string) now()->timestamp,
                         'type' => 'text',
                         'text' => ['body' => $body],
                     ]],

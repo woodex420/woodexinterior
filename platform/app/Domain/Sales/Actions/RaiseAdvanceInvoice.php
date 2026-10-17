@@ -7,16 +7,20 @@ namespace App\Domain\Sales\Actions;
 use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Sales\Enums\InvoiceKind;
 use App\Domain\Sales\Enums\InvoiceStatus;
+use App\Domain\Sales\Enums\QuoteStatus;
+use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\InvoiceItem;
 use App\Domain\Sales\Models\Quote;
+use App\Domain\Sales\Services\InvoiceNumbering;
 use App\Domain\Sales\Services\InvoicePdf;
 use App\Domain\Sales\Services\InvoiceSnapshot;
 use App\Models\User;
 use App\Settings\SalesSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 /**
  * The advance invoice that follows an accepted quotation (QUO-011, INV-001).
@@ -38,27 +42,30 @@ final class RaiseAdvanceInvoice
 
     public function handle(Quote $quote, ?User $by = null): ?Invoice
     {
-        $quote->loadMissing(['milestones', 'contact', 'company', 'project']);
+        return DB::transaction(function () use ($quote, $by): ?Invoice {
+            $quote = Quote::query()->whereKey($quote->id)->lockForUpdate()->firstOrFail();
 
-        $milestone = $quote->milestones->firstWhere('trigger', 'on_acceptance');
+            if ($quote->status !== QuoteStatus::Accepted) {
+                throw new QuoteActionDenied('Only an accepted quotation can raise an advance invoice.');
+            }
 
-        if ($milestone === null) {
-            return null; // nothing is payable yet: the milestones are raised as the work reaches them (P3)
-        }
+            $milestone = $quote->milestones()->where('trigger', 'on_acceptance')->first();
+            if ($milestone === null) {
+                return null;
+            }
 
-        $project = $quote->project;
-        $projectMilestone = $project?->milestones->firstWhere('quote_milestone_id', $milestone->id);
-
-        if ($projectMilestone !== null) {
-            $existing = Invoice::query()->where('project_milestone_id', $projectMilestone->id)->first();
-
+            $project = $quote->project()->lockForUpdate()->firstOrFail();
+            $projectMilestone = $project->milestones()->where('quote_milestone_id', $milestone->id)->lockForUpdate()->firstOrFail();
+            $existing = Invoice::withTrashed()->where('project_milestone_id', $projectMilestone->id)->first();
             if ($existing !== null) {
+                if ($existing->trashed()) {
+                    throw new QuoteActionDenied('This milestone already has an archived invoice. Ask Accounts to review it.');
+                }
+
                 return $existing;
             }
-        }
 
-        return DB::transaction(function () use ($quote, $milestone, $project, $projectMilestone, $by): Invoice {
-            $sequence = Invoice::query()->where('quote_id', $quote->id)->withTrashed()->count() + 1;
+            $number = InvoiceNumbering::next($project);
             $percent = (int) $milestone->percent_bp;
             $amount = (int) $milestone->amount_minor;
 
@@ -69,14 +76,14 @@ final class RaiseAdvanceInvoice
             $issued = $this->sales->advance_invoice_mode !== 'draft';
 
             $invoice = Invoice::query()->create([
-                'number' => $quote->number.'-'.$sequence,
+                'number' => $number,
                 'kind' => InvoiceKind::Milestone,
                 'status' => $issued ? InvoiceStatus::Issued : InvoiceStatus::Draft,
                 'contact_id' => $quote->contact_id,
                 'company_id' => $quote->company_id,
                 'quote_id' => $quote->id,
-                'project_id' => $project?->id,
-                'project_milestone_id' => $projectMilestone?->id,
+                'project_id' => $project->id,
+                'project_milestone_id' => $projectMilestone->id,
                 'business_line' => $quote->business_line,
                 'bank_account_id' => $this->bankAccountFor($quote->business_line)?->id,
                 'currency' => $quote->currency,
@@ -110,9 +117,7 @@ final class RaiseAdvanceInvoice
                 'position' => 0,
             ]);
 
-            if ($projectMilestone !== null) {
-                $projectMilestone->forceFill(['due_date' => $invoice->due_date])->save();
-            }
+            $projectMilestone->forceFill(['due_date' => $invoice->due_date])->save();
 
             // An issued invoice is frozen: its PDF and snapshot are stored with it.
             if ($issued) {
@@ -126,19 +131,39 @@ final class RaiseAdvanceInvoice
     /** The PDF and the snapshot of an invoice the client will see (INV-003). */
     public function freeze(Invoice $invoice): Invoice
     {
-        $snapshot = $this->snapshot->build($invoice->fresh(['items', 'contact', 'company', 'bankAccount', 'project', 'quote']));
-        $bytes = $this->pdf->render($snapshot);
-        $path = 'invoices/'.$invoice->public_id.'/'.InvoicePdf::filename($invoice);
+        return DB::transaction(function () use ($invoice): Invoice {
+            $invoice = Invoice::query()->whereKey($invoice->id)->lockForUpdate()->firstOrFail();
 
-        Storage::disk('local')->put($path, $bytes);
+            if ($invoice->snapshot !== null || $invoice->pdf_path !== null || $invoice->pdf_sha256 !== null) {
+                if ($invoice->snapshot === null || $invoice->pdf_path === null || $invoice->pdf_sha256 === null
+                    || ! Storage::disk('local')->exists($invoice->pdf_path)
+                    || ! hash_equals($invoice->pdf_sha256, hash('sha256', Storage::disk('local')->get($invoice->pdf_path)))) {
+                    throw new RuntimeException('The frozen invoice needs a reviewed document repair.');
+                }
 
-        $invoice->forceFill([
-            'snapshot' => $snapshot,
-            'pdf_path' => $path,
-            'pdf_sha256' => hash('sha256', $bytes),
-        ])->save();
+                return $invoice;
+            }
 
-        return $invoice;
+            if ($invoice->status !== InvoiceStatus::Issued) {
+                throw new QuoteActionDenied('Only an issued invoice can be frozen.');
+            }
+
+            $snapshot = $this->snapshot->build($invoice->load(['items', 'contact', 'company', 'bankAccount', 'project', 'quote']));
+            $bytes = $this->pdf->render($snapshot);
+            $path = 'invoices/'.$invoice->public_id.'/'.InvoicePdf::filename($invoice);
+
+            if (! Storage::disk('local')->put($path, $bytes)) {
+                throw new RuntimeException('The invoice PDF could not be stored.');
+            }
+
+            $invoice->forceFill([
+                'snapshot' => $snapshot,
+                'pdf_path' => $path,
+                'pdf_sha256' => hash('sha256', $bytes),
+            ])->save();
+
+            return $invoice;
+        });
     }
 
     /** Interior → "WOODEX INTERIOR", Furniture → "WOODEX FURNITURE" (INV-004). */

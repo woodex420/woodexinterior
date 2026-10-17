@@ -16,7 +16,8 @@
             @can('manageCatalog', \App\Domain\Sales\Models\Quote::class)
                 <x-admin.button variant="secondary" icon="templates" wire:click="openSaveTemplate">Save as template</x-admin.button>
             @endcan
-            <x-admin.button variant="secondary" icon="file" :href="route('admin.quotes.pdf', $quote)" target="_blank" rel="noopener">{{ $sendable ? 'Preview PDF' : 'PDF' }}</x-admin.button>
+            <x-admin.button variant="secondary" icon="file" :href="route('admin.quotes.pdf', $quote)" x-on:click.prevent="$dispatch('document-preview', { url: $el.href })">{{ $sendable ? 'Preview PDF' : 'PDF' }}</x-admin.button>
+            @if ($editable)<x-admin.button variant="ghost" wire:click="applyCurrentDesign" wire:confirm="Copy the latest saved brand design into this draft? Check the PDF before sending.">Apply current design</x-admin.button>@endif
             @if ($canRevise)
                 <x-admin.button variant="secondary" icon="pencil" wire:click="revise"
                                 wire:confirm="Start revision R{{ $quote->revision + 1 }}? The client keeps seeing {{ $quote->label() }} until you send the new version.">Revise</x-admin.button>
@@ -254,6 +255,7 @@
                             <footer class="flex flex-wrap gap-2 border-t border-gray-100 px-4 py-3 dark:border-gray-800">
                                 <x-admin.button size="sm" variant="ghost" icon="plus" wire:click="addLine({{ $section->id }})">Add line</x-admin.button>
                                 <x-admin.button size="sm" variant="ghost" icon="book" wire:click="openCatalog({{ $section->id }})">From rate book</x-admin.button>
+                                <x-admin.button size="sm" variant="ghost" icon="templates" wire:click="openDescriptions({{ $section->id }})">Description library</x-admin.button>
                             </footer>
                         @endunless
                     </section>
@@ -342,7 +344,7 @@
                         <div wire:key="version-{{ $version->id }}" class="border-b border-gray-100 px-5 py-3 text-theme-sm last:border-0 dark:border-gray-800">
                             <div class="flex items-center justify-between gap-2">
                                 <span class="font-medium text-gray-800 dark:text-white/90">{{ $version->snapshot['label'] ?? $quote->number }}</span>
-                                <a href="{{ route('admin.quotes.pdf', ['quote' => $quote, 'revision' => $version->revision]) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-theme-xs text-navy-700 hover:underline dark:text-gray-300"><x-icon name="file" class="size-3.5" /> PDF</a>
+                                <a href="{{ route('admin.quotes.pdf', ['quote' => $quote, 'revision' => $version->revision]) }}" x-on:click.prevent="$dispatch('document-preview', { url: $el.href })" class="inline-flex items-center gap-1 text-theme-xs text-navy-700 hover:underline dark:text-gray-300"><x-icon name="file" class="size-3.5" /> PDF</a>
                             </div>
                             <p class="text-theme-xs text-gray-500">{{ Money::ofMinor($version->total_minor)->format($lakh) }} · {{ $version->sent_at?->timezone('Asia/Karachi')->format('j M Y, g:i a') }}{{ $version->creator ? ' · '.$version->creator->name : '' }}</p>
                             @if (isset($diffs[$version->id]))
@@ -491,7 +493,7 @@
                                     <span class="text-theme-sm tabular-nums text-gray-700 dark:text-gray-200">{{ $money((int) $invoice->total_minor) }}</span>
                                     <x-admin.badge :color="$invoice->status->color()">{{ $invoice->status->label() }}</x-admin.badge>
                                     @can('view', $invoice)
-                                        <a href="{{ route('admin.invoices.pdf', $invoice) }}" target="_blank" rel="noopener" class="text-theme-xs text-brand-600 hover:underline dark:text-brand-400">PDF</a>
+                                        <a href="{{ route('admin.invoices.pdf', $invoice) }}" x-on:click.prevent="$dispatch('document-preview', { url: $el.href })" class="text-theme-xs text-brand-600 hover:underline dark:text-brand-400">PDF</a>
                                         @if ($invoice->status !== \App\Domain\Sales\Enums\InvoiceStatus::Draft)
                                             <a href="{{ \App\Domain\Sales\Services\InvoiceLinks::portal($invoice) }}" target="_blank" rel="noopener" class="text-theme-xs text-brand-600 hover:underline dark:text-brand-400">Client link</a>
                                             @if ($share = \App\Domain\Sales\Services\InvoiceLinks::whatsappShare($invoice))
@@ -669,6 +671,22 @@
                 <x-admin.button variant="secondary" type="button" wire:click="$set('showReject', false)">Cancel</x-admin.button>
                 <x-admin.button type="submit">Decline</x-admin.button>
             </x-slot:footer>
+        </x-admin.modal>
+    @endif
+    @if ($showDescriptions)
+        <x-admin.modal name="showDescriptions" title="Copy a description" description="Adds a new unpriced line to this section. Existing text, quantities and rates are unchanged." width="max-w-3xl">
+            <input type="search" wire:model.live.debounce.300ms="descriptionSearch" class="wx-input mb-4" placeholder="Search section or description" aria-label="Search description library">
+            <div class="space-y-3">
+                @forelse ($descriptionTemplates as $description)
+                    <div wire:key="pick-description-{{ $description->id }}" class="rounded-lg border border-gray-200 p-3 dark:border-gray-800">
+                        <p class="font-medium text-gray-900 dark:text-white">{{ $description->section }} · {{ $description->title }}</p>
+                        <p class="my-2 whitespace-pre-line break-words text-theme-sm text-gray-500">{{ $description->body }}</p>
+                        <x-admin.button size="sm" variant="secondary" wire:click="addDescription({{ $description->id }})" wire:loading.attr="disabled">Add description line</x-admin.button>
+                    </div>
+                @empty
+                    <p class="text-theme-sm text-gray-500">No active descriptions match this brand and search.</p>
+                @endforelse
+            </div>
         </x-admin.modal>
     @endif
 </div>

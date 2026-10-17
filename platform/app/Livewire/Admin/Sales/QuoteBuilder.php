@@ -19,6 +19,7 @@ use App\Domain\Sales\Enums\Unit;
 use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Exceptions\QuoteLocked;
 use App\Domain\Sales\Models\CatalogItem;
+use App\Domain\Sales\Models\DescriptionTemplate;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteItem;
 use App\Domain\Sales\Models\QuoteMilestone;
@@ -249,6 +250,42 @@ class QuoteBuilder extends Component
         });
     }
 
+    public bool $showDescriptions = false;
+
+    #[Locked]
+    public ?int $descriptionSectionId = null;
+
+    public string $descriptionSearch = '';
+
+    public function openDescriptions(int $sectionId): void
+    {
+        $this->authorize('update', $this->quote);
+        $this->section($sectionId);
+        $this->descriptionSectionId = $sectionId;
+        $this->descriptionSearch = '';
+        $this->showDescriptions = true;
+    }
+
+    public function addDescription(int $templateId): void
+    {
+        $this->attempt(function () use ($templateId): void {
+            abort_if($this->descriptionSectionId === null, 422);
+            $this->editor()->addDescriptionLine($this->section($this->descriptionSectionId), $templateId);
+            $this->refreshAll();
+            $this->showDescriptions = false;
+            $this->toast('Description copied. Set the unit, quantity and price before sending.');
+        });
+    }
+
+    public function applyCurrentDesign(): void
+    {
+        $this->attempt(function (): void {
+            $this->editor()->applyDocumentDesign($this->editableQuote());
+            $this->refreshAll();
+            $this->toast('Current brand design copied into this draft.');
+        });
+    }
+
     // ----- Milestones ---------------------------------------------------------------------------------------
 
     public function addMilestone(): void
@@ -443,6 +480,7 @@ class QuoteBuilder extends Component
             'milestoneTotal' => (int) $quote->milestones->sum('percent_bp'),
             'project' => $quote->project()->with('milestones')->first(),
             'invoices' => $quote->invoices()->with('projectMilestone')->latest('id')->get(),
+            'descriptionTemplates' => $this->showDescriptions ? DescriptionTemplate::query()->where('is_active', true)->where('business_line', $quote->business_line->value === 'furniture' ? 'furniture' : 'interior')->when($this->descriptionSearch !== '', fn (Builder $q) => $q->where(fn (Builder $q) => $q->where('title', 'like', '%'.$this->descriptionSearch.'%')->orWhere('section', 'like', '%'.$this->descriptionSearch.'%')->orWhere('body', 'like', '%'.$this->descriptionSearch.'%')))->orderBy('section')->orderBy('title')->limit(30)->get() : collect(),
             'catalogItems' => $this->showCatalog ? $this->catalogResults() : collect(),
             'catalogCategories' => $this->showCatalog ? CatalogItem::query()->where('is_active', true)->distinct()->orderBy('category')->pluck('category') : collect(),
             'templates' => $this->showTemplate ? QuoteTemplate::query()->orderBy('position')->get(['id', 'name']) : collect(),

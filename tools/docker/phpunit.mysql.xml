@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='utf-8'?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../platform/vendor/phpunit/phpunit/phpunit.xsd" bootstrap="../../platform/vendor/autoload.php" colors="true">
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>../../platform/tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>../../platform/tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Arch">
+            <file>../../platform/tests/ArchTest.php</file>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>../../platform/app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing" force="true" />
+        <env name="APP_URL" value="http://localhost" />
+        <env name="APP_MAINTENANCE_DRIVER" value="file" />
+        <env name="ADMIN_DOMAIN" value="" />
+        <env name="ADMIN_PATH" value="admin" />
+        <env name="ENFORCE_2FA" value="false" />
+        <env name="BCRYPT_ROUNDS" value="4" />
+        <env name="BROADCAST_CONNECTION" value="null" />
+        <env name="CACHE_STORE" value="array" />
+        <env name="DB_CONNECTION" value="mysql" force="true" />
+        <env name="DB_DATABASE" value="woodex_test" force="true" />
+        <env name="DB_URL" value="" force="true" />
+        <env name="MAIL_MAILER" value="array" force="true" />
+        <env name="QUEUE_CONNECTION" value="sync" />
+        <env name="SESSION_DRIVER" value="array" />
+        <env name="TELEGRAM_BOT_TOKEN" value="" force="true" />
+        <env name="TURNSTILE_SECRET_KEY" value="" force="true" />
+        <env name="PUBLIC_LEADS_BRIDGE_KEY" value="" force="true" />
+        <env name="PULSE_ENABLED" value="false" />
+        <env name="TELESCOPE_ENABLED" value="false" />
+        <env name="NIGHTWATCH_ENABLED" value="false" />
+    </php>
+</phpunit>

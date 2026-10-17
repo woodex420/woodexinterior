@@ -17,6 +17,7 @@ use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Services\ReceiptPdf;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Settings\SalesSettings;
+use App\Support\Money;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
@@ -103,7 +104,7 @@ class PaymentsIndex extends Component
         $validated = $this->validate([
             'contactId' => ['required', 'integer', 'exists:contacts,id'],
             'invoiceId' => ['nullable', 'integer', 'exists:invoices,id'],
-            'amount' => ['required', 'numeric', 'min:1'],
+            'amount' => ['required', 'numeric', 'min:1', 'regex:/^\d{1,14}(?:\.\d{1,2})?$/'],
             'receivedOn' => ['required', 'date'],
             'method' => ['required', 'string', 'in:'.implode(',', array_keys(PaymentMethod::options()))],
             'reference' => ['nullable', 'string', 'max:120'],
@@ -117,7 +118,7 @@ class PaymentsIndex extends Component
         $record->handle([
             'contact_id' => $this->contactId,
             'invoice_id' => $this->invoiceId,
-            'amount_minor' => (int) round(((float) $this->amount) * 100),
+            'amount_minor' => Money::ofRupees($this->amount)->minor,
             'received_on' => $this->receivedOn,
             'method' => $this->method,
             'reference' => $this->reference ?: null,

@@ -2,6 +2,163 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Current handoff: document-library/design vertical slice + complete estimation/Accounts PRD — 17 Oct 2026 PKT
+
+- **Plan first:** `docs/19-DOCUMENTS-ESTIMATION-IMPLEMENTATION-PRD.md` completes the Interior/Furniture master plan before code, builds on the approved balanced-ledger scope in docs18, analyzes the private WF-10153 Furniture reference, distinguishes six template/master layers, maps the owner's frontend service families, links GitHub research with license cautions, and stages photo rows, advanced estimates, manual invoices and Accounts. No source PDF/PII/prices/images were added to public code or imported as transactions.
+- **Implemented first local slice:** additive `description_templates`/`document_designs` migration,12 safe editable starter descriptions/two brand profiles. Sales → Description Library supports brand/section search, CRUD/archive, copy to a new unpriced quote line and New Rate Book Item. Existing rates/quantities/text do not follow template updates. Active/brand/state/permission checks and500-character catalog compatibility are enforced.
+- **Document Design:** Settings-managed shared brand name/accent/header/footer/local JPEG/PNG logo (96KB,600×240px). New/duplicated quotes copy immutable profile values/logo bytes/hash into metadata; existing drafts adopt only through explicit **Apply current design**, using `QuoteEditor`/parent locking and approval fingerprint binding. Project shares Interior design. Quote-derived invoices inherit frozen sent-quote branding. Old snapshots retain legacy layouts; old pending approvals may require withdrawal/re-request, not silent upgrades.
+- **In-window previews:** quote/header/version/invoice-card/invoice-list PDF controls use an authenticated same-window overlay with close/download/focus controls. Sent quote default PDF now serves frozen bytes. Missing issued invoice PDF fails409 for reviewed recovery rather than live regeneration. Existing advance-invoice creation/freeze flow verified in tests and isolated browser QA; no invoice/payment/acceptance record was created in the owner's preview by QA.
+- **Evidence:** full **744passed /4,500assertions /1existing skip**,259.11s (`/tmp/documents-full-tests.log`),30new tests/78assertions. Larastan6 no errors; Pint22 PHP files PASS; Vite PASS (existing chart-size warning). Dedicated browser checks pass description creation/copy, footer/logo persistence, brand switch, quote/invoice inline PDF, no new tabs/JS errors,1440/390/360px. QA iframe checks both3pc-blocked/no-cookies PASS. Docker shell/XML structure checked, **native engine/Compose/MySQL execution NOT RUN**.
+- **Broad browser gate remains OPEN:** old `browser-check.mjs` homepage `#lf-name` selectors fail on both the unchanged8080 baseline and QA homepage. Its admin/layout/blur-save/approval/send/client PDF/acceptance checks pass on the isolated copy. Do not say the complete browser check passed; public website behavior was not rewritten for this task.
+- **Data-safe QA/refresh:** used a separate `/tmp/woodex-documents-qa/app` vendor/storage/database/cache copy; `SANDBOX_APP_DIR` allows isolated sync and preview cookie-memory file can be overridden. Before8080 migration stopped server, backed up SQLite privately, compared all66original table-row hashes and private env: unchanged. Added only migration bookkeeping +12description starters +2designs. No reset/reseed/reimport/backup restoration on active data. Existing January16new contacts/leads and review holds preserved.
+- **Runtime request:** no native PHP/MySQL/Docker engines installed; Debian/DockerHub downloads unavailable under npm/PyPI-only sandbox networking. `tools/docker/` provides a prepared, guarded PHP8.4+MySQL8.4 QA harness with disposable credentials, read-only source, isolated volumes and no exposed database port. It is **not built or run**, not a change to Hostinger runtime and not evidence of concurrency acceptance.
+- **Next:** furniture short-name/specification/photo columns + immutable media and PDF visual review; then advanced BOQ/estimate definitions and shared frontend pricing; chart/periods/journal foundations, manual invoice builder/receivables integration and payables/expenses/recurrence per docs18/19. Native MySQL races/related writers/outbox recovery/Accounts UAT/actual2025finance files remain gates. These features are **not implemented** by the new design/library screens.
+- **Final8080 check:** authenticated existing Sales/imported lead and both new screens200; quote-modal PDF200, no new tab, zero JS errors,1440/390/360px; fresh iframe3pc-blocked/no-cookies PASS. Current process `woodex-document-builder-preview-fcc209b4`,PID25377,port8080. QA8090 stopped. Private proof raster confirms a local logo/custom footer fit without header collision; no product-photo or multipage certification. Logs `/tmp/documents-preview-final.log` and `/tmp/documents-preview-iframe.log`.
+- **Publication:** local8080 preview only. Closed session cannot publish; start a new coding session for GitHub/Hostinger release. Preserve optional owner2FA, consent/STOP, manual milestone draft-only behavior and all existing private data.
+
+## Previous handoff: January 2025 leads imported; core approval/edit locking; Accounts scope confirmed — 17 Oct 2026 PKT
+
+- **Owner answers recorded before changes:** prioritize “2025 data update in lead sale”; **new contacts only**; **basic ERP with balanced ledger**; 2025 account history exists. Only the January lead CSV is attached so far. Actual invoice/receipt/expense/payable/bank/balance files still need upload; never fabricate financial history from lead notes. Complete scope, current/planned matrix and staged Accounts build: `docs/18-BASIC-SALES-ACCOUNTS-ERP-PLAN.md`.
+- **Applied to preview, not production:** supplied CSV had five preamble rows then 26 lead rows. Created **16 new contacts +16 historical leads**, skipped **two duplicate-phone rows**, held **eight rows** (four invalid/missing phones, four missing/invalid dates). Sanitized row review: `docs/2025-01-LEAD-IMPORT-REVIEW.csv`. Raw CSV/private data/reports/SQLite backups stay outside Git. Historical statuses/quotation/assignee/meeting fields retained in private lead enquiry/provenance; no invented won deals, assignments, appointments, quotes, invoices or payments.
+- New `LeadCsvImporter` and `woodex:import-lead-csv` are dry-run by default; apply needs an explicit flag and a **fresh active owner**. New-only matching includes primary/alternate/WhatsApp numbers and archives. Stable batch/source IDs + checksums use `legacy_refs`; changed prior rows require review. Immediate second apply created **zero** additional records and recognized 16 imports. Historical capture goes through `CaptureLead` with explicit import-only historical date, no consent, no event/alert/automatic assignment/SLA clocks. Created/occurred times are **UTC-midnight day anchors**, not audited actual event times; source date/day precision retained. Global app timezone/storage conventions remain a finance-history review gate.
+- Backed up the current DB while preview stopped, then applied the import. **Every pre-existing row across 66 checked tables was preserved**; expected lead numbering advanced. Added only contacts16/leads16/timeline16/legacy_refs16/audit32; no jobs, appointments, invoice/payment or other records were added by the import. Never restore an earlier backup over the owner's ongoing preview edits.
+- **Core B04 coordinated locking implemented:** new `QuoteWriteLock`, parent-first editor/recalculator and fresh child rows; approval request/decision, reopen/revise, delete, view and public-change actions lock/recheck current state. Actors reload for privileged actions. Decisions compare original requested v2 content/revision/recipient/figures binding; changed proposals and stale decisions fail closed. Changed-revision approval asks allocate that revision before the request. Older v1 approvals require withdrawal/re-request/review, not silent upgrade. Public changes, like acceptance, require displayed revision; old forms must reload. Stale views cannot undo acceptance/lose counts.
+- **Not full B04/MySQL acceptance:** related contact/company/bank/config/milestone writers, deadlock/retry and multi-worker tests remain. Native PHP/PDO MySQL, MySQL/MariaDB server and Docker are absent here; **real concurrency verification NOT RUN**, not replaced by SQLite claims. Orphan PDF and durable financial outbox recovery still pending. No important Telegram writes/automatic milestone issuing enabled; owner2FA policy unchanged.
+- **Evidence:** 58 new regressions /220 assertions; full **714 passed /4,422 assertions /1 existing sandbox skip**, 232.30s (`/tmp/2025-approval-full-tests.log`). Larastan6 no errors; Pint `--test`19 PHP paths PASS; Vite build passes (existing chart-size warning). Final authenticated Leads/list/imported lead detail/Quotes/Invoices/Payments all200; no page JS errors. App Connections200, three scripts/styles200, 1440/390/360px no overflow. Iframe checks **3pc-blocked + no-cookies PASS** (`/tmp/2025-approval-iframe.log`). Broad homepage/browser acceptance not recertified.
+- **Preview running on8080:** current source/assets synced, config/views refreshed without reset/reseed/env edit; no new schema migration in this slice. No browser financial/provider writes and no backup restoration during QA. Data is in the local runtime, not the production database.
+- **Next implementation:** chart of accounts, periods, balanced immutable journal posting/reversal, source idempotency and account permissions; then wire existing invoices/verified receipts, supplier payables, expenses, outgoing payments, recurrence drafts and reconciled reports. These modules are **planned, not implemented by this delivery**. Confirm recognition/cutover/tax/entity policy with Accounts before historical posting. User selected balanced ledger, not inventory/payroll or an ERPNext/Gauzy replacement. Actual MySQL test environment and financial files remain explicit gates.
+- **Publication:** preview only. Closed/merged session cannot publish; new coding session required for release. Preserve all existing local work and private preview data; do not reset/clean or use production money/data as test fixtures.
+
+## Previous handoff: port 8080 refreshed; B04 foundations started — 17 Oct 2026 PKT
+
+- Owner requested updated App Connections on **8080**, restart, then next work. Completed two data-preserving preview refreshes; listener runs on `0.0.0.0:8080` with current code/rebuilt assets and B08 changes. First refresh applied pending WhatsApp recovery migration. Final `migrate --force` had nothing pending; B04 unique milestone index was already installed and verified. Backups remain outside Git; all **66 existing business/settings/session tables** were byte-for-byte row-equivalent across the final migration/cache refresh (migration bookkeeping excluded). No reset/reseed/backup restore over ongoing preview work; env/storage/vendor retained.
+- **B04 first slice implemented**, not package completion. Report: `docs/17-QUOTATION-IDEMPOTENCY-START.md`. Send/accept reload/lock current quote and recheck status/validity/revision; send rechecks existing approval figures and fresh active actor/policy. Fresh relations used for snapshots. Repeated sends/acceptances are refused without duplicate business effects; acceptance HTTP form explicitly carries displayed revision so an old form cannot accept a later resend.
+- Project/advance helpers serialize on quotation, require accepted state, and check existing/archived records inside the transaction. Advance and manual milestone invoices serialize quote → project → milestone; new `InvoiceNumbering` chooses max historical suffix including archives, not count+1. Nullable unique `invoices.project_milestone_id` migration refuses historical duplicates for Accounts review, never deletes them. Manual milestone invoices remain **draft-only** (D-88); advance setting unchanged.
+- Frozen advance PDFs return unchanged on repeat freeze; missing/partial/hash-mismatched documents require reviewed repair. Failed PDF writes roll back the database effect. Quote mail and staff quote alerts queue after the **outermost** commit; real database-queue commit/rollback regressions added. No durable outbox claim; orphan files after a successful write followed by DB rollback remain a reviewed-recovery gate.
+- **Evidence:** 34 new tests /134 assertions; complete suite **656 passed /4,202 assertions /1 existing sandbox skip**, 178.99s (`/tmp/b04-full-tests-final.log`); Larastan6 no errors; Pint15 PHP paths; Vite build passes (existing ApexCharts size warning). Authenticated App Connections200, zero page JS errors, 1440/390/360px no overflow. Cross-site iframe checks **both third-party-cookie-blocked and no-cookie scenarios pass**, including hub search/MCP setup/Google dialog. No provider connection/key creation/webhook registration or financial action was performed by UI checks. Broad homepage/browser acceptance was not recertified.
+- **Next:** complete coordinated quote-editor/recalculate/approval request+decision/reopen+revise/view/change-request locking and original-proposal/recipient/content fingerprint checks; then MySQL multi-worker races, Accounts UAT and durable delivery recovery. Existing financial fingerprint is not complete recipient/content authorization. Do not mark B04 checked based on these SQLite regressions. B08 broader own/team authority and runtime/provider gates also remain.
+- **Publication:** local preview only; nothing pushed/deployed to Hostinger. Closed session cannot publish; start a new coding session for release. Preserve optional-owner-only2FA/confirmed challenges and disabled important Telegram writes. Runtime process reference/QA details are in the session handoff; runtime data/private env must never be copied into Git.
+
+## Previous handoff: B08 Telegram identity and consent safety — 17 Oct 2026 PKT
+
+- Owner requested **start next**. Implemented the next bounded local safety slice: Telegram personal identity, active staff/link checks, header authentication migration, actor/link rate limits and STOP-preservation guards. Details: `docs/16-TELEGRAM-CONSENT-HARDENING.md`. B08 is **not fully accepted**: broader finance own/team permission review and real-runtime evidence remain. B04 quote/send/milestone idempotency was not started in that B08 batch; the current handoff above records its subsequent first slice.
+- **Telegram identity:** new `HandleTelegramCommand` action accepts only human private messages with equal positive sender/chat IDs. Group/channel/sender-chat/bot/forwarded/via-bot identities and callbacks/edited messages are ignored; no group inherits a linked user's authority. Links/code use active fresh users and locked code rechecks; new 16-character codes, max 30 minutes, existing valid eight-character codes compatible. Cannot steal a chat already linked to another staff account. `/idea` and `/issue` remain available to active linked staff only; finance/approvals/arbitrary writes remain disabled.
+- **Webhook migration:** new stable POST `/webhooks/telegram`, official secret header required. Both Integrations and existing console registration use the secret-free URL. Old secret path requires a matching header by default; explicit temporary `TELEGRAM_ALLOW_LEGACY_WEBHOOK=true` permits no header only on the correct old path, never a wrong header/new-path bypass. Default/example false; no private env edits or credential requests. Re-register after deployment using the existing saved values. Preserve pending updates and request only implemented message updates.
+- **Limits:** authenticated global 300/min, sender 30/min, link commands 5/min; hashed sender keys and independent WhatsApp buckets. A new denial test caught Laravel sorting throttle ahead of the custom auth middleware; fixed explicit priority in `bootstrap/app.php` and proved invalid headers cannot exhaust a legitimate sender's bucket. Command business effect + event marker now commit together under event lock; trusted received replay retries after rollback. Reply errors do not repeat committed effects; safe generic logs. Full queued Telegram/reply-outbox recovery remains pending.
+- **Personal alerts:** User routing blocks inactive staff and legacy group links; TelegramChannel reloads recipient/link before delivery, honoring unlink/disable/group/mute changes despite stale cached relations. Existing group rows retained, not deleted; re-link in a private chat for personal alerts. Separate group alert authorization is not implemented.
+- **Consent:** returning `CaptureLead` cannot OR positive checkbox flags over existing opt-out. `MergeContacts` locks/reloads both contacts in ID order, propagates either side's suppression and keeps both consent flags false. `SaveContact` locks/reloads and refuses ordinary re-consent edits. Inbound matching locks contact; repeated STOP preserves suppression timestamp; START/returning messages do not erase STOP. Full conversation/media merge and legacy import suppression reconciliation remain separate backlog work.
+- **Send boundary:** SendConversationMessage reloads current active staff permissions, conversation and contact suppression before provider calls; opted-out/missing contacts blocked, templates need affirmative WhatsApp consent. Internal notes remain allowed without a send. Existing inbox toast truthfully describes blocked sends. No provider HTTP call can recall an already in-flight message; outbox/cancellation, marketing/template-category policy and explicit evidence-backed resubscription remain pending.
+- **Final validation:** complete fresh PHP suite **622 passed / 4068 assertions / 1 skipped**, 149.15s, `/tmp/a0-b08-full-tests-final.log`; **61 new regression cases**. Larastan level 6 no errors (`/tmp/a0-b08-phpstan-final.log`); Pint on 23 PHP paths. Existing owner-only optional 2FA/confirmed challenges, first-A0 finance/WhatsApp, Google/MCP and website cases remain green. One installer/database-driver test is sandbox-skipped. Providers faked; in-memory SQLite; no real provider/MySQL concurrency/production/UAT claim. No browser rerun or Blade/CSS/JS change; earlier homepage browser expectations remain open.
+- **Release/next:** no schema changes in B08, but preceding WhatsApp recovery migration still required for the combined release. Existing user/preview database not reset, credentials unchanged, no remote operations/deployment. New coding session required to publish. Next B04 idempotency and remaining B01/MySQL/Accounts/permission gates, followed by durable events/outbox/approval/dashboard foundations. Telegram synchronous processing/reply-loss-on-crash remains explicitly documented; do not claim B07 complete for Telegram.
+
+## Previous handoff: A0 finance and WhatsApp safety implementation — 17 Oct 2026 PKT
+
+- **Owner authorized local implementation after receiving the audit:** start in the recommended order. The prior audit-only scope below is historical. This first bounded batch implements parts of B02/B03/B05/B06/B07/B08; it is not completion of all 75 packages. Closed session still cannot push, open a PR or deploy; continue publication/runtime acceptance in a new coding session.
+- **Finance:** `AllocatePayment` reloads/locks the payment and locks invoice candidates in ID order; rejects cross-client, nonpayable/credit-note/non-PKR targets, project/account mismatches, inactive accounts and invalid/excess explicit amounts. PKR-only payment ledger remains explicit; no new multicurrency column. `RecordPayment` honors a strict explicit map (remainder is credit); an invoice preference instead follows existing D-85: own invoice → eligible oldest debts → credit. Selected project/account filters constrain eligible excess. No allocation/credit-adjustment UI or mutation of already-receipted allocations is exposed.
+- **Receipt/claims:** verify/reject reload and lock current state; stale retries cannot replace a receipt or reverse a decided claim. Current active-user/finance-permission checks added at action boundaries. Receipt storage failure rolls back confirmation; Laravel 13 rollback callbacks remove generated files on an enclosing rollback. Client mail/team notifications queue after commit. Proof submission reloads payable invoice state. Staff/public proof money parsing uses integer `Money`, rejects scientific/overprecise/unbounded input. New-payment request idempotency keys, hard-crash file cleanup and durable delivery outbox remain pending.
+- **WhatsApp:** signed intake persists every entry/change/message/status with its exact normalized payload before enqueue. `QueueWhatsAppEvent` / `ProcessWhatsAppEvent` process one trusted row under lock; domain write + outcome commit together. Exact-ID legacy failed replay and already-written message recovery supported; duplicate jobs do not duplicate effects. Five-minute enqueue lease; minutely `woodex:retry-whatsapp-webhooks` recovers received/failed events; backoff 1/2/4/8 minutes, max five processing attempts. Reviewed `--event=EVENT_ID` console redrive only; processed/ignored/untrusted/other-provider rows refused. Generic safe diagnostic errors/logs, no provider exception bodies. Early delivery statuses wait for outbound rows; late failures do not downgrade delivered/read. Delayed inbound uses provider time for the 24-hour window and preserves newer previews.
+- **Schema/runtime handoff:** new `2026_10_17_000300_add_whatsapp_webhook_recovery.php` adds queue/retry timestamps + index. Migration tested in isolated SQLite; **not run on production or the existing preview/customer database**. Production must use the database queue and working existing minute cron; sync remains synchronous. Apply the migration before the changed webhook code is enabled; verify real drain/timeouts. No new cron/Redis/daemon, no credential edits or real provider calls. Existing Telegram/MCP/Google work preserved.
+- **Final validation:** freshly reran the complete PHP suite: **561 passed / 3774 assertions / 1 skipped**, 148.07 seconds, `/tmp/a0-full-tests-final.log`. Includes **50 new desired-behavior cases** (30 finance integrity + 20 WhatsApp recovery). The skipped installer/database-driver test is sandbox-specific. Existing Node MCP adapter tests **3/3 passed**; Larastan level 6 no errors; Pint run on all 21 batch PHP paths. Isolated real Laravel database queue exercised for acknowledgment/worker and finance/webhook rollback/commit boundaries; providers faked. No browser suite rerun; two earlier homepage browser form expectations remain open. No MySQL concurrent verification proof or production/UAT claim.
+- **Details and next work:** `docs/15-A0-SAFETY-IMPLEMENTATION.md` includes exact semantics, retry/redrive operations, schema/rollout and remaining gates. Checkboxes in doc 14 still mean full package acceptance. Next complete Telegram sender/group/active identity and consent review (B08), quote/milestone idempotency (B04), production-like MySQL/Accounts acceptance and actual runtime checks (B01–B07), then common events/outbox/approval/dashboard foundations. Historical batches falsely marked processed are not bulk reset: require reviewed reconciliation. Existing media downloader remains a separate recovery/validation/file-cleanup follow-up.
+- Approval-gated important Telegram writes, D-88 manual milestone draft and optional-owner-only 2FA remain unchanged. No master agent/specialist dashboards/general sequences enabled. No commit/push/deployment in this batch.
+
+## Previous handoff: OS audit + master automation plan — 17 Oct 2026 PKT
+
+- Owner selected **audit/plan only**, approval-gated Telegram writes, compare Hostinger vs optional worker, and balanced shared controls before specialist agents. No new business feature/provider configuration/deployment in this task; preserve existing local Telegram/MCP/Google work.
+- Deliverables: `docs/12-OPERATING-SYSTEM-AUDIT.md` (P1–P3 traceability, all integration/automation inventory, evidence/unknowns), `docs/13-MASTER-AGENT-AUTOMATION-PLAN.md` (master/tools/agents/full funnel/approvals/separate dashboards/hosting comparison), `docs/14-AUTOMATION-COMPLETION-BACKLOG.md` (**75** dependency-linked work packages), and `docs/audit-evidence/2026-10-17-results.md` + probe source snapshot. Documentation index updated.
+- **Do not repeat historical “P0–P3 complete / P4 complete” as PRD acceptance.** P1 foundation substantial; P2 quote follow-up/expiry/options/import and P3 manual/variation/credit/aging/reports/financial import remain gaps. Project-workspace phase labels conflicted with original P4 Conversations. Website chat/public slot booking explicitly off; general sequences/AI/master runtime/agent dashboards not implemented.
+- **New isolated observations: 7 probes, 22 assertions**, fake providers and seeded in-memory SQLite, not production and no preview DB restore. F01 cross-client allocation (reproduced through Livewire); F02 allocation resurrects void invoice; F03 stale verification replaces receipt identity (one allocation, no concurrent MySQL test); F04 explicit allocation map ignored; F05 targeted excess credit conflicts with D-85; F06 batched inbound loses second message and failed-event replay does not repair; F07 batched statuses mark unprocessed second message processed. Full details/reproduction in doc 12 and evidence files. These probes assert observed defects and are **not repair regression expectations**.
+- Recommendations: new coding session starts **B01–B08** (runtime truth, finance integrity, webhook batching/recovery, sender/permission/consent boundaries), then common event/outbox/sequence/approval controls and dashboards; complete sales/report/import gaps in parallel. Reuse domain actions; no replacement CRM or unofficial WhatsApp business-number transport. Preserve D-88 manual milestone invoice draft and optional-owner-only 2FA choice.
+- Public production check reached Woodex sign-in at `/admin/login` via `/admin`; no authenticated inspection. Deployed revision/migrations/cron/provider/business acceptance remain unknown. Already saved private Telegram replacements must be verified as loaded, not requested again. Real Google registration/consent remains pending.
+- Prior **511 passed / 3504 assertions / 1 skipped** remains the earlier local baseline, not rerun for this docs-only audit. Separately reran existing PaymentsTest + ConversationsTest: **24 passed / 124 assertions**; the uncovered negative/batch cases still reproduced in the seven probes. Two known homepage browser form expectations still pending. New probe result must not be presented as a new 518-test full-suite run. Validated all 75 unique backlog IDs, dependency references/no cycles, local document links and Markdown table/fence structure.
+- Reference decisions: PHP Telegram Bot core README says development on hold; retain existing gateway unless separately justified. WhatsApp on-prem scripts archived/deprecated; use existing official Cloud API. OpenWA README explicitly warns of unofficial/ban risk; wacrm is useful UX inspiration but Next.js/Supabase, not a Laravel module. Older Woodex feature guide describes more flows, but documentation is not migrated implementation/live proof. Official Meta pricing says per-message began July 2025 with October 2026 changes; use effective-date delivered-usage rates, not original stale examples.
+- No remote push/PR/deployment in this closed session. This audit is not authorization to enable agents or publish changes. Next batch requires the owner's implementation/deployment approval in a new coding session.
+
+## Google connections and staff sign-in follow-up — 17 Oct 2026 PKT
+
+- Owner chose **Google first**, **both business connection and staff login**, and **not registered yet**. Added a
+  reference-inspired Connect Google dialog, permission summary, collapsible setup checklist, non-secret callback
+  URI, server configuration reload and an explicit disabled setup gate. No editable client-secret/auth-base-URI
+  fields. Configured authorization navigates to Google's official page outside embedded frames and returns here.
+- Business connection is owner/password-confirmed and identity-only (`openid email profile`): encrypted hidden
+  access/refresh tokens, account/state/scopes/last-check display, explicit refresh/check and provider revocation.
+  Failed checks require reconnect; failed revocation keeps a disabled pending record rather than pretending to
+  disconnect. No Drive/Sheets/Gmail/Calendar/Meet APIs or background sync are enabled by basic Google consent.
+- Staff sign-in is separate: explicit password-confirmed linking while signed in, immutable Google subject,
+  verified email, no saved staff provider tokens, no auto-registration/email matching/role changes, active-user
+  check and existing Fortify confirmed TOTP challenge (including owners). Personal unlink requires the password.
+  Google sign-in is disabled by default; password login stays available. Mandatory staff enrolment is preserved.
+- Session-bound one-use 10-minute state + PKCE S256; fixed HTTPS provider endpoints; callback intent/actor checks;
+  generic redacted failures; metadata-only lifecycle audit; no-store/no-referrer OAuth responses. Separate named
+  IP throttles avoid sharing the counter between nested limits. No new Composer packages or server daemon.
+- New migration creates `google_connections` + `google_identities`. `.env.example` contains empty Google client
+  placeholders only. No actual environment credentials were changed or requested. D-20/D-47 and schema docs
+  updated; full registration, private environment and acceptance guide: `docs/GOOGLE-OAUTH-SETUP.md`.
+- **Verification:** full Pest **511 passed / 3,504 assertions, 1 skipped**; Google-specific **33 / 186**; Node MCP
+  **3/3**; changed PHP Pint + Larastan level 6 pass; production assets rebuilt (existing chart-size warning only).
+  Google setup UI passes at 1440/390/360px, Escape, hidden unconfigured login, and personal setup guidance without
+  making a Google request. Both iframe-cookie scenarios include the Google dialog and pass.
+- General browser check rerun against an **isolated app/DB copy** so quote/PDF/client-acceptance checks cannot
+  overwrite edits in the user's active preview. Admin/mobile assertions pass; the same two unrelated expectations
+  for a missing inline v1-homepage form fail. Browser tooling now accepts BROWSER_DB_FILE/BROWSER_DB_COPY overrides.
+- **Not live-connected or published.** An OAuth app is not registered, so real Google consent, refresh/revocation
+  and staff federated sign-in remain deployment acceptance steps. Session is closed after PR #2; all follow-ups
+  remain local. Start a new coding session to publish, apply Database update and configure Google privately.
+
+## Current local follow-up — 17 Oct 2026 PKT
+
+- **Integrations hub + read-only MCP foundation implemented locally.** Search/category filters, 12 explicitly
+  Planned provider cards with requirements dialogs, existing service controls, and an MCP setup panel. The owner
+  selected business connections, Woodex tools exposed to AI clients, and a local adapter alongside Hostinger PHP.
+- Owner-only, password-confirmed key creation/revocation actions are transactional with metadata-only audits.
+  SHA-256-only token storage, 1–90 day expiry, scopes, one-response plaintext display, current active-user checks,
+  existing leads/quotes permissions and record visibility, pagination, production HTTPS and IP/key rate limits.
+  No writes, sends, shell/filesystem access, provider OAuth or general-purpose URL proxy. D-47 explicitly records
+  the narrow generated-first-party-key extension; provider secrets remain server-side and never appear in the hub.
+- `tools/mcp-bridge` uses pinned official MCP v2 packages, runs locally over stdio and exposes status, lead summaries
+  and quote summaries. See `docs/INTEGRATIONS-MCP-PLAN.md` and the adapter README for setup and roadmap. No Node
+  daemon on Hostinger. Vendor-client installation is not verified; exact Hermes product remains unspecified.
+- **Verification:** full Pest **478 passed / 3,318 assertions, 1 skipped**; MCP subset **18 / 75**; Node **3/3**
+  including real stdio protocol calls; changed-PHP Pint and Larastan level 6 pass; production Vite assets rebuilt;
+  runtime npm audit reports no vulnerabilities. Browser acceptance creates a demo key and makes all three actual
+  MCP calls against Laravel, checks revocation, search/requirements/Telegram diagnostics and responsive layout.
+  Both iframe-cookie modes also test hub search and MCP setup. No real keys are captured in screenshots/logs.
+- General `browser-check.mjs` was rerun: admin navigation, chart/sidebar geometry, quote editing/sending/PDF/client
+  acceptance and mobile checks pass; its two pre-existing public-homepage form expectations still fail because
+  the restored v1 home has no inline enquiry form. This is not an all-browser-suite-green claim.
+- Previous secret-free Telegram configuration/cache repair is retained. Live Telegram delivery and Hostinger
+  deployment remain unverified; saved private credentials have not been changed or requested again.
+- **LOCAL ONLY:** this session is closed following PR #2. No GitHub operations, push or deployment attempted for
+  these follow-ups. Start a new coding session to publish; then apply Database update for `mcp_access_tokens`.
+
+## Resume here (project memory, saved 17 Oct 2026 PKT, after the original site went live and its forms were wired)
+
+- **woodex.com.pk now serves the original v1 site, file for file (owner's decision): 142 pages copied verbatim**
+  into `platform/public/**` — same folders, same paths, same HTML, CSS, JavaScript and images. Nothing
+  redesigned, nothing re-typed, nothing rebuilt. The CMS copy of the same 143 pages stays in the database as
+  editable content, but it is **not** what the public sees now; how edits go live is the owner's call, later.
+- **The two addresses the old JavaScript calls are answered by Woodex OS, so the pages needed no change at all**
+  (`LegacySiteBridgeController`, routes in `routes/api.php`):
+  - `GET /api/forms.php` → `{"ok":true,"turnstile":""}` (no captcha box is drawn; honeypot + rate limit instead).
+  - `POST /api/forms.php` → the enquiry is validated and written through **CaptureLead**, so it lands on the same
+    pipeline as every other lead, with its source set from the form that sent it (`whatsapp`, `estimator`,
+    `booking`, otherwise website form) and every extra field kept in `meta.fields`. Replies `{"ok":true,"id"}`.
+  - `action=wa_click` → `{"ok":true}`: a WhatsApp tap is a ping, not a lead.
+  - `action=book_create` → **kept as a lead with source `booking`**, then answered `ok`, which shows the page's own
+    "booking request received, our team will confirm on WhatsApp" panel. The slot is never promised.
+  - `action=book_cfg` / `book_slots` → booking is **off** (`{"ok":true,"on":false,"types":[]}`), so `/book-a-visit/`
+    shows its own pre-written "Online booking is paused" panel. Woodex OS has no diaries yet (PRD §5.6).
+  - `GET|POST /api/chat.php` → `{"ok":true,"on":false}`: the widget stays out of the way until website chat (P4).
+- **Rate limiting was split** so a page view cannot spend the enquiry budget: `throttle:public-site` (120/min)
+  guards all three bridge routes, and only writing a lead spends the 5-per-minute / 50-per-day budget, which is
+  now counted inside the controller (`legacy-leads-minute`, `legacy-leads-day`).
+- **Verification:** Pest **431 passed**, 3 098 assertions (12 new in `LegacySiteBridgeTest`, which is the contract
+  the pages depend on) · Larastan level 6 clean · Pint clean on 460 files · every endpoint checked with curl
+  (enquiry → lead, honeypot → silent ok, invalid → the visitor's message, WhatsApp tap, booking off, chat off) ·
+  preview checked on port 8000: `/`, `/kitchen-design/`, `/contact/` answer 200 and every asset the pages call
+  for answers 200. No browser in this sandbox, so the form was verified by contract, not by clicking.
+- **Next, in the owner's order:** the v1 → v2 conversion plan. Questions first, then the plan, then the work.
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after the complete old website went into the CMS)
 - **The complete frontend v1 is the website now: 143 pages, 0 redirects (owner's decision, D-102).** The old site's
   54 specialist URLs used to 301 to the nearest discipline; they are pages now, editable in Website -> Pages with
@@ -500,3 +657,74 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
   dry-run warnings list them. Budget text that names no amount stays in the lead details.
 - Nohemi font commercial licence to be confirmed before the public website launch (P-09).
 - Credentials exposed in the old public repository must be rotated before go-live (P-06).
+
+## Security & Telegram repair — 2026-10-16
+
+- Added manual TOTP setup-key fallback, time-sync/app guidance and exact six-digit confirmation validation.
+- Telegram linking now checks token/secret configuration, opens the configured bot with a `/start` deep link,
+  allows code regeneration, refreshes the loaded link state on render, and invalidates pending codes on unlink.
+  `TELEGRAM_BOT_USERNAME` defaults to the owner's public bot, `WoodexInteriorBot`.
+- Removed raw Telegram transport exception logging/reporting: the request URL can contain the bot token.
+- Report/runbook: `docs/TELEGRAM-SECURITY-REPAIR.md`. Exposed bot token must be rotated in BotFather and the new
+  token placed only in the private production environment; production webhook registration remains outstanding.
+- Verification: 25 targeted Pest tests / 143 assertions, Pint, production build, targeted desktop/phone security
+  browser check and both iframe modes passed. The general browser check still fails on unrelated public-homepage
+  `/api/chat.php` 404s and missing expected enquiry form. No production/live bot verification: Telegram and the
+  hosting domain are outside the sandbox's network allowlist. No deployment performed.
+
+## Telegram runtime follow-up — 2026-10-17
+
+- Owner reports previous patch deployed, replacement token saved, webhook registration succeeds; screenshots show
+  no replies to plain `/start`. Production cause remains unverified (network allowlist prevents direct checks).
+- Added admin-only, locked **Check live connection** diagnostics: server-side getMe/getWebhookInfo, expected bot
+  and webhook comparison, pending count, redacted delivery error and local inbound timestamps. No secrets shown.
+- Corrected misleading token-present "Connected" label to "Configured" and registration success wording.
+- Fixed HTML escaping of command replies (`/help` placeholders and staff names); preserved pending updates on
+  webhook re-registration. Neither fix is claimed as a verified cure for production plain `/start` silence.
+- 32 targeted tests / 171 assertions, Pint, Vite build, targeted desktop/mobile diagnostics browser check and both
+  iframe-cookie modes passed. Full general browser check remains subject to the public-homepage issues above.
+- Production next step: deploy, use /admin/integrations → Check live connection, send a fresh /start and recheck.
+  Runtime interpretation table added to docs/TELEGRAM-SECURITY-REPAIR.md. No production deployment performed here.
+
+## Owner-only optional 2FA enrolment — 2026-10-17
+
+- Owner explicitly selected optional 2FA for owner accounts only. D-20 updated: owners can open admin pages and
+  integrate Telegram before authenticator setup; admin/accountant enforcement is unchanged when enabled.
+- Centralized the effective requirement in User::requiresTwoFactorAuthentication(); middleware, cancellation/
+  disable guard and page wording use the same rule. Explicit owner exemption covers old cached role lists and
+  multi-role owners. No global ENFORCE_2FA change, no database secrets cleared automatically, no Fortify bypass.
+- Confirmed owner 2FA still challenges at sign-in. Unconfirmed setup can be cancelled with the account password;
+  linking Telegram does not turn 2FA on or make it mandatory. Installer wording reflects the role policy.
+- Verification: 45 targeted tests / 238 assertions, Pint, Vite build, real browser navigation while enforcement
+  is on with pending owner QR setup (dashboard/leads/integrations/security), password-protected cancellation,
+  desktop/mobile layout and both iframe-cookie checks passed. General homepage check has the unrelated known
+  failures documented above. Production not modified: deploying this branch is required for the live fix.
+
+## Deployment preparation — 2026-10-17
+
+- Owner requested deployment to woodex.com.pk but could not identify the Hostinger-connected branch. No Hostinger
+  access or GitHub deployment workflow is available in this session; production deployment cannot be confirmed.
+- Committed security/Telegram changes on arena/fe1287c9-woodexinterior and merged the latest previous application
+  branch (8d3eee1) into it so the website enquiry-form bridge is preserved. No changes pushed to other branches.
+- Post-integration verification: 57 targeted tests / 309 assertions passed, including the website bridge tests.
+- Release branch is intended for hPanel → woodex.com.pk → Advanced → Git → select
+  arena/fe1287c9-woodexinterior → Deploy. Preserve the existing target directory and private production settings.
+  No new database migrations are introduced by the security repair. Confirm the deployed commit and owner
+  access after hPanel finishes; then use /admin/integrations → Check live connection for Telegram.
+
+## Telegram configuration-loading repair (local only) — 2026-10-17
+
+- Owner confirms credentials were saved in the private .env, but Connect webhook still reports missing runtime
+  credentials. Production cause is unverified: stale cached config, classic platform/.env precedence, parsing/
+  permissions or server environment overrides can produce this result. No production files were inspected.
+- Added read-only TelegramConfiguration diagnostics using the application's selected environmentFilePath():
+  active relative path, readable/invalid state, credential presence on disk vs runtime, config-cache status,
+  and a warning when a separate private env exists but the classic file was selected. Secret values and raw
+  dotenv exceptions never leave the service. The diagnostics open automatically for an owner on missing setup.
+- Added owner-only Reload server configuration: clears only Laravel config cache, checks failure, and performs a
+  full redirect so the next request reboots services. Warns that all saved env changes take effect; never changes
+  .env precedence, credentials, database settings or webhook registration. Other staff cannot invoke it.
+- 71 targeted tests / 380 assertions, Pint, production build, desktop/mobile configuration browser check and both
+  iframe modes passed. Existing general-homepage-check limitations remain outside this repair.
+- This coding session is closed after PR #2 merged. These additional changes are LOCAL ONLY; no push, PR, remote
+  GitHub call or production deployment attempted. A new coding session is required to publish this follow-up.

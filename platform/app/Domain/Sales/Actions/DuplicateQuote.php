@@ -9,6 +9,7 @@ use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteItem;
 use App\Domain\Sales\Models\QuoteMilestone;
 use App\Domain\Sales\Models\QuoteSection;
+use App\Domain\Sales\Services\DocumentStyles;
 use App\Models\User;
 use App\Settings\SalesSettings;
 use App\Support\Numbering;
@@ -56,7 +57,7 @@ final class DuplicateQuote
                 'internal_notes' => $source->internal_notes,
                 'scope_html' => $source->scope_html,
                 'owner_id' => $by->id,
-                'meta' => ['milestone_plan' => $source->milestonePlan()->value, 'duplicated_from' => $source->id],
+                'meta' => ['milestone_plan' => $source->milestonePlan()->value, 'duplicated_from' => $source->id, 'document_design' => app(DocumentStyles::class)->copy($source->business_line)],
             ]);
 
             $source->sections->each(function (QuoteSection $section) use ($copy): void {

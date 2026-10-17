@@ -24,7 +24,11 @@ final class SecurityHeaders
             $response->headers->set('X-Frame-Options', $frameOptions);
         }
 
-        $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
+        // OAuth callbacks carry short-lived authorization codes in the query string. Never forward them as Referer.
+        $response->headers->set('Referrer-Policy', $request->routeIs('google.*') ? 'no-referrer' : 'strict-origin-when-cross-origin');
+        if ($request->routeIs('google.*')) {
+            $response->headers->set('Cache-Control', 'no-store, private');
+        }
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
 
         if (app()->isProduction() && $request->isSecure()) {

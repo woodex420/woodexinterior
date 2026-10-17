@@ -1,4 +1,5 @@
 @php
+    $design = $s['document_design'] ?? null;
     $b = $s['business'];
     $client = $s['client'];
     $bank = $s['bank'];
@@ -34,14 +35,18 @@
     .avoid { page-break-inside: avoid; }
     .stamp { color: #b0453a; font-weight: bold; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
 </style>
+@include('pdf.partials.document-style')
 </head>
 <body>
 <header>
     <table class="meta">
         <tr>
             <td style="width: 52%;">
-                <div class="brand">{{ strtoupper($b['name']) }}</div>
-                <div class="tagline">{{ $b['tagline'] }}</div>
+                @if (! empty($design['logo_data_uri']) && preg_match('/^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/=]+$/', $design['logo_data_uri']))
+                    <img src="{{ $design['logo_data_uri'] }}" class="document-logo" alt="Brand logo">
+                @endif
+                <div class="brand">{{ strtoupper($design['brand_name'] ?? $b['name']) }}</div>
+                <div class="tagline">{{ ($design['header_text'] ?? '') !== '' ? $design['header_text'] : $b['tagline'] }}</div>
             </td>
             <td class="right muted" style="width: 48%; line-height: 1.55;">
                 {{ $b['address'] }}<br>
@@ -54,8 +59,14 @@
 </header>
 
 <footer>
+    @if (! empty($design['footer_text']))
+        <div class="document-footer">{{ $design['footer_text'] }}</div>
+    @else
     {{ $b['legal_name'] }} · {{ $b['address'] }}, {{ $b['city'] }} · {{ $b['phone'] }}
+    @endif
 </footer>
+
+@if ($s['status'] === 'draft')<div class="stamp">DRAFT — not issued</div>@endif
 
 @if ($isCreditNote)
     <div class="stamp">Credit note</div>

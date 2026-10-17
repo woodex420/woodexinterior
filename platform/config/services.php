@@ -37,7 +37,9 @@ return [
 
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'bot_username' => env('TELEGRAM_BOT_USERNAME', 'WoodexInteriorBot'),
         'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),
+        'allow_legacy_webhook' => env('TELEGRAM_ALLOW_LEGACY_WEBHOOK', false),
         'api_base' => env('TELEGRAM_API_BASE', 'https://api.telegram.org'),
     ],
 
@@ -51,6 +53,13 @@ return [
         'verify_token' => env('WHATSAPP_VERIFY_TOKEN'),
         'api_version' => env('WHATSAPP_API_VERSION', 'v23.0'),
         'api_base' => env('WHATSAPP_API_BASE', 'https://graph.facebook.com'),
+    ],
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect_uri' => env('GOOGLE_REDIRECT_URI'),
+        'sign_in_enabled' => env('GOOGLE_SIGN_IN_ENABLED', false),
     ],
 
     'turnstile' => [

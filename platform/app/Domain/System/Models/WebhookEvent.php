@@ -24,6 +24,9 @@ class WebhookEvent extends Model
             'signature_valid' => 'boolean',
             'status' => WebhookStatus::class,
             'processed_at' => 'datetime',
+            'attempts' => 'integer',
+            'queued_at' => 'datetime',
+            'next_attempt_at' => 'datetime',
         ];
     }
 }

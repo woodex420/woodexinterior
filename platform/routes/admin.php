@@ -23,6 +23,8 @@ use App\Livewire\Admin\Projects\ProjectBoard;
 use App\Livewire\Admin\Projects\ProjectShow;
 use App\Livewire\Admin\Projects\ProjectsIndex;
 use App\Livewire\Admin\Sales\Approvals;
+use App\Livewire\Admin\Sales\DescriptionLibrary;
+use App\Livewire\Admin\Sales\DocumentDesigner;
 use App\Livewire\Admin\Sales\InvoicesIndex;
 use App\Livewire\Admin\Sales\PaymentsIndex;
 use App\Livewire\Admin\Sales\QuoteBuilder;
@@ -75,6 +77,9 @@ Route::livewire('/payments', PaymentsIndex::class)->name('payments.index')->midd
 Route::livewire('/approvals', Approvals::class)->name('approvals')->middleware('can:quotes.approve');
 Route::livewire('/quote-templates', QuoteTemplates::class)->name('quote-templates')->middleware('can:quotes.view');
 Route::livewire('/rate-book', RateBook::class)->name('rate-book')->middleware('can:quotes.view');
+
+Route::livewire('/description-library', DescriptionLibrary::class)->name('description-library')->middleware('can:quotes.view');
+Route::livewire('/document-design', DocumentDesigner::class)->name('document-design')->middleware('can:settings.manage');
 
 // Projects (P4, PRJ-001…PRJ-005)
 Route::livewire('/projects', ProjectsIndex::class)->name('projects.index')->middleware('can:projects.view');

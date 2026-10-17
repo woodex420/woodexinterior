@@ -13,6 +13,7 @@ use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Enums\TemplateKind;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteTemplate;
+use App\Domain\Sales\Services\DocumentStyles;
 use App\Domain\Sales\Services\MilestonePlan;
 use App\Models\User;
 use App\Settings\SalesSettings;
@@ -73,7 +74,7 @@ final class CreateQuote
                 'notes' => $template?->notes,
                 'scope_html' => Html::sanitize($template?->scope_html),
                 'owner_id' => $by->id,
-                'meta' => ['milestone_plan' => $plan->value],
+                'meta' => ['milestone_plan' => $plan->value, 'document_design' => app(DocumentStyles::class)->copy($line)],
             ]);
 
             $sections = $template !== null ? QuoteBlueprint::sections($template->blueprint) : [];

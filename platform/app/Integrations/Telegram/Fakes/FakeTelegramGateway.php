@@ -18,6 +18,15 @@ final class FakeTelegramGateway implements TelegramGateway
     /** @var list<array{url: string, secret: string}> */
     public array $webhooks = [];
 
+    /** @var array<string, mixed> */
+    public array $diagnostics = ['api_ok' => true, 'bot_username' => 'WoodexInteriorBot', 'bot_matches' => true, 'webhook_set' => true, 'webhook_matches' => true, 'pending_updates' => 0, 'last_error' => '', 'last_error_at' => null];
+
+    /** @return array<string, mixed> */
+    public function connectionStatus(string $expectedUrl, string $expectedUsername): array
+    {
+        return $this->diagnostics;
+    }
+
     public static function bind(): self
     {
         $fake = new self;

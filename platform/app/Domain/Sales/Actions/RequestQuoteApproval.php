@@ -10,10 +10,12 @@ use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Notifications\QuoteNotification;
 use App\Domain\Sales\Services\QuoteApprovalRules;
 use App\Domain\Sales\Services\QuoteLinks;
+use App\Domain\Sales\Services\QuoteWriteLock;
 use App\Domain\System\Enums\ApprovalStatus;
 use App\Domain\System\Models\Approval;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 
 /**
@@ -28,17 +30,31 @@ final class RequestQuoteApproval
 
     public function handle(Quote $quote, User $by, ?string $note = null): Approval
     {
-        if (! in_array($quote->status, [QuoteStatus::Draft, QuoteStatus::ChangesRequested], true)) {
-            throw new QuoteActionDenied("{$quote->label()} is {$quote->status->label()}: only drafts go for approval.");
-        }
+        $expectedRevision = (int) $quote->revision;
 
-        $assessment = $this->rules->assess($quote, $by);
+        return DB::transaction(function () use ($quote, $by, $note, $expectedRevision): Approval {
+            QuoteWriteLock::refresh($quote);
+            if ((int) $quote->revision !== $expectedRevision) {
+                throw new QuoteActionDenied('The revision changed. Reload and review the quotation.');
+            }
+            $by = User::query()->findOrFail($by->id);
+            abort_unless($by->is_active, 403);
+            Gate::forUser($by)->authorize('send', $quote);
+            if ($quote->status === QuoteStatus::ChangesRequested && $quote->versions()->where('revision', $quote->revision)->exists()) {
+                $quote->revision++;
+                $quote->save();
+            }
 
-        if (! $assessment->needed) {
-            throw new QuoteActionDenied('This quotation is within your limits and needs no approval: send it directly.');
-        }
+            if (! in_array($quote->status, [QuoteStatus::Draft, QuoteStatus::ChangesRequested], true)) {
+                throw new QuoteActionDenied("{$quote->label()} is {$quote->status->label()}: only drafts go for approval.");
+            }
 
-        $approval = DB::transaction(function () use ($quote, $by, $note, $assessment): Approval {
+            $assessment = $this->rules->assess($quote, $by);
+
+            if (! $assessment->needed) {
+                throw new QuoteActionDenied('This quotation is within your limits and needs no approval: send it directly.');
+            }
+
             Approval::query()->where('approvable_type', $quote->getMorphClass())->where('approvable_id', $quote->id)
                 ->where('status', ApprovalStatus::Pending)->update(['status' => ApprovalStatus::Cancelled, 'decided_at' => now()]);
 
@@ -58,12 +74,10 @@ final class RequestQuoteApproval
                 'discount_bp' => $assessment->discountBp, 'limit_bp' => $assessment->limitBp,
             ]);
 
+            Notification::send(QuoteLinks::approvers($by), new QuoteNotification($quote, 'approval_requested',
+                'Requested by '.$by->name.': '.implode(' ', $assessment->reasons).(filled($note) ? "\n“".trim((string) $note).'”' : '')));
+
             return $approval;
         });
-
-        Notification::send(QuoteLinks::approvers($by), new QuoteNotification($quote, 'approval_requested',
-            'Requested by '.$by->name.': '.implode(' ', $assessment->reasons).(filled($note) ? "\n“".trim((string) $note).'”' : '')));
-
-        return $approval;
     }
 }

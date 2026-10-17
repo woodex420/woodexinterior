@@ -58,5 +58,6 @@
     <x-admin.toasts />
 
     @livewireScripts
+    <x-admin.pdf-preview />
 </body>
 </html>

@@ -12,6 +12,7 @@ use App\Domain\Sales\Services\InvoiceLinks;
 use App\Domain\Sales\Services\InvoicePdf;
 use App\Domain\Sales\Services\InvoiceSnapshot;
 use App\Settings\BusinessSettings;
+use App\Support\Money;
 use App\Support\Phone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -54,7 +55,7 @@ final class InvoicePortalController
         $page = url(InvoiceLinks::signed('invoices.portal', $invoice));
 
         $validator = Validator::make($request->all(), [
-            'amount' => ['required', 'numeric', 'min:1', 'max:100000000'],
+            'amount' => ['required', 'numeric', 'min:1', 'max:100000000', 'regex:/^\d{1,14}(?:\.\d{1,2})?$/'],
             'received_on' => ['required', 'date', 'before_or_equal:today'],
             'method' => ['required', 'string', 'in:'.implode(',', array_keys(PaymentMethod::options()))],
             'reference' => ['nullable', 'string', 'max:120'],
@@ -72,7 +73,7 @@ final class InvoicePortalController
         }
 
         $submit->handle($invoice, [
-            'amount_minor' => (int) round(((float) $request->input('amount')) * 100),
+            'amount_minor' => Money::ofRupees((string) $request->input('amount'))->minor,
             'received_on' => $request->input('received_on'),
             'method' => (string) $request->input('method'),
             'reference' => $request->input('reference'),

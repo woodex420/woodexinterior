@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Services;
 
+use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\InvoiceItem;
 use App\Settings\BusinessSettings;
@@ -30,7 +31,7 @@ final class InvoiceSnapshot
         $invoice->loadMissing(['items', 'contact', 'company', 'bankAccount', 'project', 'quote']);
 
         $business = [
-            'name' => $this->business->brand_name,
+            'name' => $invoice->business_line === BusinessLine::Furniture ? $this->business->furniture_brand_name : $this->business->brand_name,
             'legal_name' => $this->business->legal_name,
             'address' => $this->business->address,
             'city' => $this->business->city,
@@ -43,6 +44,10 @@ final class InvoiceSnapshot
         ];
 
         $bank = $invoice->bankAccount;
+        $quoteVersion = $invoice->quote?->versions()->reorder('revision', 'desc')->first();
+        $documentDesign = $quoteVersion !== null
+            ? ($quoteVersion->snapshot['document_design'] ?? null)
+            : ($invoice->quote !== null ? ($invoice->quote->meta['document_design'] ?? null) : app(DocumentStyles::class)->copy($invoice->business_line));
 
         $client = [
             'name' => $invoice->contact->name,
@@ -70,6 +75,7 @@ final class InvoiceSnapshot
 
         return [
             'schema' => self::SCHEMA,
+            'document_design' => $documentDesign,
             'number' => $invoice->number,
             'kind' => $invoice->kind->value,
             'status' => $invoice->status->value,

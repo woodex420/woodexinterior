@@ -7,12 +7,14 @@ namespace App\Livewire\Admin\Conversations;
 use App\Domain\Conversations\Actions\SendConversationMessage;
 use App\Domain\Conversations\Enums\Channel;
 use App\Domain\Conversations\Enums\ConversationStatus;
+use App\Domain\Conversations\Exceptions\ConsentRequired;
 use App\Domain\Conversations\Exceptions\OutsideWindow;
 use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Models\Message;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -111,10 +113,12 @@ class Inbox extends Component
 
         try {
             $action->handle($conversation, $this->draft, Auth::user());
-        } catch (OutsideWindow $exception) {
+        } catch (OutsideWindow|ConsentRequired $exception) {
             $this->toast($exception->getMessage(), 'error');
 
             return;
+        } catch (AuthorizationException $exception) {
+            throw $exception;
         } catch (Throwable $exception) {
             report($exception);
             $this->toast('WhatsApp did not take that message. It is saved as failed — try again.', 'error');

@@ -31,17 +31,26 @@ final class AcceptQuote
         private readonly RaiseAdvanceInvoice $raiseInvoice,
     ) {}
 
-    public function handle(Quote $quote, string $name, ?string $phone, ?string $ip, ?string $userAgent): Quote
+    public function handle(Quote $quote, string $name, ?string $phone, ?string $ip, ?string $userAgent, ?int $revision = null): Quote
     {
-        if (! in_array($quote->status, [QuoteStatus::Sent, QuoteStatus::Viewed], true)) {
-            throw new QuoteActionDenied('This quotation can no longer be accepted online. Please contact us.');
-        }
+        $expectedRevision = $revision ?? (int) $quote->revision;
+        $original = $quote;
 
-        if ($quote->valid_until !== null && $quote->valid_until->lt(today())) {
-            throw new QuoteActionDenied('This quotation expired on '.$quote->valid_until->format('j M Y').'. Ask us for an updated one.');
-        }
+        DB::transaction(function () use ($quote, $name, $phone, $ip, $userAgent, $expectedRevision): void {
+            $quote = Quote::query()->whereKey($quote->id)->lockForUpdate()->firstOrFail();
 
-        DB::transaction(function () use ($quote, $name, $phone, $ip, $userAgent): void {
+            if ((int) $quote->revision !== $expectedRevision) {
+                throw new QuoteActionDenied('This quotation has changed. Reload the page and review the current revision before accepting.');
+            }
+
+            if (! in_array($quote->status, [QuoteStatus::Sent, QuoteStatus::Viewed], true)) {
+                throw new QuoteActionDenied('This quotation can no longer be accepted online. Please contact us.');
+            }
+
+            if ($quote->valid_until !== null && $quote->valid_until->lt(today())) {
+                throw new QuoteActionDenied('This quotation expired on '.$quote->valid_until->format('j M Y').'. Ask us for an updated one.');
+            }
+
             $quote->update([
                 'status' => QuoteStatus::Accepted,
                 'accepted_at' => now(),
@@ -55,7 +64,7 @@ final class AcceptQuote
                 'total_minor' => (int) $quote->total_minor,
             ], ['channel' => 'link', 'ip' => $ip, 'user_agent' => mb_substr((string) $userAgent, 0, 250)]);
 
-            $contact = $quote->contact;
+            $contact = $quote->contact()->lockForUpdate()->firstOrFail();
             if (! $contact->is_client) {
                 $contact->update(['is_client' => true, 'became_client_at' => now()]);
             }
@@ -80,7 +89,8 @@ final class AcceptQuote
             }
         });
 
-        $invoice = $quote->refresh()->invoices()->latest('id')->first();
+        $quote = $original->refresh();
+        $invoice = $quote->invoices()->latest('id')->first();
 
         Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'accepted', 'Accepted online by “'.trim($name).'”. '.(
             $invoice === null

@@ -15,5 +15,8 @@ interface TelegramGateway
 
     public function send(int|string $chatId, TelegramMessage $message): bool;
 
+    /** @return array<string, mixed> */
+    public function connectionStatus(string $expectedUrl, string $expectedUsername): array;
+
     public function setWebhook(string $url, string $secretToken): bool;
 }
