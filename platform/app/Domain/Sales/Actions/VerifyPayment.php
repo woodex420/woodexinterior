@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Actions;
 
+use App\Domain\Accounts\Actions\PostPaymentToLedger;
 use App\Domain\Sales\Enums\PaymentStatus;
 use App\Domain\Sales\Models\Payment;
 use App\Models\User;
@@ -19,6 +20,7 @@ final class VerifyPayment
     public function __construct(
         private readonly AllocatePayment $allocate,
         private readonly RecordPayment $record,
+        private readonly PostPaymentToLedger $postToLedger,
     ) {}
 
     public function handle(Payment $payment, User $by): Payment
@@ -41,8 +43,13 @@ final class VerifyPayment
 
             $this->allocate->handle($payment);
 
-            // The receipt is numbered and written, and the client gets their copy (INV-007).
-            return $this->record->receipt($payment, $by)->refresh();
+            // The receipt is numbered and written, and the client gets their copy (INV-007)…
+            $receipted = $this->record->receipt($payment, $by);
+
+            // …and the money is booked: cash/bank in, receivables (or client credit) out (P8.2).
+            $this->postToLedger->handle($receipted->refresh(), $by);
+
+            return $receipted->refresh();
         });
     }
 }

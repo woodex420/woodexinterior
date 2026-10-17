@@ -37,6 +37,7 @@ final class AdminNavigation
                 self::item('Quotations', 'quote', 'admin.quotes.index', 'quotes.view'),
                 self::item('Invoices', 'invoice', 'admin.invoices.index', 'invoices.view'),
                 self::item('Payments', 'wallet', 'admin.payments.index', 'invoices.view'),
+                self::item('Due Payments', 'clock', 'admin.sales.dues', 'invoices.view'),
                 self::item('Receivables', 'clock', 'admin.reports.receivables', 'invoices.view'),
                 self::item('Quote Templates', 'templates', 'admin.quote-templates', 'quotes.view'),
                 self::item('Rate Book', 'book', 'admin.rate-book', 'quotes.view'),
@@ -47,6 +48,7 @@ final class AdminNavigation
                 self::item('Chart of Accounts', 'book', 'admin.accounts.chart', 'accounts.view'),
                 self::item('Journals', 'layers', 'admin.accounts.journals', 'accounts.view'),
                 self::item('Periods', 'clock', 'admin.accounts.periods', 'accounts.view'),
+                self::item('Payment Methods', 'wallet', 'admin.accounts.methods', 'accounts.view'),
             ]),
             self::group('Projects', [
                 self::item('Projects', 'hammer', 'admin.projects.index', 'projects.view'),

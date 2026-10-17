@@ -7,6 +7,7 @@ namespace App\Domain\System\Telegram;
 use App\Domain\System\Telegram\Commands\ApprovalsCommand;
 use App\Domain\System\Telegram\Commands\ApproveCommand;
 use App\Domain\System\Telegram\Commands\AssignCommand;
+use App\Domain\System\Telegram\Commands\CollectCommand;
 use App\Domain\System\Telegram\Commands\DueCommand;
 use App\Domain\System\Telegram\Commands\FindCommand;
 use App\Domain\System\Telegram\Commands\HealthCommand;
@@ -17,6 +18,7 @@ use App\Domain\System\Telegram\Commands\NoteCommand;
 use App\Domain\System\Telegram\Commands\QuoteCommand;
 use App\Domain\System\Telegram\Commands\QuotesCommand;
 use App\Domain\System\Telegram\Commands\ReportCommand;
+use App\Domain\System\Telegram\Commands\StatementCommand;
 use App\Domain\System\Telegram\Commands\TodayCommand;
 use App\Domain\System\Telegram\Commands\VisitsCommand;
 use App\Models\User;
@@ -48,6 +50,8 @@ final class TelegramCommandBus
         QuotesCommand::class,
         QuoteCommand::class,
         DueCommand::class,
+        CollectCommand::class,
+        StatementCommand::class,
         VisitsCommand::class,
         ReportCommand::class,
         HealthCommand::class,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Actions;
 
+use App\Domain\Accounts\Actions\PostInvoiceToLedger;
 use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Sales\Enums\InvoiceKind;
 use App\Domain\Sales\Enums\InvoiceStatus;
@@ -38,6 +39,7 @@ final class RaiseAdvanceInvoice
         private readonly SalesSettings $sales,
         private readonly InvoiceSnapshot $snapshot,
         private readonly InvoicePdf $pdf,
+        private readonly PostInvoiceToLedger $postToLedger,
     ) {}
 
     public function handle(Quote $quote, ?User $by = null): ?Invoice
@@ -119,9 +121,12 @@ final class RaiseAdvanceInvoice
 
             $projectMilestone->forceFill(['due_date' => $invoice->due_date])->save();
 
-            // An issued invoice is frozen: its PDF and snapshot are stored with it.
+            // An issued invoice is frozen: its PDF and snapshot are stored with it…
             if ($issued) {
                 $this->freeze($invoice);
+
+                // …and booked: receivable + revenue land in the ledger in the same act (P8.2).
+                $this->postToLedger->handle($invoice->refresh(), $by);
             }
 
             return $invoice;

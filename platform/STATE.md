@@ -1095,3 +1095,31 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
   discarded migrate:fresh PendingCommand never runs and destructs fatally at teardown. Runtime TestCase sets
   mockConsoleOutput=false from construction; artisan() then returns real exit codes, which is what the suite
   asserts. Under wasm the suite must run file-by-file (phpstan needs --debug to avoid parallel workers).
+
+## P8.2 Payments & cash — due payments, GL posting, Telegram /collect and /statement — 2026-10-17
+
+- Sales now feeds the ledger (owner decision: full batch D). An issued invoice books Dr Trade
+  receivables / Cr revenue by business line (4010/4020/4090) with sales tax to Taxes payable; a
+  verified receipt books Dr the method's cash/bank account / Cr receivables for the allocated part
+  and Customer advances for any unallocated credit. Both are idempotent per source via the journal
+  source guard; an unmapped payment method is a hard stop with the fix named in the message, never
+  a suspense-account guess. Posting lives inside RaiseAdvanceInvoice and VerifyPayment — one
+  transaction, so the books cannot drift from the act.
+- New: payment_method_accounts table + Accounts → Payment methods screen (owner-only) mapping the
+  eight methods to asset accounts; seeded defaults incl. a new 1040 Mobile wallets account
+  (jazzcash/easypaisa). Chart seeder remains re-seed safe.
+- New screens: Sales → Due Payments (/admin/sales/dues) — open invoices oldest-first, aging buckets
+  (current/1-30/31-60/61-90/90+), top clients by exposure, and a consent-gated Remind button
+  (WhatsApp in-window text or the mapped PaymentReminder template; no consent/number/connection is
+  answered with an honest reason, per A0 law).
+- Telegram: /collect <invoice> <amount> [method] [reference] — two-step, repeat with `confirm`
+  records AND verifies (collector is the verifier), allocates, numbers a receipt, posts to the
+  ledger, and answers with the receipt number and remaining balance; refuses amounts above the
+  balance. /statement <client> — outstanding invoices, totals, overdue, recent receipts;
+  disambiguates duplicate names. Both are in the generated /help.
+- Live preview proof: INV-LIVE-0001 (Rs 500,000) → JE-2026-0001 Dr 1100/Cr 4010; /collect-style
+  Rs 200,000 cash → RC-2026-0001 + JE-2026-0002 Dr 1010/Cr 1100; dues screen shows the Rs 300,000
+  balance. Gate: 87/87 files green (3 env-conditional skips), Pint 620 files PASS, Larastan 0.
+  26 new tests / 115 assertions (GlSalesPostingTest, CollectStatementTest, DuePaymentsTest).
+- Not in this batch: printable PDF statements (P8.3/P8.4), refunds/reversals after verification
+  (no refund flow exists yet — reversal lands with it), scheduled /due digest (P8.5).

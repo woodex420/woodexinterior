@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Domain\Accounts\Models\Account;
 use App\Domain\Accounts\Models\AccountingPeriod;
+use App\Domain\Accounts\Models\PaymentMethodAccount;
 use Illuminate\Database\Seeder;
 
 /**
@@ -36,6 +37,7 @@ class ChartOfAccountsSeeder extends Seeder
             // Assets
             ['1010', 'Cash in hand', 'asset', '1000', null],
             ['1020', 'Bank — operations', 'asset', '1000', null],
+            ['1040', 'Mobile wallets', 'asset', '1000', null],
             ['1030', 'Bank — payroll', 'asset', '1000', null],
             ['1100', 'Accounts receivable', 'asset', '1000', null],
             ['1150', 'Customer advances', 'asset', '1000', null],
@@ -80,6 +82,8 @@ class ChartOfAccountsSeeder extends Seeder
             );
         }
 
+        $this->seedPaymentMethodAccounts();
+
         $this->seedCurrentPeriods();
     }
 
@@ -110,6 +114,37 @@ class ChartOfAccountsSeeder extends Seeder
                     'ends_on' => $end->toDateString(),
                 ]);
             }
+        }
+    }
+
+    /**
+     * Default method → ledger account map for P8.2 receipt posting (owner-adjustable,
+     * firstOrCreate so an owner's edit is never overwritten by a re-seed).
+     */
+    private function seedPaymentMethodAccounts(): void
+    {
+        $defaults = [
+            'cash' => '1010',
+            'bank_transfer' => '1020',
+            'cheque' => '1020',
+            'card' => '1020',
+            'gateway' => '1020',
+            'jazzcash' => '1040',
+            'easypaisa' => '1040',
+            'other' => '1010',
+        ];
+
+        $ids = Account::query()->whereIn('code', array_values($defaults))->pluck('id', 'code');
+
+        foreach ($defaults as $method => $code) {
+            if (! isset($ids[$code])) {
+                continue;
+            }
+
+            PaymentMethodAccount::query()->firstOrCreate(
+                ['method' => $method],
+                ['account_id' => $ids[$code]],
+            );
         }
     }
 }
