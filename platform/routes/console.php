@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\System\Models\ScheduledTaskRun;
 use Illuminate\Support\Facades\Schedule;
 
 /*
@@ -37,3 +38,8 @@ Schedule::command('backup:clean')->dailyAt('03:30');
 Schedule::command('backup:monitor')->dailyAt('04:00');
 Schedule::command('queue:prune-failed --hours=720')->dailyAt('04:15');
 Schedule::command('model:prune')->dailyAt('04:30');
+
+// Health (SYS-008/S5) keeps a fortnight of scheduled-task runs; anything older is noise.
+Schedule::call(fn () => ScheduledTaskRun::pruneOld())
+    ->name('woodex:prune-task-runs')
+    ->dailyAt('04:45');

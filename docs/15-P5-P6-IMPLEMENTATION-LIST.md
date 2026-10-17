@@ -78,11 +78,13 @@ timeline says who did it and from where.
 cash collected) → every linked chat; weekly Monday 09:00 (funnel, win rate, top sources, receivables); monthly
 1st 09:00. Quiet hours apply to the daily digest.
 
-### S5 · Health completion (SYS-008, ~0.5 d)
+### S5 · Health completion (SYS-008, ~0.5 d) — DONE 17 Oct (`SystemHealthReport`, 5 tests)
 
-Add to the Health screen **and** `/health`: DB size, last backup (from spatie/laravel-backup's log), scheduled
-tasks with their last run (a `scheduled_task_runs` table written by the heartbeat), mail test button, PHP/Laravel
-versions. One collector feeds both the screen and the command — never two truths.
+Add to the Health screen **and** `/health`: DB size, last backup (newest zip on the local disk — the file's
+timestamp is the truth, no log to parse), scheduled tasks with their last run (a `scheduled_task_runs` table
+written by a listener on `ScheduledTaskFinished`, pruned after 14 days), mail test button, PHP/Laravel
+versions. One collector (`App\Domain\System\Health\SystemHealthReport`) feeds both the screen and the
+command — never two truths.
 
 ### S6 · Change-requests board (SYS-010, ~0.5 d)
 

@@ -16,7 +16,30 @@
     </div>
 
     <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <x-admin.card title="Scheduled tasks" :padding="false">
+            @forelse ($taskRuns as $task => $run)
+                <div class="border-b border-gray-100 px-5 py-3 text-theme-sm last:border-0 dark:border-gray-800">
+                    <span class="font-medium text-gray-800 dark:text-white/90">{{ $task }}</span>
+                    <span class="float-right text-gray-500">
+                        {{ $run->ran_at?->diffForHumans() }}
+                        @if ($run->runtime_ms)
+                            · {{ $run->runtime_ms }} ms
+                        @endif
+                    </span>
+                </div>
+            @empty
+                <x-admin.empty icon="clock" title="No runs recorded yet" description="They appear once the scheduler has ticked." />
+            @endforelse
+        </x-admin.card>
+
         <x-admin.card title="Environment">
+            <div class="mb-4">
+                <button type="button" wire:click="sendTestMail" wire:loading.attr="disabled"
+                        class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-3 py-2 text-theme-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50">
+                    Send test email
+                </button>
+                <p class="mt-1 text-theme-xs text-gray-500">Sends to your own email address, so you know the mail settings work.</p>
+            </div>
             <dl class="divide-y divide-gray-100 dark:divide-gray-800">
                 @foreach ($environment as $label => $value)
                     <div class="flex justify-between py-2 text-theme-sm">

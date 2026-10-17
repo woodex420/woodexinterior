@@ -2,6 +2,27 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT, after P5 S5 — health completion)
+
+- **P5 S5 is DONE and shipped (SYS-008):** one collector `app/Domain/System/Health/SystemHealthReport.php`
+  feeds both System → Health and `/health`. New checks: database size (driver-aware: information_schema on
+  MySQL, pragma on SQLite), last backup (newest .zip on the local disk), scheduled tasks with their last run
+  (new `scheduled_task_runs` table written by `app/Listeners/RecordScheduledTaskRun.php` on
+  `ScheduledTaskFinished` — task names normalised off the "'php' 'artisan'" prefix; pruned daily 04:45 after
+  14 days). Health screen got a **Send test email** button (sends to the signed-in admin's own address via
+  the array mailer pattern in tests) and a **Scheduled tasks** card. `/health` now answers DB size, last
+  backup, stale task names, PHP/Laravel versions. Tests: `tests/Feature/SystemHealthTest.php` (5) — gate
+  green at 535 passed / 3 604 assertions, Larastan clean, Pint clean 514 files. Note: `Mail::fake()` cannot
+  see `Mail::raw()` (the fake's raw() is a no-op) — test raw mail with `mail.default=array` + the transport's
+  messages().
+- **P5 S3 (shipped earlier today):** `TelegramCallbackBus` + `/approvals /approve /assign /note` + inline
+  buttons (Assign to me / Verify / Not matched), 24 h button expiry. Tests: TelegramActionCommandsTest (10).
+- **Next per docs/16 §10 (Wave 1):** P5 S6 (change-requests board, SYS-010 — System → Change Requests list
+  of /idea /issue entries with status flow and Telegram notify to the requester) → then Wave 2: P3 report
+  screens (Receivables, Sales Funnel, Revenue & Collections + CSV), SYS-007 audit viewer, CNV-004. P5 exit
+  test unchanged: the owner completes a full day of approvals from Telegram. S4 digests + S7 alert-rules
+  builder are the automation agent's lane (docs/16 §1).
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after P5 S3 — the action commands)
 
 - **P5 S3 is DONE and shipped:** `TelegramCallbackBus` (`app/Domain/System/Telegram/`) parses `action:id:expires`
