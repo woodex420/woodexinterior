@@ -1073,3 +1073,25 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
   iframe modes passed. Existing general-homepage-check limitations remain outside this repair.
 - This coding session is closed after PR #2 merged. These additional changes are LOCAL ONLY; no push, PR, remote
   GitHub call or production deployment attempted. A new coding session is required to publish this follow-up.
+
+## P8.1 Accounts ERP — batch C: double-entry ledger core — 2026-10-17
+
+- Batch C landed on bc82386: chart of accounts (starter PKR set, groups 1000–5000, ~28 leaves, business_line
+  on revenue accounts), immutable journal entries with two-way linked reversals, integer-paisa amounts,
+  monthly accounting periods (all open — closing is a deliberate recorded act), JE-{year}-{seq} numbering,
+  unique(source_type, source_id) idempotency, OPEN-period posting rule, balanced-entry enforcement inside
+  a single DB transaction. One legal entity; Interior/Furniture are business-line dimensions, not separate books.
+- Domain: platform/app/Domain/Accounts (Enums/AccountType, Models/{Account, AccountingPeriod, JournalEntry,
+  JournalLine}, Exceptions/JournalPostingFailed, Actions/{PostJournalEntry, ReverseJournalEntry}); migration
+  2026_10_17_140000_create_accounts_tables; ChartOfAccountsSeeder (+ RolesAndPermissionsSeeder accounts.view/
+  accounts.manage, NumberSequenceSeeder JE-, ProductionSeeder). Screens: /admin/accounts (chart tree with
+  create/edit), /admin/accounts/journals (post, view, reverse with reason), /admin/accounts/periods (open/close).
+  Owner+admin see accounts; only owner manages. 17 tests / 204 assertions incl. re-seed idempotency regression.
+- Gate notes: full suite 85 files green (2 env-conditional skips) under the wasm rig, Pint 607 files PASS,
+  Larastan 0 errors. Two real bugs caught and fixed by this gate: reversal reverses_entry_id was never persisted
+  (PostJournalEntry context + ReverseJournalEntry now link both directions), and period seeding crashed on
+  re-seed (SQLite date storage vs date-only equality — seeder now probes with whereDate).
+- Rig note (sandbox only, never committed): wasm defers PendingCommand::__destruct, so RefreshDatabase's
+  discarded migrate:fresh PendingCommand never runs and destructs fatally at teardown. Runtime TestCase sets
+  mockConsoleOutput=false from construction; artisan() then returns real exit codes, which is what the suite
+  asserts. Under wasm the suite must run file-by-file (phpstan needs --debug to avoid parallel workers).

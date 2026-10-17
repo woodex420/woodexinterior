@@ -19,6 +19,7 @@ class ProductionSeeder extends Seeder
             PipelineStageSeeder::class,
             NumberSequenceSeeder::class,
             RateBookSeeder::class,
+            ChartOfAccountsSeeder::class,
             QuoteTemplateSeeder::class,
             CannedRepliesSeeder::class,
             ThemeTokensSeeder::class,

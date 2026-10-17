@@ -43,6 +43,11 @@ final class AdminNavigation
                 self::item('Description Library', 'book', 'admin.description-library', 'quotes.view'),
                 self::item('Document Design', 'templates', 'admin.document-design', 'settings.manage'),
             ]),
+            self::group('Accounts', [
+                self::item('Chart of Accounts', 'book', 'admin.accounts.chart', 'accounts.view'),
+                self::item('Journals', 'layers', 'admin.accounts.journals', 'accounts.view'),
+                self::item('Periods', 'clock', 'admin.accounts.periods', 'accounts.view'),
+            ]),
             self::group('Projects', [
                 self::item('Projects', 'hammer', 'admin.projects.index', 'projects.view'),
                 self::item('Board', 'kanban', 'admin.projects.board', 'projects.view'),
