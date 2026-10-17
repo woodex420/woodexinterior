@@ -17,6 +17,7 @@ use App\Settings\SalesSettings;
 use App\Support\AmountInWords;
 use App\Support\Html;
 use App\Support\Money;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * The client-facing content of a quotation, frozen at send time (D-15, QUO-008). The PDF, the client page and the
@@ -72,6 +73,7 @@ final class QuoteSnapshot
                 'subtotal_minor' => (int) $section->subtotal_minor,
                 'items' => $section->items->map(fn (QuoteItem $item): array => [
                     'description' => $item->description,
+                    'image' => self::imageDataUri($item->image_path),
                     'unit' => $item->unit,
                     'unit_label' => Unit::normalize($item->unit)->label(),
                     'qty' => (string) $item->qty,
@@ -135,5 +137,20 @@ final class QuoteSnapshot
         }
 
         return trim($address.', '.$city, ', ');
+    }
+
+    /**
+     * The item picture travels inside the snapshot as a data URI: a frozen, sent PDF must render
+     * from its own bytes years later, without the media file still being in place.
+     */
+    private static function imageDataUri(?string $path): ?string
+    {
+        if ($path === null || ! Storage::disk('public')->exists($path)) {
+            return null;
+        }
+
+        $mime = str_ends_with($path, '.png') ? 'image/png' : (str_ends_with($path, '.webp') ? 'image/webp' : 'image/jpeg');
+
+        return 'data:'.$mime.';base64,'.base64_encode((string) Storage::disk('public')->get($path));
     }
 }

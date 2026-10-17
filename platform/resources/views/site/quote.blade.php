@@ -111,6 +111,9 @@
                         @foreach ($section['items'] as $item)
                             <li class="flex flex-col gap-1 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6 {{ $item['is_optional'] ? 'text-muted' : '' }}">
                                 <div class="min-w-0">
+                                    @if (($item['image'] ?? null) !== null)
+                                        <img src="{{ $item['image'] }}" alt="" class="float-left me-3 size-14 rounded-md object-cover">
+                                    @endif
                                     <p class="{{ $item['is_optional'] ? 'italic' : 'text-ink' }}">{!! nl2br(e($item['description'])) !!}</p>
                                     <p class="text-sm text-muted">{{ $qty($item['qty']) }} {{ $item['unit_label'] }} × {{ $money($item['rate_minor']) }}@if ($item['discount_minor'] > 0) · discount {{ $money($item['discount_minor']) }}@endif @if ($item['is_optional']) · optional, not included in the total @endif</p>
                                 </div>

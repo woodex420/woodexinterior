@@ -35,7 +35,7 @@ final class QuoteEditor
 
     /** @var list<string> */
     private const LINE_FIELDS = [
-        'description', 'unit', 'qty', 'rate_minor', 'discount_type', 'discount_value', 'is_optional', 'internal_cost_minor',
+        'description', 'image_path', 'unit', 'qty', 'rate_minor', 'discount_type', 'discount_value', 'is_optional', 'internal_cost_minor',
     ];
 
     public function __construct(private readonly RecalculateQuote $recalculate) {}
@@ -171,6 +171,7 @@ final class QuoteEditor
         return $this->addLine($section, [
             'catalog_item_id' => $catalogItem->id,
             'description' => $catalogItem->description,
+            'image_path' => $catalogItem->image_path,
             'unit' => $catalogItem->unit,
             'qty' => '1',
             'rate_minor' => (int) $catalogItem->rate_minor,

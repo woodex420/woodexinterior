@@ -44,11 +44,18 @@
                     @forelse ($items as $item)
                         <tr wire:key="catalog-{{ $item->id }}" @class(['hover:bg-gray-50 dark:hover:bg-white/[0.02]', 'opacity-60' => ! $item->is_active])>
                             <td class="px-5 py-3">
+                                <div class="flex items-start gap-3">
+                                    @if ($item->image_path)
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($item->image_path) }}" alt="" loading="lazy" class="size-10 shrink-0 rounded-md object-cover">
+                                    @endif
+                                    <div>
                                 <span class="block text-gray-800 dark:text-white/90">{{ $item->description }}</span>
                                 <span class="block text-theme-xs text-gray-500">
                                     per {{ $item->unit }}{{ $item->finish ? ' · '.ucfirst($item->finish) : '' }}{{ $item->business_line ? ' · '.$item->business_line->label().' only' : '' }}<span class="md:hidden"> · {{ $item->category }}</span>
                                     @unless ($item->is_active) · <span class="text-warning-700">hidden</span>@endunless
                                 </span>
+                                    </div>
+                                </div>
                             </td>
                             <td class="hidden px-5 py-3 text-gray-600 md:table-cell dark:text-gray-400">{{ $item->category }}</td>
                             <td class="px-5 py-3 text-right tabular-nums {{ $item->rate_minor > 0 ? 'font-medium text-gray-800 dark:text-white/90' : 'text-gray-400' }}">
@@ -124,6 +131,20 @@
                 <label class="flex items-center gap-2 text-theme-sm sm:col-span-2">
                     <input type="checkbox" wire:model="formActive" class="size-4 rounded border-gray-300 text-navy-900"> Available in the quote builder
                 </label>
+                <x-admin.field label="Item picture" for="formImage" class="sm:col-span-2" hint="Shown on furniture quotations next to the description. JPG, PNG or WebP, up to 2 MB.">
+                    <div class="flex items-center gap-4">
+                        @if ($formImage)
+                            <img src="{{ $formImage->temporaryUrl() }}" alt="New picture preview" class="size-16 rounded-md object-cover">
+                        @elseif ($formImagePath)
+                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($formImagePath) }}" alt="Current picture" class="size-16 rounded-md object-cover">
+                        @endif
+                        <input id="formImage" type="file" wire:model="formImage" accept="image/jpeg,image/png,image/webp" class="wx-input py-2">
+                        <label class="flex items-center gap-2 text-theme-xs text-gray-500">
+                            <input type="checkbox" wire:model="formRemoveImage" class="size-4 rounded border-gray-300 text-navy-900" @disabled($formImage !== null)> Remove picture
+                        </label>
+                    </div>
+                    <p class="text-theme-xs text-gray-400">A picture is copied onto each quotation line that uses this item; later changes here never change sent quotations.</p>
+                </x-admin.field>
             </div>
             <x-slot:footer>
                 <x-admin.button variant="secondary" wire:click="$set('showForm', false)">Cancel</x-admin.button>

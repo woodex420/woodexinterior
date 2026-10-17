@@ -133,7 +133,7 @@
                 @php $n++; @endphp
                 <tr @class(['optional' => $item['is_optional']])>
                     <td>{{ $n }}</td>
-                    <td>{!! nl2br(e($item['description'])) !!}@if ($item['is_optional']) (optional, not in total)@endif
+                    <td>@if (($item['image'] ?? null) !== null)<img src="{{ $item['image'] }}" alt="" style="float:left;width:52px;height:52px;object-fit:cover;margin:0 8px 2px 0;border-radius:4px;">@endif{!! nl2br(e($item['description'])) !!}@if ($item['is_optional']) (optional, not in total)@endif
                         @if ($item['discount_minor'] > 0)<br><span class="muted">Discount {{ $money($item['discount_minor']) }}</span>@endif</td>
                     <td class="right">{{ $qty($item['qty']) }}</td>
                     <td>{{ $item['unit_label'] }}</td>

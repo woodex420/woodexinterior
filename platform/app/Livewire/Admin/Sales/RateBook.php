@@ -21,6 +21,8 @@ use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 /**
@@ -31,7 +33,7 @@ use Livewire\WithPagination;
 #[Title('Rate book')]
 class RateBook extends Component
 {
-    use InteractsWithAdmin, WithPagination;
+    use InteractsWithAdmin, WithFileUploads, WithPagination;
 
     /** @var array<string, string> */
     public const FINISHES = ['essential' => 'Essential', 'standard' => 'Standard', 'premium' => 'Premium'];
@@ -65,6 +67,14 @@ class RateBook extends Component
     public string $formLine = '';
 
     public bool $formActive = true;
+
+    /** @var TemporaryUploadedFile|null */
+    public $formImage = null;
+
+    /** The picture already stored on the item being edited (kept unless replaced or removed). */
+    public ?string $formImagePath = null;
+
+    public bool $formRemoveImage = false;
 
     public function mount(): void
     {
@@ -109,6 +119,7 @@ class RateBook extends Component
         $this->formFinish = (string) $item->finish;
         $this->formLine = $item->business_line->value ?? '';
         $this->formActive = (bool) $item->is_active;
+        $this->formImagePath = $item->image_path;
         $this->showForm = true;
     }
 
@@ -125,6 +136,7 @@ class RateBook extends Component
             'formFinish' => ['nullable', Rule::in(array_keys(self::FINISHES))],
             'formLine' => ['nullable', Rule::enum(BusinessLine::class)],
             'formActive' => ['boolean'],
+            'formImage' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ], [], [
             'formCategory' => 'category', 'formDescription' => 'description', 'formUnit' => 'unit',
             'formFinish' => 'finish', 'formLine' => 'line',
@@ -140,6 +152,7 @@ class RateBook extends Component
         $values = [
             'category' => trim($this->formCategory),
             'description' => trim($this->formDescription),
+            'image_path' => $this->resolveImagePath(),
             'unit' => $this->formUnit,
             'rate_minor' => $rate,
             'internal_cost_minor' => $cost,
@@ -205,9 +218,26 @@ class RateBook extends Component
         }
     }
 
+    /**
+     * A new upload wins; an explicit remove clears; otherwise the stored picture is kept —
+     * so editing a rate never silently drops the photo quotations already show.
+     */
+    private function resolveImagePath(): ?string
+    {
+        if ($this->formImage !== null) {
+            return $this->formImage->store('catalog', 'public');
+        }
+
+        if ($this->formRemoveImage) {
+            return null;
+        }
+
+        return $this->formImagePath;
+    }
+
     private function resetForm(): void
     {
-        $this->reset(['editingId', 'formCategory', 'formDescription', 'formUnit', 'formRate', 'formCost', 'formFinish', 'formLine', 'formActive']);
+        $this->reset(['editingId', 'formCategory', 'formDescription', 'formUnit', 'formRate', 'formCost', 'formFinish', 'formLine', 'formActive', 'formImage', 'formImagePath', 'formRemoveImage']);
         $this->resetValidation();
     }
 }

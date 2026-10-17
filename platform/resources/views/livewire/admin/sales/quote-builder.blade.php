@@ -169,6 +169,9 @@
                                                 <x-icon name="grip" class="size-4" />
                                             </button>
                                         @endunless
+                                        @if ($item->image_path)
+                                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($item->image_path) }}" alt="" loading="lazy" class="mt-0.5 size-11 shrink-0 rounded-md object-cover">
+                                        @endif
                                         <div class="min-w-0 flex-1">
                                             <div class="flex items-start gap-2">
                                                 <div class="min-w-0 flex-1">
