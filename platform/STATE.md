@@ -2,7 +2,7 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
-## Resume here (project memory, saved 17 Oct 2026 PKT, after the master pending list P1→P7)
+## Resume here (project memory, saved 17 Oct 2026 PKT, after the owner answered the three standing questions)
 
 - **The owner's order for the frontend, unchanged:** the original v1 site is live on woodex.com.pk and stays live;
   **v2 is not started** — its admin master plan (stack, theme builder, page builder, SEO) is the next document,
@@ -43,6 +43,13 @@ _Update at the end of every task (docs/03 Part A §7)._
   run but have no off-site destination yet; booking is paused pending real slots. WhatsApp live connection is
   **no-go for now** per the owner — nothing code-side blocks on it. Run order for both agents in four waves is
   in §10; standing questions for the owner in §11.
+- **The three standing questions are answered (17 Oct):** WhatsApp live connection is **coming soon** (owner
+  will paste the Meta credentials — steps in docs/16 §11.1); the **team split is agreed** (automation agent:
+  sequences/bot/alert-rules + their 3 documents; this workspace: Telegram commands, reports, audit viewer,
+  inbox, frontend v2); the **theme path is v1's own design extracted as tokens (D-116)** — V2-1 is un-gated.
+- **Next for this workspace, per the agreed run (docs/16 §10, Wave 1):** P5 S3 (approvals from Telegram:
+  callback buttons, /approvals /approve /assign /note) → S5 (health completion) → S6 (change-requests board);
+  then P3's three report screens. The automation agent's work is checked against docs/16 §1 when it lands.
 - **The owner redirected the order (17 Oct): P5 → P6 next** ("start next p5 to p6 create complate list
   to start impliment"). The P4 remainder (canned replies, sequences, broadcasting, bot) stays on docs/14 and
   resumes where the owner directs. The complete, ordered P5→P6 list is `docs/15-P5-P6-IMPLEMENTATION-LIST.md`

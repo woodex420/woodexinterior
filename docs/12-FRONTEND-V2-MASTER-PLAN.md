@@ -180,7 +180,10 @@ URLs still receive traffic.
 
 ---
 
-## 6. The theme import pipeline (D-109)
+## 6. The theme import pipeline (D-109, resolved by D-116)
+
+**Decided 17 Oct (D-116): the token source is v1's own live design** — the pipeline below runs against the
+existing site's HTML/CSS rather than a bought theme pack. The pack path stays in the plan for campaign looks.
 
 Buying or choosing a Preline/Tailwind theme is the easy part; getting it *into* the system is the work. The
 pipeline is deliberately **assisted, not automatic**:

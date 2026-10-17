@@ -102,7 +102,7 @@ Remaining, split for two agents:
 
 | Phase | Task | Lane |
 |---|---|---|
-| V2-1 | Design tokens + theme builder | W — **gated on the owner's theme-path decision (docs/12 §6)** |
+| V2-1 | Design tokens + theme builder | W — **un-gated: the owner chose v1's own design as the token source (D-116, 17 Oct)** |
 | V2-2 | Section library + page builder (drag, preview, publish) | W |
 | V2-3 | Global blocks, collections, media, menus completion | W |
 | V2-4 | SEO layer + auditor + AI crawler rules + `llms.txt` | W |
@@ -148,10 +148,11 @@ fallback until the studio connects the number.
 
 ---
 
-## 11 · Standing questions for the owner (asked, not assumed)
+## 11 · Standing questions for the owner — ANSWERED 17 Oct
 
-1. WhatsApp live connection — confirmed **no-go for now**? (Nothing code-side waits on it.)
-2. Team split above — does the automation agent own sequences/bot/alert-rules while this workspace owns
-   Telegram commands, reports and the whole frontend v2?
-3. Theme path for V2-1 — a Preline/Tailwind theme pack adapted once, or v1's own design re-implemented as
-   tokens? (docs/12 §6; the single decision gating the website.)
+1. **WhatsApp live connection: the owner will connect it soon.** Steps unchanged: Settings → WhatsApp (paste
+   the Meta credentials, Test connection) → Automation → WhatsApp Templates (Sync, map *quotation ready*).
+   No code waits on it.
+2. **Team split: agreed.** Lane boundaries in §1 stand.
+3. **Theme path: v1's own design, extracted as tokens (D-116).** V2-1 is un-gated; the pack path stays for
+   campaign looks later.
