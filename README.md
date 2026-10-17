@@ -3,6 +3,9 @@
 The operating system of Woodex Interior (Lahore): CRM, quotations, invoicing, WhatsApp and Telegram, social media
 and the website, built with Laravel 13, Livewire 4, Tailwind 4 and Preline for Hostinger shared hosting.
 
+> **➡ Start here: [PROJECT_STATUS.md](PROJECT_STATUS.md)** — what's done, what's remaining, and quick-start
+> (local dev, sandbox preview, Hostinger deploy, test gate). Updated 17 Oct 2026.
+
 | Folder | What it is |
 |---|---|
 | `platform/` | The Laravel application ([platform/README.md](platform/README.md), progress in [platform/STATE.md](platform/STATE.md)) |

@@ -2,6 +2,8 @@
 
 The complete plan for building the Woodex sales, communication and website system.
 
+**Current delivery status at a glance:** [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) (done / remaining / quick start, updated 17 Oct 2026).
+
 **Current audit and next-work entry point (17 October 2026):**
 
 | Document | Purpose |
