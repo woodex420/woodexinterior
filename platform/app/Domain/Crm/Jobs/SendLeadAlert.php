@@ -6,6 +6,7 @@ namespace App\Domain\Crm\Jobs;
 
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Notifications\NewLeadNotification;
+use App\Domain\System\Models\Automation;
 use App\Models\User;
 use App\Settings\NotificationSettings;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,7 +16,9 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Notification;
 
 /**
- * Notify the lead owner (or the managers when unassigned) in-app and on Telegram (TGM-002).
+ * Notify the lead owner and the sales managers (P8.5: the owner's decision — both, always) in-app
+ * and on Telegram; staff without a Telegram link get the alert by email (TGM-002). The switch on
+ * Automation → Automations can silence the whole flow without touching the capture itself.
  */
 final class SendLeadAlert implements ShouldQueue
 {
@@ -30,6 +33,10 @@ final class SendLeadAlert implements ShouldQueue
 
     public function handle(NotificationSettings $settings): void
     {
+        if (! Automation::enabled('woodex:new-lead-alert')) {
+            return;
+        }
+
         $lead = Lead::query()->with(['contact', 'owner.telegramLink', 'stage'])->find($this->leadId);
 
         if ($lead === null) {
@@ -44,12 +51,22 @@ final class SendLeadAlert implements ShouldQueue
     }
 
     /**
+     * The owner's accepted rule: the lead's owner AND the sales managers hear about every new
+     * enquiry. Without an owner, the configured unassigned-lead roles (owner + sales managers by
+     * default) take the alert.
+     *
      * @return Collection<int, User>
      */
     private function recipients(Lead $lead, NotificationSettings $settings): Collection
     {
+        $managers = User::query()
+            ->with('telegramLink')
+            ->where('is_active', true)
+            ->whereHas('roles', fn (Builder $q) => $q->where('name', 'sales_manager'))
+            ->get();
+
         if ($lead->owner !== null && $lead->owner->is_active) {
-            return new Collection([$lead->owner]);
+            return $managers->push($lead->owner)->unique('id')->values();
         }
 
         return User::query()

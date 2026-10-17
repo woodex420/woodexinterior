@@ -31,16 +31,34 @@ class Automation extends Model
     }
 
     /**
-     * What the studio can switch on and off, and what merely keeps the lights on. The schedule
-     * entries in routes/console.php reference exactly these keys — keep them in step.
+     * What the studio can switch on and off, and what merely keeps the lights on. Scheduled
+     * entries are gated in routes/console.php — keep them in step; event-driven ones are gated
+     * where they fire.
      *
-     * @return list<array{key: string, name: string, description: string, cadence: string, toggleable: bool}>
+     * @return list<array{key: string, name: string, description: string, cadence: string, toggleable: bool, scheduled: bool}>
      */
     public static function catalog(): array
     {
         return [
             [
+                'key' => 'woodex:new-lead-alert',
+                'name' => 'New-enquiry alerts',
+                'description' => 'Telegram and in-app alert to the lead\'s owner and the sales managers the moment an enquiry arrives — by email for staff without a Telegram link.',
+                'cadence' => 'On every new enquiry',
+                'toggleable' => true,
+                'scheduled' => false,
+            ],
+            [
+                'key' => 'woodex:ask-for-number',
+                'name' => 'Ask for a missing number',
+                'description' => 'When an enquiry arrives with an email but no phone number, replies once asking for a WhatsApp number and opens a follow-up task.',
+                'cadence' => 'On enquiries without a number',
+                'toggleable' => true,
+                'scheduled' => false,
+            ],
+            [
                 'key' => 'woodex:sla-check',
+                'scheduled' => true,
                 'name' => 'First-response SLA',
                 'description' => 'Flags leads nobody contacted in time and alerts the owner and sales managers on Telegram.',
                 'cadence' => 'Every minute',
@@ -48,6 +66,7 @@ class Automation extends Model
             ],
             [
                 'key' => 'woodex:reminders',
+                'scheduled' => true,
                 'name' => 'Task & visit reminders',
                 'description' => 'Sends D−1 and 2-hour reminders for tasks and site visits to the assigned staff.',
                 'cadence' => 'Every minute',
@@ -55,6 +74,7 @@ class Automation extends Model
             ],
             [
                 'key' => 'woodex:quote-follow-ups',
+                'scheduled' => true,
                 'name' => 'Quotation follow-up chaser',
                 'description' => 'Nudges the team about quotations nobody answered, warns before prices lapse and retires stale ones.',
                 'cadence' => 'Daily 09:00',
@@ -62,6 +82,7 @@ class Automation extends Model
             ],
             [
                 'key' => 'woodex:review-requests',
+                'scheduled' => true,
                 'name' => 'Review requests',
                 'description' => 'Asks a client for a review a few days after a signed handover — consent-checked before anything is sent.',
                 'cadence' => 'Daily 10:30',
@@ -69,6 +90,7 @@ class Automation extends Model
             ],
             [
                 'key' => 'woodex:retry-whatsapp-webhooks',
+                'scheduled' => true,
                 'name' => 'WhatsApp recovery queue',
                 'description' => 'Replays client messages the webhook could not process — keep this on.',
                 'cadence' => 'Every minute',
@@ -76,6 +98,7 @@ class Automation extends Model
             ],
             [
                 'key' => 'queue:work --stop-when-empty --max-time=50 --tries=3',
+                'scheduled' => true,
                 'name' => 'Queue worker',
                 'description' => 'Drains queued jobs (notifications, sends) once a minute without a daemon.',
                 'cadence' => 'Every minute',
@@ -83,6 +106,7 @@ class Automation extends Model
             ],
             [
                 'key' => 'woodex:heartbeat',
+                'scheduled' => true,
                 'name' => 'Cron heartbeat',
                 'description' => 'Proof every minute that the scheduler itself is alive (System → Health).',
                 'cadence' => 'Every minute',
@@ -90,6 +114,7 @@ class Automation extends Model
             ],
             [
                 'key' => 'backup:run --only-db',
+                'scheduled' => true,
                 'name' => 'Nightly database backup',
                 'description' => 'Full database backup at 02:30, cleaned and monitored by the backup package.',
                 'cadence' => 'Daily 02:30',
@@ -97,6 +122,7 @@ class Automation extends Model
             ],
             [
                 'key' => 'woodex:prune-task-runs',
+                'scheduled' => true,
                 'name' => 'Housekeeping',
                 'description' => 'Prunes old scheduled-task runs and failed jobs.',
                 'cadence' => 'Daily 04:45',

@@ -1288,3 +1288,30 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
      was swallowed by the lock-failure fallback, silently running unprotected. Now CacheFacade).
 - Manual escape hatch if anything still fails on production: the automations table holds only
   toggle overrides (production has none yet) — DROP TABLE automations in phpMyAdmin, then Apply.
+
+## P8.5 part 2 — new-enquiry alerts + ask-for-number — 2026-10-17 (night)
+
+- Owner decision implemented (from the 4/4 ask_user): instant alert to the lead's OWNER AND the
+  sales managers (both, always — previously owner-only), Telegram + in-app, EMAIL for staff
+  without a Telegram link; nothing client-facing without consent.
+- SendLeadAlert (existing TGM-002 job) now: gated by Automation 'woodex:new-lead-alert';
+  recipients = active sales managers + the lead's owner (deduped); unassigned leads still fall
+  back to NotificationSettings.unassigned_lead_roles (sales_manager + owner). NewLeadNotification
+  gains a 'mail' channel + toMail() when the recipient has no Telegram route (the admin action
+  button only appears on https URLs, same rule as the Telegram buttons).
+- Ask-for-number (new): listener AskForMissingNumber on LeadCaptured → job AskForPhoneNumber.
+  When a NEW enquiry arrives with an email and not one phone number anywhere (phone/whatsapp/
+  alt), the job opens a follow-up task (ManageTask, due at SLA, assignee = lead owner) and sends
+  ONE branded reply (AskForNumberMail, mail/ask-for-number.blade.php) asking for a WhatsApp
+  number — a service response to the client's own enquiry, never marketing. The task is the
+  exactly-once anchor: it exists → the ask already went; queue retries can never double-send.
+  A System activity records the ask on the lead timeline. Gated by Automation
+  'woodex:ask-for-number' so the owner can silence the client-facing reply independently.
+- Automation catalog: entries now carry a 'scheduled' flag — the two new flows are event-driven
+  ("On every new enquiry" / "On enquiries without a number") and are gated where they fire; the
+  schedule-consistency test only checks scheduled+toggleable keys now.
+- Tests: NewLeadAlertFlowTest (7) — owner+manager alert, unassigned fallback (capture
+  auto-assigns, so the test nulls the owner first — a real behaviour worth remembering), email
+  fallback via() proof, paused automation silence, ask-once idempotency across a retry, no ask
+  with a phone or when paused, no ask for returning enquiries. PublicLeadApiTest still green.
+- Live: /admin/automation shows both new rows with their event-driven cadences.

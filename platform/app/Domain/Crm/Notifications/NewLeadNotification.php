@@ -8,7 +8,9 @@ use App\Domain\Crm\Models\Lead;
 use App\Domain\System\Telegram\TelegramCallbackBus;
 use App\Integrations\Telegram\TelegramChannel;
 use App\Integrations\Telegram\TelegramMessage;
+use App\Models\User;
 use App\Support\Phone;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
 
@@ -28,6 +30,9 @@ final class NewLeadNotification extends Notification
 
         if (method_exists($notifiable, 'routeNotificationForTelegram') && $notifiable->routeNotificationForTelegram() !== null) {
             $channels[] = TelegramChannel::class;
+        } elseif ($notifiable instanceof User && $notifiable->email !== null) {
+            // P8.5: a team member without a Telegram link still hears about the enquiry — by email.
+            $channels[] = 'mail';
         }
 
         return $channels;
@@ -46,6 +51,23 @@ final class NewLeadNotification extends Notification
             'ref' => $this->lead->ref,
             'url' => route('admin.leads.show', $this->lead),
         ];
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        $lead = $this->lead;
+        $adminUrl = route('admin.leads.show', $lead);
+
+        $mail = (new MailMessage)
+            ->subject(($this->isNewLead ? 'New lead ' : 'Returning enquiry ').$lead->ref.' — '.$lead->contact->name)
+            ->line($this->summary())
+            ->line('Respond by '.($lead->sla_due_at?->timezone('Asia/Karachi')->format('D j M, g:i a') ?? '—'));
+
+        if (str_starts_with($adminUrl, 'https://')) {
+            $mail->action('Open in Woodex OS', $adminUrl);
+        }
+
+        return $mail;
     }
 
     public function toTelegram(object $notifiable): TelegramMessage

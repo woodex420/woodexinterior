@@ -115,8 +115,8 @@ it('keeps the catalog in step with the gated schedule entries', function () {
     $schedule = file_get_contents(base_path('routes/console.php'));
 
     foreach (Automation::catalog() as $entry) {
-        if (! $entry['toggleable']) {
-            continue;
+        if (! ($entry['toggleable'] && $entry['scheduled'])) {
+            continue; // Event-driven automations are gated where they fire, not in the schedule.
         }
 
         expect($schedule)->toContain("Automation::enabled('{$entry['key']}')")

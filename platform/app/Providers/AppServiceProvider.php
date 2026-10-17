@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Policies\ConversationPolicy;
 use App\Domain\Crm\Events\LeadCaptured;
+use App\Domain\Crm\Listeners\AskForMissingNumber;
 use App\Domain\Crm\Listeners\SendNewLeadAlerts;
 use App\Domain\Crm\Models\Activity;
 use App\Domain\Crm\Models\Company;
@@ -146,6 +147,7 @@ class AppServiceProvider extends ServiceProvider
         Livewire::addPersistentMiddleware([EnsureUserIsActive::class]);
 
         Event::listen(LeadCaptured::class, SendNewLeadAlerts::class);
+        Event::listen(LeadCaptured::class, AskForMissingNumber::class);
 
         Event::listen(Login::class, function (Login $event): void {
             if ($event->user instanceof User) {
