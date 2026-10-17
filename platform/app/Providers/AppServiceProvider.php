@@ -22,6 +22,7 @@ use App\Domain\Projects\Models\ProjectUpdate;
 use App\Domain\Projects\Policies\ProjectPolicy;
 use App\Domain\Sales\Models\DescriptionTemplate;
 use App\Domain\Sales\Models\DocumentDesign;
+use App\Domain\Sales\Models\Estimate;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Models\Quote;
@@ -107,6 +108,7 @@ class AppServiceProvider extends ServiceProvider
             'document_design' => DocumentDesign::class,
             'invoice' => Invoice::class,
             'payment' => Payment::class,
+            'estimate' => Estimate::class,
             'project' => Project::class,
             'project_update' => ProjectUpdate::class,
             'change_request' => ChangeRequest::class,

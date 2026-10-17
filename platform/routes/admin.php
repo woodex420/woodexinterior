@@ -34,6 +34,8 @@ use App\Livewire\Admin\Sales\Approvals;
 use App\Livewire\Admin\Sales\DescriptionLibrary;
 use App\Livewire\Admin\Sales\DocumentDesigner;
 use App\Livewire\Admin\Sales\DuePayments;
+use App\Livewire\Admin\Sales\EstimateBuilder;
+use App\Livewire\Admin\Sales\EstimationsIndex;
 use App\Livewire\Admin\Sales\InvoicesIndex;
 use App\Livewire\Admin\Sales\PaymentsIndex;
 use App\Livewire\Admin\Sales\QuoteBuilder;
@@ -88,6 +90,9 @@ Route::livewire('/invoices', InvoicesIndex::class)->name('invoices.index')->midd
 Route::get('/invoices/{invoice}/pdf', InvoicePdfController::class)->name('invoices.pdf')->whereNumber('invoice');
 Route::livewire('/payments', PaymentsIndex::class)->name('payments.index')->middleware('can:invoices.view');
 Route::livewire('/sales/dues', DuePayments::class)->name('sales.dues')->middleware('can:invoices.view');
+Route::livewire('/estimations', EstimationsIndex::class)->name('estimations.index')->middleware('can:estimates.view');
+Route::livewire('/estimations/new', EstimateBuilder::class)->name('estimations.create')->middleware('can:estimates.view');
+Route::livewire('/estimations/{estimate}', EstimateBuilder::class)->name('estimations.show')->middleware('can:estimates.view')->whereNumber('estimate');
 Route::livewire('/accounts/chart', ChartOfAccounts::class)->name('accounts.chart')->middleware('can:accounts.view');
 Route::livewire('/accounts/journals', JournalsIndex::class)->name('accounts.journals')->middleware('can:accounts.view');
 Route::livewire('/accounts/periods', PeriodsIndex::class)->name('accounts.periods')->middleware('can:accounts.view');

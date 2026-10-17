@@ -1123,3 +1123,35 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
   26 new tests / 115 assertions (GlSalesPostingTest, CollectStatementTest, DuePaymentsTest).
 - Not in this batch: printable PDF statements (P8.3/P8.4), refunds/reversals after verification
   (no refund flow exists yet — reversal lands with it), scheduled /due digest (P8.5).
+
+## P8.3 Estimates module — the estimator becomes a document — 2026-10-17
+
+- Sandbox VM was reset before this batch (the /tmp runtime, php-wasm rig and composer mirror were
+  wiped). Full rebuild in ~4 minutes from tools/sandbox/setup.sh (GitHub-based package resolver —
+  no mirror needed); sync.sh auto-applies the wasm TestCase rig fix; preview restored, owner
+  password reset to the preview credential. The tools snapshot now lives only in the repo
+  (tools/sandbox) — /home/user/tools did not survive the reset.
+- New module: persistent, versioned estimates (docs/19 §7, owner decisions: internal surface, all
+  6 estimator services, headline + assumptions + catalog lines, EST- numbering). estimates table
+  (service_key, inputs, catalog_lines, frozen computed snapshot with effective date, assumptions/
+  exclusions, contingency bp, status draft/reviewed/converted, two-way quote link via
+  quotes.estimate_id) + Estimate model (activity-logged, morph-mapped as 'estimate').
+- One server-side pricing engine (ComputeEstimate) shared by the builder's live summary, the saved
+  snapshot and the conversion: chosen-finish headline from EstimatorRate, honest essential→premium
+  band, rate book lines priced at today's rates, explicit contingency in basis points. The
+  snapshot freezes what was computed — later rate changes never rewrite a saved estimate.
+- Actions: SaveEstimate (stable EST-{year}-{seq} number allocated once; converted estimates refuse
+  edits), ReviewEstimate (deliberate reviewed_by/at act), ConvertEstimateToQuote (idempotent —
+  converting twice returns the same quotation; creates a quote DRAFT with the headline line + a
+  rate book items section + range/assumptions/exclusions in the internal notes; furniture service
+  → WF numbering, everything else → WI; requires a client).
+- Screens: Sales → Estimations (/admin/estimations list with status filter; /admin/estimations/new
+  and /{id} builder with live pricing card). Permissions estimates.view/estimates.manage wired to
+  owner, admin, sales_manager, sales, designer_pm (manage) and accountant (view).
+- Live proof: EST-2026-0001 (interior design, 1200 sqft, standard, 5% contingency) = Rs 315,000,
+  range Rs 180,000–480,000 → converted to WI-10103 draft. Gate: 88/88 files green (921 passing),
+  Pint 630 files PASS, Larastan 0 errors, 13 new tests / 59 assertions (EstimatesTest).
+- Not in this batch (per owner decisions): client-facing estimate PDFs, full BOQ builder,
+  kitchen/wardrobe estimate definition (no rate source yet). P8.3's brand/template layer was
+  already active from P8.0 (description library, document designer, rate book with pictures,
+  quote templates).

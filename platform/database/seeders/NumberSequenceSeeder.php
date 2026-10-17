@@ -20,6 +20,7 @@ class NumberSequenceSeeder extends Seeder
             ['key' => 'receipt', 'prefix' => 'RC', 'next_number' => 1, 'padding' => 4, 'format' => '{prefix}-{year}-{number}', 'reset' => 'yearly'],
             ['key' => 'lead', 'prefix' => 'L', 'next_number' => 1, 'padding' => 6, 'format' => '{prefix}-{year}-{number}', 'reset' => 'yearly'],
             ['key' => 'journal', 'prefix' => 'JE', 'next_number' => 1, 'padding' => 4, 'format' => '{prefix}-{year}-{number}', 'reset' => 'yearly'],
+            ['key' => 'estimate', 'prefix' => 'EST', 'next_number' => 1, 'padding' => 4, 'format' => '{prefix}-{year}-{number}', 'reset' => 'yearly'],
         ];
 
         foreach ($sequences as $sequence) {

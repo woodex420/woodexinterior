@@ -92,6 +92,14 @@ class Quote extends Model
     }
 
     /**
+     * @return BelongsTo<Estimate, $this>
+     */
+    public function estimate(): BelongsTo
+    {
+        return $this->belongsTo(Estimate::class);
+    }
+
+    /**
      * The WhatsApp reply that sounded like a yes (D-112): kept so the studio can read what the client wrote.
      *
      * @return BelongsTo<Message, $this>
