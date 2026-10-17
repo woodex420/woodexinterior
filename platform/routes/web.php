@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Website\Support\ThemeCss;
+use App\Http\Controllers\Auth\GoogleOAuthController;
 use App\Http\Controllers\Portal\ClientPortalController;
 use App\Http\Controllers\Portal\InvoicePortalController;
 use App\Http\Controllers\Portal\ProjectPortalController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Site\SitemapController;
 use App\Http\Controllers\Site\WebsiteMediaController;
 use App\Http\Controllers\Webhooks\TelegramWebhookController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
+use App\Http\Middleware\VerifyTelegramWebhook;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -42,14 +44,39 @@ if (filled(config('woodex.admin.domain'))) {
 
 $admin->group(base_path('routes/admin.php'));
 
+// Google uses fixed provider endpoints and a registered, server-configured callback URI.
+// These routes are separate from the admin auth group because the sign-in callback must accept guests.
+$google = Route::middleware(['db-current', 'throttle:google-oauth'])
+    ->prefix(trim((string) config('woodex.admin.path'), '/').'/google')->name('google.');
+if (filled(config('woodex.admin.domain'))) {
+    $google->domain(config('woodex.admin.domain'));
+}
+$google->group(function (): void {
+    $controller = GoogleOAuthController::class;
+    Route::get('/login', [$controller, 'login'])->middleware(['guest', 'throttle:google-start'])->name('login');
+    Route::get('/callback', [$controller, 'callback'])->name('callback');
+    Route::middleware(['auth', 'active', 'two-factor', 'throttle:google-start'])->group(function () use ($controller): void {
+        Route::post('/connect', [$controller, 'connect'])->name('connect');
+        Route::post('/disconnect', [$controller, 'disconnect'])->name('disconnect');
+        Route::post('/check', [$controller, 'check'])->name('check');
+        Route::post('/link', [$controller, 'link'])->name('link');
+        Route::post('/unlink', [$controller, 'unlink'])->name('unlink');
+    });
+});
+
 /*
 |--------------------------------------------------------------------------
 | Webhooks (signature-verified, CSRF-exempt, throttled)
 |--------------------------------------------------------------------------
 */
-Route::post('/webhooks/telegram/{secret}', TelegramWebhookController::class)
-    ->middleware('throttle:webhooks')
+Route::post('/webhooks/telegram', TelegramWebhookController::class)
+    ->middleware([VerifyTelegramWebhook::class, 'throttle:telegram-webhooks'])
     ->name('webhooks.telegram');
+
+// Compatibility path; header still required unless an operator explicitly enables temporary legacy mode.
+Route::post('/webhooks/telegram/{secret}', TelegramWebhookController::class)
+    ->middleware([VerifyTelegramWebhook::class, 'throttle:telegram-webhooks'])
+    ->name('webhooks.telegram.legacy');
 
 // WhatsApp Cloud API (WAP-002): Meta's GET handshake verifies the token, and every POST is checked against
 // X-Hub-Signature-256 inside the controller.

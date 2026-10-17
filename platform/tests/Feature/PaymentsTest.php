@@ -234,6 +234,9 @@ it('hides a draft invoice from the client, and the payment form once it is settl
 
     $this->get(InvoiceLinks::signed('invoices.portal', $draft))->assertNotFound();
 
+    // Restore the issued fixture before recording money: a draft is not a payable invoice.
+    $draft->forceFill(['status' => InvoiceStatus::Issued, 'pdf_path' => $this->invoice->pdf_path])->save();
+
     app(RecordPayment::class)->handle([
         'contact_id' => $this->invoice->contact_id,
         'invoice_id' => $this->invoice->id,

@@ -9,15 +9,17 @@ use App\Domain\System\Telegram\TelegramCallbackBus;
 use App\Integrations\Telegram\TelegramMessage;
 use App\Notifications\Concerns\SendsToDatabaseAndTelegram;
 use App\Support\Money;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
 /**
  * Money alerts for the team (INV-005/006): a client says they paid, the accountant confirmed it, or it was sent back.
  * Bell always, Telegram when linked. The client's copy goes by email (App\Domain\Sales\Mail\PaymentMail).
  */
-final class PaymentNotification extends Notification
+final class PaymentNotification extends Notification implements ShouldQueue
 {
-    use SendsToDatabaseAndTelegram;
+    use Queueable, SendsToDatabaseAndTelegram;
 
     private const array TITLES = [
         'proof_submitted' => ['🧾', 'Payment proof to check'],
@@ -28,7 +30,9 @@ final class PaymentNotification extends Notification
     public function __construct(
         public readonly Payment $payment,
         public readonly string $kind,
-    ) {}
+    ) {
+        $this->afterCommit();
+    }
 
     /**
      * @return array<string, mixed>

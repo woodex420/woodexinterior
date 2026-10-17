@@ -1,0 +1,122 @@
+WOODEX — CUMULATIVE COMPLETED WORK AND RELEASE CHECKLIST
+Status date: 17 October 2026
+Scope: work recorded in this coding session, from integrations through the latest document-builder batch.
+These are local/preview changes. Do not interpret this list as a production deployment certificate.
+
+IMPLEMENTED
+
+1. Integrations and access
+- Searchable, category-filtered App Connections hub with honest setup/planned statuses.
+- Read-only MCP endpoints and local adapter for system status, lead summaries and quote summaries.
+- Owner/password-confirmed scoped access keys, expiry, hashed storage and revocation.
+- Google basic-identity company connection and explicit existing-staff sign-in flows implemented locally.
+- Google setup screens, encrypted company tokens and account lifecycle controls; no Workspace synchronization.
+- Telegram configuration/webhook diagnostics and security hardening: private linking, fresh active staff checks,
+  secret-header authentication, rate limits and approval boundaries.
+- Optional owner 2FA enrollment while preserving confirmed challenges and other configured staff enforcement.
+
+2. Payment, messaging and quotation safety
+- Payment allocation validation for client, invoice state, project, account line and available credit.
+- Locked verification/rejection, stable receipt identity and storage/rollback safeguards.
+- Client proof remains pending until authorized verification; no AI/OCR bank confirmation.
+- WhatsApp multi-item webhook processing, duplicate protection, bounded retries and recovery scheduling.
+- Safer delivery-status ordering and original inbound timestamps.
+- Consent/STOP preservation and sender/link permission checks.
+- Parent-first quotation editing/recalculation and fresh state/revision checks.
+- Approval content/recipient/revision binding and stale decision protection.
+- Safer send/accept, one-milestone invoice protection and historical-suffix-aware invoice numbering.
+- Frozen document protection and after-commit notification handling; durable outbox still pending.
+
+3. Historical leads
+- Dry-run-first, owner-authorized, new-contact-only CSV importer with provenance and rerun protection.
+- January 2025 preview import: 16 contacts + 16 leads created, two duplicate rows skipped, eight held for review.
+- Immediate rerun created zero additional records. No financial history or marketing consent invented.
+
+4. Documents and design
+- Complete Interior/Furniture document, estimation and Accounts master plan, with reference analysis/research links.
+- Database description library: 12 safe starters, brand/section filters, create/edit/archive.
+- Copy descriptions into new unpriced quote lines or New Rate Book Item forms.
+- Brand profiles for Interior/Project and Furniture: name, accent, logo, header and footer.
+- Copied rates/descriptions/designs do not follow later master edits.
+- Explicit draft design adoption participates in approval fingerprint binding.
+- Same-window quote/version/invoice PDF preview overlay with close/download controls.
+- Sent quote default PDF uses frozen output; missing issued invoice PDFs require reviewed recovery.
+- Existing advance-invoice creation/freeze flow verified in isolated QA, not a new manual invoice builder.
+
+VERIFICATION — LAST COMPLETED RUN, NOT RERUN BY THIS STATUS REPORT
+
+- Full Pest suite: 744 passed, 4,500 assertions, one existing sandbox skip.
+- Larastan level 6: no errors. Pint: passed on 22 PHP paths. Vite build: passed.
+- Dedicated browser checks: description creation/copy, footer/logo saving, brand switching and inline PDFs passed.
+- Responsive checks at 1440/390/360px: no overflow or JavaScript errors in the checked document flows.
+- Fresh preview iframe checks: third-party-cookie-blocked and no-cookie scenarios passed.
+- Existing advance invoice created/frozen in isolated QA; its PDF hash verified.
+- Refresh preserved all existing rows across 66 checked tables and the private preview env file.
+- MCP adapter tests and local scoped-access/revocation checks passed in earlier batches.
+- Important limit: native MySQL concurrency, live provider operation and production deployment are NOT certified.
+- Broad browser script is not fully green: its homepage lead-form selectors mismatch the served homepage.
+
+STILL PENDING
+
+A. Product and commercial features
+- Furniture short item names, structured dimensions/specifications and immutable product-picture assets/columns.
+- Advanced BOQ/template editing and history; long/parameterized descriptions and advanced page-layout presets.
+- Persistent service estimates, shared frontend/admin pricing and estimate-to-quote conversion.
+- Manual invoice builder and its issue/approval workflow.
+- Chart of accounts, periods, balanced journals/reversals and source idempotency.
+- Supplier payables, expenses, outgoing payments, recurrence and reconciled financial reporting.
+- Actual 2025 invoice/payment/expense/bank/balance files, staging, reconciliation and Accounts approval.
+
+B. Integrations and automation
+- Register/configure and live-test the Google OAuth application; Workspace APIs remain unimplemented.
+- Prove real Telegram linking, replies and alerts after the appropriate webhook registration.
+- Prove real WhatsApp inbound/reply/status/recovery with production database queue and cron.
+- Other provider connections, MCP write tools, master-agent/specialist dashboards and advanced automations.
+
+C. Release hardening
+- Native PHP/MySQL/Docker engines: not installed in this restricted sandbox.
+- Prepared Docker QA harness: not built or executed; simultaneous MySQL worker/race tests remain unrun.
+- Related-writer locking, deadlock/retry behavior, crash-time orphan-file recovery and durable financial outbox.
+- Complete finance own/team permission review and owner/Accounts acceptance.
+- Reconcile the homepage browser smoke and complete release backup/restore/production checks.
+
+DEPLOYMENT STATUS
+
+Ready for preview review: YES, for the implemented first batches.
+Complete advanced ERP: NO.
+Production release certified: NO.
+Latest local work published to GitHub/Hostinger: NO.
+This coding session is closed after an earlier PR merge. Start a new coding session to publish the preserved work.
+No new deploy/PR URL exists for these unpublished changes; do not deploy an older branch and assume it includes them.
+
+RELEASE PLAN FOR THE NEXT CODING SESSION
+
+1. Preserve and review all current local changes; do not reset, reimport or copy QA financial records to production.
+2. Choose a bounded first release: integrations/security/document-library/design changes, not unfinished ERP modules.
+3. Run native PHP/MySQL regressions and multi-process races; reconcile the remaining browser checks.
+4. Complete owner/Accounts approval and a backup/restore rehearsal.
+5. Publish the preserved changes from the new session and follow the Hostinger deployment guide.
+6. Back up production DB/private storage, apply reviewed additive migrations through Database update,
+   verify database queue + cron and run production smoke checks. Do not reset/reseed production.
+7. Perform separately authorized live provider checks; keep secrets private and unfinished features disabled.
+
+LINKS AND HANDOFF FILES
+
+Existing preview (NOT a production deployment):
+https://8080-isnahsykyf37tp24ghz4e.e2b.app
+
+Description library in that preview:
+https://8080-isnahsykyf37tp24ghz4e.e2b.app/admin/description-library
+
+Document design in that preview:
+https://8080-isnahsykyf37tp24ghz4e.e2b.app/admin/document-design
+
+Repository handoff files (local/unpublished where applicable):
+- platform/STATE.md — current evidence and cumulative handoffs
+- docs/06-DEPLOYMENT-HOSTINGER.md — existing deployment instructions
+- docs/23-AUTOMATION-COMPLETION-BACKLOG.md — full 75-package completion backlog
+- docs/18-BASIC-SALES-ACCOUNTS-ERP-PLAN.md — approved balanced-ledger scope
+- docs/19-DOCUMENTS-ESTIMATION-IMPLEMENTATION-PRD.md — advanced document/estimate plan and first-batch evidence
+- tools/docker/README.md — prepared but unexecuted native QA setup
+- docs/GOOGLE-OAUTH-SETUP.md — Google registration and acceptance steps
+- docs/25-TELEGRAM-CONSENT-HARDENING.md — Telegram/consent changes and release gates

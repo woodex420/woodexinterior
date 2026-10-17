@@ -15,16 +15,24 @@ use App\Domain\System\Telegram\TelegramCommandBus;
 use App\Http\Controllers\Controller;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
 use App\Integrations\Telegram\TelegramMessage;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Throwable;
 
 /**
- * Telegram bot webhook (TGM-001, TGM-004, TGM-006): linking (/start CODE), change requests from mobile
- * (/idea, /issue) and the command centre — every business command lives in the TelegramCommandBus, one class
- * per command, behind the linked user's own permissions.
+ * Telegram bot webhook (TGM-001…TGM-007): linking (/start CODE), change requests from mobile
+ * (/idea, /issue), the command centre and inline buttons — every business command lives in the
+ * TelegramCommandBus, one class per command, behind the linked user's own permissions.
+ *
+ * Hardened shell (agent security review, 17 Oct): authenticated by VerifyTelegramWebhook; every
+ * update lands in the replay ledger first; business writes and the marker commit together inside
+ * one transaction; replies go out only after the commit, and a failed reply never reruns the
+ * business effect. A forged update (group routing, bot sender, forward, wrong addressee) is
+ * ignored, never executed.
  */
 final class TelegramWebhookController extends Controller
 {
@@ -37,89 +45,134 @@ final class TelegramWebhookController extends Controller
         private readonly TelegramCallbackBus $callbacks,
     ) {}
 
-    public function __invoke(Request $request, string $secret): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
-        $expected = (string) config('services.telegram.webhook_secret');
-
-        if ($expected === '' || ! hash_equals($expected, $secret)) {
-            abort(404);
-        }
-
-        $header = (string) $request->header('X-Telegram-Bot-Api-Secret-Token');
-
-        if ($header !== '' && ! hash_equals($expected, $header)) {
-            abort(403);
-        }
-
-        $updateId = (string) $request->input('update_id', '');
-
-        if ($updateId === '') {
+        $rawId = $request->input('update_id');
+        $admitted = (is_int($rawId) && $rawId >= 0) || (is_string($rawId) && ctype_digit($rawId));
+        if (! $admitted) {
             return response()->json(['ok' => true]);
         }
+        $updateId = (string) $rawId;
+
+        $event = WebhookEvent::query()->firstOrCreate([
+            'provider' => 'telegram', 'external_id' => $updateId,
+        ], [
+            'type' => $request->has('message') ? 'message' : ($request->has('callback_query') ? 'callback' : 'other'),
+            'payload' => $request->json()->all(),
+            'signature_valid' => true,
+            'status' => WebhookStatus::Received,
+        ]);
+        $duplicate = false;
 
         try {
-            $event = WebhookEvent::create([
-                'provider' => 'telegram',
-                'external_id' => $updateId,
-                'type' => $request->has('message') ? 'message' : ($request->has('callback_query') ? 'callback' : 'other'),
-                'payload' => $request->all(),
-                'signature_valid' => true,
-                'status' => WebhookStatus::Received,
-            ]);
-        } catch (UniqueConstraintViolationException) {
-            return response()->json(['ok' => true, 'duplicate' => true]);
+            $reply = DB::transaction(function () use ($event, &$duplicate): ?array {
+                $event = WebhookEvent::query()->lockForUpdate()->findOrFail($event->id);
+
+                if (! $event->signature_valid || in_array($event->status, [WebhookStatus::Processed, WebhookStatus::Ignored], true)) {
+                    $duplicate = true;
+
+                    return null;
+                }
+
+                $message = $event->payload['message'] ?? null;
+                $callback = $event->payload['callback_query'] ?? null;
+
+                $reply = null;
+                if (is_array($callback)) {
+                    $reply = $this->callbackReply($callback);
+                } elseif (is_array($message)) {
+                    $reply = $this->commandReply($message);
+                }
+
+                $event->forceFill([
+                    'status' => $reply === null ? WebhookStatus::Ignored : WebhookStatus::Processed,
+                    'attempts' => $event->attempts + 1,
+                    'processed_at' => now(),
+                    'error' => null,
+                ])->save();
+
+                return $reply;
+            });
+        } catch (Throwable $exception) {
+            Log::warning('Telegram command processing failed.', ['event_id' => $event->id, 'exception' => $exception::class]);
+
+            // Preserve the trusted received row for the provider retry; do not expose an exception body.
+            return response()->json(['ok' => false], 503);
         }
 
-        $chatId = $request->input('message.chat.id');
-        $text = trim((string) $request->input('message.text', ''));
-        $callback = $request->input('callback_query');
+        if ($reply !== null) {
+            try {
+                if (! empty($reply['callback_id'])) {
+                    $this->telegram->answerCallbackQuery((string) $reply['callback_id'], (string) $reply['text']);
+                }
 
-        if (is_array($callback)) {
-            $this->handleCallback($callback);
-        } elseif ($chatId !== null && str_starts_with($text, '/')) {
-            $this->handleCommand($request, (int) $chatId, $text);
+                $this->telegram->send((int) $reply['chat_id'], new TelegramMessage(TelegramMessage::escape((string) $reply['text'])));
+            } catch (Throwable $exception) {
+                // Business effects already committed. Never rerun them just because a reply failed.
+                Log::warning('Telegram command reply failed.', ['event_id' => $event->id, 'exception' => $exception::class]);
+            }
         }
 
-        $event->update(['status' => WebhookStatus::Processed, 'processed_at' => now()]);
-
-        return response()->json(['ok' => true]);
+        return response()->json(['ok' => true, 'duplicate' => $duplicate]);
     }
 
     /**
-     * An inline button press (TGM-005): answer the button itself, and say the outcome in the chat too, so it
+     * An inline button press (TGM-005): the answer goes to the button itself and to the chat, so it
      * survives the toast scrolling away.
      *
      * @param  array<string, mixed>  $callback
+     * @return array{chat_id: int, text: string, callback_id: string}|null
      */
-    private function handleCallback(array $callback): void
+    private function callbackReply(array $callback): ?array
     {
         $callbackId = (string) ($callback['id'] ?? '');
         $chatId = $callback['message']['chat']['id'] ?? null;
         $data = (string) ($callback['data'] ?? '');
 
         if ($chatId === null || $chatId === '' || $data === '') {
-            $this->telegram->answerCallbackQuery($callbackId, 'That button is not recognised anymore.');
-
-            return;
+            // A callback without a real message/chat is not button traffic — ignore it (no send, no authority).
+            return null;
         }
 
         $user = $this->linkedUserOrNull((int) $chatId)?->user;
         $reply = $this->callbacks->dispatch($user, $data);
 
-        $this->telegram->answerCallbackQuery($callbackId, $reply);
-        $this->telegram->send((int) $chatId, new TelegramMessage(TelegramMessage::escape($reply)));
+        return ['chat_id' => (int) $chatId, 'text' => $reply, 'callback_id' => $callbackId];
     }
 
-    private function handleCommand(Request $request, int $chatId, string $text): void
+    /**
+     * A command from a private chat. The gate first (agent security review, 17 Oct): personal commands
+     * need the actual human sender in their private chat — never a group's routing identity, a bot, or a
+     * forward — then the studio's own commands run behind the linked user's permissions.
+     *
+     * @param  array<string, mixed>  $message
+     * @return array{chat_id: int, text: string}|null
+     */
+    private function commandReply(array $message): ?array
     {
-        [$command, $argument] = array_pad(preg_split('/\s+/', $text, 2) ?: [], 2, '');
-        $command = Str::lower((string) Str::before($command, '@'));
+        $chatId = self::positiveId($message['chat']['id'] ?? null);
+        $senderId = self::positiveId($message['from']['id'] ?? null);
+        $text = $message['text'] ?? null;
+
+        if ($chatId === false || $senderId === false || $chatId !== $senderId
+            || ($message['chat']['type'] ?? null) !== 'private' || ($message['from']['is_bot'] ?? false)
+            || isset($message['sender_chat']) || isset($message['via_bot'])
+            || isset($message['forward_origin']) || isset($message['forward_from']) || isset($message['forward_from_chat'])
+            || ! is_string($text) || ! str_starts_with(trim($text), '/') || mb_strlen($text) > 4096) {
+            return null;
+        }
+
+        [$command, $argument] = array_pad(preg_split('/\s+/', trim($text), 2) ?: [], 2, '');
         $argument = trim((string) $argument);
 
-        if (RateLimiter::tooManyAttempts('telegram-command:'.$chatId, self::COMMANDS_PER_MINUTE)) {
-            $this->telegram->send($chatId, new TelegramMessage('Too many commands in one minute — give it a moment and try again.'));
+        if (str_contains((string) $command, '@') && strcasecmp((string) Str::after((string) $command, '@'), ltrim((string) config('services.telegram.bot_username'), '@')) !== 0) {
+            return null;
+        }
 
-            return;
+        $command = Str::lower((string) Str::before((string) $command, '@'));
+
+        if (RateLimiter::tooManyAttempts('telegram-command:'.$chatId, self::COMMANDS_PER_MINUTE)) {
+            return ['chat_id' => $chatId, 'text' => 'Too many commands in one minute — give it a moment and try again.'];
         }
 
         RateLimiter::hit('telegram-command:'.$chatId);
@@ -127,16 +180,24 @@ final class TelegramWebhookController extends Controller
         $user = $this->linkedUserOrNull($chatId)?->user;
 
         $reply = match ($command) {
-            '/start', '/link' => $this->link($request, $chatId, $argument),
-            '/idea', '/issue' => $this->changeRequest($chatId, $command === '/idea' ? ChangeRequestType::Idea : ChangeRequestType::Issue, $argument, (int) $request->input('message.message_id')),
+            '/start', '/link' => $this->link($message, $chatId, $argument),
+            '/idea', '/issue' => $this->changeRequest($chatId, $command === '/idea' ? ChangeRequestType::Idea : ChangeRequestType::Issue, $argument, (int) ($message['message_id'] ?? 0)),
             '/help' => $this->bus->help(),
             default => $this->bus->dispatch($user, $command, $argument),
         };
 
-        $this->telegram->send($chatId, new TelegramMessage(TelegramMessage::escape($reply)));
+        return ['chat_id' => $chatId, 'text' => $reply];
     }
 
-    private function link(Request $request, int $chatId, string $code): string
+    private static function positiveId(mixed $value): int|false
+    {
+        return is_int($value) && $value > 0 ? $value : false;
+    }
+
+    /**
+     * @param  array<string, mixed>  $message
+     */
+    private function link(array $message, int $chatId, string $code): string
     {
         if ($code === '') {
             return $this->linkedUserOrNull($chatId) !== null
@@ -149,18 +210,24 @@ final class TelegramWebhookController extends Controller
             ->where('link_code_expires_at', '>', now())
             ->first();
 
-        if ($link === null) {
+        if ($link === null || ! $link->user()->where('is_active', true)->exists()) {
             return 'That code is invalid or expired. Create a new code from your profile in the admin.';
         }
 
-        // A chat can belong to one link only.
+        // A chat can belong to one link only, and a code may never steal a chat that another
+        // account already holds: that would hand one phone's authority to whoever gets a second code.
+        $occupant = TelegramLink::query()->where('chat_id', $chatId)->where('is_active', true)->whereKeyNot($link->id)->first();
+        if ($occupant !== null && $occupant->user_id !== $link->user_id) {
+            return 'This chat is already linked to another Woodex OS account. Ask an admin to unlink it first.';
+        }
+
         TelegramLink::query()->where('chat_id', $chatId)->whereKeyNot($link->id)->update(['chat_id' => null, 'is_active' => false]);
 
         $link->forceFill([
             'chat_id' => $chatId,
-            'chat_type' => (string) $request->input('message.chat.type', 'private'),
-            'title' => $request->input('message.chat.title') ?? trim($request->input('message.from.first_name', '').' '.$request->input('message.from.last_name', '')),
-            'username' => $request->input('message.from.username'),
+            'chat_type' => (string) ($message['chat']['type'] ?? 'private'),
+            'title' => $message['chat']['title'] ?? trim(($message['from']['first_name'] ?? '').' '.($message['from']['last_name'] ?? '')),
+            'username' => $message['from']['username'] ?? null,
             'link_code' => null,
             'link_code_expires_at' => null,
             'is_active' => true,
@@ -201,6 +268,14 @@ final class TelegramWebhookController extends Controller
 
     private function linkedUserOrNull(int $chatId): ?TelegramLink
     {
-        return TelegramLink::query()->where('chat_id', $chatId)->where('is_active', true)->whereNotNull('user_id')->first();
+        return TelegramLink::query()
+            ->where('chat_id', $chatId)
+            ->where('is_active', true)
+            ->whereNotNull('user_id')
+            // Group/supergroup/channel links never carry private-message authority; null chat_type is a
+            // legacy private link from before the column existed and keeps its authority.
+            ->where(fn ($query) => $query->where('chat_type', 'private')->orWhereNull('chat_type'))
+            ->whereHas('user', fn ($query) => $query->where('is_active', true))
+            ->first();
     }
 }

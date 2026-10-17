@@ -2,6 +2,8 @@
 
 Date: 2026-10-16
 
+> **Latest local follow-up, 17 October:** [Telegram identity/consent hardening](25-TELEGRAM-CONSENT-HARDENING.md) supersedes the old secret-URL registration behavior. The owner already confirmed replacement credentials are privately saved; do not ask for them again. Re-register with the stable header-authenticated endpoint after publication, using existing values. Earlier findings/rotation instructions below are historical, not a request to repeat completed credential setup.
+
 ## Findings and scope
 
 - The screenshot's QR is a TOTP authenticator enrolment QR, **not a Telegram QR**. Scan it inside Google Authenticator, Microsoft Authenticator or 1Password. Enter the current six-digit code from that app in Confirm.
@@ -93,3 +95,47 @@ The owner chose **optional 2FA for owner accounts only**. The patch exempts owne
 After deploying this version, an owner with no confirmed 2FA can navigate directly to `/admin/integrations` and complete Telegram setup. If a pending QR remains on the Security page, it is optional: leave it for later, or enter the account password and press **Cancel setup**. Linking Telegram does not automatically activate authenticator sign-in. When ready, enable 2FA and confirm a valid authenticator code; subsequent sign-ins will require it. Already-confirmed 2FA has not been bypassed or automatically removed.
 
 Verification: 45 targeted tests (238 assertions), formatting, build, browser checks for pending-owner navigation and cancellation, mobile layout, and iframe sign-in checks passed. This remains a code change awaiting deployment, not a live-site modification.
+
+## Credentials saved, but still reported missing — local follow-up
+
+The owner confirmed the replacement credentials are in the private `.env`. That does not establish which file the live app selected or whether cached config contains old values. This version adds owner-only **Check server configuration**, automatically opened when Connect webhook finds missing credentials. It shows only:
+
+- The settings file selected by the application, as a relative path.
+- Whether that file is readable and syntactically valid.
+- Presence of each Telegram credential on disk versus in the running configuration.
+- Whether configuration is cached and whether the file values match the loaded values.
+- Whether a separate private `.env` exists while another file (such as `platform/.env`) was selected.
+
+An owner can use **Reload server configuration** to clear Laravel's config cache and fully reload the page. This does not edit settings, generate tokens, switch environment files or register the webhook. All saved `.env` changes—not just Telegram changes—take effect on the next request. Confirm any other saved changes are intentional before using it.
+
+If the private `.env` is not the selected file, do not delete either file or copy the entire private file over the active one: database and APP_KEY settings may differ. Ask hosting support to verify the intended layout and configure only the Telegram keys in the active environment. If saved and loaded values continue to differ after clearing cache, check server-level environment overrides.
+
+Immediate terminal equivalent (from the deployed application's `platform` directory): `php artisan config:clear`, then reload the Integrations page. This can resolve stale cache but cannot supply missing credentials or fix a wrong environment-file selection.
+
+Verification: 71 targeted tests / 380 assertions, formatting/build, desktop/mobile diagnostics and cache-reload browser check, and both iframe modes passed. No live Telegram message was sent. This follow-up is local only: the session is closed after PR #2 merged, so a new coding session is required to publish it.
+
+## Integrations redesign preservation — 2026-10-17
+
+The new searchable integrations hub retains the Telegram test, webhook, live-connection, server-configuration
+and configuration-reload controls. It distinguishes Planned providers from implemented services; an MCP key
+cannot configure Telegram or send a message. Full local regression: 478 passed / 3,318 assertions, 1 skipped;
+changed-PHP formatting/static analysis, production build, targeted desktop/mobile hub+Laravel-MCP acceptance
+and both iframe modes passed. The general browser check retains two unrelated v1-homepage form-expectation
+failures. These follow-ups remain unpublished; no live Telegram delivery or Hostinger deployment was verified.
+
+
+## Header-authenticated private identity follow-up — 17 October 2026
+
+New registrations, including `woodex:telegram:set-webhook`, use `/webhooks/telegram` with Telegram's official
+secret header, not a secret in the path/query. The old path requires the header by default. Temporary
+`TELEGRAM_ALLOW_LEGACY_WEBHOOK` compatibility is disabled unless explicitly reviewed; a wrong header is
+never accepted. Register again with existing saved values, confirm private `/start`, `/help`, test alerts,
+unlink/disabled-account denial and group denial; do not claim production readiness from registration alone.
+
+Personal commands and notifications no longer treat group routing as staff authority. Current active user/link
+checks, locked once-only linking, atomic command/replay markers and authenticated sender/link rate limits are
+implemented. The fuller report includes the observed middleware-priority ordering defect and its regression.
+Important financial/approval commands remain disabled. Owner-only optional 2FA and confirmed challenges are
+unchanged. Fresh full PHP suite: **622 passed / 4,068 assertions / one skipped**; 61 new regressions,
+Larastan clean, Pint 23 PHP files. Local only, no live provider call or deployment. Telegram durable queued
+intake/reply outbox and hosting acceptance remain pending.

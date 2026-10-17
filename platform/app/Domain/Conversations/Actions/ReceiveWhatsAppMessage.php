@@ -14,6 +14,7 @@ use App\Domain\Conversations\Models\Message;
 use App\Domain\Crm\Models\Contact;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Support\Phone;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -39,7 +40,8 @@ final class ReceiveWhatsAppMessage
      */
     public function handle(array $value, ?string $externalId = null): ?Message
     {
-        $inbound = $value['messages'][0] ?? null;
+        $inbound = $externalId === null ? ($value['messages'][0] ?? null)
+            : collect((array) ($value['messages'] ?? []))->first(fn (mixed $message): bool => is_array($message) && ($message['id'] ?? null) === $externalId);
 
         if (! is_array($inbound)) {
             return null;
@@ -52,8 +54,18 @@ final class ReceiveWhatsAppMessage
         }
 
         return DB::transaction(function () use ($inbound, $from, $value, $externalId): Message {
+            $id = $inbound['id'] ?? $externalId;
+            if (is_string($id) && $id !== '') {
+                $existing = Message::query()->where('external_id', $id)->where('direction', MessageDirection::In)->first();
+                if ($existing !== null) {
+                    return $existing;
+                }
+            }
+            $timestamp = filter_var($inbound['timestamp'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+            // Queued or replayed messages never grant a fresh 24 hours from the retry time.
+            $receivedAt = $timestamp === false ? CarbonImmutable::now() : CarbonImmutable::createFromTimestampUTC($timestamp)->min(now());
             $contact = $this->contact($from, $value);
-            $conversation = $this->conversation($contact, $from);
+            $conversation = $this->conversation($contact, $from, $receivedAt);
 
             $type = $this->type((string) ($inbound['type'] ?? 'text'));
             $body = $this->body($inbound, $type);
@@ -72,10 +84,14 @@ final class ReceiveWhatsAppMessage
             $conversation->update([
                 'status' => $conversation->status === ConversationStatus::Closed ? ConversationStatus::Open : $conversation->status,
                 'closed_at' => null,
-                'window_expires_at' => now()->addHours(24),
+                'window_expires_at' => $conversation->window_expires_at?->max($receivedAt->addHours(24)) ?? $receivedAt->addHours(24),
             ]);
 
-            $conversation->touchLastMessage(MessageDirection::In, $this->preview($type, $body));
+            if ($conversation->last_message_at === null || $receivedAt->gte($conversation->last_message_at)) {
+                $conversation->touchLastMessage(MessageDirection::In, $this->preview($type, $body), $receivedAt);
+            } else {
+                $conversation->increment('unread_count');
+            }
 
             $this->optOut($contact, $body);
 
@@ -94,19 +110,20 @@ final class ReceiveWhatsAppMessage
 
         $contact = Contact::query()
             ->where(fn ($query) => $query->where('whatsapp', $from)->orWhere('phone', $from))
-            ->first();
+            ->lockForUpdate()->first();
 
         if ($contact === null && $digits !== '') {
             $contact = Contact::query()
                 ->whereRaw("REPLACE(REPLACE(REPLACE(COALESCE(whatsapp, ''), ' ', ''), '-', ''), '+', '') LIKE ?", ['%'.$digits])
-                ->first();
+                ->lockForUpdate()->first();
         }
 
         if ($contact !== null) {
             return $contact;
         }
 
-        $name = (string) ($value['contacts'][0]['profile']['name'] ?? '');
+        $profile = collect((array) ($value['contacts'] ?? []))->first(fn (mixed $item): bool => is_array($item) && Phone::normalize((string) ($item['wa_id'] ?? '')) === $from);
+        $name = (string) ($profile['profile']['name'] ?? '');
 
         return Contact::create([
             'name' => $name !== '' ? $name : 'WhatsApp '.$from,
@@ -117,11 +134,15 @@ final class ReceiveWhatsAppMessage
         ]);
     }
 
-    private function conversation(Contact $contact, string $from): Conversation
+    private function conversation(Contact $contact, string $from, ?CarbonImmutable $receivedAt = null): Conversation
     {
+        // The 24-hour window starts when the client actually wrote, not when this job happened to run —
+        // otherwise a recovery replay of yesterday's message would reopen a closed window.
+        $windowStart = $receivedAt ?? CarbonImmutable::now();
+
         return Conversation::query()->firstOrCreate(
             ['contact_id' => $contact->id, 'channel' => Channel::Whatsapp->value],
-            ['external_number' => $from, 'status' => ConversationStatus::Open, 'window_expires_at' => now()->addHours(24), 'unread_count' => 0],
+            ['external_number' => $from, 'status' => ConversationStatus::Open, 'window_expires_at' => $windowStart->addHours(24), 'unread_count' => 0],
         );
     }
 
@@ -241,7 +262,7 @@ final class ReceiveWhatsAppMessage
         }
 
         $contact->forceFill([
-            'opted_out_at' => now(),
+            'opted_out_at' => $contact->opted_out_at ?? now(),
             'consent_whatsapp' => false,
             'consent_marketing' => false,
         ])->save();

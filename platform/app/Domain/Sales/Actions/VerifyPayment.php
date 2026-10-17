@@ -7,6 +7,7 @@ namespace App\Domain\Sales\Actions;
 use App\Domain\Sales\Enums\PaymentStatus;
 use App\Domain\Sales\Models\Payment;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -22,23 +23,23 @@ final class VerifyPayment
 
     public function handle(Payment $payment, User $by): Payment
     {
-        if ($payment->status !== PaymentStatus::PendingVerification) {
-            return $payment;
+        $by = User::query()->findOrFail($by->id);
+        if (! $by->is_active || ! $by->can('payments.verify')) {
+            throw new AuthorizationException;
         }
 
         return DB::transaction(function () use ($payment, $by): Payment {
+            $payment = Payment::query()->lockForUpdate()->findOrFail($payment->id);
+            if ($payment->status !== PaymentStatus::PendingVerification) {
+                return $payment;
+            }
             $payment->forceFill([
                 'status' => PaymentStatus::Verified,
                 'verified_by' => $by->id,
                 'verified_at' => now(),
             ])->save();
 
-            // The invoice it came in against first, then whatever else is open and unpaid.
-            $allocations = $payment->invoice_id !== null
-                ? [$payment->invoice_id => (int) $payment->amount_minor]
-                : [];
-
-            $this->allocate->handle($payment, $allocations);
+            $this->allocate->handle($payment);
 
             // The receipt is numbered and written, and the client gets their copy (INV-007).
             return $this->record->receipt($payment, $by)->refresh();

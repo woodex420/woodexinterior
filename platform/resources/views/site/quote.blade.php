@@ -160,6 +160,7 @@
                     <p class="mt-2 text-sm text-navy-100/80">Type your full name to accept {{ $s['label'] }} for {{ $money($t['total_minor']) }} with the terms above.</p>
                     <form method="POST" action="{{ $acceptUrl }}" class="mt-5 space-y-4">
                         @csrf
+                        <input type="hidden" name="revision" value="{{ $s['revision'] }}">
                         <div>
                             <label for="accept-name" class="mb-1 block text-sm">Full name</label>
                             <input id="accept-name" name="name" required minlength="3" maxlength="160" value="{{ old('name') }}" autocomplete="name" class="h-11 w-full rounded-ui border-0 bg-white px-3 text-ink placeholder:text-muted focus:outline-2 focus:outline-offset-2 focus:outline-sand-200">
@@ -184,6 +185,7 @@
                     <p class="mt-2 text-sm">Tell us what to change: items, finishes, quantities or the budget. We will send an updated version on this link.</p>
                     <form method="POST" action="{{ $changesUrl }}" class="mt-5 space-y-4">
                         @csrf
+                        <input type="hidden" name="revision" value="{{ $s['revision'] }}">
                         <label for="changes-comment" class="sr-only">Your comments</label>
                         <textarea id="changes-comment" name="comment" rows="5" required minlength="5" maxlength="2000" class="w-full rounded-ui border border-line px-3 py-2 text-ink">{{ old('comment') }}</textarea>
                         @if ($errors->changes->any())

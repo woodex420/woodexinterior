@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domain\Sales\Enums\InvoiceStatus;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Services\InvoicePdf;
 use App\Domain\Sales\Services\InvoiceSnapshot;
@@ -24,6 +25,8 @@ final class InvoicePdfController
         if ($invoice->pdf_path !== null && Storage::disk('local')->exists($invoice->pdf_path)) {
             return Storage::disk('local')->response($invoice->pdf_path, InvoicePdf::filename($invoice), ['Content-Type' => 'application/pdf']);
         }
+
+        abort_unless($invoice->status === InvoiceStatus::Draft, 409, 'The frozen invoice PDF is missing. Accounts must review recovery; it will not be regenerated.');
 
         return response($pdf->render($snapshots->build($invoice)), 200, [
             'Content-Type' => 'application/pdf',

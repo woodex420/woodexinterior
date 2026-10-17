@@ -69,6 +69,7 @@ final class QuotePortalController
             'name' => ['required', 'string', 'min:3', 'max:160'],
             'phone' => ['nullable', 'string', 'max:30'],
             'confirm' => ['accepted'],
+            'revision' => ['required', 'integer', 'min:0'],
         ], [
             'confirm.accepted' => 'Please tick the box to confirm that you accept the quotation and its terms.',
         ], ['name' => 'full name']);
@@ -78,7 +79,7 @@ final class QuotePortalController
         }
 
         try {
-            $accept->handle($quote, (string) $request->input('name'), $request->input('phone'), $request->ip(), $request->userAgent());
+            $accept->handle($quote, (string) $request->input('name'), $request->input('phone'), $request->ip(), $request->userAgent(), revision: (int) $request->input('revision'));
         } catch (QuoteActionDenied $exception) {
             return redirect()->to($page.'#accept')->withErrors(['name' => $exception->getMessage()], 'accept');
         }
@@ -91,6 +92,7 @@ final class QuotePortalController
         $page = url(QuoteLinks::signed('quotes.portal', $quote));
         $validator = Validator::make($request->all(), [
             'comment' => ['required', 'string', 'min:5', 'max:2000'],
+            'revision' => ['required', 'integer', 'min:0'],
         ], [], ['comment' => 'your comments']);
 
         if ($validator->fails()) {
@@ -98,7 +100,7 @@ final class QuotePortalController
         }
 
         try {
-            $changes->handle($quote, (string) $request->input('comment'), $request->ip(), $request->userAgent());
+            $changes->handle($quote, (string) $request->input('comment'), $request->ip(), $request->userAgent(), (int) $request->input('revision'));
         } catch (QuoteActionDenied $exception) {
             return redirect()->to($page.'#changes')->withErrors(['comment' => $exception->getMessage()], 'changes');
         }

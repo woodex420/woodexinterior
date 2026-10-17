@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Conversations\Actions;
 
+use App\Domain\Conversations\Enums\MessageDirection;
 use App\Domain\Conversations\Enums\MessageStatus;
 use App\Domain\Conversations\Models\Message;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Meta telling us what happened to a message we sent (WAP-004): delivered, read, or failed with a reason.
@@ -20,7 +22,7 @@ final class RecordMessageStatus
         MessageStatus::Sent->value => 1,
         MessageStatus::Delivered->value => 2,
         MessageStatus::Read->value => 3,
-        MessageStatus::Failed->value => 4,
+        MessageStatus::Failed->value => 1,
     ];
 
     /**
@@ -34,24 +36,27 @@ final class RecordMessageStatus
             return null;
         }
 
-        $message = Message::query()->where('external_id', $externalId)->first();
+        return DB::transaction(function () use ($externalId, $next, $errors): ?Message {
+            $message = Message::query()->where('external_id', $externalId)->where('direction', MessageDirection::Out)->lockForUpdate()->first();
 
-        if ($message === null) {
-            return null;
-        }
+            if ($message === null) {
+                return null;
+            }
 
-        if ($next !== MessageStatus::Failed && (self::ORDER[$next->value] ?? 0) < (self::ORDER[$message->status->value] ?? 0)) {
-            return $message; // an older status arriving late changes nothing
-        }
+            if (self::ORDER[$next->value] < self::ORDER[$message->status->value]
+                || ($message->status === MessageStatus::Failed && $next === MessageStatus::Sent)) {
+                return $message; // an older status arriving late changes nothing
+            }
 
-        $message->update([
-            'status' => $next,
-            'delivered_at' => $next === MessageStatus::Delivered ? ($message->delivered_at ?? now()) : $message->delivered_at,
-            'read_at' => $next === MessageStatus::Read ? ($message->read_at ?? now()) : $message->read_at,
-            'error_code' => $errors === null ? $message->error_code : (string) ($errors[0]['code'] ?? null),
-            'error_message' => $errors === null ? $message->error_message : (string) ($errors[0]['title'] ?? null),
-        ]);
+            $message->update([
+                'status' => $next,
+                'delivered_at' => $next === MessageStatus::Delivered ? ($message->delivered_at ?? now()) : $message->delivered_at,
+                'read_at' => $next === MessageStatus::Read ? ($message->read_at ?? now()) : $message->read_at,
+                'error_code' => $errors === null ? $message->error_code : (string) ($errors[0]['code'] ?? null),
+                'error_message' => $errors === null ? $message->error_message : (string) ($errors[0]['title'] ?? null),
+            ]);
 
-        return $message;
+            return $message;
+        });
     }
 }

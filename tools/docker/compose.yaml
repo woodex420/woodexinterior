@@ -1,0 +1,49 @@
+name: woodex-qa
+services:
+  mysql-test:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: woodex_test
+      MYSQL_USER: woodex_test
+      MYSQL_PASSWORD: ${WOODEX_QA_PASSWORD:?Run tools/docker/setup-env.sh first}
+      MYSQL_ROOT_PASSWORD: ${WOODEX_QA_ROOT_PASSWORD:?Run tools/docker/setup-env.sh first}
+    # No host port, production database, or production data volume.
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_PASSWORD mysql --protocol=TCP -h 127.0.0.1 -u woodex_test woodex_test -e 'SELECT 1' >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  php-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      mysql-test:
+        condition: service_healthy
+    environment:
+      APP_ENV: testing
+      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      APP_URL: http://woodex.test
+      DB_CONNECTION: mysql
+      DB_HOST: mysql-test
+      DB_PORT: 3306
+      DB_DATABASE: woodex_test
+      DB_USERNAME: woodex_test
+      DB_PASSWORD: ${WOODEX_QA_PASSWORD:?Run tools/docker/setup-env.sh first}
+      DB_URL: ""
+      MAIL_MAILER: array
+      QUEUE_CONNECTION: sync
+      TELEGRAM_BOT_TOKEN: ""
+      TURNSTILE_SECRET_KEY: ""
+      PUBLIC_LEADS_BRIDGE_KEY: ""
+    volumes:
+      - ../..:/workspace:ro
+      - php-test-vendor:/workspace/platform/vendor
+      - php-test-storage:/workspace/platform/storage
+      - php-test-cache:/workspace/platform/bootstrap/cache
+volumes:
+  php-test-vendor:
+  php-test-storage:
+  php-test-cache:

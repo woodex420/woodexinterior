@@ -96,7 +96,7 @@ it('answers /health with the same truth: db size, backup, and the stale task by 
             'from' => ['id' => 500, 'first_name' => 'Imtiaz'],
             'text' => '/health',
         ],
-    ])->assertOk();
+    ], headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])->assertOk();
 
     $replies = $telegram->textsFor(500);
     $reply = (string) end($replies);

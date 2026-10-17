@@ -8,15 +8,17 @@ use App\Domain\Sales\Models\Quote;
 use App\Integrations\Telegram\TelegramMessage;
 use App\Notifications\Concerns\SendsToDatabaseAndTelegram;
 use App\Support\Money;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
 /**
  * Quotation alerts for staff (QUO-007/010): approval requested / decided, first view, hot (3+ views in 24 h),
  * accepted, changes requested. Bell always, Telegram when linked.
  */
-final class QuoteNotification extends Notification
+final class QuoteNotification extends Notification implements ShouldQueue
 {
-    use SendsToDatabaseAndTelegram;
+    use Queueable, SendsToDatabaseAndTelegram;
 
     private const array TITLES = [
         'approval_requested' => ['🟡', 'Approval needed'],
@@ -36,7 +38,9 @@ final class QuoteNotification extends Notification
         public readonly Quote $quote,
         public readonly string $kind,
         public readonly string $detail = '',
-    ) {}
+    ) {
+        $this->afterCommit();
+    }
 
     /**
      * @return array<string, mixed>

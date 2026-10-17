@@ -52,7 +52,7 @@ function sendCommand(string $text, int $chatId = 500): string
 {
     $updateId = 1000 + count(test()->telegram->sent);
 
-    test()->postJson('/webhooks/telegram/hook-secret', commandUpdate($updateId, $chatId, $text))->assertOk();
+    test()->postJson('/webhooks/telegram/hook-secret', commandUpdate($updateId, $chatId, $text), headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])->assertOk();
 
     // The latest reply to this chat, not the first one it ever received.
     $replies = test()->telegram->textsFor($chatId);
@@ -234,16 +234,19 @@ it('mutes and unmutes the chat, using the same switch the alerts respect', funct
     expect(sendCommand('/mute forever'))->toContain('How many hours?');
 });
 
-it('asks a chat that fires commands without pause to slow down', function () {
-    for ($i = 0; $i < 35; $i++) {
+it('refuses a chat that fires commands without pause, and Telegram retries later', function () {
+    // The hardened webhook (agent security review, 17 Oct) rate-limits at the door: 30 commands per
+    // minute per sender. The 31st gets a 429, so Telegram keeps it and retries — no reply is sent here.
+    for ($i = 0; $i < 30; $i++) {
         sendCommand('/help');
     }
 
-    expect(test()->telegram->textsFor(500))->toHaveCount(35);
+    expect(test()->telegram->textsFor(500))->toHaveCount(30);
 
-    sendCommand('/help');
+    $updateId = 1000 + count(test()->telegram->sent);
 
-    // The 36th was answered, but with the pause request.
-    expect(test()->telegram->textsFor(500))->toHaveCount(36)
-        ->and(test()->telegram->textsFor(500)[35])->toContain('Too many commands');
+    test()->postJson('/webhooks/telegram/hook-secret', commandUpdate($updateId, 500, '/help'), headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])
+        ->assertStatus(429);
+
+    expect(test()->telegram->textsFor(500))->toHaveCount(30);
 });

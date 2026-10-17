@@ -7,6 +7,7 @@ namespace App\Livewire\Admin\Sales;
 use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Sales\Enums\Unit;
 use App\Domain\Sales\Models\CatalogItem;
+use App\Domain\Sales\Models\DescriptionTemplate;
 use App\Domain\Sales\Models\Quote;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Settings\SalesSettings;
@@ -68,6 +69,15 @@ class RateBook extends Component
     public function mount(): void
     {
         $this->authorize('viewAny', Quote::class);
+        $descriptionId = request()->integer('description');
+        if ($descriptionId > 0) {
+            $this->authorize('manageCatalog', Quote::class);
+            $description = DescriptionTemplate::query()->where('is_active', true)->findOrFail($descriptionId);
+            $this->openCreate();
+            $this->formDescription = $description->body;
+            $this->formCategory = $description->section;
+            $this->formLine = $description->business_line->value;
+        }
     }
 
     public function updating(string $name): void

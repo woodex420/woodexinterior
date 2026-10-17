@@ -174,12 +174,19 @@ it('verifies meta\'s webhook handshake with the token saved in the dashboard', f
         ->assertForbidden();
 });
 
-it('shows whatsapp as connected on the integrations page', function () {
+it('shows whatsapp as configured on the card and connected after a live test', function () {
     $this->actingAs($this->userWithRole('admin'))->get(route('admin.integrations'))->assertOk()->assertSee('WhatsApp Cloud API');
 
-    Livewire::actingAs($this->userWithRole('admin'))->test(Integrations::class)
-        ->call('testWhatsApp')
-        ->assertSee('Connected');
+    // The card itself only ever claims "Configured" — a delivery check is what proves the connection.
+    $component = Livewire::actingAs($this->userWithRole('admin'))->test(Integrations::class);
+    $component->assertSee('Configured')->assertDontSee('Not connected');
+
+    $gateway = (new FakeWhatsAppGateway)->configured(true);
+    $this->app->instance(WhatsAppGateway::class, $gateway);
+
+    $component->call('testWhatsApp')
+        ->assertSee('Connected')
+        ->assertSee('+92 300 1234567');
 });
 
 it('keeps the whatsapp screen for staff who may manage integrations', function () {

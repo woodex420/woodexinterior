@@ -2,6 +2,9 @@
     <x-admin.page-header title="Security & Telegram" description="Protect your account with two-factor authentication and receive Woodex alerts on Telegram."
                          :breadcrumbs="['Profile' => null, 'Security' => null]" />
 
+    <x-admin.google-notice />
+    @include('livewire.admin.profile.google-sign-in')
+
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <x-admin.card title="Two-factor authentication" description="After you enable and confirm 2FA, use a 6-digit code from Google Authenticator, Microsoft Authenticator or 1Password at sign-in.">
             @if (! $enabled && ! $requiresTwoFactor)

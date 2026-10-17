@@ -13,10 +13,15 @@ use App\Domain\Sales\Notifications\PaymentNotification;
 use App\Domain\Sales\Services\ReceiptPdf;
 use App\Models\User;
 use App\Support\Numbering;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 /**
  * Money the studio received (INV-005): cash at the site, a transfer the owner saw in the bank app, a cheque handed
@@ -39,6 +44,25 @@ final class RecordPayment
      */
     public function handle(array $input, User $by): Payment
     {
+        $by = User::query()->findOrFail($by->id);
+        if (! $by->is_active) {
+            throw new AuthorizationException;
+        }
+        Gate::forUser($by)->authorize('create', Payment::class);
+        Validator::make($input, [
+            'contact_id' => ['required', 'integer', 'exists:contacts,id'],
+            'amount_minor' => ['required', 'integer', 'min:1'],
+            'currency' => ['sometimes', 'in:PKR'],
+            'invoice_id' => ['nullable', 'integer', 'exists:invoices,id'],
+            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
+            'bank_account_id' => ['nullable', 'integer', 'exists:bank_accounts,id'],
+            'received_on' => ['required', 'date'],
+            'method' => ['required', 'in:'.implode(',', array_keys(PaymentMethod::options()))],
+            'allocations' => ['sometimes', 'array'],
+        ])->validate();
+        if (! is_int($input['amount_minor']) || (isset($input['invoice_id']) && ! empty($input['allocations']))) {
+            throw ValidationException::withMessages(['amount' => 'Use integer paisa and choose either an invoice preference or an explicit allocation map.']);
+        }
         $contact = Contact::query()->findOrFail((int) $input['contact_id']);
 
         return DB::transaction(function () use ($input, $by, $contact): Payment {
@@ -59,9 +83,7 @@ final class RecordPayment
                 'notes' => $input['notes'] ?? null,
             ]);
 
-            $allocations = isset($input['invoice_id'])
-                ? [(int) $input['invoice_id'] => (int) $input['amount_minor']]
-                : [];
+            $allocations = $input['allocations'] ?? [];
 
             $this->allocate->handle($payment, $allocations);
 
@@ -72,30 +94,48 @@ final class RecordPayment
     /** The receipt for a confirmed payment (INV-007): number, PDF, the client's copy by email, the team alerted. */
     public function receipt(Payment $payment, User $by): Payment
     {
-        $payment->forceFill([
-            'receipt_number' => $this->numbering->next('receipt'),
-            'verified_by' => $by->id,
-            'verified_at' => now(),
-        ])->save();
-
-        $bytes = $this->receipts->render($payment->fresh(['contact', 'allocations.invoice', 'bankAccount']));
-        $path = 'receipts/'.$payment->public_id.'/'.ReceiptPdf::filename($payment);
-
-        Storage::disk('local')->put($path, $bytes);
-
-        $payment->forceFill(['receipt_pdf_path' => $path])->save();
-
-        $payment->loadMissing('contact');
-
-        if (filled($payment->contact?->email)) {
-            Mail::to((string) $payment->contact->email)->queue(new PaymentMail($payment->id, 'verified'));
+        $by = User::query()->findOrFail($by->id);
+        if (! $by->is_active || (! $by->can('payments.record') && ! $by->can('payments.verify'))) {
+            throw new AuthorizationException;
         }
 
-        Notification::send(
-            User::query()->with('telegramLink')->permission('invoices.view')->where('is_active', true)->get(),
-            new PaymentNotification($payment, 'verified'),
-        );
+        return DB::transaction(function () use ($payment, $by): Payment {
+            $payment = Payment::query()->lockForUpdate()->findOrFail($payment->id);
+            if ($payment->receipt_number !== null) {
+                return $payment;
+            }
+            if ($payment->status !== PaymentStatus::Verified) {
+                throw ValidationException::withMessages(['amount' => 'Only confirmed payments can receive a receipt.']);
+            }
 
-        return $payment;
+            $payment->forceFill([
+                'receipt_number' => $this->numbering->next('receipt'),
+                'verified_by' => $by->id,
+                'verified_at' => now(),
+            ])->save();
+
+            $bytes = $this->receipts->render($payment->fresh(['contact', 'allocations.invoice', 'bankAccount']));
+            $path = 'receipts/'.$payment->public_id.'/'.ReceiptPdf::filename($payment);
+
+            DB::afterRollBack(fn () => Storage::disk('local')->delete($path));
+            if (! Storage::disk('local')->put($path, $bytes)) {
+                throw new RuntimeException('The receipt could not be stored. No payment was committed.');
+            }
+
+            $payment->forceFill(['receipt_pdf_path' => $path])->save();
+
+            $payment->loadMissing('contact');
+
+            if (filled($payment->contact?->email)) {
+                Mail::to((string) $payment->contact->email)->queue((new PaymentMail($payment->id, 'verified'))->afterCommit());
+            }
+
+            Notification::send(
+                User::query()->with('telegramLink')->permission('invoices.view')->where('is_active', true)->get(),
+                new PaymentNotification($payment, 'verified'),
+            );
+
+            return $payment;
+        });
     }
 }

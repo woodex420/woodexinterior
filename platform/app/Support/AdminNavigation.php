@@ -40,6 +40,8 @@ final class AdminNavigation
                 self::item('Receivables', 'clock', 'admin.reports.receivables', 'invoices.view'),
                 self::item('Quote Templates', 'templates', 'admin.quote-templates', 'quotes.view'),
                 self::item('Rate Book', 'book', 'admin.rate-book', 'quotes.view'),
+                self::item('Description Library', 'book', 'admin.description-library', 'quotes.view'),
+                self::item('Document Design', 'templates', 'admin.document-design', 'settings.manage'),
             ]),
             self::group('Projects', [
                 self::item('Projects', 'hammer', 'admin.projects.index', 'projects.view'),

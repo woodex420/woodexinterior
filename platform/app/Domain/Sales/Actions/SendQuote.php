@@ -15,6 +15,7 @@ use App\Domain\Sales\Services\QuotePdf;
 use App\Domain\Sales\Services\QuoteSnapshot;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -74,21 +75,31 @@ final class SendQuote
 
     public function handle(Quote $quote, User $by, string $channel = 'link', bool $email = false): QuoteVersion
     {
-        if (! $this->isSendable($quote)) {
-            throw new QuoteActionDenied("{$quote->label()} is {$quote->status->label()}: use \"Revise\" to send a changed version.");
-        }
+        $expectedRevision = (int) $quote->revision;
+        $original = $quote;
 
-        if (($problems = $this->problems($quote)) !== []) {
-            throw ValidationException::withMessages(['send' => $problems]);
-        }
+        $version = DB::transaction(function () use ($quote, $by, $channel, $email, $expectedRevision): QuoteVersion {
+            $quote = Quote::query()->whereKey($quote->id)->lockForUpdate()->firstOrFail();
+            $by = User::query()->findOrFail($by->id);
+            abort_unless($by->is_active, 403);
+            Gate::forUser($by)->authorize('send', $quote);
 
-        $assessment = $this->rules->assess($quote, $by);
-        if ($assessment->needed && ! $this->rules->isApprovedAsIs($quote)) {
-            throw QuoteActionDenied::needsApproval($assessment);
-        }
+            if ((int) $quote->revision !== $expectedRevision) {
+                throw new QuoteActionDenied('This quotation has changed. Reload it and review the current revision before sending.');
+            }
 
-        $version = DB::transaction(function () use ($quote, $by, $channel, $email): QuoteVersion {
-            Quote::query()->whereKey($quote->id)->lockForUpdate()->first();
+            if (! $this->isSendable($quote)) {
+                throw new QuoteActionDenied("{$quote->label()} is {$quote->status->label()}: use \"Revise\" to send a changed version.");
+            }
+
+            if (($problems = $this->problems($quote)) !== []) {
+                throw ValidationException::withMessages(['send' => $problems]);
+            }
+
+            $assessment = $this->rules->assess($quote, $by);
+            if ($assessment->needed && ! $this->rules->isApprovedAsIs($quote)) {
+                throw QuoteActionDenied::needsApproval($assessment);
+            }
 
             if ($quote->versions()->where('revision', $quote->revision)->exists()) {
                 $quote->update(['revision' => $quote->revision + 1]);
@@ -97,7 +108,9 @@ final class SendQuote
             $snapshot = $this->snapshots->build($quote);
             $bytes = $this->pdf->render($snapshot);
             $path = 'quotes/'.$quote->public_id.'/'.QuotePdf::filename($snapshot);
-            Storage::disk('local')->put($path, $bytes);
+            if (! Storage::disk('local')->put($path, $bytes)) {
+                throw new \RuntimeException('The quotation PDF could not be stored.');
+            }
 
             $version = QuoteVersion::create([
                 'quote_id' => $quote->id,
@@ -120,6 +133,8 @@ final class SendQuote
 
             return $version;
         });
+
+        $quote = $original->refresh();
 
         if ($email && filled($quote->contact->email)) {
             Mail::to((string) $quote->contact->email)->queue(new QuoteSentMail($quote->id, $version->id));

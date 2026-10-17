@@ -78,11 +78,11 @@ it('downloads the frozen PDF', function () {
 });
 
 it('accepts with a typed name: quote accepted, contact becomes a client, lead won, team alerted', function () {
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $this->quote), ['name' => 'Ayesha Khan', 'phone' => '0300 1234567'])
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $this->quote), ['revision' => $this->quote->revision, 'name' => 'Ayesha Khan', 'phone' => '0300 1234567'])
         ->assertRedirect();
     expect($this->quote->refresh()->status)->toBe(QuoteStatus::Sent); // the confirmation box is required
 
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $this->quote), ['name' => 'Ayesha Khan', 'phone' => '0300 1234567', 'confirm' => '1'])
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $this->quote), ['revision' => $this->quote->revision, 'name' => 'Ayesha Khan', 'phone' => '0300 1234567', 'confirm' => '1'])
         ->assertRedirect();
 
     $quote = $this->quote->refresh();
@@ -96,12 +96,12 @@ it('accepts with a typed name: quote accepted, contact becomes a client, lead wo
     $this->get($this->link)->assertOk()->assertSee('Your acceptance is confirmed')->assertDontSee('Accept this quotation');
 
     // A second acceptance is refused.
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $this->quote), ['name' => 'Someone else', 'confirm' => '1']);
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $this->quote), ['revision' => $this->quote->revision, 'name' => 'Someone else', 'confirm' => '1']);
     expect($this->quote->refresh()->accepted_name)->toBe('Ayesha Khan');
 });
 
 it('takes change requests back to the team', function () {
-    $this->post(QuoteLinks::signed('quotes.portal.changes', $this->quote), ['comment' => 'Please use oak instead of walnut.'])->assertRedirect();
+    $this->post(QuoteLinks::signed('quotes.portal.changes', $this->quote), ['revision' => $this->quote->revision, 'comment' => 'Please use oak instead of walnut.'])->assertRedirect();
 
     $quote = $this->quote->refresh();
     expect($quote->status)->toBe(QuoteStatus::ChangesRequested)->and($quote->isEditable())->toBeTrue();
@@ -112,7 +112,7 @@ it('takes change requests back to the team', function () {
 
 it('refuses acceptance after the validity date and while a new revision is prepared', function () {
     $this->travelTo($this->quote->valid_until->copy()->addDay());
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $this->quote), ['name' => 'Ayesha Khan', 'confirm' => '1']);
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $this->quote), ['revision' => $this->quote->revision, 'name' => 'Ayesha Khan', 'confirm' => '1']);
     expect($this->quote->refresh()->status)->not->toBe(QuoteStatus::Accepted);
     $this->get(QuoteLinks::signed('quotes.portal', $this->quote))->assertSee('This quotation expired');
 

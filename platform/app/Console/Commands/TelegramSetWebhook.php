@@ -23,7 +23,7 @@ final class TelegramSetWebhook extends Command
             return self::FAILURE;
         }
 
-        $url = route('webhooks.telegram', ['secret' => $secret]);
+        $url = route('webhooks.telegram');
 
         if (! str_starts_with($url, 'https://')) {
             $this->components->error("Telegram requires HTTPS. APP_URL produced: {$url}");

@@ -3,6 +3,7 @@
 use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Projects\Models\Project;
+use App\Domain\Sales\Actions\AcceptQuote;
 use App\Domain\Sales\Actions\CreateQuote;
 use App\Domain\Sales\Actions\RaiseAdvanceInvoice;
 use App\Domain\Sales\Actions\RecalculateQuote;
@@ -61,7 +62,7 @@ function sentQuote(Lead $lead, User $sales, MilestonePlanKey $plan = MilestonePl
 it('opens the project and raises the advance invoice when the client accepts', function () {
     $quote = sentQuote($this->lead, $this->sales);
 
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['name' => 'Ayesha Khan', 'confirm' => '1'])->assertRedirect();
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['revision' => $quote->revision, 'name' => 'Ayesha Khan', 'confirm' => '1'])->assertRedirect();
 
     $project = Project::query()->sole();
 
@@ -98,7 +99,7 @@ it('opens the project and raises the advance invoice when the client accepts', f
 
 it('raises 75% on a design quotation and 100% on a custom one', function () {
     $design = sentQuote($this->lead, $this->sales, MilestonePlanKey::Design);
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $design), ['name' => 'Ayesha Khan', 'confirm' => '1']);
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $design), ['revision' => $design->revision, 'name' => 'Ayesha Khan', 'confirm' => '1']);
 
     expect((int) Invoice::query()->where('quote_id', $design->id)->sole()->total_minor)
         ->toBe((int) round((int) $design->total_minor * 0.75));
@@ -114,7 +115,7 @@ it('raises 75% on a design quotation and 100% on a custom one', function () {
         }
     });
 
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $custom), ['name' => 'Bilal Ahmed', 'confirm' => '1']);
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $custom), ['revision' => $custom->revision, 'name' => 'Bilal Ahmed', 'confirm' => '1']);
 
     expect((int) Invoice::query()->where('quote_id', $custom->id)->sole()->total_minor)
         ->toBe((int) $custom->total_minor)
@@ -123,10 +124,10 @@ it('raises 75% on a design quotation and 100% on a custom one', function () {
 
 it('never opens a second project or a second advance invoice', function () {
     $quote = sentQuote($this->lead, $this->sales);
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['name' => 'Ayesha Khan', 'confirm' => '1']);
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['revision' => $quote->revision, 'name' => 'Ayesha Khan', 'confirm' => '1']);
 
     // Accepting again is refused by the portal; raising again by hand changes nothing either.
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['name' => 'Someone else', 'confirm' => '1']);
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['revision' => $quote->revision, 'name' => 'Someone else', 'confirm' => '1']);
     $again = app(RaiseAdvanceInvoice::class)->handle($quote->refresh(), $this->sales);
 
     expect(Project::query()->count())->toBe(1)
@@ -138,7 +139,7 @@ it('leaves the advance as a draft when the owner asks for that', function () {
     app(SalesSettings::class)->fill(['advance_invoice_mode' => 'draft'])->save();
 
     $quote = sentQuote($this->lead, $this->sales);
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['name' => 'Ayesha Khan', 'confirm' => '1']);
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['revision' => $quote->revision, 'name' => 'Ayesha Khan', 'confirm' => '1']);
 
     $invoice = Invoice::query()->sole();
 
@@ -158,14 +159,14 @@ it('pays into the account of the business line', function () {
     app(RecalculateQuote::class)->handle($quote->refresh(), $this->sales);
     $quote = app(SendQuote::class)->handle($quote->refresh(), $this->sales)->quote->refresh();
 
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['name' => 'Ayesha Khan', 'confirm' => '1']);
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['revision' => $quote->revision, 'name' => 'Ayesha Khan', 'confirm' => '1']);
 
     expect(Invoice::query()->sole()->bankAccount?->title)->toBe('WOODEX FURNITURE');
 });
 
 it('lists the invoices and serves the PDF to the team', function () {
     $quote = sentQuote($this->lead, $this->sales);
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['name' => 'Ayesha Khan', 'confirm' => '1']);
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['revision' => $quote->revision, 'name' => 'Ayesha Khan', 'confirm' => '1']);
     $invoice = Invoice::query()->sole();
 
     $accountant = $this->userWithRole('accountant');
@@ -185,7 +186,7 @@ it('lists the invoices and serves the PDF to the team', function () {
 
 it('shows the project and the invoice on the quotation page', function () {
     $quote = sentQuote($this->lead, $this->sales);
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['name' => 'Ayesha Khan', 'confirm' => '1']);
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['revision' => $quote->revision, 'name' => 'Ayesha Khan', 'confirm' => '1']);
     $invoice = Invoice::query()->sole();
 
     $this->actingAs($this->userWithRole('owner'))->get(route('admin.quotes.show', $quote))
@@ -196,12 +197,12 @@ it('shows the project and the invoice on the quotation page', function () {
 });
 
 it('keeps the tax rate of the quotation on the advance', function () {
-    $quote = sentQuote($this->lead, $this->sales);
-    $quote->forceFill(['tax_bp' => 1600])->save(); // 16% sales tax
-    app(RecalculateQuote::class)->handle($quote->refresh(), $this->sales);
-    $quote = $quote->refresh();
-
-    $invoice = app(RaiseAdvanceInvoice::class)->handle($quote, $this->sales);
+    $quote = sentQuote($this->lead, $this->sales, shape: function (Quote $quote): void {
+        $quote->forceFill(['tax_bp' => 1600])->save(); // 16% sales tax, before freezing the sent quote
+        app(RecalculateQuote::class)->handle($quote->refresh(), $this->sales);
+    });
+    app(AcceptQuote::class)->handle($quote, 'Test client', null, null, null);
+    $invoice = app(RaiseAdvanceInvoice::class)->handle($quote->refresh(), $this->sales);
 
     expect($invoice->items->first()->tax_bp)->toBe(1600)
         ->and((int) $invoice->subtotal_minor + (int) $invoice->tax_minor)->toBe((int) $invoice->total_minor)

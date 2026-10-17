@@ -171,6 +171,22 @@ async function scenario(name, { dropCookies, blockThirdPartyCookies }) {
     expect('full reload of /admin/pipeline stays signed in', pipeline.path === '/admin/pipeline' && !pipeline.loginForm, pipeline);
     await page.screenshot({ path: `${SHOTS}/iframe-${name}-4-pipeline.png` });
 
+    // 6. The redesigned hub and Livewire setup work inside the same cookie-restricted frame.
+    const hub = await frame();
+    await hub.goto(`${base}/admin/integrations`, { waitUntil: 'networkidle0', timeout: 60000 });
+    await hub.waitForSelector('#app-search');
+    await hub.type('#app-search', 'Notion');
+    await hub.waitForFunction(() => document.body.innerText.includes('View requirements') && !document.body.innerText.includes('Google Drive'));
+    expect('hub search works inside frame', await hub.$('#app-search') !== null, await state());
+    await hub.click('[wire\\:click="openMcpSetup"]');
+    await hub.waitForSelector('#bridgeName');
+    expect('MCP setup works inside frame', await hub.$('#bridgePassword') !== null, await state());
+    await page.screenshot({ path: `${SHOTS}/iframe-${name}-5-integrations.png` });
+    await hub.click('[wire\\:click="openGoogleSetup"]');
+    await hub.waitForSelector('[aria-labelledby="showGoogleSetup-title"]');
+    expect('Google connection dialog works inside frame', await hub.$('#google-callback-uri') !== null, await state());
+    await page.screenshot({ path: `${SHOTS}/iframe-${name}-6-google.png` });
+
     // Informational: "memory+" = the browser sent no cookie at all, "memory~" = it sent an older value.
     const missing = jarResponses.filter((r) => r.includes('memory+'));
     const older = jarResponses.filter((r) => r.includes('memory~'));

@@ -20,6 +20,8 @@ use App\Domain\Crm\Policies\LeadPolicy;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectUpdate;
 use App\Domain\Projects\Policies\ProjectPolicy;
+use App\Domain\Sales\Models\DescriptionTemplate;
+use App\Domain\Sales\Models\DocumentDesign;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Models\Quote;
@@ -28,6 +30,8 @@ use App\Domain\Sales\Policies\PaymentPolicy;
 use App\Domain\Sales\Policies\QuotePolicy;
 use App\Domain\System\Models\ChangeRequest;
 use App\Http\Middleware\EnsureUserIsActive;
+use App\Integrations\Google\Contracts\GoogleGateway;
+use App\Integrations\Google\GoogleClient;
 use App\Integrations\Telegram\Clients\TelegramBotApi;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
 use App\Integrations\WhatsApp\Clients\WhatsAppCloudApi;
@@ -51,6 +55,8 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(GoogleGateway::class, GoogleClient::class);
+
         $this->app->singleton(TelegramGateway::class, fn (): TelegramGateway => new TelegramBotApi(
             config('services.telegram.bot_token'),
             (string) config('services.telegram.api_base', 'https://api.telegram.org'),
@@ -64,6 +70,21 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        RateLimiter::for('telegram-webhooks', function (Request $request): array {
+            $sender = $request->input('message.from.id');
+            $key = hash('sha256', is_scalar($sender) ? (string) $sender : 'unknown');
+            $limits = [Limit::perMinute(300)->by('telegram-global'), Limit::perMinute(30)->by('telegram-actor:'.$key)];
+            $text = $request->input('message.text');
+            if (is_string($text) && preg_match('/^\/(start|link)(?:@\w+)?(?:\s|$)/i', trim($text))) {
+                $limits[] = Limit::perMinute(5)->by('telegram-link:'.$key);
+            }
+
+            return $limits;
+        });
+
+        RateLimiter::for('google-oauth', fn (Request $request): Limit => Limit::perMinute(20)->by((string) $request->ip()));
+        RateLimiter::for('google-start', fn (Request $request): Limit => Limit::perMinute(5)->by((string) $request->ip()));
+
         Model::preventLazyLoading(! $this->app->isProduction());
 
         // Links and assets always use https when the site address does, also when a CDN talks plain http to the
@@ -82,6 +103,8 @@ class AppServiceProvider extends ServiceProvider
             'task' => Task::class,
             'site_visit' => SiteVisit::class,
             'quote' => Quote::class,
+            'description_template' => DescriptionTemplate::class,
+            'document_design' => DocumentDesign::class,
             'invoice' => Invoice::class,
             'payment' => Payment::class,
             'project' => Project::class,

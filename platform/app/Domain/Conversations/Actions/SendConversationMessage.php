@@ -7,12 +7,16 @@ namespace App\Domain\Conversations\Actions;
 use App\Domain\Conversations\Enums\MessageDirection;
 use App\Domain\Conversations\Enums\MessageStatus;
 use App\Domain\Conversations\Enums\MessageType;
+use App\Domain\Conversations\Exceptions\ConsentRequired;
 use App\Domain\Conversations\Exceptions\OutsideWindow;
 use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Models\Message;
+use App\Domain\Crm\Models\Contact;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * A reply from the team (WAP-004).
@@ -30,6 +34,8 @@ final class SendConversationMessage
      */
     public function handle(Conversation $conversation, string $body, ?User $user = null): Message
     {
+        $conversation = $this->authorizedConversation($conversation, $user);
+        $this->assertConsent($conversation);
         $body = trim($body);
 
         if ($body === '') {
@@ -70,6 +76,8 @@ final class SendConversationMessage
      */
     public function template(Conversation $conversation, string $name, array $components = [], string $language = 'en', ?User $user = null): Message
     {
+        $conversation = $this->authorizedConversation($conversation, $user);
+        $this->assertConsent($conversation, template: true);
         $result = $this->whatsapp->sendTemplate((string) $conversation->external_number, $name, $language, $components);
 
         return DB::transaction(function () use ($conversation, $name, $components, $language, $user, $result): Message {
@@ -97,6 +105,7 @@ final class SendConversationMessage
     /** An internal note: written for the team, never sent (CNV-003). */
     public function note(Conversation $conversation, string $body, User $user): Message
     {
+        $conversation = $this->authorizedConversation($conversation, $user);
         /** @var Message $message */
         $message = $conversation->messages()->create([
             'direction' => MessageDirection::Out,
@@ -108,5 +117,25 @@ final class SendConversationMessage
         ]);
 
         return $message;
+    }
+
+    private function authorizedConversation(Conversation $conversation, ?User $user): Conversation
+    {
+        $user = $user === null ? null : User::query()->find($user->id);
+        if ($user === null || ! $user->is_active) {
+            throw new AuthorizationException;
+        }
+        $conversation = Conversation::query()->findOrFail($conversation->id);
+        Gate::forUser($user)->authorize('reply', $conversation);
+
+        return $conversation;
+    }
+
+    private function assertConsent(Conversation $conversation, bool $template = false): void
+    {
+        $contact = $conversation->contact_id === null ? null : Contact::query()->find($conversation->contact_id);
+        if ($contact === null || $contact->opted_out_at !== null || ($template && ! $contact->consent_whatsapp)) {
+            throw new ConsentRequired;
+        }
     }
 }

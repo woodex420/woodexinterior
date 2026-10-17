@@ -5,6 +5,11 @@
 @section('subheading', 'Welcome back. Use your Woodex staff account.')
 
 @section('content')
+    <x-admin.google-notice />
+    @if (\App\Integrations\Google\GoogleOAuth::loginEnabled())
+        <a href="{{ route('google.login') }}" target="_top" class="mb-5 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-gray-300 text-theme-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200">Continue with Google</a>
+        <p class="mb-5 text-center text-theme-xs text-gray-500">Previously linked staff accounts only. Or use your Woodex password below.</p>
+    @endif
     <form method="POST" action="{{ route('login.store') }}" class="space-y-5">
         @csrf
         <div>

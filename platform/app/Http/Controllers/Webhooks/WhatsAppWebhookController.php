@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Webhooks;
 
-use App\Domain\Conversations\Actions\ReceiveWhatsAppMessage;
-use App\Domain\Conversations\Actions\RecordMessageStatus;
-use App\Domain\Sales\Actions\SuggestQuoteAcceptance;
+use App\Domain\Conversations\Actions\QueueWhatsAppEvent;
 use App\Domain\System\Enums\WebhookStatus;
 use App\Domain\System\Models\WebhookEvent;
 use App\Http\Controllers\Controller;
 use App\Integrations\WhatsApp\WhatsAppCredentials;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -21,22 +18,20 @@ use Throwable;
 /**
  * WhatsApp Cloud API webhook (WAP-002): Meta's `GET` handshake, then every inbound message and status.
  *
- * Three rules, in this order: prove the request is Meta's (X-Hub-Signature-256), answer 200 immediately, and
- * never process the same event twice (the `webhook_events` unique index does that, so a replay Meta sends because
- * we were slow costs one insert and nothing else).
+ * Prove the signature, persist every item, then acknowledge without business/provider work on the
+ * production database queue. The durable inbox, row-locked worker and cron recovery make retries safe.
  */
 final class WhatsAppWebhookController extends Controller
 {
     public function __construct(
-        private readonly ReceiveWhatsAppMessage $receive,
-        private readonly RecordMessageStatus $status,
+        private readonly QueueWhatsAppEvent $queue,
         private readonly WhatsAppCredentials $credentials,
     ) {}
 
     /** Meta's handshake: it asks for the token we configured, and we echo its challenge back. */
     public function verify(Request $request): Response|JsonResponse
     {
-        $expected = (string) $this->credentials->verifyToken();
+        $expected = $this->credentials->verifyToken();
         $mode = (string) $request->query('hub_mode');
         $token = (string) $request->query('hub_verify_token');
         $challenge = (string) $request->query('hub_challenge');
@@ -50,7 +45,7 @@ final class WhatsAppWebhookController extends Controller
 
     public function __invoke(Request $request): JsonResponse
     {
-        $secret = (string) $this->credentials->appSecret();
+        $secret = $this->credentials->appSecret();
         $signature = (string) $request->header('X-Hub-Signature-256', '');
 
         if ($secret === '' || ! $this->signatureMatches($secret, $signature, $request->getContent())) {
@@ -59,41 +54,37 @@ final class WhatsAppWebhookController extends Controller
             abort(403);
         }
 
-        $payload = $request->json()->all();
-        $entry = $payload['entry'][0] ?? [];
-        $value = $entry['changes'][0]['value'] ?? [];
-
-        if (! is_array($value) || $value === []) {
-            return response()->json(['ok' => true]);
+        $ids = [];
+        foreach ((array) ($request->json('entry') ?? []) as $entry) {
+            if (! is_array($entry)) {
+                continue;
+            }
+            foreach ((array) ($entry['changes'] ?? []) as $change) {
+                $value = is_array($change) ? ($change['value'] ?? null) : null;
+                if (! is_array($value)) {
+                    continue;
+                }
+                foreach ($this->events($value) as $event) {
+                    // Persist the entire batch before queueing any business work. Unique provider/id also
+                    // handles concurrent duplicate deliveries; retain the original trusted payload on replay.
+                    $stored = WebhookEvent::query()->firstOrCreate([
+                        'provider' => 'whatsapp', 'external_id' => $event['id'],
+                    ], [
+                        'type' => $event['type'], 'payload' => $event['payload'],
+                        'signature_valid' => true, 'status' => WebhookStatus::Received,
+                    ]);
+                    $ids[$stored->id] = $stored->id;
+                }
+            }
         }
 
-        foreach ($this->events($value) as $event) {
+        foreach ($ids as $id) {
             try {
-                WebhookEvent::create([
-                    'provider' => 'whatsapp',
-                    'external_id' => $event['id'],
-                    'type' => $event['type'],
-                    'payload' => $value,
-                    'signature_valid' => true,
-                    'status' => WebhookStatus::Received,
-                ]);
-            } catch (UniqueConstraintViolationException) {
-                continue; // Meta replaying something we already handled: nothing to do
-            }
-
-            try {
-                $this->handle($value, $event);
-                WebhookEvent::query()
-                    ->where('provider', 'whatsapp')
-                    ->where('external_id', $event['id'])
-                    ->update(['status' => WebhookStatus::Processed, 'processed_at' => now()]);
+                $this->queue->handle($id);
             } catch (Throwable $exception) {
-                report($exception);
-
-                WebhookEvent::query()
-                    ->where('provider', 'whatsapp')
-                    ->where('external_id', $event['id'])
-                    ->update(['status' => WebhookStatus::Failed, 'error' => $exception->getMessage(), 'processed_at' => now()]);
+                // The durable row is already committed. Cron will retry an expired queue lease even if
+                // the queue broker/insert is unavailable here. Do not log a payload or exception message.
+                Log::warning('WhatsApp event enqueue failed.', ['event_id' => $id, 'exception' => $exception::class]);
             }
         }
 
@@ -101,54 +92,40 @@ final class WhatsAppWebhookController extends Controller
     }
 
     /**
-     * The statuses and messages in one payload, each with the id that makes it idempotent.
+     * Normalize each batch item into its own replayable payload, keeping metadata and matching contact names.
      *
      * @param  array<string, mixed>  $value
-     * @return list<array{id: string, type: string}>
+     * @return list<array{id: string, type: string, payload: array<string, mixed>}>
      */
     private function events(array $value): array
     {
         $events = [];
-
-        foreach ((array) ($value['statuses'] ?? []) as $status) {
-            if (is_string($status['id'] ?? null)) {
-                $events[] = ['id' => $status['id'].':'.$status['status'], 'type' => 'status'];
-            }
-        }
-
-        foreach ((array) ($value['messages'] ?? []) as $message) {
-            if (is_string($message['id'] ?? null)) {
-                $events[] = ['id' => $message['id'], 'type' => 'message'];
+        foreach (['messages' => 'message', 'statuses' => 'status'] as $key => $type) {
+            foreach ((array) ($value[$key] ?? []) as $item) {
+                if (! is_array($item) || ! is_string($item['id'] ?? null) || $item['id'] === '') {
+                    continue;
+                }
+                if ($type === 'status' && ! is_string($item['status'] ?? null)) {
+                    continue;
+                }
+                $id = $item['id'].($type === 'status' ? ':'.$item['status'] : '');
+                if (strlen($id) > 191) {
+                    continue;
+                }
+                $normalized = $value;
+                unset($normalized['messages'], $normalized['statuses']);
+                $normalized[$key] = [$item];
+                if ($type === 'message') {
+                    $normalized['contacts'] = array_values(array_filter((array) ($value['contacts'] ?? []),
+                        fn (mixed $contact): bool => is_array($contact) && ($contact['wa_id'] ?? null) === ($item['from'] ?? null)));
+                } else {
+                    unset($normalized['contacts']);
+                }
+                $events[] = ['id' => $id, 'type' => $type, 'payload' => $normalized];
             }
         }
 
         return $events;
-    }
-
-    /**
-     * @param  array<string, mixed>  $value
-     * @param  array{id: string, type: string}  $event
-     */
-    private function handle(array $value, array $event): void
-    {
-        if ($event['type'] === 'status') {
-            $status = (array) ($value['statuses'][0] ?? []);
-            $this->status->handle(
-                (string) ($status['id'] ?? ''),
-                (string) ($status['status'] ?? ''),
-                isset($status['errors']) ? (array) $status['errors'] : null,
-            );
-
-            return;
-        }
-
-        $message = $this->receive->handle($value);
-
-        // A client's "ok" on WhatsApp is a hint, never an acceptance (D-112): it is remembered for the team to
-        // confirm. Outside the transaction above, so a notification can never roll back a stored message.
-        if ($message !== null) {
-            app(SuggestQuoteAcceptance::class)->handle($message);
-        }
     }
 
     private function signatureMatches(string $secret, string $signature, string $body): bool

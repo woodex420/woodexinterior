@@ -71,7 +71,7 @@ final class TelegramBotApi implements TelegramGateway
         $error = (string) ($webhook['result']['last_error_message'] ?? '');
         // Telegram delivery errors can quote the full secret-bearing webhook URL.
         $secret = basename((string) parse_url($expectedUrl, PHP_URL_PATH));
-        $error = str_replace(array_filter([$this->token, $expectedUrl, $secret]), '[redacted]', $error);
+        $error = str_replace(array_filter([$this->token, (string) config('services.telegram.webhook_secret'), $expectedUrl, $secret]), '[redacted]', $error);
         $error = preg_replace('~https?://[^\s<>]+~i', '[URL hidden]', $error) ?? '';
 
         return [

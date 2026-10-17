@@ -98,3 +98,31 @@ signs in; a new migration file sends the owner to System → Database update, an
 - Requests from `iframe-check.mjs` carry the public Host header too; tell them apart by `ua=…/iframe-check/…`.
 - The public preview host (`https://8080-<sandbox>.e2b.app`) is not reachable from inside the sandbox; the checks use
   `http://127.0.0.1:8080`, which also proves the pages do not depend on one particular origin.
+
+
+### Google connection dialog acceptance
+
+`node tools/sandbox/google-check.mjs` checks the unconfigured Google dialog, callback checklist and staff-login
+setup guidance at desktop/390/360px without making Google requests or editing the demo business database.
+The iframe check also covers this dialog. Actual OAuth network behavior is covered with PHP HTTP fakes until
+an owner registers a real app and runs deployment acceptance (`docs/GOOGLE-OAUTH-SETUP.md`).
+
+When an active preview has user edits, run the broad quote-sending `browser-check.mjs` against an **isolated
+application/database copy**, not the user's active preview. Set `BROWSER_DB_FILE` to that copy's SQLite path and
+optionally `BROWSER_DB_COPY` for its backup location, and pass that isolated server's base URL. The script otherwise
+backs up/restores the default preview DB and could overwrite edits made concurrently. Read-only targeted checks
+should not restore a database at all.
+
+
+### Isolated QA copies
+
+`SANDBOX_APP_DIR=/tmp/your-qa/app sh tools/sandbox/sync.sh` syncs source/assets to an existing separate QA runtime
+without touching `/tmp/woodex-run/app`. Give that copy its **own vendor directory, private env DB path, storage,
+bootstrap cache and SQLite database**; sharing vendor through a symlink can point Composer's app autoloading back
+to the original runtime. Use SQLite's backup API for a consistent live database copy, not an uncoordinated file copy.
+
+Run an isolated server with `APP_DIR=/tmp/your-qa/app PORT=8090 PREVIEW_COOKIE_MEMORY_FILE=/tmp/your-qa/cookies.json node --stack-size=8000 tools/sandbox/server.mjs`.
+Never run destructive/browser-restoring QA against the owner's active database. For the existing broad browser
+script explicitly set `BROWSER_DB_FILE`/`BROWSER_DB_COPY` to QA-only paths and pass the QA base URL. Its legacy
+homepage lead-form selectors currently mismatch the served homepage; see docs/19 for honest test boundaries.
+The native PHP/MySQL harness in `../docker/` is prepared but not executed in this restricted sandbox.

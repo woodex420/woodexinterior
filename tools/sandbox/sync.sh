@@ -3,7 +3,7 @@
 # parts there: vendor/ (from resolve.mjs), .env, the SQLite database and storage/.
 set -e
 SRC=/home/user/woodexinterior/platform
-DST=/tmp/woodex-run/app
+DST=${SANDBOX_APP_DIR:-/tmp/woodex-run/app}
 mkdir -p "$DST"
 
 # Files are overwritten in place (php-wasm caches stat data of deleted paths, so never delete-and-recreate

@@ -51,7 +51,7 @@ beforeEach(function () {
     $this->lead->contact->forceFill(['email' => 'ayesha@example.com'])->save();
 
     $quote = portalProjectQuote($this->lead, $this->sales);
-    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['name' => 'Ayesha Khan', 'confirm' => '1'])->assertRedirect();
+    $this->post(QuoteLinks::signed('quotes.portal.accept', $quote), ['revision' => $quote->revision, 'name' => 'Ayesha Khan', 'confirm' => '1'])->assertRedirect();
 
     $this->project = Project::query()->sole();
     $this->quote = $quote;

@@ -69,7 +69,7 @@ const injectBeacon = (html) => html.replace(/<\/head>/i, `${BEACON_HEAD}</head>`
 // none (log "memory+name") or an older value ("memory~name"). Requests that do carry the current cookies are
 // unchanged. Local checks on 127.0.0.1 never use it. Demo data only, sandbox only. PREVIEW_COOKIE_MEMORY=0 turns it off.
 const MEMORY_ON = process.env.PREVIEW_COOKIE_MEMORY !== '0';
-const MEMORY_FILE = '/tmp/woodex-run/cookie-memory.json';
+const MEMORY_FILE = process.env.PREVIEW_COOKIE_MEMORY_FILE || '/tmp/woodex-run/cookie-memory.json';
 const MEMORY_MAX_BROWSERS = 50;
 let cookieMemory = {};
 try {

@@ -75,7 +75,7 @@ function runAction(string $text, int $chatId = 500): string
             'from' => ['id' => $chatId, 'first_name' => 'Imtiaz'],
             'text' => $text,
         ],
-    ])->assertOk();
+    ], headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])->assertOk();
 
     $replies = test()->telegram->textsFor($chatId);
 
@@ -86,7 +86,7 @@ function pressButton(string $data, int $chatId = 500): string
 {
     $updateId = 3000 + count(test()->telegram->sent);
 
-    test()->postJson('/webhooks/telegram/hook-secret', actionUpdate($updateId, $data, $chatId))->assertOk();
+    test()->postJson('/webhooks/telegram/hook-secret', actionUpdate($updateId, $data, $chatId), headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])->assertOk();
 
     $replies = test()->telegram->textsFor($chatId);
 

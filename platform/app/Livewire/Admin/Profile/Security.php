@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Livewire\Admin\Profile;
 
 use App\Domain\System\Models\TelegramLink;
+use App\Integrations\Google\GoogleIdentity;
+use App\Integrations\Google\GoogleOAuth;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -108,6 +110,9 @@ class Security extends Component
 
         return view('livewire.admin.profile.security', [
             'user' => $user,
+            'googleIdentity' => GoogleIdentity::query()->where('user_id', $user->id)->first(['email']),
+            'googleConfigured' => GoogleOAuth::configured(),
+            'googleLoginEnabled' => GoogleOAuth::loginEnabled(),
             'enabled' => $user->hasTwoFactorEnabled(),
             'requiresTwoFactor' => $user->requiresTwoFactorAuthentication(),
             'pending' => $user->two_factor_secret !== null && $user->two_factor_confirmed_at === null,

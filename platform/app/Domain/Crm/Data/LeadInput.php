@@ -6,6 +6,7 @@ namespace App\Domain\Crm\Data;
 
 use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Crm\Enums\LeadSource;
+use Carbon\CarbonImmutable;
 
 /**
  * Normalised enquiry from any channel (web form, estimator, chat, WhatsApp, Lead Ads, manual…).
@@ -37,5 +38,6 @@ final readonly class LeadInput
         public ?int $ownerId = null,
         public string $preferredLanguage = 'en',
         public array $meta = [],
+        public ?CarbonImmutable $historicalAt = null,
     ) {}
 }

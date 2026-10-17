@@ -55,7 +55,7 @@
                                     {{ $invoice->project?->code ?? '—' }}{{ $invoice->quote ? ' · quotation '.$invoice->quote->number : '' }}
                                 </span>
                                 @if ($invoice->pdf_path)
-                                    <a href="{{ route('admin.invoices.pdf', $invoice) }}" class="text-theme-xs text-brand-600 hover:underline dark:text-brand-400" target="_blank" rel="noopener">PDF</a>
+                                    <a href="{{ route('admin.invoices.pdf', $invoice) }}" class="text-theme-xs text-brand-600 hover:underline dark:text-brand-400" x-on:click.prevent="$dispatch('document-preview', { url: $el.href })">PDF</a>
                                 @endif
                             </td>
                             <td class="hidden px-5 py-3 md:table-cell">

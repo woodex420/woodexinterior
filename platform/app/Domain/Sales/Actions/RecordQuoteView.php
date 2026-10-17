@@ -10,6 +10,8 @@ use App\Domain\Sales\Models\QuoteEvent;
 use App\Domain\Sales\Models\QuoteVersion;
 use App\Domain\Sales\Notifications\QuoteNotification;
 use App\Domain\Sales\Services\QuoteLinks;
+use App\Domain\Sales\Services\QuoteWriteLock;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
@@ -25,50 +27,57 @@ final class RecordQuoteView
 
     public function handle(Quote $quote, QuoteVersion $version, ?string $ip, ?string $userAgent, string $type = 'viewed'): void
     {
-        $now = now();
-        $first = $quote->first_viewed_at === null;
-        $attributes = [
-            'quote_version_id' => $version->id,
-            'channel' => 'link',
-            'ip' => $ip,
-            'user_agent' => Str::limit((string) $userAgent, 250, ''),
-        ];
-        $data = ['device' => self::device($userAgent), 'revision' => $version->revision];
-
-        if ($type === 'viewed') {
-            $quote->forceFill([
-                'first_viewed_at' => $quote->first_viewed_at ?? $now,
-                'last_viewed_at' => $now,
-                'view_count' => $quote->view_count + 1,
-            ]);
-
-            if ($quote->status === QuoteStatus::Sent) {
-                $quote->status = QuoteStatus::Viewed;
+        DB::transaction(function () use ($quote, $version, $ip, $userAgent, $type): void {
+            QuoteWriteLock::refresh($quote);
+            if ($version->quote_id !== $quote->id) {
+                throw new \InvalidArgumentException('The version belongs to a different quotation.');
             }
 
-            $quote->save();
-        }
+            $now = now();
+            $first = $quote->first_viewed_at === null;
+            $attributes = [
+                'quote_version_id' => $version->id,
+                'channel' => 'link',
+                'ip' => $ip,
+                'user_agent' => Str::limit((string) $userAgent, 250, ''),
+            ];
+            $data = ['device' => self::device($userAgent), 'revision' => $version->revision];
 
-        if ($first && $type === 'viewed') {
-            $this->log->handle($quote, 'viewed', null, "{$quote->contact->name} opened {$version->snapshot['label']} for the first time ({$data['device']}).", $data, $attributes);
-            Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'first_view', 'Opened just now on '.$data['device'].'.'));
+            if ($type === 'viewed') {
+                $quote->forceFill([
+                    'first_viewed_at' => $quote->first_viewed_at ?? $now,
+                    'last_viewed_at' => $now,
+                    'view_count' => $quote->view_count + 1,
+                ]);
 
-            return;
-        }
+                if ($quote->status === QuoteStatus::Sent) {
+                    $quote->status = QuoteStatus::Viewed;
+                }
 
-        QuoteEvent::create(['quote_id' => $quote->id, 'type' => $type, 'data' => $data, 'occurred_at' => $now, ...$attributes]);
+                $quote->save();
+            }
 
-        if ($type !== 'viewed') {
-            return;
-        }
+            if ($first && $type === 'viewed') {
+                $this->log->handle($quote, 'viewed', null, "{$quote->contact->name} opened {$version->snapshot['label']} for the first time ({$data['device']}).", $data, $attributes);
+                Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'first_view', 'Opened just now on '.$data['device'].'.'));
 
-        $recent = QuoteEvent::query()->where('quote_id', $quote->id)->where('type', 'viewed')->where('occurred_at', '>=', $now->copy()->subDay())->count();
-        $lastHot = $quote->meta['hot_notified_at'] ?? null;
+                return;
+            }
 
-        if ($recent >= self::HOT_VIEWS && ($lastHot === null || $now->copy()->subDay()->gt($lastHot))) {
-            $quote->update(['meta' => [...($quote->meta ?? []), 'hot_notified_at' => $now->toIso8601String()]]);
-            Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'hot', "{$recent} views in the last 24 hours: a good moment to call."));
-        }
+            QuoteEvent::create(['quote_id' => $quote->id, 'type' => $type, 'data' => $data, 'occurred_at' => $now, ...$attributes]);
+
+            if ($type !== 'viewed') {
+                return;
+            }
+
+            $recent = QuoteEvent::query()->where('quote_id', $quote->id)->where('type', 'viewed')->where('occurred_at', '>=', $now->copy()->subDay())->count();
+            $lastHot = $quote->meta['hot_notified_at'] ?? null;
+
+            if ($recent >= self::HOT_VIEWS && ($lastHot === null || $now->copy()->subDay()->gt($lastHot))) {
+                $quote->update(['meta' => [...($quote->meta ?? []), 'hot_notified_at' => $now->toIso8601String()]]);
+                Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'hot', "{$recent} views in the last 24 hours: a good moment to call."));
+            }
+        });
     }
 
     public static function device(?string $userAgent): string

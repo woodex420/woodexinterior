@@ -48,6 +48,7 @@ final class QuoteSnapshot
 
         return [
             'schema' => self::SCHEMA,
+            'document_design' => $quote->meta['document_design'] ?? null,
             'number' => $quote->number,
             'revision' => $revision ?? (int) $quote->revision,
             'label' => $quote->number.(($revision ?? $quote->revision) > 0 ? ' R'.($revision ?? $quote->revision) : '')

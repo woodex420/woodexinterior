@@ -1,7 +1,26 @@
 # Woodex OS: Documentation index
 
-The complete plan for building the Woodex sales, communication and website system. Read the documents in
-this order:
+The complete plan for building the Woodex sales, communication and website system.
+
+**Current audit and next-work entry point (17 October 2026):**
+
+| Document | Purpose |
+|---|---|
+| [12 — Operating-system audit](21-OPERATING-SYSTEM-AUDIT.md) | Evidence-backed P1–P3 requirement traceability, integration/automation inventory, reproduced defects and live-verification boundaries |
+| [13 — Master agent and automation plan](22-MASTER-AGENT-AUTOMATION-PLAN.md) | Approval-gated Telegram control, specialist agents, complete customer funnel, separate dashboards and Hostinger/worker comparison |
+| [14 — Completion backlog](23-AUTOMATION-COMPLETION-BACKLOG.md) | 75 work packages with priorities, owners, dependencies and full acceptance gates; local A0 work started |
+| [15 — First A0 implementation](24-A0-SAFETY-IMPLEMENTATION.md) | Local payment/receipt integrity and WhatsApp batching/recovery repairs, regression evidence, rollout and remaining gates |
+| [16 — Telegram and consent hardening](25-TELEGRAM-CONSENT-HARDENING.md) | Next local B08 batch: sender identity, secret-header migration, rate limits, sticky opt-outs and regression evidence |
+| [17 — Quotation safety foundations](17-QUOTATION-IDEMPOTENCY-START.md) | First local B04 slice: stale send/accept guards, revision-bound acceptance, milestone uniqueness/numbering, PDF/queue rollback evidence and refreshed 8080 preview; remaining approval/concurrency gates explicit |
+| [18 — Basic Sales + Accounts ERP](18-BASIC-SALES-ACCOUNTS-ERP-PLAN.md) | Owner-approved scope and phased balanced-ledger plan; actual January lead-import/core-locking delivery, MySQL gate and unimplemented accounting modules clearly separated |
+| [19 — Documents + estimation implementation PRD](19-DOCUMENTS-ESTIMATION-IMPLEMENTATION-PRD.md) | Complete Interior/Furniture document/estimate/Accounts roadmap, WF-10153 design analysis, first library/design/in-window preview implementation, runtime setup limits and remaining gates |
+| [Audit evidence](audit-evidence/2026-10-17-results.md) | Seven isolated behavior probes / 22 assertions; observations of defects, not repaired-feature tests |
+
+These documents distinguish local implementation/tests from unverified deployment and business acceptance. Historical phase-completion claims and old estimates below are not current delivery certificates. The baseline audit made no feature changes; the subsequently authorized A0 batches implement local safety repairs only. These changes have not been deployed to Hostinger; the local port 8080 preview has been refreshed.
+
+**Existing integration setup guides:** [Telegram repair](TELEGRAM-SECURITY-REPAIR.md) · [integrations and read-only MCP](INTEGRATIONS-MCP-PLAN.md) · [Google identity OAuth and staff sign-in](GOOGLE-OAUTH-SETUP.md).
+
+Original architecture and requirement references, in reading order:
 
 | # | Document | What it answers |
 |---|---|---|

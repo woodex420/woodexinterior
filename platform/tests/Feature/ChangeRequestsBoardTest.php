@@ -132,7 +132,7 @@ it('shows on the board what was just sent with /idea from Telegram', function ()
             'from' => ['id' => 500, 'first_name' => 'Imtiaz'],
             'text' => '/idea Remember the source of every lead in the funnel report',
         ],
-    ])->assertOk();
+    ], headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])->assertOk();
 
     $replies = $telegram->textsFor(500);
     expect((string) end($replies))->toContain('Saved as CR-');

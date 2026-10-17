@@ -8,6 +8,8 @@ use App\Domain\Projects\Enums\ProjectStage;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectMilestone;
+use App\Domain\Sales\Enums\QuoteStatus;
+use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Models\Quote;
 use Illuminate\Support\Facades\DB;
 
@@ -22,13 +24,22 @@ final class OpenProjectFromQuote
 {
     public function handle(Quote $quote): Project
     {
-        $existing = Project::query()->where('quote_id', $quote->id)->first();
-
-        if ($existing !== null) {
-            return $existing;
-        }
-
         return DB::transaction(function () use ($quote): Project {
+            $quote = Quote::query()->whereKey($quote->id)->lockForUpdate()->firstOrFail();
+            $existing = Project::withTrashed()->where('quote_id', $quote->id)->first();
+
+            if ($existing !== null) {
+                if ($existing->trashed()) {
+                    throw new QuoteActionDenied('This quotation already has an archived project. Ask the owner to review it.');
+                }
+
+                return $existing;
+            }
+
+            if ($quote->status !== QuoteStatus::Accepted) {
+                throw new QuoteActionDenied('Only an accepted quotation can open a project.');
+            }
+
             $quote->loadMissing(['contact', 'company', 'lead', 'milestones']);
             $lead = $quote->lead;
 

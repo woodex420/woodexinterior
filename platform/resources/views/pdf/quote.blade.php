@@ -1,4 +1,5 @@
 @php
+    $design = $s['document_design'] ?? null;
     use App\Support\Money;
     $lakh = app(\App\Settings\SalesSettings::class)->lakh_grouping;
     $money = fn (int $minor) => Money::ofMinor($minor)->format($lakh);
@@ -46,14 +47,18 @@
     .avoid { page-break-inside: avoid; }
     .watermark { position: fixed; top: 34%; left: 6%; width: 88%; text-align: center; font-size: 110px; color: #e3e9f1; transform: rotate(-30deg); z-index: -1; letter-spacing: 12px; }
 </style>
+@include('pdf.partials.document-style')
 </head>
 <body>
 <header>
     <table class="meta">
         <tr>
             <td style="width: 52%;">
-                <div class="brand">{{ strtoupper($company['brand']) }}</div>
-                <div class="tagline">{{ $company['tagline'] }}</div>
+                @if (! empty($design['logo_data_uri']) && preg_match('/^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/=]+$/', $design['logo_data_uri']))
+                    <img src="{{ $design['logo_data_uri'] }}" class="document-logo" alt="Brand logo">
+                @endif
+                <div class="brand">{{ strtoupper($design['brand_name'] ?? $company['brand']) }}</div>
+                <div class="tagline">{{ ($design['header_text'] ?? '') !== '' ? $design['header_text'] : $company['tagline'] }}</div>
             </td>
             <td class="right muted" style="width: 48%; line-height: 1.55;">
                 {{ $company['address'] }}<br>
@@ -66,9 +71,13 @@
 </header>
 
 <footer>
+    @if (! empty($design['footer_text']))
+        <div class="document-footer">{{ $design['footer_text'] }}</div>
+    @else
     <table><tr>
         <td style="padding-top: 6px;">{{ $company['legal_name'] }} · Quotation {{ $s['label'] }} · Valid until {{ $date($s['valid_until']) }}</td>
     </tr></table>
+    @endif
 </footer>
 
 @if ($draft)

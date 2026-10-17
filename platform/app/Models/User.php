@@ -92,7 +92,8 @@ class User extends Authenticatable
     {
         $link = $this->telegramLink;
 
-        if ($link === null || ! $link->is_active || $link->chat_id === null) {
+        if (! $this->is_active || $link === null || ! $link->is_active || $link->chat_id === null
+            || $link->chat_id <= 0 || ($link->chat_type !== null && $link->chat_type !== 'private')) {
             return null;
         }
 

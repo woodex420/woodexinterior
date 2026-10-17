@@ -6,11 +6,14 @@ use App\Http\Middleware\EnsureTwoFactorIsEnabled;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\RedirectToInstaller;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\VerifyTelegramWebhook;
 use App\Support\Install\SiteState;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Routing\Middleware\ThrottleRequestsWithRedis;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -30,6 +33,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'two-factor' => EnsureTwoFactorIsEnabled::class,
             'db-current' => EnsureDatabaseIsCurrent::class,
         ]);
+
+        // Authenticate before actor throttling even after Laravel sorts route middleware by priority.
+        $middleware->prependToPriorityList([ThrottleRequests::class, ThrottleRequestsWithRedis::class], VerifyTelegramWebhook::class);
 
         // A freshly deployed site without .env opens the installer instead of failing (D-58).
         $middleware->prepend(RedirectToInstaller::class);

@@ -8,6 +8,7 @@ use App\Domain\Crm\Data\CaptureResult;
 use App\Domain\Crm\Data\LeadInput;
 use App\Domain\Crm\Enums\ActivityType;
 use App\Domain\Crm\Enums\LeadPriority;
+use App\Domain\Crm\Enums\LeadSource;
 use App\Domain\Crm\Enums\LeadType;
 use App\Domain\Crm\Enums\NextActionType;
 use App\Domain\Crm\Events\LeadCaptured;
@@ -43,6 +44,11 @@ final class CaptureLead
 
     public function handle(LeadInput $input): CaptureResult
     {
+        if ($input->historicalAt !== null && ($input->source !== LeadSource::Import
+            || $input->historicalAt->isFuture() || $input->consentMarketing || $input->consentWhatsapp)) {
+            throw ValidationException::withMessages(['import' => 'Historical capture requires an import source, a past date and no inferred messaging consent.']);
+        }
+
         $phone = Phone::normalize($input->phone);
         $email = $input->email !== null && trim($input->email) !== '' ? Str::lower(trim($input->email)) : null;
 
@@ -55,6 +61,11 @@ final class CaptureLead
         return DB::transaction(function () use ($input, $phone, $email): CaptureResult {
             $contact = $this->findContact($phone, $email);
             $contactCreated = $contact === null;
+
+            // Historical new-only imports must never enrich, reactivate or notify an existing contact.
+            if ($input->historicalAt !== null && ! $contactCreated) {
+                throw ValidationException::withMessages(['import' => 'An existing contact was found; historical new-only capture refused.']);
+            }
 
             $contact = $contactCreated
                 ? $this->createContact($input, $phone, $email)
@@ -71,6 +82,10 @@ final class CaptureLead
 
             $lead = $this->createLead($contact, $input);
 
+            if ($input->historicalAt !== null) {
+                return new CaptureResult($lead, $contact, leadCreated: true, contactCreated: true);
+            }
+
             if ($input->ownerId !== null && ($owner = User::query()->find($input->ownerId)) !== null) {
                 $this->assignLead->handle($lead, $owner, reason: "Assigned to {$owner->name} on creation");
             } else {
@@ -86,14 +101,14 @@ final class CaptureLead
     private function findContact(?string $phone, ?string $email): ?Contact
     {
         if ($phone !== null) {
-            $byPhone = Contact::query()->wherePhone($phone)->oldest('id')->first();
+            $byPhone = Contact::query()->wherePhone($phone)->oldest('id')->lockForUpdate()->first();
 
             if ($byPhone !== null) {
                 return $byPhone;
             }
         }
 
-        return $email !== null ? Contact::query()->where('email', $email)->oldest('id')->first() : null;
+        return $email !== null ? Contact::query()->where('email', $email)->oldest('id')->lockForUpdate()->first() : null;
     }
 
     private function createContact(LeadInput $input, ?string $phone, ?string $email): Contact
@@ -109,7 +124,8 @@ final class CaptureLead
             'source' => $input->source->value,
             'consent_marketing' => $input->consentMarketing,
             'consent_whatsapp' => $input->consentWhatsapp,
-            'last_activity_at' => now(),
+            'last_activity_at' => $input->historicalAt ?? now(),
+            'created_at' => $input->historicalAt ?? now(),
         ]);
     }
 
@@ -126,8 +142,8 @@ final class CaptureLead
             $contact->alt_phone = $phone;
         }
 
-        $contact->consent_marketing = $contact->consent_marketing || $input->consentMarketing;
-        $contact->consent_whatsapp = $contact->consent_whatsapp || $input->consentWhatsapp;
+        $contact->consent_marketing = $contact->opted_out_at === null && ($contact->consent_marketing || $input->consentMarketing);
+        $contact->consent_whatsapp = $contact->opted_out_at === null && ($contact->consent_whatsapp || $input->consentWhatsapp);
         $contact->last_activity_at = now();
         $contact->save();
 
@@ -147,8 +163,8 @@ final class CaptureLead
 
     private function createLead(Contact $contact, LeadInput $input): Lead
     {
-        $now = CarbonImmutable::now();
-        $slaDue = $this->business->hours()->dueAt($now, $this->sales->slaMinutesFor($input->source->value));
+        $now = $input->historicalAt ?? CarbonImmutable::now();
+        $slaDue = $input->historicalAt !== null ? null : $this->business->hours()->dueAt($now, $this->sales->slaMinutesFor($input->source->value));
 
         $lead = new Lead([
             'ref' => $this->numbering->next('lead'),
@@ -175,8 +191,9 @@ final class CaptureLead
             'attribution' => ['first_touch' => $input->attribution, 'last_touch' => $input->attribution],
             'meta' => $input->meta === [] ? null : $input->meta,
             'last_activity_at' => $now,
+            'created_at' => $now,
         ]);
-        $lead->score = $this->scoreLead->score($lead);
+        $lead->score = $input->historicalAt !== null ? 0 : $this->scoreLead->score($lead);
         $lead->save();
 
         Activity::create([
@@ -184,7 +201,7 @@ final class CaptureLead
             'lead_id' => $lead->id,
             'type' => ActivityType::System,
             'direction' => 'in',
-            'body' => "New enquiry via {$input->source->label()}".($input->message ? ': '.Str::limit($input->message, 500) : ''),
+            'body' => ($input->historicalAt !== null ? 'Historical enquiry imported for review' : "New enquiry via {$input->source->label()}").($input->message ? ': '.Str::limit($input->message, 500) : ''),
             'data' => ['source' => $input->source->value, 'service' => $input->service],
             'occurred_at' => $now,
         ]);

@@ -106,6 +106,8 @@ users can never get the same number.
 · `username` · `link_code` (unique, one-time) · `link_code_expires_at` · `is_active` · `muted_until` · `preferences`
 json · `linked_at` · timestamps.
 
+Personal commands use verified human private sender/chat equality and an active staff link; group routing is not user authority. New linking codes are 16 characters, one-time and valid for at most 30 minutes (existing valid eight-character codes remain compatible until expiry/use). No new column is needed. See [Telegram hardening](25-TELEGRAM-CONSENT-HARDENING.md).
+
 ### 3.7 `alert_rules` ✅
 `event` (e.g. `lead.captured`, `quote.viewed`) · `name` · `conditions` json · `recipients` json
 (`{"roles":["sales_manager"],"users":[3],"assignee":true,"chats":[-100123]}`) · `channels` json
@@ -316,6 +318,8 @@ Meezan "WOODEX FURNITURE").
 | `issue_date`, `due_date`, `sent_at`, `viewed_at`, `voided_at`, `void_reason` | |
 | `notes`, `terms`, `snapshot` json, `pdf_path`, `pdf_sha256`, `created_by` | snapshot frozen on issue |
 
+**17 Oct 2026 local B04 constraint:** nullable unique `invoices_project_milestone_unique` on `project_milestone_id` (including soft-deleted invoices); migration `2026_10_17_030000_unique_invoice_project_milestone`. Historical duplicates stop migration for Accounts review; no automatic deletion/reconciliation. Manual invoices with null milestone remain independent. Parent quote/project locks coordinate the two milestone creators; MySQL race proof and competing-writer review remain pending. [Implementation/rollout](17-QUOTATION-IDEMPOTENCY-START.md).
+
 ### 6.5 `invoice_items` ✅
 `invoice_id` · `description` · `unit` · `qty` · `rate_minor` · `discount_minor` · `tax_bp` · `line_total_minor` · `position`.
 
@@ -400,3 +404,32 @@ differ by more than Rs 1 per document unless `--accept-differences` is given.
 **Status:** users, clients, leads, notes and bookings are implemented (P1: `App\Domain\System\Import\V21Importer`,
 command `woodex:import-v21 {--dry-run} {--only=*} {--connection=legacy}`, runbook docs/08). Templates/quotes (P2),
 invoices/payments (P3), chats (P4) and projects (P8) are added to the same importer with their modules.
+
+
+## Google authorization follow-up (2026-10-17)
+
+- `google_identities`: staff-only explicit login links; unique `user_id` (users FK, cascade hard delete), unique
+  `google_subject`, verified email, timestamps. No provider tokens. Soft-deleted/inactive users cannot sign in.
+- `google_connections`: one shared company connection (service-enforced ID 1), nullable `connected_by` users FK
+  (null on hard delete), Google subject, verified email, encrypted TEXT `access_token` / nullable `refresh_token`,
+  JSON scopes, state (`active`, `reconnect_required`, `revocation_pending`), expiration, connected/checked times
+  and timestamps. Never select tokens for views or serialize them. No domain records or staff roles are changed.
+- Lifecycle audit uses `integration_logs` with provider `google`, action, outcome and staff ID only.
+- Migration: `2026_10_17_020000_create_google_accounts_tables.php`. Operational setup and the deliberate identity-only
+  scope are documented in `docs/GOOGLE-OAUTH-SETUP.md`.
+
+
+## Historical lead-sheet preview import — 17 Oct 2026
+
+The owner-approved new-contact-only CSV path uses existing `contacts`, `leads`, `activities`, `activity_log`, `number_sequences` and `legacy_refs`; **no new schema**. `legacy_table = lead_csv_2025`, stable hashed batch/source row identity, checksum, model reference and import time provide rerun protection. Historical source fields/day precision/review markers are private `leads.meta.historical_import` data, with readable source details in the enquiry message. Date-only fields use a UTC-midnight day anchor, not an asserted real event time. No inferred finance, consent, assignment, appointment, SLA or outbound event. Raw customer files do not ship in Git. See [approved scope and actual import](18-BASIC-SALES-ACCOUNTS-ERP-PLAN.md); future ledger/payable/expense schemas are planned, not present.
+
+
+## Document libraries and copied design values — 17 October 2026
+
+Additive migration `2026_10_17_120000_create_document_libraries.php` adds:
+
+- `description_templates`: ID, indexed `business_line` (`interior`/`furniture`), indexed section, title, body VARCHAR(500), indexed active flag and timestamps. Project uses the Interior library. Twelve generic editable starters contain no real client/rate/reference-PDF details. Catalog permission controls writes; quotes receive plain-text copies, not live references.
+- `document_designs`: ID, unique brand line, monotonic revision, brand name, validated accent, header/footer text, nullable `logo_data_uri` MEDIUMTEXT and SHA-256, timestamps. Settings permission controls updates; optimistic revision check plus row lock refuses a stale save. Logo bytes are validated JPEG/PNG, at most96KB and600×240px. Activity log uses explicit `description_template`/`document_design` morph aliases without logging raw logo bytes.
+- Existing `quotes.meta.document_design` stores a value copy; no new quote/invoice total columns. `quote_versions.snapshot.document_design` and `invoices.snapshot.document_design` retain the exact copied profile/logo for immutable output. Legacy snapshots missing the field keep legacy rendering. Applying a new style to an editable quote goes through its parent edit lock/recalculation and changes the approval fingerprint. Issued documents do not follow a mutable master.
+
+No estimate, furniture line-photo, manual invoice builder or balanced-ledger tables were introduced by this migration. See [the implementation PRD](19-DOCUMENTS-ESTIMATION-IMPLEMENTATION-PRD.md).

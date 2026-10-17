@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Services;
 
+use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Sales\Actions\RecalculateQuote;
 use App\Domain\Sales\Enums\DiscountType;
 use App\Domain\Sales\Enums\MilestonePlanKey;
 use App\Domain\Sales\Exceptions\QuoteLocked;
 use App\Domain\Sales\Models\CatalogItem;
+use App\Domain\Sales\Models\DescriptionTemplate;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteItem;
 use App\Domain\Sales\Models\QuoteMilestone;
@@ -54,6 +56,27 @@ final class QuoteEditor
         });
     }
 
+    /** Applies current branding only through an explicit draft edit, using the same quote lock as every edit. */
+    public function applyDocumentDesign(Quote $quote): void
+    {
+        $this->change($quote, function () use ($quote): void {
+            $quote->meta = array_merge($quote->meta ?? [], ['document_design' => app(DocumentStyles::class)->copy($quote->business_line)]);
+            $quote->save();
+        });
+    }
+
+    public function addDescriptionLine(QuoteSection $section, int $templateId): QuoteItem
+    {
+        return $this->change($this->quoteOf($section), function () use ($section, $templateId): QuoteItem {
+            $this->refreshChild($section);
+            $quote = $this->quoteOf($section);
+            $line = $quote->business_line === BusinessLine::Furniture ? 'furniture' : 'interior';
+            $template = DescriptionTemplate::query()->where('business_line', $line)->where('is_active', true)->findOrFail($templateId);
+
+            return $this->addLine($section, ['description' => $template->body]);
+        });
+    }
+
     public function addSection(Quote $quote, string $name = 'New section'): QuoteSection
     {
         return $this->change($quote, function () use ($quote, $name): QuoteSection {
@@ -73,6 +96,7 @@ final class QuoteEditor
     public function updateSection(QuoteSection $section, array $attributes): void
     {
         $this->change($this->quoteOf($section), function () use ($section, $attributes): void {
+            $this->refreshChild($section);
             $section->fill(array_intersect_key($attributes, array_flip(['name', 'note'])))->save();
         });
     }
@@ -82,6 +106,7 @@ final class QuoteEditor
         $quote = $this->quoteOf($section);
 
         $this->change($quote, function () use ($quote, $section, $toIndex): void {
+            $this->refreshChild($section);
             $this->reorder($quote->sections()->get(), $section, $toIndex);
         });
     }
@@ -91,6 +116,7 @@ final class QuoteEditor
         $quote = $this->quoteOf($section);
 
         $this->change($quote, function () use ($quote, $section): void {
+            $this->refreshChild($section);
             $section->delete();
             $this->renumber($quote->sections()->get());
         });
@@ -110,6 +136,13 @@ final class QuoteEditor
         }
 
         return $this->change($quote, function () use ($section, $attributes, $after): QuoteItem {
+            $this->refreshChild($section);
+            if ($after !== null) {
+                $this->refreshChild($after);
+            }
+            if ($after !== null && $after->quote_section_id !== $section->id) {
+                throw new InvalidArgumentException('That line is in another section.');
+            }
             $items = $section->items()->get();
             $index = $after !== null ? (int) $items->search(fn (QuoteItem $item): bool => $item->is($after)) + 1 : $items->count();
 
@@ -151,6 +184,7 @@ final class QuoteEditor
     public function updateLine(QuoteItem $item, array $attributes): void
     {
         $this->change($this->quoteOf($item), function () use ($item, $attributes): void {
+            $this->refreshChild($item);
             $values = array_intersect_key($attributes, array_flip(self::LINE_FIELDS));
 
             if (array_key_exists('discount_type', $values) && $values['discount_type'] === null) {
@@ -177,6 +211,11 @@ final class QuoteEditor
         }
 
         $this->change($quote, function () use ($item, $to, $toIndex): void {
+            $this->refreshChild($item);
+            $this->refreshChild($to);
+            if ($item->quote_id !== $to->quote_id) {
+                throw new InvalidArgumentException('Lines can only move within the same quotation.');
+            }
             $from = $item->quote_section_id;
 
             if ($from !== $to->id) {
@@ -192,6 +231,7 @@ final class QuoteEditor
     public function deleteLine(QuoteItem $item): void
     {
         $this->change($this->quoteOf($item), function () use ($item): void {
+            $this->refreshChild($item);
             $sectionId = $item->quote_section_id;
             $item->delete();
             $this->renumber(QuoteItem::query()->where('quote_section_id', $sectionId)->orderBy('position')->get());
@@ -243,6 +283,7 @@ final class QuoteEditor
         $quote = $this->quoteOf($milestone);
 
         $this->change($quote, function () use ($quote, $milestone, $attributes): void {
+            $this->refreshChild($milestone);
             $values = array_intersect_key($attributes, array_flip(['name', 'percent_bp']));
 
             if (isset($values['percent_bp']) && ($values['percent_bp'] < 0 || $values['percent_bp'] > 10000)) {
@@ -259,6 +300,7 @@ final class QuoteEditor
         $quote = $this->quoteOf($milestone);
 
         $this->change($quote, function () use ($quote, $milestone): void {
+            $this->refreshChild($milestone);
             if ($quote->milestones()->count() <= 1) {
                 throw new InvalidArgumentException('A quotation needs at least one payment milestone.');
             }
@@ -277,17 +319,29 @@ final class QuoteEditor
      */
     private function change(Quote $quote, callable $callback): mixed
     {
-        if (! $quote->isEditable()) {
-            throw QuoteLocked::for($quote);
-        }
+        $revision = (int) $quote->revision;
 
-        return DB::transaction(function () use ($quote, $callback): mixed {
+        return DB::transaction(function () use ($quote, $callback, $revision): mixed {
+            QuoteWriteLock::refresh($quote);
+            if (! $quote->isEditable()) {
+                throw QuoteLocked::for($quote);
+            }
+            if ((int) $quote->revision !== $revision) {
+                throw new QuoteLocked('The revision changed. Reload the quotation before editing.');
+            }
             $result = $callback();
             $quote->touch();
             $this->recalculate->handle($quote);
 
             return $result;
         });
+    }
+
+    private function refreshChild(QuoteSection|QuoteItem|QuoteMilestone $model): void
+    {
+        $fresh = $model->newQuery()->whereKey($model->id)->where('quote_id', $model->quote_id)->lockForUpdate()->firstOrFail();
+        $model->setRawAttributes($fresh->getAttributes(), true);
+        $model->unsetRelations();
     }
 
     private function quoteOf(QuoteSection|QuoteItem|QuoteMilestone $model): Quote
