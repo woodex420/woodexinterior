@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Crm\Notifications;
 
 use App\Domain\Crm\Models\Lead;
+use App\Domain\System\Telegram\TelegramCallbackBus;
 use App\Integrations\Telegram\TelegramChannel;
 use App\Integrations\Telegram\TelegramMessage;
 use App\Support\Phone;
@@ -71,6 +72,10 @@ final class NewLeadNotification extends Notification
         $buttons = [];
         $row = [];
 
+        // One tap for the most common first action: take the lead (TGM-005). Callback buttons expire after
+        // 24 h, so an old alert can never act on a lead that has since been given to someone else.
+        $row[] = ['text' => 'Assign to me', 'callback_data' => TelegramCallbackBus::button('assign', $lead->id)];
+
         $whatsapp = Phone::whatsappUrl($contact->whatsappNumber());
         if ($whatsapp !== null) {
             $row[] = ['text' => 'WhatsApp', 'url' => $whatsapp];
@@ -81,9 +86,7 @@ final class NewLeadNotification extends Notification
             $row[] = ['text' => 'Open in Woodex OS', 'url' => $adminUrl];
         }
 
-        if ($row !== []) {
-            $buttons[] = $row;
-        }
+        $buttons[] = $row;
 
         return new TelegramMessage(implode("\n", $lines), $buttons);
     }

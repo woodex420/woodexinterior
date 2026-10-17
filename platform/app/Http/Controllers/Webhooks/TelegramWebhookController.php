@@ -10,6 +10,7 @@ use App\Domain\System\Enums\WebhookStatus;
 use App\Domain\System\Models\ChangeRequest;
 use App\Domain\System\Models\TelegramLink;
 use App\Domain\System\Models\WebhookEvent;
+use App\Domain\System\Telegram\TelegramCallbackBus;
 use App\Domain\System\Telegram\TelegramCommandBus;
 use App\Http\Controllers\Controller;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
@@ -33,6 +34,7 @@ final class TelegramWebhookController extends Controller
     public function __construct(
         private readonly TelegramGateway $telegram,
         private readonly TelegramCommandBus $bus,
+        private readonly TelegramCallbackBus $callbacks,
     ) {}
 
     public function __invoke(Request $request, string $secret): JsonResponse
@@ -59,7 +61,7 @@ final class TelegramWebhookController extends Controller
             $event = WebhookEvent::create([
                 'provider' => 'telegram',
                 'external_id' => $updateId,
-                'type' => $request->has('message') ? 'message' : 'other',
+                'type' => $request->has('message') ? 'message' : ($request->has('callback_query') ? 'callback' : 'other'),
                 'payload' => $request->all(),
                 'signature_valid' => true,
                 'status' => WebhookStatus::Received,
@@ -70,14 +72,42 @@ final class TelegramWebhookController extends Controller
 
         $chatId = $request->input('message.chat.id');
         $text = trim((string) $request->input('message.text', ''));
+        $callback = $request->input('callback_query');
 
-        if ($chatId !== null && str_starts_with($text, '/')) {
+        if (is_array($callback)) {
+            $this->handleCallback($callback);
+        } elseif ($chatId !== null && str_starts_with($text, '/')) {
             $this->handleCommand($request, (int) $chatId, $text);
         }
 
         $event->update(['status' => WebhookStatus::Processed, 'processed_at' => now()]);
 
         return response()->json(['ok' => true]);
+    }
+
+    /**
+     * An inline button press (TGM-005): answer the button itself, and say the outcome in the chat too, so it
+     * survives the toast scrolling away.
+     *
+     * @param  array<string, mixed>  $callback
+     */
+    private function handleCallback(array $callback): void
+    {
+        $callbackId = (string) ($callback['id'] ?? '');
+        $chatId = $callback['message']['chat']['id'] ?? null;
+        $data = (string) ($callback['data'] ?? '');
+
+        if ($chatId === null || $chatId === '' || $data === '') {
+            $this->telegram->answerCallbackQuery($callbackId, 'That button is not recognised anymore.');
+
+            return;
+        }
+
+        $user = $this->linkedUserOrNull((int) $chatId)?->user;
+        $reply = $this->callbacks->dispatch($user, $data);
+
+        $this->telegram->answerCallbackQuery($callbackId, $reply);
+        $this->telegram->send((int) $chatId, new TelegramMessage(TelegramMessage::escape($reply)));
     }
 
     private function handleCommand(Request $request, int $chatId, string $text): void

@@ -2,6 +2,28 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT, after P5 S3 — the action commands)
+
+- **P5 S3 is DONE and shipped:** `TelegramCallbackBus` (`app/Domain/System/Telegram/`) parses `action:id:expires`
+  callback data (24 h expiry, refuses politely after); the webhook controller routes `callback_query` updates
+  (answers the button toast AND says the outcome in the chat); `answerCallbackQuery()` added to the gateway,
+  the HTTP client and the fake. Four commands: `/approvals` (lists pending quote approvals with the asker and
+  reason), `/approve <id> [no <reason>]` (runs `DecideQuoteApproval` — same rules as the screen, incl. nobody
+  approves their own request), `/assign <lead> <person>` (`AssignLead`; ambiguous names are answered with the
+  options), `/note <lead> <text>` (an activity note marked "(via Telegram)"). Buttons: new-lead alert got
+  *Assign to me* (callback) beside WhatsApp/Open (no Call button — Telegram buttons cannot open tel: links);
+  payment-proof alert got *Verify* / *Not matched* callbacks. Sensitive actions (void, refund, roles) are never
+  offered. Tests: `tests/Feature/TelegramActionCommandsTest.php` (10) — gate green at 530 passed / 3 579
+  assertions, Larastan level 6 clean, Pint clean 509 files.
+- **Next per docs/15 + docs/16 §10 (Wave 1):** P5 S5 (health completion — anything `/health` still cannot see)
+  → S6 (change-requests board) → S4 digests are the automation agent's lane (docs/16 §1); then Wave 2: P3's
+  three report screens (Receivables, Sales Funnel, Revenue & Collections + CSV export kit) → SYS-007 audit
+  viewer → CNV-004. The P5 exit test is still the owner completing a full day of approvals from Telegram.
+- The owner answered the three standing questions (17 Oct, D-116 recorded in docs/07 and docs/16 §11):
+  WhatsApp live connection coming **soon** (steps to remind: Settings → WhatsApp → credentials → Test
+  connection → sync templates → map *quotation ready*); the team split is **agreed**; the theme path is
+  **v1's own design extracted as tokens** — V2-1 is un-gated.
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after the owner answered the three standing questions)
 
 - **The owner's order for the frontend, unchanged:** the original v1 site is live on woodex.com.pk and stays live;

@@ -8,6 +8,7 @@ use App\Domain\System\Models\IntegrationLog;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
 use App\Integrations\Telegram\TelegramMessage;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Throwable;
 
 final class TelegramBotApi implements TelegramGateway
@@ -36,6 +37,14 @@ final class TelegramBotApi implements TelegramGateway
         }
 
         return $this->call('sendMessage', $payload);
+    }
+
+    public function answerCallbackQuery(string $callbackQueryId, string $text): bool
+    {
+        return $this->request('answerCallbackQuery', [
+            'callback_query_id' => $callbackQueryId,
+            'text' => Str::limit($text, 190),
+        ]) !== null;
     }
 
     public function setWebhook(string $url, string $secretToken): bool

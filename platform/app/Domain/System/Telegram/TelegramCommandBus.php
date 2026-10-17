@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Domain\System\Telegram;
 
+use App\Domain\System\Telegram\Commands\ApprovalsCommand;
+use App\Domain\System\Telegram\Commands\ApproveCommand;
+use App\Domain\System\Telegram\Commands\AssignCommand;
 use App\Domain\System\Telegram\Commands\DueCommand;
 use App\Domain\System\Telegram\Commands\FindCommand;
 use App\Domain\System\Telegram\Commands\HealthCommand;
 use App\Domain\System\Telegram\Commands\LeadCommand;
 use App\Domain\System\Telegram\Commands\LeadsCommand;
 use App\Domain\System\Telegram\Commands\MuteCommand;
+use App\Domain\System\Telegram\Commands\NoteCommand;
 use App\Domain\System\Telegram\Commands\QuoteCommand;
 use App\Domain\System\Telegram\Commands\QuotesCommand;
 use App\Domain\System\Telegram\Commands\ReportCommand;
@@ -37,6 +41,10 @@ final class TelegramCommandBus
         LeadsCommand::class,
         LeadCommand::class,
         FindCommand::class,
+        ApprovalsCommand::class,
+        ApproveCommand::class,
+        AssignCommand::class,
+        NoteCommand::class,
         QuotesCommand::class,
         QuoteCommand::class,
         DueCommand::class,

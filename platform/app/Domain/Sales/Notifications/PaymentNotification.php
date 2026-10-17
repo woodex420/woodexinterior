@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Sales\Notifications;
 
 use App\Domain\Sales\Models\Payment;
+use App\Domain\System\Telegram\TelegramCallbackBus;
 use App\Integrations\Telegram\TelegramMessage;
 use App\Notifications\Concerns\SendsToDatabaseAndTelegram;
 use App\Support\Money;
@@ -46,11 +47,21 @@ final class PaymentNotification extends Notification
     {
         [$icon, $title] = self::TITLES[$this->kind] ?? ['💳', 'Payment'];
 
-        return new TelegramMessage(
-            $icon.' <b>'.TelegramMessage::escape($title).'</b> · '.TelegramMessage::escape($this->payment->contact->name)."\n"
-            .TelegramMessage::escape($this->summary()),
-            $this->openButton('Open payments', route('admin.payments.index')),
-        );
+        $text = $icon.' <b>'.TelegramMessage::escape($title).'</b> · '.TelegramMessage::escape($this->payment->contact->name)."\n"
+            .TelegramMessage::escape($this->summary());
+
+        // A proof to check can be decided on the spot (TGM-005); everything else just links to the screen.
+        if ($this->kind === 'proof_submitted') {
+            return new TelegramMessage($text, [
+                [
+                    ['text' => 'Verify', 'callback_data' => TelegramCallbackBus::button('payverify', $this->payment->id)],
+                    ['text' => 'Not matched', 'callback_data' => TelegramCallbackBus::button('payreject', $this->payment->id)],
+                ],
+                ...$this->openButton('Open payments', route('admin.payments.index')),
+            ]);
+        }
+
+        return new TelegramMessage($text, $this->openButton('Open payments', route('admin.payments.index')));
     }
 
     private function summary(): string

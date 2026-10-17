@@ -18,6 +18,9 @@ final class FakeTelegramGateway implements TelegramGateway
     /** @var list<array{url: string, secret: string}> */
     public array $webhooks = [];
 
+    /** @var list<array{id: string, text: string}> */
+    public array $answeredCallbacks = [];
+
     /** @var array<string, mixed> */
     public array $diagnostics = ['api_ok' => true, 'bot_username' => 'WoodexInteriorBot', 'bot_matches' => true, 'webhook_set' => true, 'webhook_matches' => true, 'pending_updates' => 0, 'last_error' => '', 'last_error_at' => null];
 
@@ -50,6 +53,13 @@ final class FakeTelegramGateway implements TelegramGateway
     public function setWebhook(string $url, string $secretToken): bool
     {
         $this->webhooks[] = ['url' => $url, 'secret' => $secretToken];
+
+        return true;
+    }
+
+    public function answerCallbackQuery(string $callbackQueryId, string $text): bool
+    {
+        $this->answeredCallbacks[] = ['id' => $callbackQueryId, 'text' => $text];
 
         return true;
     }

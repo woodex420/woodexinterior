@@ -19,4 +19,9 @@ interface TelegramGateway
     public function connectionStatus(string $expectedUrl, string $expectedUsername): array;
 
     public function setWebhook(string $url, string $secretToken): bool;
+
+    /**
+     * Close the loop on an inline button press (TGM-005): a small toast on the button the user just pressed.
+     */
+    public function answerCallbackQuery(string $callbackQueryId, string $text): bool;
 }

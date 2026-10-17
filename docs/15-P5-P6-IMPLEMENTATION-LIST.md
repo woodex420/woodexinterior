@@ -60,12 +60,12 @@ member without the permission gets "ask an admin", not a crash.
 **Done when:** each command's reply is covered by a test that fakes the webhook POST and reads the reply sent to
 the fake gateway — the owner's phone is not the test bench.
 
-### S3 · Action commands and inline buttons (~1 d)
+### S3 · Action commands and inline buttons (~1 d) — DONE 17 Oct (`TelegramCallbackBus`, 4 commands, 10 tests)
 
 `/approvals` and `/approve <id>` (quote discount/low-margin approvals via `DecideQuoteApproval`) · `/assign
 <lead> <user>` (`AssignLead`) · `/note <lead> <text>` (an activity note) · `/mute <hours>` (quiet this chat).
-Buttons on the alerts that already exist: new lead → *Assign to me · Call · WhatsApp · Open*; payment proof →
-*Verify · Reject*. Every action runs with the linked user's permissions and is recorded ("via Telegram") on the
+Buttons on the alerts that already exist: new lead → *Assign to me · WhatsApp · Open* (Telegram inline buttons
+cannot open `tel:` links, so the Call button stays on the screen); payment proof → *Verify · Not matched*. Every action runs with the linked user's permissions and is recorded ("via Telegram") on the
 lead/quote/invoice timeline. Buttons carry an expiry (24 h) and refuse politely after it. Void/refund/role
 changes are **never** offered here (TGM-005).
 
