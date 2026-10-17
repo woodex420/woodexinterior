@@ -6,6 +6,7 @@ use App\Livewire\Admin\Website\ThemeBuilder;
 use Database\Factories\Website\PageFactory;
 use Database\Seeders\ThemeTokensSeeder;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Testing\TestResponse;
 use Livewire\Livewire;
 
@@ -143,4 +144,22 @@ it('caches the rendered CSS until a save flushes it', function () {
         ->and($theme->hash())->not()->toBe($hash);
 
     Cache::flush();
+});
+
+it('serves an empty theme until the database update runs, not an error', function () {
+    // The window between a Hostinger deploy and the owner's one-click Database update (docs/06 §2.4):
+    // the table is missing, so the theme degrades to "no override" and pages keep their own defaults.
+    Schema::drop('theme_tokens');
+
+    $theme = app(ThemeCss::class);
+    $theme->flush();
+
+    expect($theme->css())->toBe(":root {}\n")
+        ->and($theme->hash())->not->toBe('');
+
+    $this->get('/assets/theme.css')->assertOk()->assertSee(':root {}', false);
+    $this->get('/theme/'.$theme->hash().'.css')->assertOk();
+
+    // The home page still renders with the theme link, unbroken.
+    $this->get('/')->assertOk();
 });

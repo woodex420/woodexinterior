@@ -2,6 +2,37 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT — deploy prep + agent-work recovery plan)
+
+- **DEPLOY DECISIONS (owner, via ask_user):** (1) the agent's unpublished 744-test work is recovered by
+  RESUMING the agent's closed session and having it push to its branch — then I pull and run FULL
+  verification (line-by-line diff review, full gate, screen test-drive, claims cross-check) with the
+  owner's sign-off before any merge/deploy; (2) deploy NOW = current verified branch tip (no master
+  switch yet); (3) always: check agent work, ask questions, then start (standing owner instruction).
+- **Agent-work facts (verified 17 Oct):** the agent's branch `arena/fe1287c9-woodexinterior` on GitHub has
+  ZERO commits beyond PR #2 (2FA lockout fix + Telegram runtime diagnostics, merged into our branch 16 Oct
+  22:18 UTC, covered by our gates). NOTHING of their latest session (App Connections hub, MCP bridge,
+  Description Library, Document Design, payment/quotation hardening, Jan-2025 import, docs/20 checklist,
+  744 tests) is on GitHub or Drive — it lives only in their closed sandbox (preview
+  8080-isnahsykyf37tp24ghz4e.e2b.app). Recovery = resume that session, have it commit+push, then I verify.
+- **Deploy-safety guard added (commit after 8ed2769):** `ThemeCss::css()` returns `:root {}` (uncached) when
+  `theme_tokens` is missing — the window between a Hostinger deploy and the one-click Database update
+  degrades to "no override" (pages keep their own defaults = same v1 look) instead of SQL errors; CMS pages
+  and both theme routes stay 200. Test added (7 in ThemeTokensTest now). Gate: 569 passed / 3 856,
+  Larastan clean, Pint clean 544.
+- **Deploy checklist for the owner (docs/06 §2):** hPanel → Advanced → Git (branch
+  `arena/8be318a2-woodexinterior`) → Redeploy if auto-deploy is off → open the site → one-click Database
+  update (adds canned_replies, theme_tokens, saved_sections; ProductionSeeder seeds them idempotently) →
+  check: site looks unchanged, /assets/theme.css serves :root with --navy #0C1628, admin → Theme Builder
+  opens. After deploy: my earlier commits c84df84…8ed2769 go live (reports kit, audit log, canned replies,
+  theme tokens + builder, V2-2 part 1 section library/builder).
+- **NEXT after the agent pushes:** full verification per the owner's decision — pull their branch, review
+  every file in the diff (security, lane boundaries — their checklist strays far beyond the agreed
+  Automation/bot/alert-rules lane into documents, payments, integrations), full gate on the merged result,
+  screen test-drive, cross-check claims (66 tables, Jan-2025 16+16 numbers), written report, owner
+  sign-off, THEN merge/deploy. Expect conflicts/overlap in STATE.md, ProductionSeeder, AdminNavigation,
+  routes — and lane questions to put to the owner.
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after V2-2 part 1 — section library + page builder)
 
 - **V2-2 part 1 is DONE and shipped:** the section library and the page-builder upgrades (docs/12 §5.2/§5.3).

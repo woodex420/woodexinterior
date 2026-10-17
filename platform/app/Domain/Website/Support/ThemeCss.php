@@ -6,6 +6,7 @@ namespace App\Domain\Website\Support;
 
 use App\Domain\Website\Models\ThemeToken;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * The site's theme as one small CSS file (V2-1, docs/12 §5.1, D-116): the database tokens printed as CSS
@@ -74,6 +75,13 @@ final class ThemeCss
      */
     public function css(): string
     {
+        // Between a deploy and the one-click Database update (docs/06 §2.4) the table may not exist yet:
+        // the theme then degrades to "no override" — every page falls back to its own stylesheet defaults,
+        // which are the same v1 values — and nothing is cached, so the real theme appears with the update.
+        if (! Schema::hasTable('theme_tokens')) {
+            return ":root {}\n";
+        }
+
         return Cache::remember(self::CACHE_KEY, now()->addDay(), function (): string {
             $lines = [];
 
