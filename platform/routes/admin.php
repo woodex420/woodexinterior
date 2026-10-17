@@ -49,6 +49,7 @@ use App\Livewire\Admin\Sales\RateBook;
 use App\Livewire\Admin\System\AuditLog;
 use App\Livewire\Admin\System\ChangeRequests;
 use App\Livewire\Admin\System\DataImport;
+use App\Livewire\Admin\System\AutomationsIndex;
 use App\Livewire\Admin\System\Health;
 use App\Livewire\Admin\System\Integrations;
 use App\Livewire\Admin\System\RecycleBin;
@@ -145,6 +146,8 @@ Route::livewire('/settings/canned-replies', CannedRepliesIndex::class)->name('ca
 Route::livewire('/settings/lead-assignment', AssignmentRules::class)->name('assignment-rules')->middleware('can:settings.manage');
 Route::livewire('/users', UsersIndex::class)->name('users.index')->middleware('can:users.manage');
 Route::livewire('/system/health', Health::class)->name('system.health')->middleware('can:system.health');
+
+Route::livewire('/automation', AutomationsIndex::class)->name('automation.index')->middleware('can:automation.manage');
 Route::livewire('/system/change-requests', ChangeRequests::class)->name('system.change-requests')->middleware('can:system.change_requests');
 Route::livewire('/system/audit', AuditLog::class)->name('system.audit')->middleware('can:audit.view');
 // Database update after a deploy (D-58): reachable while migrations are pending and before 2FA setup.

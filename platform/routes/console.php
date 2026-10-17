@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\System\Models\Automation;
 use App\Domain\System\Models\ScheduledTaskRun;
 use Illuminate\Support\Facades\Schedule;
 
@@ -7,6 +8,9 @@ use Illuminate\Support\Facades\Schedule;
 |--------------------------------------------------------------------------
 | Scheduler: driven by ONE hPanel cron entry every minute (docs/06 §5)
 |   /usr/bin/php /home/uXXXX/apps/woodexinterior/platform/artisan schedule:run
+|
+| Business automations are gated by the owner's on/off switch (Automation → P8.5); a missing
+| row means enabled, and a toggle lands within a minute of the cache expiring.
 |--------------------------------------------------------------------------
 */
 
@@ -23,16 +27,20 @@ Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3')
 Schedule::command('woodex:heartbeat')->everyMinute();
 
 // First-response SLA: flag uncontacted leads and alert owner + managers (CRM-010).
-Schedule::command('woodex:sla-check')->everyMinute()->withoutOverlapping(5);
+Schedule::command('woodex:sla-check')->everyMinute()->withoutOverlapping(5)
+    ->when(fn (): bool => Automation::enabled('woodex:sla-check'));
 
 // Task reminders and site-visit reminders to staff (CRM-007, CRM-008).
-Schedule::command('woodex:reminders')->everyMinute()->withoutOverlapping(5);
+Schedule::command('woodex:reminders')->everyMinute()->withoutOverlapping(5)
+    ->when(fn (): bool => Automation::enabled('woodex:reminders'));
 
 // Quotations nobody answered: chase, warn before the price lapses, lapse what is stale (AUT).
-Schedule::command('woodex:quote-follow-ups')->dailyAt('09:00')->withoutOverlapping(30);
+Schedule::command('woodex:quote-follow-ups')->dailyAt('09:00')->withoutOverlapping(30)
+    ->when(fn (): bool => Automation::enabled('woodex:quote-follow-ups'));
 
 // Review requests a few days after a handover was signed (PRJ-007).
-Schedule::command('woodex:review-requests')->dailyAt('10:30');
+Schedule::command('woodex:review-requests')->dailyAt('10:30')
+    ->when(fn (): bool => Automation::enabled('woodex:review-requests'));
 
 // Backups (spatie/laravel-backup) and housekeeping.
 Schedule::command('backup:run --only-db')->dailyAt('02:30');

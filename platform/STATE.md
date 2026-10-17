@@ -1232,3 +1232,34 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
 - Owner recovery: redeploy the branch on hPanel (if auto-deploy is off) → open the site →
   Apply the database update — it should now complete, seed permissions/sequences/chart, clear
   caches, and the staff "updating" notice clears on its own.
+
+## P8.5 part 1 — automation backbone + control dashboard — 2026-10-17
+
+- Owner decisions (ask_user, 4/4 recommendations taken): build order = backbone first then
+  flows; chat widget = own web_chat channel in the Conversations inbox (WhatsApp handoff later,
+  nothing waits on Meta); new-client alert = Telegram to the lead owner + sales manager with an
+  email fallback, nothing client-facing without consent (A0); monthly report = Telegram to the
+  owner on the 1st 09:00 + email fallback + a saved screen under /admin/automation.
+- Automation model (Domain/System/Models): the CATALOG is code (key, name, description, cadence,
+  toggleable) — 4 business automations (sla-check, reminders, quote-follow-ups, review-requests)
+  + 5 platform jobs shown read-only (webhook recovery, queue worker, heartbeat, nightly backup,
+  housekeeping). A missing row means ENABLED (fail-safe, zero-seed: fresh installs and un-seeded
+  production updates are correct by construction). Rows appear only on a toggle, carrying
+  toggled_by/toggled_at. enabled() caches 60s; toggle() clears its own key.
+- Schedule gates: the 4 business commands in routes/console.php now carry
+  ->when(fn () => Automation::enabled(...)) — a paused automation is skipped by the scheduler
+  (fires ScheduledTaskSkipped, so no false run rows); toggles land within a minute.
+- Screen: /admin/automation (Automation → Automations, permission automation.manage = owner,
+  admin, sales_manager) — On/Paused badges, cadence, description, last run + runtime from
+  ScheduledTaskRun (the scheduler's own record — the screen cannot claim health it did not
+  observe), pause/resume with activity log. Platform jobs section read-only by design (a 403,
+  not a hidden button, if someone posts at them). The P4 "Follow-up Sequences" nav placeholder
+  became this live item.
+- Migration 2026_10_17_180000_create_automations follows the new resumable rule (hasTable guard).
+- 7 tests / 38 assertions (AutomationsDashboardTest): default-enabled, toggle + attribution +
+  activity row + resume, permission gates, non-toggleable + unknown keys 403, run-history
+  rendering, the schedule filter actually flips (Schedule events ->filtersPass(app())) and
+  flips back, and a guard that every toggleable catalog key has its gate in routes/console.php.
+- Sandbox gotcha (new): running `artisan view:clear` while the preview server is serving breaks
+  the running process (wasm FS stat cache serves dead compiled-view paths → 500s on every
+  Blade page). Fix: restart the preview process. Do not view:clear under the live preview.
