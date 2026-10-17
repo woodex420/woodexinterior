@@ -2,6 +2,21 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT, after SYS-007 — the audit-log viewer)
+
+- **SYS-007 is DONE and shipped:** System → Audit log (`app/Livewire/Admin/System/AuditLog.php`, route
+  `admin.system.audit`, permission `audit.view`, nav item 'Audit log'). Three tabs — model changes (spatie
+  activity_log: description, causer, subject, event badge, expandable what-changed from `attribute_changes`),
+  webhook deliveries (provider, external_id, signed/unsigned, status), integration calls (action, ok/failed,
+  HTTP code, duration). Filters: causer select, subject-type select, text search; paginated. Tests:
+  `tests/Feature/AuditLogTest.php` (3). Gate green at 549 passed / 3 688 assertions, Larastan clean,
+  Pint clean 529 files.
+- **Wave 2 shipped so far:** the P3 reports kit (funnel, revenue & collections, receivables, CSV, ranges)
+  and SYS-007. **Remaining Wave 2:** CNV-004 (docs/14 §2.2 conversations remainder) → then Wave 3: V2-1
+  design tokens from v1's own design (D-116) → V2-2 builder. P5 exit: owner completes a full day of
+  approvals from Telegram (S1+S2+S3+S5+S6 shipped; remind: profile → Link Telegram, then /today /approvals
+  /idea /health). S4 digests + S7 alert-rules builder wait on the automation agent's lane.
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after the P3 reports kit — Wave 2 first item)
 
 - **The P3 reports kit is DONE and shipped (RPT-002/005, INV-005b, RPT-009):** three screens behind real

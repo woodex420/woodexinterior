@@ -43,7 +43,7 @@ The CRM, capture, importer, SLA and reminders are live and tested. Remaining, ve
 
 | ID | Task | Lane | Blocks / notes |
 |---|---|---|---|
-| SYS-007 | **Audit-log viewer**: `audit.view` permission exists, no screen uses it. Filters (user, model, action, date) + export | W | Compliance; small |
+| SYS-007 | **Audit-log viewer**: DONE 17 Oct — `/admin/system/audit` (`audit.view`): model changes (causer + subject + what-changed), webhook deliveries, integration calls; filters by causer, subject type, text | W | Shipped in Wave 2 |
 | SYS-009b | **Backups off-site**: `backup:run` is scheduled but no off-site destination is configured (no `config/backup.php`); Google Drive/S3 target + alert on failure | W + O | Restore drill is P9; needs the owner's Drive/S3 account |
 | TUR | **Turnstile live keys** — spam protection shows "off" until the owner creates the account and pastes keys | O | Public forms run without it today |
 | WEB-007b | **Booking slots configured** — the booking bridge answers "paused"; slots per area/day and real availability are a Settings job + owner content | W + O | BOT-005 depends on it |

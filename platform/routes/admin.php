@@ -33,6 +33,7 @@ use App\Livewire\Admin\Sales\QuoteCreate;
 use App\Livewire\Admin\Sales\QuotesIndex;
 use App\Livewire\Admin\Sales\QuoteTemplates;
 use App\Livewire\Admin\Sales\RateBook;
+use App\Livewire\Admin\System\AuditLog;
 use App\Livewire\Admin\System\ChangeRequests;
 use App\Livewire\Admin\System\DataImport;
 use App\Livewire\Admin\System\Health;
@@ -115,6 +116,7 @@ Route::livewire('/settings/lead-assignment', AssignmentRules::class)->name('assi
 Route::livewire('/users', UsersIndex::class)->name('users.index')->middleware('can:users.manage');
 Route::livewire('/system/health', Health::class)->name('system.health')->middleware('can:system.health');
 Route::livewire('/system/change-requests', ChangeRequests::class)->name('system.change-requests')->middleware('can:system.change_requests');
+Route::livewire('/system/audit', AuditLog::class)->name('system.audit')->middleware('can:audit.view');
 // Database update after a deploy (D-58): reachable while migrations are pending and before 2FA setup.
 Route::get('/system/updates', [SystemUpdateController::class, 'show'])->name('system.updates')
     ->middleware('can:system.health')->withoutMiddleware(['db-current', 'two-factor']);
