@@ -61,15 +61,15 @@ quotation link still sends by the configured fallback template once a number is 
 
 ## 4 · P3 Invoices & payments — the reports are the gap
 
-Invoices, payments, verification, projects-lite: shipped and tested. The **report screens are placeholders**
-(verified: `AdminNavigation` points `Receivables`, `Sales Funnel`, `Revenue & Collections` at `null`):
+Invoices, payments, verification, projects-lite: shipped and tested. The report screens shipped 17 Oct
+(Wave 2): the three placeholders in `AdminNavigation` are gone.
 
 | ID | Task | Lane | Notes |
 |---|---|---|---|
-| RPT-002 | **Sales Funnel**: stage conversion by period/line/source/owner, drop-off reasons | W | Data exists (`leads`, `stages`, `lost_reason`) |
-| RPT-005 | **Revenue & Collections**: quoted/accepted/invoiced/collected per month, by line and bank, receivables aging | W | `reports.finance` permission already exists |
-| INV-005b | **Receivables screen**: the aging table + follow-up entry point | W | Same data as RPT-005 aging — build once, use twice |
-| RPT-009 | Date-range presets, comparison, CSV export, print layout — shared by all three | W | Build into the reports kit |
+| RPT-002 | **Sales Funnel**: DONE — `admin.reports.funnel`, by period/source/line/owner with win rates, drop-off reasons, previous-period comparison, CSV, print | W | `SalesFunnelReport` under `app/Support/Reports/` |
+| RPT-005 | **Revenue & Collections**: DONE — `admin.reports.revenue`, quoted/accepted/invoiced/collected per month, by line, by method+bank, comparison, CSV | W | `RevenueCollectionsReport` |
+| INV-005b | **Receivables**: DONE — `admin.reports.receivables`, aging 0/30/60/90+ worst-first, per-client, WhatsApp nudge, CSV | W | `ReceivablesReport` (same aging data feeds both) |
+| RPT-009 | DONE — `ReportRange` (presets + equal-length previous period) + `Csv` (UTF-8 BOM, plain rupees) shared by all three screens | W | Print buttons on every screen |
 
 ## 5 · P4 Conversations — remainder (docs/14 §2.2 is the detail)
 

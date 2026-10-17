@@ -37,7 +37,7 @@ final class AdminNavigation
                 self::item('Quotations', 'quote', 'admin.quotes.index', 'quotes.view'),
                 self::item('Invoices', 'invoice', 'admin.invoices.index', 'invoices.view'),
                 self::item('Payments', 'wallet', 'admin.payments.index', 'invoices.view'),
-                self::item('Receivables', 'clock', null, null, 'P3'),
+                self::item('Receivables', 'clock', 'admin.reports.receivables', 'invoices.view'),
                 self::item('Quote Templates', 'templates', 'admin.quote-templates', 'quotes.view'),
                 self::item('Rate Book', 'book', 'admin.rate-book', 'quotes.view'),
             ]),
@@ -69,8 +69,8 @@ final class AdminNavigation
                 self::item('Theme Builder', 'palette', null, null, 'P6'),
             ]),
             self::group('Reports', [
-                self::item('Sales Funnel', 'chart', null, null, 'P3'),
-                self::item('Revenue & Collections', 'banknote', null, null, 'P3'),
+                self::item('Sales Funnel', 'chart', 'admin.reports.funnel', 'reports.view'),
+                self::item('Revenue & Collections', 'banknote', 'admin.reports.revenue', 'reports.finance'),
             ]),
             self::group('System', [
                 self::item('Settings', 'settings', 'admin.settings', 'settings.manage'),

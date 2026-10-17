@@ -2,6 +2,30 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here (project memory, saved 17 Oct 2026 PKT, after the P3 reports kit — Wave 2 first item)
+
+- **The P3 reports kit is DONE and shipped (RPT-002/005, INV-005b, RPT-009):** three screens behind real
+  routes now — `/admin/reports/sales-funnel` (perm reports.view), `/admin/reports/revenue-collections`
+  (perm reports.finance), `/admin/receivables` (perm invoices.view); nav placeholders replaced. Shared kit in
+  `app/Support/Reports/`: `ReportRange` (presets this/last month, last 90 days, quarter, year + equal-length
+  previous period), `Csv` (UTF-8 BOM, plain rupees), and the three query classes (SalesFunnelReport — leads by
+  source/line/owner with quotes-sent/accepted/win-rate + lost reasons; RevenueCollectionsReport — quoted/
+  accepted/invoiced/collected per month, by line, by method+bank via payment_allocations, outstanding today;
+  ReceivablesReport — per-client aging 0/30/60/90+ worst-first + totals). Every screen: comparison row,
+  CSV button (authorized), Print button. Tests: `tests/Feature/ReportsKitTest.php` (6). Gate green at
+  546 passed / 3 677 assertions, Larastan level 6 clean, Pint clean 527 files.
+  - Gotchas hit: Eloquent builders hydrate selectRaw aliases as enums/casts (use `DB::table` for aggregate
+    reads); `Builder<Quote>` is NOT covariant with `Builder<Model>` (byDay takes `Query\Builder`);
+    blade `@php(...)` inline takes one statement only — use `@php … @endphp` blocks.
+- **P5 shipped:** S1+S2 (framework + reads), S3 (actions + inline buttons), S5 (health completion), S6
+  (change-requests board). Remaining P5: S4 digests + S7 alert-rules builder = automation agent's lane;
+  S8 leftovers (unlink on deactivation, quiet-hours batching) — small, fold into the next pass.
+- **NEXT — Wave 2 remainder:** SYS-007 audit-log viewer (permission `audit.view` exists; data = spatie
+  activity log on models + `WebhookEvent` + `IntegrationLog`) → CNV-004 (docs/14 §2.2 remainder) → then
+  Wave 3 (V2-1 tokens from v1's own design — D-116 un-gated it). P5 exit: owner completes a full day of
+  approvals from Telegram — remind them to link the chat (profile → Link Telegram) and try /today /approvals
+  /idea /health.
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT, after P5 S6 — the change-requests board)
 
 - **P5 S6 is DONE and shipped (SYS-010):** System → Change Requests board (`app/Livewire/Admin/System/

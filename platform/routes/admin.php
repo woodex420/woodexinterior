@@ -22,6 +22,9 @@ use App\Livewire\Admin\Profile\Security;
 use App\Livewire\Admin\Projects\ProjectBoard;
 use App\Livewire\Admin\Projects\ProjectShow;
 use App\Livewire\Admin\Projects\ProjectsIndex;
+use App\Livewire\Admin\Reports\Receivables;
+use App\Livewire\Admin\Reports\RevenueCollections;
+use App\Livewire\Admin\Reports\SalesFunnel;
 use App\Livewire\Admin\Sales\Approvals;
 use App\Livewire\Admin\Sales\InvoicesIndex;
 use App\Livewire\Admin\Sales\PaymentsIndex;
@@ -100,6 +103,11 @@ Route::livewire('/website/settings', WebsiteSettings::class)->name('website.sett
 
 // Profile
 Route::livewire('/profile/security', Security::class)->name('profile.security');
+
+// Reports (P3)
+Route::livewire('/reports/sales-funnel', SalesFunnel::class)->name('reports.funnel')->middleware('can:reports.view');
+Route::livewire('/reports/revenue-collections', RevenueCollections::class)->name('reports.revenue')->middleware('can:reports.finance');
+Route::livewire('/receivables', Receivables::class)->name('reports.receivables')->middleware('can:invoices.view');
 
 // System
 Route::livewire('/settings', SettingsPage::class)->name('settings')->middleware('can:settings.manage');
