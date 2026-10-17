@@ -42,5 +42,11 @@
         'phone' => $phone,
         'whatsapp' => $whatsapp,
     ])
+
+    {{-- P8.5 web chat widget: one tag covers the home page and every CMS page. The route 404s
+         (and this block never renders) while the widget is off in Website Settings (A0). --}}
+    @if ($gtm->chat_widget_enabled)
+        <script src="{{ route('chat.widget') }}" defer></script>
+    @endif
 </body>
 </html>

@@ -56,7 +56,7 @@ class Conversation extends Model
     protected $fillable = [
         'channel', 'contact_id', 'lead_id', 'assignee_id', 'subject', 'status', 'external_number',
         'unread_count', 'window_expires_at', 'last_message_at', 'last_direction', 'last_preview',
-        'snoozed_until', 'closed_at', 'closed_by', 'labels',
+        'snoozed_until', 'closed_at', 'closed_by', 'labels', 'widget_token', 'widget_state',
     ];
 
     protected function casts(): array
@@ -104,6 +104,16 @@ class Conversation extends Model
     public function isInWindow(?CarbonImmutable $at = null): bool
     {
         return $this->window_expires_at !== null && $this->window_expires_at->gt($at ?? now());
+    }
+
+    /**
+     * Whether the team may type a free-form reply right now: inside Meta's window on WhatsApp,
+     * always on the studio's own website chat (P8.5) — there is no window on a thread the
+     * visitor opened themselves.
+     */
+    public function allowsFreeFormReply(?CarbonImmutable $at = null): bool
+    {
+        return $this->channel === Channel::WebChat || $this->isInWindow($at);
     }
 
     /** How long the free-form window is still open, in minutes (0 when it is not). */

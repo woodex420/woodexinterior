@@ -29,7 +29,7 @@ final class AskForPhoneNumber implements ShouldQueue
 
     public int $tries = 3;
 
-    private const TASK_TITLE = "Get the client's phone number — the enquiry came without one";
+    public const TASK_TITLE = "Get the client's phone number — the enquiry came without one";
 
     public function __construct(
         public readonly int $leadId,

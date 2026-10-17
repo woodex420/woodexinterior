@@ -31,6 +31,9 @@ class SiteSettings extends Settings
     /** Turn every tracking script off (useful while testing, or where the law requires consent first) */
     public bool $tracking_enabled;
 
+    /** The web chat widget on the public site (P8.5): off until the owner switches it on (A0). */
+    public bool $chat_widget_enabled;
+
     /** @phpstan-var list<string> Events sent to GA4 as conversions (docs/09 §11.3) */
     public array $conversion_events;
 

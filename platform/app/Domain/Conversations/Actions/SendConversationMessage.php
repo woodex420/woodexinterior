@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Conversations\Actions;
 
+use App\Domain\Conversations\Enums\Channel;
 use App\Domain\Conversations\Enums\MessageDirection;
 use App\Domain\Conversations\Enums\MessageStatus;
 use App\Domain\Conversations\Enums\MessageType;
@@ -35,6 +36,14 @@ final class SendConversationMessage
     public function handle(Conversation $conversation, string $body, ?User $user = null): Message
     {
         $conversation = $this->authorizedConversation($conversation, $user);
+
+        // Website chat (P8.5): no gateway and no WhatsApp rules apply. The visitor opened this
+        // thread themselves, so there is no consent question and no 24-hour window — the message
+        // is stored and the widget picks it up on its next poll.
+        if ($conversation->channel === Channel::WebChat) {
+            return $this->storeWebChatReply($conversation, $body, $user);
+        }
+
         $this->assertConsent($conversation);
         $body = trim($body);
 
@@ -64,6 +73,32 @@ final class SendConversationMessage
             if ($result->ok) {
                 $conversation->touchLastMessage(MessageDirection::Out, $body);
             }
+
+            return $message;
+        });
+    }
+
+    /** A web_chat reply: stored directly, marked sent, shown by the widget's polling. */
+    private function storeWebChatReply(Conversation $conversation, string $body, ?User $user): Message
+    {
+        $body = trim($body);
+
+        if ($body === '') {
+            throw new \InvalidArgumentException('An empty message is not sent.');
+        }
+
+        return DB::transaction(function () use ($conversation, $body, $user): Message {
+            /** @var Message $message */
+            $message = $conversation->messages()->create([
+                'direction' => MessageDirection::Out,
+                'type' => MessageType::Text,
+                'body' => $body,
+                'user_id' => $user?->id,
+                'status' => MessageStatus::Sent,
+                'sent_at' => now(),
+            ]);
+
+            $conversation->touchLastMessage(MessageDirection::Out, $body);
 
             return $message;
         });

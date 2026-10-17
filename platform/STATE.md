@@ -1315,3 +1315,46 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
   fallback via() proof, paused automation silence, ask-once idempotency across a retry, no ask
   with a phone or when paused, no ask for returning enquiries. PublicLeadApiTest still green.
 - Live: /admin/automation shows both new rows with their event-driven cadences.
+
+### 44. P8.5 part 3 — web chat widget (own `web_chat` channel, rule-based intake) — 17 Oct (evening)
+- The studio's own chat bubble on the public site: no WhatsApp number, no gateway, no Meta rules.
+  A visitor opens the bubble → rule-based intake asks name → WhatsApp number (or email) → what
+  they need done → CaptureLead (single entry point, source WebsiteChat) creates the lead and the
+  LeadCaptured pipeline fires part 2's owner+manager alert automatically. From there the thread is
+  a normal conversation in the existing Conversations inbox, channel "Website chat"; the widget
+  polls every 5s while open and shows the team's replies. WhatsApp handoff stays a later step
+  (needs the business number approval).
+- A0 on-switch: `site.chat_widget_enabled` defaults FALSE; the toggle lives in Website Settings
+  ("Web chat widget on the public site"). Saving the screen drops the whole published-page cache
+  (PageCache::invalidateAll) — without it visitors would keep yesterday's HTML for a day.
+- Serving split the site actually has (docs/11 §2): the 142 imported v1 pages are REAL static
+  index.html files served by Apache's DirectoryIndex before Laravel ever runs — so the bubble is
+  injected twice: (a) layout include for CMS/v2 pages (gated, zero cost when off), (b) a loader
+  appended to public/assets/site.js (the progressive-enhancement bundle every static page links).
+  The loader always fetches /chat/widget.js; with the widget off that URL answers a no-op comment
+  (never a 404, so a cached page degrades silently) and the data endpoints 404 for real.
+- Endpoints (public group, stateless): POST /api/public/chat/start|send, GET /api/public/chat/
+  messages?after=; new rate limiters chat-write (20/min, 500/day per IP) and chat-poll (90/min).
+  Token = 40 random chars in the visitor's localStorage; an unknown token is adopted, never
+  refused (works after a DB wipe); adoption regex-blocks junk tokens. Migration adds
+  conversations.widget_token (unique) + widget_state; both guarded for resumability.
+- Consent discipline: typing a number into a chat box is NOT WhatsApp consent (consent_whatsapp
+  stays false). Email-instead-of-number path: the chat itself asks for the number; the follow-up
+  task AskForPhoneNumber::TASK_TITLE (now public) is created as the exactly-once anchor so the
+  part-2 email job skips — the client is asked once, never twice. A System activity explains it.
+- SendConversationMessage: channel branch for WebChat — no gateway, no consent assert, no window
+  (the visitor opened this thread); stores Out + touchLastMessage. Conversation::
+  allowsFreeFormReply() keeps the inbox composer enabled for web_chat threads (isInWindow alone
+  would disable it — no window exists there). Bot turns are Out messages with meta bot=true, so
+  the widget can tell the studio's greeter from a human reply.
+- Conversation $fillable gained widget_token/widget_state (mass assignment silently drops
+  unknown columns — the token came back null until this was spotted; worth remembering).
+- Tests: WebChatWidgetTest (13) — off = invisible + no-op script + 404 data endpoints; script +
+  greeting + token resume; full intake → lead + live thread + no WhatsApp consent; email path →
+  anchor task + no AskForNumberMail; invalid number re-ask; staff reply without gateway + poll
+  returns it; unknown token adopted; live-thread messages still stored; 2000-char bound (422
+  above); static-page loader shipped; cache drop on toggle (through the real WebsiteSettings
+  screen); unread counting; inbox shows the thread + composer works. Gate: 93 files / 963 passed.
+- Live: verified in a real browser on the static home page — bubble, resumed thread with the
+  staff reply, zero JS errors — and on the CMS-rendered /furniture/ page. Widget left ON in the
+  sandbox preview for the owner to try; production default remains off until switched on.

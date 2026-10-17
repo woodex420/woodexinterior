@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Bridge\BridgeController;
+use App\Http\Controllers\Api\Public\ChatWidgetController;
 use App\Http\Controllers\Api\Public\LeadController;
 use App\Http\Controllers\Website\LegacySiteBridgeController;
 use App\Http\Middleware\AuthenticateMcpBridge;
@@ -14,6 +15,20 @@ Route::prefix('public')->name('api.public.')->group(function (): void {
     Route::post('/leads', [LeadController::class, 'store'])
         ->middleware('throttle:public-leads')
         ->name('leads.store');
+
+    // The web chat widget (P8.5): open a thread, send a message, poll for replies. Stateless;
+    // the visitor's token is the only credential; the owner's switch (Website Settings) gates all three.
+    Route::post('/chat/start', [ChatWidgetController::class, 'start'])
+        ->middleware('throttle:chat-write')
+        ->name('chat.start');
+
+    Route::post('/chat/send', [ChatWidgetController::class, 'send'])
+        ->middleware('throttle:chat-write')
+        ->name('chat.send');
+
+    Route::get('/chat/messages', [ChatWidgetController::class, 'messages'])
+        ->middleware('throttle:chat-poll')
+        ->name('chat.messages');
 });
 
 /*

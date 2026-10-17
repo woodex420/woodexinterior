@@ -141,6 +141,15 @@ class AppServiceProvider extends ServiceProvider
             Limit::perDay(20_000)->by('site-day:'.$request->ip()),
         ]);
 
+        // The web chat widget (P8.5): a person types a few messages a minute, the poll runs every
+        // five seconds while the panel is open. Both keyed to the address, not the token.
+        RateLimiter::for('chat-write', fn (Request $request): array => [
+            Limit::perMinute(20)->by('chat-write:'.$request->ip()),
+            Limit::perDay(500)->by('chat-write-day:'.$request->ip()),
+        ]);
+
+        RateLimiter::for('chat-poll', fn (Request $request): Limit => Limit::perMinute(90)->by('chat-poll:'.$request->ip()));
+
         RateLimiter::for('webhooks', fn (Request $request): Limit => Limit::perMinute(120)->by('webhook:'.$request->ip()));
 
         // Re-applied on every Livewire update request, not only on the first page load.

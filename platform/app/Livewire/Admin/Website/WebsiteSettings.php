@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Website;
 
+use App\Domain\Website\Models\Page;
+use App\Domain\Website\Services\PageCache;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Settings\SiteSettings;
 use Illuminate\Contracts\View\View;
@@ -31,6 +33,8 @@ class WebsiteSettings extends Component
 
     public bool $tracking_enabled = true;
 
+    public bool $chat_widget_enabled = false;
+
     public function mount(SiteSettings $settings): void
     {
         abort_unless($this->user()->can('settings.manage'), 403);
@@ -40,6 +44,7 @@ class WebsiteSettings extends Component
         $this->google_site_verification = $settings->google_site_verification;
         $this->clarity_id = $settings->clarity_id;
         $this->tracking_enabled = $settings->tracking_enabled;
+        $this->chat_widget_enabled = $settings->chat_widget_enabled;
     }
 
     public function save(SiteSettings $settings): void
@@ -52,6 +57,7 @@ class WebsiteSettings extends Component
             'google_site_verification' => ['nullable', 'string', 'max:120'],
             'clarity_id' => ['nullable', 'string', 'max:40'],
             'tracking_enabled' => ['boolean'],
+            'chat_widget_enabled' => ['boolean'],
         ], [
             'ga4_id.regex' => 'A GA4 measurement ID looks like G-XXXXXXXXXX.',
             'gtm_id.regex' => 'A Google Tag Manager ID looks like GTM-XXXXXXX.',
@@ -63,8 +69,13 @@ class WebsiteSettings extends Component
             'google_site_verification' => $data['google_site_verification'] ?: null,
             'clarity_id' => $data['clarity_id'] ?: null,
             'tracking_enabled' => (bool) $data['tracking_enabled'],
+            'chat_widget_enabled' => (bool) $data['chat_widget_enabled'],
         ]);
         $settings->save();
+
+        // Published pages are cached whole (docs/09 §2.3), so switching the chat widget must drop
+        // every cached page — otherwise visitors keep yesterday's HTML (with or without the bubble).
+        PageCache::invalidateAll(Page::query()->published()->get());
 
         $this->toast('Saved. The change is live on the next page view.');
     }

@@ -1,13 +1,13 @@
 # Woodex OS — Project Status & Quick Start
 
-**Updated:** 17 Oct 2026 (evening) · **Status: P8.5 in progress — control dashboard + new-enquiry alerts + ask-for-number shipped; web chat widget and monthly report next.**
+**Updated:** 17 Oct 2026 (evening) · **Status: P8.5 in progress — control dashboard, new-enquiry alerts + ask-for-number, and the web chat widget shipped; monthly report next.**
 
 One line: CRM + quotations + invoicing + payments + inbox + Telegram + website CMS + double-entry ledger core are live and gated; invoices and receipts now post to the general ledger automatically, dues have a screen with consent-gated reminders, and money can be collected from the phone. Remaining: two-brand documents/estimation, tracking boards, automation agents, MySQL migration, handover.
 
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · Preline · SQLite (sandbox) → MySQL (production, planned) |
-| Tests | **921 passing** · 88 files (sharded gate) · Pint 630 clean · Larastan 0 |
+| Tests | **963 passing** · 93 files (sharded gate) · Pint clean · Larastan 0 |
 | Quality | Pint **607 files clean** · Larastan **0 errors** · CI workflow ready in `docs/ci/` |
 | Progress log | [`platform/STATE.md`](platform/STATE.md) (chronological) · plan [`docs/26-P8-MASTER-PLAN.md`](docs/26-P8-MASTER-PLAN.md) |
 | Sandbox preview | port 8080 · login `owner@woodex.test` / `Wave1-Preview!` (demo data seeded) |
@@ -26,7 +26,8 @@ One line: CRM + quotations + invoicing + payments + inbox + Telegram + website C
 | **System (P5)** | Telegram **15-command centre** + inline action buttons, health collector, audit-log viewer, change-requests board, optional owner 2FA, settings, users & roles |
 | **Website CMS** | Pages/sections with drag-reorder, media, menus, SEO + redirects, theme builder + design tokens, **v2.1 legacy import with URL parity (142 URLs)**, website export/import |
 | **Accounts ERP — batch C (P8.1)** | Chart of accounts (starter PKR set, ~31 accounts, business-line dimensions), monthly periods (open/close), **immutable balanced journal entries with two-way linked reversals**, integer-paisa amounts, JE-{year}-{seq} numbering, idempotent posting (`unique(source_type, source_id)`), OPEN-period rule |
-| **New-enquiry alerts + ask-for-number (P8.5 part 2)** ⬅ newest | Every enquiry instantly alerts the lead's owner AND the sales managers — Telegram with one-tap assign and WhatsApp buttons, in-app, and email for staff without a Telegram link. An enquiry that arrives with an email but no number gets exactly one branded reply asking for a WhatsApp number (a service response, never marketing) plus a follow-up task; both flows pause independently from the Automations screen |
+| **Web chat widget (P8.5 part 3)** ⬅ newest | The studio's own chat bubble on every public page (no WhatsApp number needed): a rule-based intake asks name → number-or-email → what's needed, creates the lead, and fires the owner+manager alert from part 2; the team then replies from the Conversations inbox ("Website chat" channel) and the widget shows it live. Off by default — one switch in Website Settings; the static v1 pages get it through the site.js loader, CMS pages through the layout. Typing a number in chat is never treated as WhatsApp consent, and a visitor who gives an email instead is asked for their number exactly once |
+| **New-enquiry alerts + ask-for-number (P8.5 part 2)** | Every enquiry instantly alerts the lead's owner AND the sales managers — Telegram with one-tap assign and WhatsApp buttons, in-app, and email for staff without a Telegram link. An enquiry that arrives with an email but no number gets exactly one branded reply asking for a WhatsApp number (a service response, never marketing) plus a follow-up task; both flows pause independently from the Automations screen |
 | **Automation control dashboard (P8.5 part 1)** | Every automation on one screen — on/off per flow with attribution, cadence, and last-run health read from the scheduler's own record. Fail-safe by design: the catalog is code, a missing switch means enabled, and the schedule entries consult the switch before every run. Business automations toggleable; platform jobs (queue, heartbeat, backups, webhook recovery) shown read-only |
 | **Sales tracking boards + statements (P8.4)** | Event-driven **quote tracking board** (six groups mirroring the auto-chaser: follow-up due / awaiting reply / stale after 3 chases / expiring / won / lost) with a Log-chase action that writes the same follow_up event the chaser counts · **invoice tracking board** (overdue / due this week / current / partially paid / recently settled) with **inline one-act Collect** (records + verifies + receipts + books the ledger entry) and consent-gated Remind · **client statements** — branded letterhead PDF per contact with period filter, running balance, outstanding + aging, downloadable from the contact page and the board |
 | **Estimates module (P8.3)** | Persistent versioned estimates for all 6 estimator services — one server-side pricing engine (chosen finish + honest essential→premium band + rate book lines + explicit contingency), frozen rate snapshots, EST-{year}-{seq} numbers, deliberate review act, **idempotent one-click conversion to a quote draft** linked both ways (Sales → Estimations) |
@@ -48,7 +49,7 @@ One line: CRM + quotations + invoicing + payments + inbox + Telegram + website C
 ### Roadmap (docs/26 — each batch ships behind the full gate + owner sign-off)
 | Batch | Scope |
 |---|---|
-| **P8.5 remaining** | New-client alert + ask-for-number flow (Telegram + email fallback), **web chat widget** as a first-class web_chat channel in the inbox, monthly CRM report on the 1st (Telegram + email + saved screen), dormant SEO/social agent stubs; rule-based only — LLM layer optional later |
+| **P8.5 remaining** | Monthly CRM report on the 1st at 09:00 (owner's Telegram + email fallback + saved screen under /admin/automation), dormant SEO/social agent stubs; rule-based only — LLM layer optional later. (Shipped so far: control dashboard, new-client alert + ask-for-number, web chat widget.) |
 | **P8.6 Runtime, portal & handover** | **MySQL migration** (production only, after GL stabilises, before 2025 financial staging), projects board, client portal, handover pack |
 | **P9 tail** | Security review, load pass, restore drill, Urdu templates, training, final v2.1 sync |
 | Deferred | V2-2 part 2 website builder polish (inline editing, section thumbnails, campaign free-canvas) |

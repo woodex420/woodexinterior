@@ -26,6 +26,14 @@
                     Load analytics on the public website
                 </label>
 
+                <label class="flex items-start gap-2 text-theme-sm text-gray-700 dark:text-gray-300">
+                    <input type="checkbox" wire:model="chat_widget_enabled" class="mt-1 rounded border-gray-300">
+                    <span>
+                        Web chat widget on the public site
+                        <span class="block text-theme-xs text-gray-500">A chat bubble on every page. A rule-based flow asks for name, number and service, creates the lead, alerts the team, and the team replies from Conversations — no WhatsApp number needed. Off by default (A0).</span>
+                    </span>
+                </label>
+
                 <x-admin.button type="submit" icon="save">Save</x-admin.button>
             </form>
         </x-admin.card>

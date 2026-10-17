@@ -170,8 +170,8 @@
                     @endif
 
                     <div class="flex items-end gap-2">
-                        <textarea wire:model="draft" rows="2" placeholder="Write a reply… (type / for saved replies)" class="wx-input" aria-label="Reply" @disabled(! $selected->isInWindow())></textarea>
-                        <x-admin.button variant="primary" wire:click="send" icon="send" :disabled="! $selected->isInWindow()">Send</x-admin.button>
+                        <textarea wire:model="draft" rows="2" placeholder="Write a reply… (type / for saved replies)" class="wx-input" aria-label="Reply" @disabled(! $selected->allowsFreeFormReply())></textarea>
+                        <x-admin.button variant="primary" wire:click="send" icon="send" :disabled="! $selected->allowsFreeFormReply()">Send</x-admin.button>
                     </div>
 
                     <div class="mt-2 flex items-end gap-2">

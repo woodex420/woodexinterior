@@ -496,3 +496,14 @@
     document.body.insertBefore(b, document.body.firstChild); document.documentElement.classList.add("wx-has-ann");
   }).catch(function () {});
 })();
+
+/* P8.5: web chat widget. The bubble itself comes from /chat/widget.js, which the studio switches
+   on in Woodex Admin → Website → Website settings; when it is off that URL answers with an empty
+   no-op, so this loader costs one cached request and nothing more. CMS-rendered pages inject the
+   same script in the layout and skip even that request. */
+(function () {
+  var s = document.createElement('script');
+  s.src = '/chat/widget.js';
+  s.defer = true;
+  (document.body || document.head).appendChild(s);
+})();

@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Website\Support\ThemeCss;
+use App\Http\Controllers\Api\Public\ChatWidgetController;
 use App\Http\Controllers\Auth\GoogleOAuthController;
 use App\Http\Controllers\Portal\ClientPortalController;
 use App\Http\Controllers\Portal\InvoicePortalController;
@@ -152,3 +153,7 @@ Route::prefix('portal')->name('portal')->group(function (): void {
 Route::get('/media/{media}/{name}', WebsiteMediaController::class)->name('website.media.file')->whereNumber('media');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
+
+// The web chat widget's script (P8.5): one <script> tag on the site layout covers the home page and
+// every CMS page. It 404s (and the layout never links it) while the widget is off in Website Settings.
+Route::get('/chat/widget.js', [ChatWidgetController::class, 'script'])->name('chat.widget');
