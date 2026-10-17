@@ -78,7 +78,9 @@ class AutomationsIndex extends Component
             $run = $runs[$entry['key']] ?? null;
 
             return $entry + [
-                'enabled' => $row->is_enabled ?? true,
+                'enabled' => $row->is_enabled ?? ($entry['default_enabled'] ?? true),
+                // Dormant (P8.5 A0): an agent that ships off and has never been switched on.
+                'dormant' => $row === null && (($entry['default_enabled'] ?? true) === false),
                 'toggled_by' => $row?->toggled_by,
                 'toggled_at' => $row?->toggled_at,
                 'last_run' => $run?->ran_at,

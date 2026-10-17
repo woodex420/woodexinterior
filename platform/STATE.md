@@ -1393,3 +1393,34 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
   Stop the preview before running the gate; restarted after. Code was never at fault.
 - Live: September 2026 archived and sent on the preview (3 enquiries, 1 overdue invoice);
   /admin/automation shows the card, the archive row and the expand.
+
+### 46. P8.5 part 5 — dormant SEO/social agent stubs; P8.5 COMPLETE — 17 Oct (night)
+- The last piece of the owner's 17 Oct order: two agents shipped DORMANT — off by default,
+  switched on by the owner alone (A0), rule-based only (an LLM layer can start from the same
+  lists later, if ever).
+- Dormancy is now a catalog concept: Automation entries may carry default_enabled=false;
+  enabled() falls back to the catalog default when no row exists (the missing-row fail-safe
+  still means ON for everything else), and toggle() creates the row AT the default so the
+  first click on a dormant agent is "Switch on", not a pause. The dashboard shows a gray
+  "Dormant — off by default" badge and "Has never run — it is dormant until you switch it on".
+- woodex:seo-agent (Sundays 08:00, dormant): CheckSeoHealth — a read-only sweep of published
+  pages (missing meta descriptions, titles over 65 chars) and redirects that point at no
+  published page; the owner gets a short list, the agent never edits or publishes anything.
+  A clean site gets "Everything looks healthy".
+- woodex:social-agent (Mondays 09:30, dormant): CollectSocialPostIdeas — the week's handovers
+  signed, pages published or refreshed, projects won, as post ideas for the owner alone. It
+  never posts, never drafts client-facing copy, never names a client; a quiet week says so.
+- AgentReportNotification: one shared shape for agent digests (kind, title, lines, url) with
+  the standard routing — Telegram when linked, email otherwise, in-app copy always; buttons
+  only on https URLs.
+- Both commands are gated in routes/console.php like every scheduled business automation, so
+  the catalog/schedule consistency test covers them; ScheduledTaskRun records their runs once
+  the owner wakes them.
+- Tests: AgentStubsTest (8) — dormant defaults with everything else still fail-safe ON,
+  dashboard Dormant badge + Switch-on flow, schedule skips dormant agents until toggled, real
+  SEO findings (bare page, long title, broken redirect), clean bill, post ideas with the
+  40-day-old handover and the client's name excluded, quiet week, Telegram/email routing.
+  Gate: 95 files / 980 passed / 0 failed.
+- Live: /admin/automation shows both rows as Dormant with Switch on buttons; verified in a
+  real logged-in browser. P8.5 is COMPLETE: control dashboard → new-enquiry alerts +
+  ask-for-number → web chat widget → monthly report → dormant agents, all shipped green.

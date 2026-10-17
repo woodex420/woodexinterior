@@ -35,7 +35,7 @@ class Automation extends Model
      * entries are gated in routes/console.php — keep them in step; event-driven ones are gated
      * where they fire.
      *
-     * @return list<array{key: string, name: string, description: string, cadence: string, toggleable: bool, scheduled: bool}>
+     * @return list<array{key: string, name: string, description: string, cadence: string, toggleable: bool, scheduled: bool, default_enabled?: bool}>
      */
     public static function catalog(): array
     {
@@ -97,6 +97,24 @@ class Automation extends Model
                 'toggleable' => true,
             ],
             [
+                'key' => 'woodex:seo-agent',
+                'scheduled' => true,
+                'name' => 'SEO health check',
+                'description' => 'A weekly, read-only look at the website\'s search basics: pages missing a meta description, overlong titles, redirects pointing nowhere — a short list for the owner. Dormant until switched on (A0); it never edits or publishes anything by itself.',
+                'cadence' => 'Sundays 08:00',
+                'toggleable' => true,
+                'default_enabled' => false,
+            ],
+            [
+                'key' => 'woodex:social-agent',
+                'scheduled' => true,
+                'name' => 'Social post ideas',
+                'description' => 'A weekly digest of what is worth posting about — handovers signed, pages published, projects won — sent only to the owner, who decides what to do with it. Dormant until switched on (A0); it never posts anywhere and never writes client-facing copy.',
+                'cadence' => 'Mondays 09:30',
+                'toggleable' => true,
+                'default_enabled' => false,
+            ],
+            [
                 'key' => 'woodex:retry-whatsapp-webhooks',
                 'scheduled' => true,
                 'name' => 'WhatsApp recovery queue',
@@ -140,13 +158,26 @@ class Automation extends Model
     }
 
     /**
-     * May this automation run right now? Missing row = enabled (fail-safe: an automation the
-     * catalog does not know about still runs). Cached for a minute so the scheduler's per-task
-     * checks cost one cache hit, and an owner's toggle lands within a minute.
+     * May this automation run right now? Missing row = the catalog's default: enabled, except the
+     * agents that ship dormant (P8.5 A0 — an agent that reaches beyond the studio's own walls
+     * starts OFF and waits for the owner's explicit switch). Cached for a minute so the
+     * scheduler's per-task checks cost one cache hit, and an owner's toggle lands within a minute.
      */
     public static function enabled(string $key): bool
     {
-        return (bool) Cache::remember('woodex:automation.'.$key, 60, static fn (): bool => ! static::query()->where('key', $key)->where('is_enabled', false)->exists());
+        return (bool) Cache::remember(
+            'woodex:automation.'.$key,
+            60,
+            static fn (): bool => (bool) (static::query()->where('key', $key)->value('is_enabled') ?? static::defaultEnabled($key)),
+        );
+    }
+
+    /** The catalog's default state for a key — on, unless the entry ships dormant. */
+    public static function defaultEnabled(string $key): bool
+    {
+        $entry = collect(static::catalog())->firstWhere('key', $key);
+
+        return ! (is_array($entry) && array_key_exists('default_enabled', $entry) && $entry['default_enabled'] === false);
     }
 
     /**
@@ -154,7 +185,8 @@ class Automation extends Model
      */
     public static function toggle(string $key, ?User $by): bool
     {
-        $automation = static::query()->firstOrCreate(['key' => $key], ['is_enabled' => true]);
+        // The row starts at the catalog's default (a dormant agent wakes up, the rest pause).
+        $automation = static::query()->firstOrCreate(['key' => $key], ['is_enabled' => static::defaultEnabled($key)]);
 
         $automation->forceFill([
             'is_enabled' => ! $automation->is_enabled,

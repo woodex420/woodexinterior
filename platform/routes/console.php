@@ -46,6 +46,13 @@ Schedule::command('woodex:quote-follow-ups')->dailyAt('09:00')->withoutOverlappi
 Schedule::command('woodex:review-requests')->dailyAt('10:30')
     ->when(fn (): bool => Automation::enabled('woodex:review-requests'));
 
+// P8.5 dormant agents: read-only digests for the owner, OFF until switched on (A0).
+Schedule::command('woodex:seo-agent')->weeklyOn(0, '08:00')
+    ->when(fn (): bool => Automation::enabled('woodex:seo-agent'));
+
+Schedule::command('woodex:social-agent')->weeklyOn(1, '09:30')
+    ->when(fn (): bool => Automation::enabled('woodex:social-agent'));
+
 // Backups (spatie/laravel-backup) and housekeeping.
 Schedule::command('backup:run --only-db')->dailyAt('02:30');
 Schedule::command('backup:run')->weeklyOn(0, '03:00');

@@ -14,13 +14,19 @@
                     <div class="min-w-0">
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="font-medium text-gray-900 dark:text-white/90">{{ $automation['name'] }}</span>
-                            <x-admin.badge :color="$automation['enabled'] ? 'success' : 'warning'">{{ $automation['enabled'] ? 'On' : 'Paused' }}</x-admin.badge>
+                            @if ($automation['dormant'])
+                                <x-admin.badge color="gray">Dormant — off by default</x-admin.badge>
+                            @else
+                                <x-admin.badge :color="$automation['enabled'] ? 'success' : 'warning'">{{ $automation['enabled'] ? 'On' : 'Paused' }}</x-admin.badge>
+                            @endif
                             <span class="text-theme-xs text-gray-500">{{ $automation['cadence'] }}</span>
                         </div>
                         <p class="mt-1 text-theme-sm text-gray-600 dark:text-gray-400">{{ $automation['description'] }}</p>
                         <p class="mt-1 text-theme-xs text-gray-500">
                             @if ($automation['last_run'] !== null)
                                 Last ran {{ $automation['last_run']->diffForHumans() }}@if ($automation['last_runtime_ms']) · {{ $automation['last_runtime_ms'] }} ms @endif
+                            @elseif ($automation['dormant'])
+                                Has never run — it is dormant until you switch it on
                             @else
                                 Not recorded yet
                             @endif
@@ -32,7 +38,11 @@
                     <div class="shrink-0">
                         @if ($canToggle)
                             <x-admin.button size="sm" :variant="$automation['enabled'] ? 'secondary' : 'primary'" wire:click="toggle('{{ $automation['key'] }}')" wire:loading.attr="disabled">
-                                {{ $automation['enabled'] ? 'Pause' : 'Resume' }}
+                                @if ($automation['dormant'])
+                                    Switch on
+                                @else
+                                    {{ $automation['enabled'] ? 'Pause' : 'Resume' }}
+                                @endif
                             </x-admin.button>
                         @else
                             <x-admin.button size="sm" variant="secondary" disabled>
