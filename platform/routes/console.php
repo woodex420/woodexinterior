@@ -34,6 +34,10 @@ Schedule::command('woodex:sla-check')->everyMinute()->withoutOverlapping(5)
 Schedule::command('woodex:reminders')->everyMinute()->withoutOverlapping(5)
     ->when(fn (): bool => Automation::enabled('woodex:reminders'));
 
+// Monthly CRM report to the owner: the month that just ended, in one message (P8.5).
+Schedule::command('woodex:monthly-report')->monthlyOn(1, '09:00')
+    ->when(fn (): bool => Automation::enabled('woodex:monthly-report'));
+
 // Quotations nobody answered: chase, warn before the price lapses, lapse what is stale (AUT).
 Schedule::command('woodex:quote-follow-ups')->dailyAt('09:00')->withoutOverlapping(30)
     ->when(fn (): bool => Automation::enabled('woodex:quote-follow-ups'));

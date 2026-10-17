@@ -46,6 +46,106 @@
     </x-admin.card>
 
     <div class="mt-6">
+        <x-admin.card title="Monthly CRM report"
+                      description="On the 1st at 09:00 the owner gets the month that just ended in one message — Telegram, email when Telegram is not linked — and every report is archived here. Pause the row above to stop the monthly send."
+                      :padding="false">
+            <div class="px-5 py-4">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p class="text-theme-sm text-gray-600 dark:text-gray-400">
+                        The digest reuses the Reports screens' own numbers (funnel, revenue &amp; collections), so the message and the dashboards can never disagree.
+                    </p>
+                    @if ($canToggle)
+                        <x-admin.button size="sm" wire:click="generateNow" wire:loading.attr="disabled">
+                            Build last month now
+                        </x-admin.button>
+                    @endif
+                </div>
+            </div>
+
+            <div class="divide-y divide-gray-100 border-t border-gray-100 dark:divide-gray-800 dark:border-gray-800">
+                @forelse ($reports as $report)
+                    <div wire:key="report-{{ $report->id }}">
+                        <button type="button" wire:click="toggleReport({{ $report->id }})"
+                                class="flex w-full flex-col gap-2 px-5 py-4 text-left sm:flex-row sm:items-center sm:justify-between hover:bg-gray-50 dark:hover:bg-white/5">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="font-medium text-gray-900 dark:text-white/90">{{ $report->periodLabel() }}</span>
+                                <x-admin.badge color="gray">{{ $report->notified_at !== null ? 'sent '.$report->notified_at->diffForHumans() : 'archived, not sent' }}</x-admin.badge>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-theme-xs text-gray-600 dark:text-gray-400">
+                                <span>{{ $report->headline()['leads'] }} enquiries</span>
+                                <span>{{ $report->headline()['won'] }} won</span>
+                                <span>invoiced {{ \App\Support\Money::ofMinor($report->headline()['invoiced_minor'])->format($lakh) }}</span>
+                                <span>collected {{ \App\Support\Money::ofMinor($report->headline()['collected_minor'])->format($lakh) }}</span>
+                            </div>
+                        </button>
+
+                        @if ($expandedReport !== null && $expandedReport->id === $report->id)
+                            @php
+                                $funnel = $report->payload['funnel'] ?? [];
+                                $previous = $report->payload['funnel_previous'] ?? [];
+                                $money = $report->payload['money'] ?? [];
+                                $moneyPrevious = $report->payload['money_previous'] ?? [];
+                                $overdue = $report->payload['overdue'] ?? [];
+                                $chat = $report->payload['web_chat'] ?? [];
+                            @endphp
+                            <div class="grid gap-4 bg-gray-50 px-5 py-4 text-theme-sm dark:bg-white/5 sm:grid-cols-2 lg:grid-cols-4">
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white/90">Enquiries</p>
+                                    <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                        {{ (int) ($funnel['leads'] ?? 0) }} new
+                                        ({{ (int) ($previous['leads'] ?? 0) }} the month before)
+                                        · {{ (int) ($funnel['quotes_sent'] ?? 0) }} quotations sent
+                                        · {{ (int) ($funnel['won'] ?? 0) }} won, {{ (int) ($funnel['lost'] ?? 0) }} lost
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white/90">Money</p>
+                                    <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                        Quoted {{ \App\Support\Money::ofMinor((int) ($money['quoted_minor'] ?? 0))->format($lakh) }} ·
+                                        invoiced {{ \App\Support\Money::ofMinor((int) ($money['invoiced_minor'] ?? 0))->format($lakh) }} ·
+                                        collected {{ \App\Support\Money::ofMinor((int) ($money['collected_minor'] ?? 0))->format($lakh) }}
+                                        ({{ \App\Support\Money::ofMinor((int) ($moneyPrevious['collected_minor'] ?? 0))->format($lakh) }} before)
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white/90">Outstanding</p>
+                                    <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                        {{ \App\Support\Money::ofMinor((int) ($money['outstanding_minor'] ?? 0))->format($lakh) }} today
+                                        · {{ (int) ($overdue['count'] ?? 0) }} invoice(s) overdue
+                                        @if ((int) ($overdue['oldest_days'] ?? 0) > 0)
+                                            · oldest {{ (int) $overdue['oldest_days'] }} days
+                                        @endif
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white/90">Website chat</p>
+                                    <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                        {{ (int) ($chat['threads'] ?? 0) }} thread(s) · {{ (int) ($chat['messages'] ?? 0) }} messages
+                                    </p>
+                                </div>
+                                @if (($report->payload['top_sources'] ?? []) !== [])
+                                    <div class="sm:col-span-2 lg:col-span-4">
+                                        <p class="font-medium text-gray-900 dark:text-white/90">Top sources</p>
+                                        <p class="mt-1 text-gray-600 dark:text-gray-400">
+                                            @foreach ($report->payload['top_sources'] as $source)
+                                                {{ $source['label'] }} — {{ (int) $source['leads'] }} lead(s), {{ (int) $source['accepted'] }} accepted{{ ! $loop->last ? ' · ' : '' }}
+                                            @endforeach
+                                        </p>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                @empty
+                    <p class="px-5 py-4 text-theme-sm text-gray-500">
+                        Nothing yet — the first report lands on the 1st, or press "Build last month now".
+                    </p>
+                @endforelse
+            </div>
+        </x-admin.card>
+    </div>
+
+    <div class="mt-6">
         <x-admin.card title="Platform jobs" description="Keep-the-lights-on work: shown for honesty, not for switching off." :padding="false">
             <div class="divide-y divide-gray-100 dark:divide-gray-800">
                 @foreach ($automations as $automation)

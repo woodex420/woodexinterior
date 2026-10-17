@@ -1358,3 +1358,38 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
 - Live: verified in a real browser on the static home page — bubble, resumed thread with the
   staff reply, zero JS errors — and on the CMS-rendered /furniture/ page. Widget left ON in the
   sandbox preview for the owner to try; production default remains off until switched on.
+
+### 45. P8.5 part 4 — monthly CRM report (1st 09:00, owner Telegram + email fallback, archived) — 17 Oct (night)
+- The owner's 17 Oct decision, shipped: on the 1st at 09:00 the month that just ended reaches the
+  owner in one message, and every report is archived under System → Automations.
+- GenerateMonthlyReport (System action): period = previous calendar month by default (or any
+  month passed as its first day); payload reuses the reports kit the screens use — SalesFunnelReport
+  headline + bySource (RPT-002) and RevenueCollectionsReport totals (RPT-005) — plus overdue
+  invoices (count + oldest age) and website-chat thread/message counts. Message and dashboards
+  can never disagree because they are the same queries.
+- One row per month: monthly_reports.period_start is UNIQUE; regenerating a month (late import,
+  correction, the "Build last month now" button) updates the row in place. The archive list shows
+  period, sent/archived badge and headline chips; a row expands to the full detail grid.
+- MonthlyReportNotification: Telegram when the owner has a link, email when not, database copy
+  always (bell menu → the archive); action buttons only on https URLs, same rule as every
+  notification. Lakh-formatted money via Money + SalesSettings.lakh_grouping.
+- Schedule: woodex:monthly-report monthlyOn(1, '09:00') gated by Automation::enabled, catalog
+  entry 'woodex:monthly-report' (scheduled + toggleable, so pausing the row on the dashboard
+  stops the monthly send). Run history lands on the dashboard via the existing ScheduledTaskRun
+  listener. The command takes --month=Y-m-01 and --no-send for debugging.
+- "Build last month now" on the dashboard: explicit human action, so it runs even while the
+  automation is paused; same computation, sends like the scheduled run.
+- Gotchas met: (a) date columns store datetimes — query with whereDate() or Carbon objects, a
+  bare 'Y-m-d' string binding does not match 'Y-m-d 00:00:00' in sqlite; (b) a Livewire public
+  property and a render variable of the same name collide — the blade sees the component property
+  (renamed to $expandedReport).
+- Tests: MonthlyReportTest (9) — default previous month + send, period boundaries (September
+  counts September, August is the comparison), one-row-per-month regeneration, --no-send,
+  Telegram/email routing, no-owner safety, first-day validation, scheduled command + switch
+  honouring, dashboard archive + on-demand build. Gate: 94 files / 972 passed.
+- OPERATIONAL LESSON: the full gate raced the live preview — the owner's open admin tab polls
+  Livewire every few seconds, each poll boots wasm PHP from the same /tmp/woodex-run/app, and a
+  manifest rebuild there deleted bootstrap/cache/services.php mid-shard (78 phantom failures).
+  Stop the preview before running the gate; restarted after. Code was never at fault.
+- Live: September 2026 archived and sent on the preview (3 enquiries, 1 overdue invoice);
+  /admin/automation shows the card, the archive row and the expand.

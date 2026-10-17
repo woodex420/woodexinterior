@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\System;
 
+use App\Domain\System\Actions\GenerateMonthlyReport;
 use App\Domain\System\Models\Automation;
+use App\Domain\System\Models\MonthlyReport;
 use App\Domain\System\Models\ScheduledTaskRun;
 use App\Livewire\Concerns\InteractsWithAdmin;
+use App\Settings\SalesSettings;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -24,6 +27,8 @@ class AutomationsIndex extends Component
 {
     use InteractsWithAdmin;
 
+    public ?int $openReport = null;
+
     public function toggle(string $key): void
     {
         $entry = collect(Automation::catalog())->firstWhere('key', $key);
@@ -38,7 +43,32 @@ class AutomationsIndex extends Component
             ->log(($enabled ? 'Resumed automation ' : 'Paused automation ').$entry['name'].'.');
     }
 
-    public function render(): View
+    /**
+     * P8.5 monthly report: build last month now — the same computation the 1st-of-the-month run
+     * uses — and send it to the owner exactly as scheduled. An explicit human action, so it runs
+     * even while the automation itself is paused.
+     */
+    public function generateNow(): void
+    {
+        $this->authorize('automation.manage');
+
+        $report = app(GenerateMonthlyReport::class)->handle(null, send: true);
+        $this->openReport = $report->id;
+
+        activity('system')
+            ->causedBy($this->user())
+            ->withProperties(['period' => $report->periodLabel()])
+            ->log('Generated the monthly report for '.$report->periodLabel().'.');
+
+        $this->toast('Report for '.$report->periodLabel().' archived and sent.');
+    }
+
+    public function toggleReport(int $id): void
+    {
+        $this->openReport = $this->openReport === $id ? null : $id;
+    }
+
+    public function render(SalesSettings $settings): View
     {
         $rows = Automation::query()->get()->keyBy('key');
         $runs = ScheduledTaskRun::latestPerTask();
@@ -59,6 +89,9 @@ class AutomationsIndex extends Component
         return view('livewire.admin.system.automations', [
             'automations' => $automations,
             'canToggle' => $this->user()->can('automation.manage'),
+            'reports' => MonthlyReport::query()->orderByDesc('period_start')->limit(24)->get(),
+            'expandedReport' => $this->openReport !== null ? MonthlyReport::query()->find($this->openReport) : null,
+            'lakh' => $settings->lakh_grouping,
         ]);
     }
 }

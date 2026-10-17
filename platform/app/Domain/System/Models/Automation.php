@@ -57,6 +57,14 @@ class Automation extends Model
                 'scheduled' => false,
             ],
             [
+                'key' => 'woodex:monthly-report',
+                'scheduled' => true,
+                'name' => 'Monthly CRM report',
+                'description' => 'On the 1st at 09:00 the owner gets the month that just ended in one message — enquiries, quotations, wins, money in, outstanding — with the month before for comparison, archived under this screen.',
+                'cadence' => '1st of the month, 09:00',
+                'toggleable' => true,
+            ],
+            [
                 'key' => 'woodex:sla-check',
                 'scheduled' => true,
                 'name' => 'First-response SLA',
