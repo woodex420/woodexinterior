@@ -276,7 +276,7 @@
                     <p class="text-theme-sm text-gray-500">No visits booked yet.</p>
                 @endforelse
                 @if ($visits->isNotEmpty())
-                    <a href="{{ route('admin.visits.index') }}" wire:navigate class="mt-3 inline-flex text-theme-xs font-medium text-navy-700 hover:underline dark:text-gray-300">Open visit agenda →</a>
+                    <a href="{{ route('admin.tasks.index', ['tab' => 'visits']) }}" wire:navigate class="mt-3 inline-flex text-theme-xs font-medium text-navy-700 hover:underline dark:text-gray-300">Open visit agenda →</a>
                 @endif
             </x-admin.card>
 

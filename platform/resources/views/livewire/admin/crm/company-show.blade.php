@@ -1,7 +1,7 @@
 @php($canEdit = auth()->user()->can('update', $company))
 <div>
     <x-admin.page-header :title="$company->name" :description="$company->typeLabel().($company->city ? ' · '.$company->city : '')"
-                         :breadcrumbs="['CRM' => null, 'Companies' => route('admin.companies.index'), $company->name => null]">
+                         :breadcrumbs="['CRM' => null, 'Companies' => route('admin.contacts.index', ['tab' => 'companies']), $company->name => null]">
         <x-slot:actions>
             @if ($canEdit)
                 <x-admin.button variant="secondary" icon="pencil" wire:click="openEdit">Edit</x-admin.button>

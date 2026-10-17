@@ -1424,3 +1424,55 @@ Accepting a quotation now opens the job and asks for its first payment, in the s
 - Live: /admin/automation shows both rows as Dormant with Switch on buttons; verified in a
   real logged-in browser. P8.5 is COMPLETE: control dashboard → new-enquiry alerts +
   ask-for-number → web chat widget → monthly report → dormant agents, all shipped green.
+
+## §47 — P10.1: sidebar consolidation + the lead tracking board (17 Oct, evening)
+
+Owner decisions (two ask_user rounds, all four answered):
+- **Overview ✓ proposed:** Dashboard page gets tabs (Overview · My Day); Approvals keeps its own
+  entry (action queue); the old Reports group folds into Overview as a Reports page
+  (Sales funnel · Revenue & collections).
+- **Sales ✓ proposed (the owner's own two examples applied to the group):** Estimations ·
+  Quotations (All · Tracking · Templates) · Invoices (All · Tracking) · Payments
+  (All · Dues · Receivables) · Documents (Descriptions · Document Design · Rate Book).
+- **CRM:** "CRM is simple — need a complete tracking system, simple Leads need tracking." The
+  Leads page gets a third tab: Tracking. Board groups by follow-up state (Uncontacted · Due
+  today · Overdue · Stale · Snoozed), cards carry Log follow-up (note + next action) / open /
+  WhatsApp, alerts are passive only (A0). Contacts (People · Companies) and
+  Tasks & Visits (Tasks · Site Visits) merge as tabs.
+- **Rest ✓ keep unchanged:** Accounts, Projects, Inbox, Automation, Marketing, Website, System.
+
+What shipped:
+- `app/Livewire/Admin/Hubs/Hub.php` — one abstract workflow-hub base: tabs in the URL (?tab=),
+  linkable/back-button safe, permission per tab (hidden from the bar; a directly requested
+  hidden tab aborts 403 — the same promise the old route middleware made). Nine hubs:
+  Dashboard, Reports, Leads, Contacts, Tasks, Quotations, Invoices, Payments, Documents. The
+  existing screens mount unchanged inside them (livewire:dynamic-component); no screen code
+  was rewritten.
+- 14 old URLs became 301 closures that keep their route names (route()-based, so the admin
+  prefix travels with config): /my-day → /admin?tab=my-day, /pipeline, /companies, /site-visits,
+  /quote-templates, /sales/tracking/quotes, /sales/tracking/invoices, /sales/dues, /receivables,
+  /rate-book, /description-library, /document-design, /reports/sales-funnel,
+  /reports/revenue-collections → their tabs. Bookmarks, notifications and Telegram buttons
+  keep working; internal links (leads list "Board view", dashboard Pipeline, My Day visits,
+  company breadcrumbs, global search, description-library rate-book link, CompanyShow
+  redirect) now point straight at the tabs.
+- `LeadTrackingBoard` — event-driven like the P8.4 quote board: reads first_response_at,
+  next_action_at, last_activity_at; no new states or columns. Log follow-up =
+  LogLeadActivity + SetNextAction (first touch sets first_response_at). Gate: leads.update.
+- Sidebar: AdminNavigation map 49 → 36 live entries, 11 → 10 groups (Reports folded in);
+  collapsible groups (persisted in localStorage 'wx.groups', Alpine store groupOpen/toggleGroup);
+  live badges — Inbox unread conversations and pending quote approvals (counts only, A0).
+- Tests: P10SidebarHubsTest (42) — map, all 22 hub renders, 14 redirects, tab permission 403s,
+  badges, board classification (frozen clock; healthy leads stay off the board), follow-up
+  logging. Eight older tests repointed from old URLs to hub tabs (same permission assertions).
+  Gate: **96 files / 1022 passed / 0 failed** · Pint clean · Larastan 0.
+- Live: preview verified logged-in — sidebar shows the new map with the Inbox badge, quotes hub
+  tabs (tracking selected), leads tracking board groups, /admin/my-day → 301 → /admin?tab=my-day.
+  Shots in /home/user/p101-shots/ (sidebar-dashboard, quotations-hub, lead-tracking-board,
+  my-day-tab), each DOM-verified in the same script.
+
+Gotchas hit: (1) Alpine `:class="$store…"` on a Blade component tag (<x-icon>) compiles as PHP —
+wrap in a plain HTML span; (2) CaptureLead dedupes by phone, so tests need distinct numbers per
+lead; (3) `now()->addHours(3)` crosses midnight near end of day — freeze the clock in board tests;
+(4) the preview's php -S needs `-t public` with a router that checks `is_file(public.$uri)` or
+hashed assets 404 and the Alpine store never registers (sidebar goes blank).

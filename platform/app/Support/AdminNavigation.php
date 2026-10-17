@@ -20,32 +20,23 @@ final class AdminNavigation
     public static function groups(): array
     {
         return [
+            // P10.1 (docs/27): one page per workflow, tabs inside — 49 live entries became 37.
             self::group('Overview', [
                 self::item('Dashboard', 'dashboard', 'admin.dashboard', 'dashboard.view'),
-                self::item('My Day', 'sun', 'admin.my-day', 'leads.view'),
                 self::item('Approvals', 'check-circle', 'admin.approvals', 'quotes.approve'),
+                self::item('Reports', 'chart', 'admin.reports.index', 'reports.view'),
             ]),
             self::group('CRM', [
                 self::item('Leads', 'users', 'admin.leads.index', 'leads.view'),
-                self::item('Pipeline', 'kanban', 'admin.pipeline', 'leads.view'),
                 self::item('Contacts', 'contact', 'admin.contacts.index', 'contacts.view'),
-                self::item('Companies', 'building', 'admin.companies.index', 'contacts.view'),
-                self::item('Tasks', 'tasks', 'admin.tasks.index', 'leads.view'),
-                self::item('Site Visits', 'calendar', 'admin.visits.index', 'leads.view'),
+                self::item('Tasks & Visits', 'tasks', 'admin.tasks.index', 'leads.view'),
             ]),
             self::group('Sales', [
+                self::item('Estimations', 'calculator', 'admin.estimations.index', 'estimates.view'),
                 self::item('Quotations', 'quote', 'admin.quotes.index', 'quotes.view'),
                 self::item('Invoices', 'invoice', 'admin.invoices.index', 'invoices.view'),
                 self::item('Payments', 'wallet', 'admin.payments.index', 'invoices.view'),
-                self::item('Due Payments', 'clock', 'admin.sales.dues', 'invoices.view'),
-                self::item('Estimations', 'calculator', 'admin.estimations.index', 'estimates.view'),
-                self::item('Quote Tracking', 'compass', 'admin.sales.tracking.quotes', 'quotes.view'),
-                self::item('Invoice Tracking', 'clock', 'admin.sales.tracking.invoices', 'invoices.view'),
-                self::item('Receivables', 'clock', 'admin.reports.receivables', 'invoices.view'),
-                self::item('Quote Templates', 'templates', 'admin.quote-templates', 'quotes.view'),
-                self::item('Rate Book', 'book', 'admin.rate-book', 'quotes.view'),
-                self::item('Description Library', 'book', 'admin.description-library', 'quotes.view'),
-                self::item('Document Design', 'templates', 'admin.document-design', 'settings.manage'),
+                self::item('Documents', 'book', 'admin.sales.documents', 'quotes.view'),
             ]),
             self::group('Accounts', [
                 self::item('Chart of Accounts', 'book', 'admin.accounts.chart', 'accounts.view'),
@@ -79,10 +70,6 @@ final class AdminNavigation
                 self::item('SEO & Redirects', 'globe', 'admin.website.redirects', 'website.edit'),
                 self::item('Website Settings', 'settings', 'admin.website.settings', 'settings.manage'),
                 self::item('Theme Builder', 'palette', 'admin.website.theme', 'theme.manage'),
-            ]),
-            self::group('Reports', [
-                self::item('Sales Funnel', 'chart', 'admin.reports.funnel', 'reports.view'),
-                self::item('Revenue & Collections', 'banknote', 'admin.reports.revenue', 'reports.finance'),
             ]),
             self::group('System', [
                 self::item('Settings', 'settings', 'admin.settings', 'settings.manage'),

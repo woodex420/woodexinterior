@@ -5,7 +5,7 @@
     <div class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <x-admin.stat label="Not contacted yet" :value="$uncontacted->count()" icon="hourglass" :tone="$uncontacted->isNotEmpty() ? 'error' : 'success'" hint="Respond within the SLA" />
         <x-admin.stat label="Overdue follow-ups" :value="$overdue->count()" icon="alert" :tone="$overdue->isNotEmpty() ? 'warning' : 'success'" />
-        <x-admin.stat label="Site visits today" :value="$visits->count()" icon="map-pin" tone="wood" :href="route('admin.visits.index')" />
+        <x-admin.stat label="Site visits today" :value="$visits->count()" icon="map-pin" tone="wood" :href="route('admin.tasks.index', ['tab' => 'visits'])" />
         <x-admin.stat label="Tasks due" :value="$tasks->count()" icon="tasks" :href="route('admin.tasks.index')" />
     </div>
 

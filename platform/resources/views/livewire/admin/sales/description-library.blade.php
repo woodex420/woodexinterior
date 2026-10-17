@@ -13,7 +13,7 @@
                 <div class="mb-2 flex flex-wrap items-center justify-between gap-2"><span class="text-theme-xs text-gray-500">{{ $template->business_line->label() }} · {{ $template->section }}{{ $template->is_active ? '' : ' · Archived' }}</span>@if ($canEdit)<button type="button" wire:click="openEdit({{ $template->id }})" class="text-theme-sm text-brand-600 hover:underline">Edit</button>@endif</div>
                 <h2 class="mb-2 font-medium text-gray-900 dark:text-white">{{ $template->title }}</h2>
                 <p class="mb-4 whitespace-pre-line break-words text-theme-sm text-gray-600 dark:text-gray-300">{{ $template->body }}</p>
-                @if ($canEdit && $template->is_active)<x-admin.button size="sm" variant="secondary" :href="route('admin.rate-book', ['description' => $template->id])" wire:navigate>New rate book item</x-admin.button>@endif
+                @if ($canEdit && $template->is_active)<x-admin.button size="sm" variant="secondary" :href="route('admin.sales.documents', ['tab' => 'rate-book', 'description' => $template->id])" wire:navigate>New rate book item</x-admin.button>@endif
             </x-admin.card>
         @empty
             <x-admin.card><x-admin.empty icon="book" title="No descriptions match" description="Change your filters or create a reusable description." /></x-admin.card>

@@ -98,7 +98,7 @@ class CompanyShow extends Component
 
         $company->delete();
         $this->toast("{$company->name} moved to the recycle bin.");
-        $this->redirectRoute('admin.companies.index', navigate: true);
+        $this->redirectRoute('admin.contacts.index', ['tab' => 'companies'], navigate: true);
     }
 
     public function render(): View

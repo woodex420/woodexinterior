@@ -204,13 +204,13 @@ it('keeps each report behind its permission', function () {
     $sales = $this->userWithRole('sales');            // reports.view + invoices.view, no reports.finance
     $accountant = $this->userWithRole('accountant');  // reports.view + reports.finance + invoices.view
 
-    $this->actingAs($sales)->get('/admin/reports/sales-funnel')->assertOk();
-    $this->actingAs($sales)->get('/admin/reports/revenue-collections')->assertForbidden();
-    $this->actingAs($sales)->get('/admin/receivables')->assertOk();
+    $this->actingAs($sales)->get('/admin/reports?tab=funnel')->assertOk();
+    $this->actingAs($sales)->get('/admin/reports?tab=revenue')->assertForbidden();
+    $this->actingAs($sales)->get('/admin/payments?tab=receivables')->assertOk();
 
-    $this->actingAs($accountant)->get('/admin/reports/sales-funnel')->assertOk();
-    $this->actingAs($accountant)->get('/admin/reports/revenue-collections')->assertOk();
-    $this->actingAs($accountant)->get('/admin/receivables')->assertOk();
+    $this->actingAs($accountant)->get('/admin/reports?tab=funnel')->assertOk();
+    $this->actingAs($accountant)->get('/admin/reports?tab=revenue')->assertOk();
+    $this->actingAs($accountant)->get('/admin/payments?tab=receivables')->assertOk();
 });
 
 it('writes a CSV an accountant can open: UTF-8, plain rupees, the same numbers as the screen', function () {

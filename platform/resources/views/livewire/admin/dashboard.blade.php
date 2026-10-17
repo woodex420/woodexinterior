@@ -2,7 +2,7 @@
     <x-admin.page-header :title="$greeting"
                          description="Live overview of enquiries, pipeline and cash. Updates every minute.">
         <x-slot:actions>
-            <x-admin.button variant="secondary" icon="kanban" :href="route('admin.pipeline')" wire:navigate>Pipeline</x-admin.button>
+            <x-admin.button variant="secondary" icon="kanban" :href="route('admin.leads.index', ['tab' => 'pipeline'])" wire:navigate>Pipeline</x-admin.button>
             <x-admin.button icon="plus" :href="route('admin.leads.index')" wire:navigate>New lead</x-admin.button>
         </x-slot:actions>
     </x-admin.page-header>
@@ -10,7 +10,7 @@
     {{-- KPI cards (Preline "KPI Cards" pattern) --}}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <x-admin.stat label="New leads today" :value="$stats['new_today']" icon="user-plus" tone="navy" :hint="$stats['new_week'].' this week'" :href="route('admin.leads.index')" />
-        <x-admin.stat label="Open pipeline" :value="$stats['open_value']" icon="trending-up" tone="wood" :hint="$stats['open_count'].' open leads'" :href="route('admin.pipeline')" />
+        <x-admin.stat label="Open pipeline" :value="$stats['open_value']" icon="trending-up" tone="wood" :hint="$stats['open_count'].' open leads'" :href="route('admin.leads.index', ['tab' => 'pipeline'])" />
         <x-admin.stat label="SLA breaches" :value="$stats['sla_breached']" icon="alert" :tone="$stats['sla_breached'] > 0 ? 'error' : 'success'" hint="Not contacted in time" />
         <x-admin.stat label="Collected this month" :value="$stats['collected']" icon="banknote" tone="success" :hint="$stats['quotes_sent'].' quotes sent · '.$stats['accepted_value'].' accepted'" />
     </div>

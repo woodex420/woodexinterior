@@ -84,7 +84,7 @@ it('lets everyone look up rates but only managers change the rate book', functio
     $item = CatalogItem::query()->where('rate_minor', '>', 0)->firstOrFail();
     $sales = $this->userWithRole('sales');
 
-    $this->actingAs($sales)->get(route('admin.rate-book'))->assertOk()->assertSee($item->description);
+    $this->actingAs($sales)->get(route('admin.sales.documents', ['tab' => 'rate-book']))->assertOk()->assertSee($item->description);
     Livewire::actingAs($sales)->test(RateBook::class)->call('openCreate')->assertForbidden();
 
     $manager = $this->userWithRole('sales_manager');

@@ -13,7 +13,7 @@ beforeEach(function () {
 });
 
 it('creates a company with a normalised phone and opens its page', function () {
-    $this->get(route('admin.companies.index'))->assertOk();
+    $this->get(route('admin.contacts.index', ['tab' => 'companies']))->assertOk();
 
     Livewire::test(CompaniesIndex::class)
         ->call('openCreate')
@@ -66,7 +66,7 @@ it('links people, shows their enquiries and soft deletes the company', function 
     $this->actingAs($this->userWithRole('admin'));
     Livewire::test(CompanyShow::class, ['company' => $company])
         ->call('delete')
-        ->assertRedirect(route('admin.companies.index'));
+        ->assertRedirect(route('admin.contacts.index', ['tab' => 'companies']));
 
     expect($lead->contact->fresh()->company_id)->toBe($company->id)
         ->and($lead->fresh()->company_id)->toBe($company->id)

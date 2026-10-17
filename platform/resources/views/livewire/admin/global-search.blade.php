@@ -30,12 +30,12 @@
                     @if (! $searched)
                         <p class="px-3 pt-2 pb-1 text-theme-xs font-medium tracking-wide text-gray-400 uppercase">Go to</p>
                         @foreach (array_filter([
-                            ['My Day', 'sun', Route::has('admin.my-day') ? route('admin.my-day') : null],
+                            ['My Day', 'sun', route('admin.dashboard', ['tab' => 'my-day'])],
                             ['Leads', 'users', route('admin.leads.index')],
-                            ['Pipeline', 'kanban', route('admin.pipeline')],
+                            ['Pipeline', 'kanban', route('admin.leads.index', ['tab' => 'pipeline'])],
                             ['Contacts', 'contact', Route::has('admin.contacts.index') ? route('admin.contacts.index') : null],
                             ['Tasks', 'tasks', Route::has('admin.tasks.index') ? route('admin.tasks.index') : null],
-                            ['Site visits', 'calendar', Route::has('admin.visits.index') ? route('admin.visits.index') : null],
+                            ['Site visits', 'calendar', route('admin.tasks.index', ['tab' => 'visits'])],
                             ['Quotations', 'quote', Route::has('admin.quotes.index') && auth()->user()->can('quotes.view') ? route('admin.quotes.index') : null],
                         ], fn ($item) => $item[2] !== null) as [$label, $icon, $url])
                             <a href="{{ $url }}" wire:navigate x-on:click="open = false" class="flex items-center gap-3 rounded-lg px-3 py-2 text-theme-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-white/5 dark:focus:bg-white/10">

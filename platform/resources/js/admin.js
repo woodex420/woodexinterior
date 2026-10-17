@@ -22,10 +22,24 @@ document.addEventListener('alpine:init', () => {
     Alpine.store('sidebar', {
         expanded: true,
         mobileOpen: false,
+        // P10.1: collapsed groups persist per browser ('wx.groups' → { slug: false }). Default: open.
+        groups: {},
         init() {
             // The desktop preference; below xl the sidebar is an off-canvas drawer (mobileOpen) at full width.
             this.expanded = localStorage.getItem('wx.sidebar') !== 'collapsed';
+            try {
+                this.groups = JSON.parse(localStorage.getItem('wx.groups') || '{}') || {};
+            } catch {
+                this.groups = {};
+            }
             this.applyWidth();
+        },
+        groupOpen(key) {
+            return this.groups[key] !== false;
+        },
+        toggleGroup(key) {
+            this.groups[key] = !this.groupOpen(key);
+            localStorage.setItem('wx.groups', JSON.stringify(this.groups));
         },
         toggle() {
             if (window.innerWidth < 1280) {

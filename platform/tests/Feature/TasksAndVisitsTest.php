@@ -141,7 +141,7 @@ it('builds My Day from uncontacted leads, overdue follow-ups, visits and tasks',
     $notMine = Lead::factory()->create(['first_response_at' => null, 'contact_id' => Contact::factory()->create(['name' => 'Someone Else Entirely'])->id]);
     Task::query()->create(['title' => 'Call supplier about veneer', 'type' => 'call', 'priority' => 'normal', 'status' => 'open', 'due_at' => now()->addHour(), 'assignee_id' => $sales->id]);
 
-    $this->actingAs($sales)->get(route('admin.my-day'))->assertOk();
+    $this->actingAs($sales)->get(route('admin.dashboard', ['tab' => 'my-day']))->assertOk();
 
     Livewire::test(MyDay::class)
         ->assertViewHas('uncontacted', fn ($leads) => $leads->modelKeys() === [$new->id])

@@ -2,7 +2,7 @@
     <x-admin.page-header title="Leads" description="Every enquiry from every channel, one list. Search by name, phone in any format, or reference."
                          :breadcrumbs="['CRM' => null, 'Leads' => null]">
         <x-slot:actions>
-            <x-admin.button variant="secondary" icon="kanban" :href="route('admin.pipeline')" wire:navigate>Board view</x-admin.button>
+            <x-admin.button variant="secondary" icon="kanban" :href="route('admin.leads.index', ['tab' => 'pipeline'])" wire:navigate>Board view</x-admin.button>
             @can('create', \App\Domain\Crm\Models\Lead::class)
                 <x-admin.button icon="plus" wire:click="$set('showCreate', true)">New lead</x-admin.button>
             @endcan

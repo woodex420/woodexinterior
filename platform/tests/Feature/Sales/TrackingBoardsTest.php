@@ -273,9 +273,9 @@ it('keeps the statement route behind the invoices permission', function () {
 });
 
 it('shows the tracking screens in the navigation for the right roles', function () {
-    $this->actingAs($this->owner)->get('/admin/sales/tracking/quotes')->assertOk();
-    $this->actingAs($this->owner)->get('/admin/sales/tracking/invoices')->assertOk();
+    $this->actingAs($this->owner)->get('/admin/quotes?tab=tracking')->assertOk();
+    $this->actingAs($this->owner)->get('/admin/invoices?tab=tracking')->assertOk();
 
-    $this->actingAs($this->support)->get('/admin/sales/tracking/quotes')->assertForbidden();
-    $this->actingAs($this->support)->get('/admin/sales/tracking/invoices')->assertForbidden();
+    $this->actingAs($this->support)->get('/admin/quotes?tab=tracking')->assertForbidden();
+    $this->actingAs($this->support)->get('/admin/invoices?tab=tracking')->assertForbidden();
 });

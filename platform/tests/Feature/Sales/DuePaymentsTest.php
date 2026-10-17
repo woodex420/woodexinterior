@@ -107,7 +107,7 @@ it('sends a consented reminder inside the 24-hour window', function () {
 });
 
 it('keeps the dues screen behind the invoices permission', function () {
-    $this->get('/admin/sales/dues')->assertRedirect('/admin/login');
+    $this->get('/admin/payments?tab=dues')->assertRedirect('/admin/login');
 
-    $this->actingAs($this->owner)->get('/admin/sales/dues')->assertOk();
+    $this->actingAs($this->owner)->get('/admin/payments?tab=dues')->assertOk();
 });

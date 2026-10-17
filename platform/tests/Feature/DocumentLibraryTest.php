@@ -41,11 +41,11 @@ beforeEach(function () {
 });
 
 it('renders searchable sectioned libraries for both brands and restricts editing', function () {
-    $this->get(route('admin.description-library'))->assertOk()->assertSee('Kitchen joinery')->assertSee('Executive table specification');
+    $this->get(route('admin.sales.documents', ['tab' => 'descriptions']))->assertOk()->assertSee('Kitchen joinery')->assertSee('Executive table specification');
     Livewire::test(DescriptionLibrary::class)->set('line', 'furniture')->assertSee('Executive table specification')->assertDontSee('Kitchen joinery');
     $sales = $this->userWithRole('sales');
     Livewire::actingAs($sales)->test(DescriptionLibrary::class)->call('openCreate')->assertForbidden();
-    $this->actingAs($this->userWithRole('editor'))->get(route('admin.description-library'))->assertForbidden();
+    $this->actingAs($this->userWithRole('editor'))->get(route('admin.sales.documents', ['tab' => 'descriptions']))->assertForbidden();
 });
 
 it('saves and archives descriptions without updating copied quotes', function () {
@@ -98,7 +98,7 @@ it('protects document design configuration and preserves copied draft branding',
     expect(app(QuoteSnapshot::class)->build($this->quote)['document_design'])->toBe($old);
     app(QuoteEditor::class)->applyDocumentDesign($this->quote);
     expect(app(QuoteSnapshot::class)->build($this->quote->refresh())['document_design']['revision'])->toBe(2);
-    $this->actingAs($this->userWithRole('sales'))->get(route('admin.document-design'))->assertForbidden();
+    $this->actingAs($this->userWithRole('sales'))->get(route('admin.sales.documents', ['tab' => 'design']))->assertForbidden();
 });
 
 it('updates the design via the Livewire form', function () {
