@@ -1,0 +1,51 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "woodex/woodex-os-hostinger",
+    "description": "Deploy manifest for Hostinger's Git deployment (docs/06 §2, D-56). Installs the PHP packages of the Laravel app in platform/ into platform/vendor. Development, tests and package changes use platform/composer.json; keep \"require\" identical (tests/Unit/DeployManifestTest.php).",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.4",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "brick/math": "^1.0",
+        "laravel/fortify": "^1.41",
+        "laravel/framework": "^13.36",
+        "laravel/tinker": "^3.0",
+        "livewire/livewire": "^4.4",
+        "spatie/laravel-activitylog": "^5.1",
+        "spatie/laravel-backup": "^10.3",
+        "spatie/laravel-medialibrary": "^11.23",
+        "spatie/laravel-permission": "^8.3",
+        "spatie/laravel-settings": "^3.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "platform/app/",
+            "Database\\Factories\\": "platform/database/factories/",
+            "Database\\Seeders\\": "platform/database/seeders/"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@php tools/deploy/after-composer.php"
+        ],
+        "post-update-cmd": [
+            "@php tools/deploy/after-composer.php"
+        ]
+    },
+    "config": {
+        "vendor-dir": "platform/vendor",
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "platform": {
+            "php": "8.4.0"
+        },
+        "allow-plugins": {
+            "php-http/discovery": true
+        },
+        "process-timeout": 900
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

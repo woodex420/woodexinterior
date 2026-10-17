@@ -1,0 +1,40 @@
+# =====================================================================================================================
+# Woodex OS on Hostinger "Deploy from GitHub" (hPanel → Websites → site → Advanced → Git)          docs/06 §2 · D-56
+# ---------------------------------------------------------------------------------------------------------------------
+# Hostinger copies this whole repository into the site folder (public_html, or a subdomain folder). Only
+# platform/public may ever be served: every request is routed there, so the source code, docs, vendor/, storage/
+# and any .env file are never reachable from the web (they answer Laravel's 404 page).
+# =====================================================================================================================
+
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # SSL certificates (Let's Encrypt) are validated through /.well-known in the site folder.
+    RewriteRule ^\.well-known/ - [L]
+
+    # Trailing slashes, on the original address (after the rewrite below it would already contain /platform/public).
+    # Only the app's own paths are canonical WITHOUT one: every public page is canonical WITH one (D-26), and the
+    # SiteRouter puts it back, so stripping it from pages too was a redirect loop on every page of the website.
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} ^/(admin|install|up|api|livewire|build|media|q|i|p|portal|webhooks)(/.*)?$
+    RewriteCond %{REQUEST_URI} ^/(.+)/$
+    RewriteRule ^ /%1 [L,R=301]
+
+    # Everything goes to the Laravel public folder; its own .htaccess takes over there. The pattern is relative to
+    # this folder, so it also works when the site folder is a subfolder (public_html/interior).
+    RewriteRule ^(?!platform/public/)(.*)$ platform/public/$1 [L]
+</IfModule>
+
+# The installer's setup code (WOODEX-SETUP-CODE.txt, deleted when the installation finishes) sits in this folder. The
+# rule above already sends every request to platform/public; this denies the file by name as well.
+<FilesMatch "^WOODEX-SETUP-CODE">
+    Require all denied
+</FilesMatch>
+
+# Without mod_rewrite nothing in this folder may be served.
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>
