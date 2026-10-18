@@ -2099,3 +2099,36 @@ Gotchas: a new column on Page needs `Page::$fillable` — mass assignment drops 
 otherwise (both the factory and `SavePage`'s fill are mass assignment).
 
 Next per the marathon order: **V2-5 — the conversion itself** (docs/13 parity gate) → P7 → P9.
+
+## 65. V2-5 — the conversion tooling (18 Oct 2026)
+
+The conversion itself (docs/13) is the owner's gated, group-by-group sequence on the live server:
+each group needs the parity gate green-or-accepted, the owner's Go, a file deletion on the host, and
+a settle week. What this session built is every piece of it that can be built from here:
+
+- **`tools/website/compare.php`** — the parity gate (docs/13 §5, "to be written in V2-1", now
+  written). For each published page that still has a v1 file, it renders the CMS page through the
+  HTTP kernel and compares against the file: h1, h2 sequence, section count, internal links,
+  images (alt + width/height), title, description, canonical, JSON-LD types, robots. Output:
+  summary + `tools/website/compare-report.json`. **Decisions**: differences the studio accepts are
+  recorded in `tools/website/parity-decisions.json` (`{slug: {check: reason}}`); a page is green
+  (zero diffs), accepted (every diff decided) or red — a group with a red page does not switch.
+  Computed styles at 375/768/1440 need a real browser and stay a host-side step before each Go.
+- **`woodex:conversion-status`** — the eight groups of docs/13 §4 in order, each with published
+  pages, v1 files still on disk, CMS-served count and state; honest by construction, because the
+  switch is file existence. `--files-root` lets it run against any tree.
+- **`App\Domain\Website\Conversion\ParityCompare`** — the gate's engine, a plain class the thin
+  script wraps (so it is Pest-tested directly).
+- **Baseline run (this sandbox)**: 0/142 green, 1 CMS-only page — the honest starting point. The
+  systematic differences are known and mostly host-dependent or deliberate improvements:
+  canonical shows `http://localhost/` here (APP_URL on the host is woodex.com.pk); v2 ships a
+  richer JSON-LD set (BreadcrumbList, LocalBusiness, WebSite) and explicit `robots` — decisions to
+  record on the host, exactly what the decisions file is for.
+- Tests `ConversionParityTest` — 3 green (identical renders green; every difference recorded
+  without judging; conversion status reads file existence honestly, incl. `--files-root`).
+  Gate: **115 files / 1129 passed / 0 failed**.
+
+What remains of V2-5 is per-group, on the host, behind the owner's Go: run the gate per group,
+record decisions, fix the reds, delete the group's files, deploy, settle a week (docs/13 §6–7).
+Then V2-6 (AI SEO assistant is effectively landed as F8's proposals half; Sveltia bridge stays
+deferred by decision).
