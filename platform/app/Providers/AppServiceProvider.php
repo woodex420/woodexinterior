@@ -6,7 +6,9 @@ namespace App\Providers;
 
 use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Policies\ConversationPolicy;
+use App\Domain\Automation\Listeners\EnrollTriggeredLeads;
 use App\Domain\Crm\Events\LeadCaptured;
+use App\Domain\Crm\Events\LeadStageChanged;
 use App\Domain\Crm\Listeners\AskForMissingNumber;
 use App\Domain\Crm\Listeners\SendNewLeadAlerts;
 use App\Domain\Crm\Models\Activity;
@@ -157,6 +159,10 @@ class AppServiceProvider extends ServiceProvider
 
         Event::listen(LeadCaptured::class, SendNewLeadAlerts::class);
         Event::listen(LeadCaptured::class, AskForMissingNumber::class);
+
+        // AUT-001: the sequences' event-driven triggers.
+        Event::listen(LeadCaptured::class, [EnrollTriggeredLeads::class, 'handleLeadCaptured']);
+        Event::listen(LeadStageChanged::class, [EnrollTriggeredLeads::class, 'handleStageChanged']);
 
         Event::listen(Login::class, function (Login $event): void {
             if ($event->user instanceof User) {

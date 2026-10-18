@@ -57,6 +57,15 @@ final class RecordQuoteView
                 $quote->save();
             }
 
+            if ($first && $type === 'viewed' && $quote->lead_id !== null) {
+                // AUT-001: the client read it — the "seen but silent" sequences start from here.
+                $lead = \App\Domain\Crm\Models\Lead::query()->find($quote->lead_id);
+
+                if ($lead !== null) {
+                    app(\App\Domain\Automation\Actions\EnrollLead::class)->forTrigger(\App\Domain\Automation\Enums\SequenceTrigger::QuotationViewed, $lead);
+                }
+            }
+
             if ($first && $type === 'viewed') {
                 $this->log->handle($quote, 'viewed', null, "{$quote->contact->name} opened {$version->snapshot['label']} for the first time ({$data['device']}).", $data, $attributes);
                 Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'first_view', 'Opened just now on '.$data['device'].'.'));

@@ -1641,3 +1641,51 @@ UploadedFile, so it flows into actions typed against `Illuminate\Http\UploadedFi
 old `Livewire\TemporaryUploadedFile` namespace is v2 and Larastan rightly rejects it;
 (2) `x-icon` names: `paperclip` and `x` exist, `close` does not; (3) the rebuilt sandbox keeps
 node on PATH — shard-gate.sh now honours `$NODE` and falls back to `command -v node`.
+
+
+## 52. AUT-001/002/005/006 — the follow-up sequences engine (18 Oct 2026)
+
+The biggest single piece of P4 after the bot: the engine that turns one-off chases into the
+studio's whole follow-up rhythm, with the safety limits shipped as part of it because "must
+exist before any sequence can send" was the requirement's own ordering.
+
+- **Schema**: `automation_sequences` (trigger, exits_on_reply, active, builtin) →
+  `automation_steps` (position, kind, payload per kind) → `automation_enrolments` (lead,
+  status, enrolled_at, end_reason) → `automation_step_runs` (scheduled_at, ran_at, attempt,
+  note, error). Nothing is ever deleted: pause/resume/cancel only flip statuses.
+- **Engine**: `woodex:automation-run` every minute (Automation catalog, toggleable) →
+  `RunSequences` claims due runs atomically, walks **bounded passes** so a wait that ends now
+  runs its next step in the same invocation, checks exits first (lead won; lead lost unless
+  the sequence IS the lost-nurture; client replied after enrolment; opt-out), then executes:
+  wait / send the **mapped** template (moment → WhatsAppTemplate::forEvent, never a Meta name
+  in code; no mapping = a skipped run with the reason, not a guess) / create task
+  ({first_name} rendered) / move stage. Failed steps are logged and the sequence continues.
+- **AUT-006 safe limits** (`AutomatedSendGuard`, Settings → Sales): nothing automated between
+  21:00–09:00 (configurable) **unless the client wrote in the last hour** (answering a person
+  is a reply, not marketing); max N automated messages per client per day (default 2) across
+  ALL sequences, counted from messages with no staff author. A held send is `holdUntil`:
+  status stays pending, scheduled_at moves to 09:05 / tomorrow morning, attempt+1, reason in
+  the note — visible as held, never dropped, never forced.
+- **Triggers wired**: lead captured (listener on LeadCaptured, fresh leads only), lead lost
+  (listener on LeadStageChanged), quotation sent (SendQuoteByWhatsApp, only on a real send),
+  first quotation view (RecordQuoteView), invoice issued (RaiseAdvanceInvoice), visit
+  completed (ManageTask::complete, type visit). Manual enrolment = the screen, later.
+- **AUT-002 built-ins** seeded editable (AutomationSequenceSeeder → ProductionSeeder): lead
+  not reached · quote not opened · quote seen but silent · invoice reminders · after a site
+  visit · lost-lead check-in. The review request stays its own command on purpose.
+- **Screen**: Automation → Sequences — sequence list with on/off, steps as the timeline the
+  engine runs, the 20 latest enrolments with per-run chips (done/sent, held, skipped, failed)
+  and pause/resume/cancel. Route admin.automation.sequences, automation.manage.
+- Tests: `SequenceEngineTest` — 7 green (walk, reply exit, quiet hours hold+release, daily
+  cap, unmapped-template skip, won/lost exits with nurture exception, pause/resume/cancel).
+  Gate: **101 files / 1064 passed / 0 failed** · Pint + Larastan clean.
+
+Gotchas worth their weight: (1) **the builder-claim/stale-model trap** — claiming a row via
+`Model::query()->update()` does not touch the in-memory model, so a later `forceFill` back to
+the same hydrated value (pending → held → pending) compares clean against `original` and is
+SILENTLY DROPPED from the UPDATE; the runner now `syncOriginal()`s after every claim;
+(2) tests must target enrolments by sequence_id — the seeded built-ins share triggers and
+enroll alongside the test's own sequence; (3) `describe()` in blade got a `?Lead` after the
+`new Lead`-in-view smell; (4) lazy loading is disabled in tests — eager load `runs.step`
+before filtering by step kind; (5) the sidebar item count test (P10SidebarHubsTest) counts
+live nav items — update it when nav grows (now 37).

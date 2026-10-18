@@ -81,6 +81,14 @@ class Automation extends Model
                 'toggleable' => false,
             ],
             [
+                'key' => 'woodex:automation-run',
+                'scheduled' => true,
+                'name' => 'Follow-up sequences',
+                'description' => 'The heartbeat that runs every due step of the studio\'s follow-up sequences: waiting periods, WhatsApp templates, tasks, stage moves. Sends respect quiet hours (nothing automated between 21:00 and 09:00 unless the client wrote first) and the daily per-client cap. Every step of every enrolment is logged under Automation → Sequences.',
+                'cadence' => 'Every minute',
+                'toggleable' => true,
+            ],
+            [
                 'key' => 'woodex:whatsapp-health',
                 'scheduled' => true,
                 'name' => 'WhatsApp health check',

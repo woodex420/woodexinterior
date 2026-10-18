@@ -56,6 +56,7 @@ final class AdminNavigation
             ]),
             self::group('Automation', [
                 self::item('Automations', 'zap', 'admin.automation.index', 'automation.manage'),
+                self::item('Sequences', 'refresh', 'admin.automation.sequences', 'automation.manage'),
                 self::item('WhatsApp Templates', 'whatsapp', 'admin.whatsapp.templates', 'integrations.manage'),
                 self::item('Alert Rules', 'bell', null, null, 'P5'),
             ]),

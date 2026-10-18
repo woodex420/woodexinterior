@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Actions;
 
+use App\Domain\Automation\Actions\EnrollLead;
+use App\Domain\Automation\Enums\SequenceTrigger;
 use App\Domain\Conversations\Actions\SendConversationMessage;
 use App\Domain\Conversations\Enums\Channel;
 use App\Domain\Conversations\Enums\ConversationStatus;
 use App\Domain\Conversations\Enums\MessageStatus;
 use App\Domain\Conversations\Enums\MessageType;
 use App\Domain\Conversations\Models\Conversation;
+use App\Domain\Crm\Models\Lead;
 use App\Domain\Sales\Data\WhatsAppDelivery;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteVersion;
@@ -67,6 +70,15 @@ final class SendQuoteByWhatsApp
                 ]]], $template['language'], $by);
         } catch (Throwable $exception) {
             return $this->record($quote, $version, $by, WhatsAppDelivery::failed($exception->getMessage()));
+        }
+
+        // AUT-001: a quotation that actually went out starts the "nobody answered it" sequences.
+        if ($message->status !== MessageStatus::Failed && $quote->lead_id !== null) {
+            $lead = Lead::query()->find($quote->lead_id);
+
+            if ($lead !== null) {
+                app(EnrollLead::class)->forTrigger(SequenceTrigger::QuotationSent, $lead);
+            }
         }
 
         $delivery = $message->status === MessageStatus::Failed

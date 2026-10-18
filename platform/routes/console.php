@@ -45,6 +45,10 @@ Schedule::command('woodex:digest --period=weekly')->weeklyOn(1, '09:00')
 Schedule::command('woodex:telegram-flush')->everyMinute()->withoutOverlapping(5)
     ->when(fn (): bool => Automation::enabled('woodex:telegram-flush'));
 
+// AUT-001: the sequences heartbeat — every due step, every minute, held sends included.
+Schedule::command('woodex:automation-run')->everyMinute()
+    ->when(fn (): bool => Automation::enabled('woodex:automation-run'));
+
 // WAP-008/WAP-010: daily WhatsApp health — quality rating + monthly cost against budget.
 Schedule::command('woodex:whatsapp-health')->dailyAt('09:10')
     ->when(fn (): bool => Automation::enabled('woodex:whatsapp-health'));

@@ -127,6 +127,15 @@ final class RaiseAdvanceInvoice
 
                 // …and booked: receivable + revenue land in the ledger in the same act (P8.2).
                 $this->postToLedger->handle($invoice->refresh(), $by);
+
+                // AUT-001: an invoice that exists starts the reminder sequences.
+                if ($quote->lead_id !== null) {
+                    $lead = \App\Domain\Crm\Models\Lead::query()->find($quote->lead_id);
+
+                    if ($lead !== null) {
+                        app(\App\Domain\Automation\Actions\EnrollLead::class)->forTrigger(\App\Domain\Automation\Enums\SequenceTrigger::InvoiceIssued, $lead);
+                    }
+                }
             }
 
             return $invoice;

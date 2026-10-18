@@ -56,6 +56,15 @@ class SalesSettings extends Settings
     /** CNV-007: WhatsApp conversations — target for every later reply. */
     public int $conversation_next_reply_minutes = 15;
 
+    /** AUT-006: automated messages per client per day, across every sequence. */
+    public int $automation_daily_contact_limit = 2;
+
+    /** AUT-006: no automated message between here and quiet_end — unless the client wrote first. */
+    public string $automation_quiet_start = '21:00';
+
+    /** AUT-006: the morning the queue resumes. */
+    public string $automation_quiet_end = '09:00';
+
     /**
      * Lead scoring rules (CRM-011), see App\Domain\Crm\Actions\ScoreLead.
      *

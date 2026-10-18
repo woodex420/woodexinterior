@@ -22,6 +22,7 @@ class ProductionSeeder extends Seeder
             ChartOfAccountsSeeder::class,
             QuoteTemplateSeeder::class,
             CannedRepliesSeeder::class,
+            AutomationSequenceSeeder::class,
             ThemeTokensSeeder::class,
         ]);
     }

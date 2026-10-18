@@ -56,6 +56,15 @@ final class ManageTask
 
         if ($task->lead_id !== null) {
             $task->lead()->update(['last_activity_at' => now()]);
+
+            // AUT-001: a finished site visit starts the post-visit sequences.
+            if ($task->type === TaskType::Visit) {
+                $lead = Lead::query()->find($task->lead_id);
+
+                if ($lead !== null) {
+                    app(\App\Domain\Automation\Actions\EnrollLead::class)->forTrigger(\App\Domain\Automation\Enums\SequenceTrigger::VisitCompleted, $lead);
+                }
+            }
         }
 
         return $task;
