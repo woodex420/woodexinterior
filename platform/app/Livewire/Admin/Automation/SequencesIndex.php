@@ -74,6 +74,7 @@ class SequencesIndex extends Component
     public function render(): View
     {
         $sequences = AutomationSequence::query()
+            ->with('steps')
             ->withCount([
                 'enrolments as active_count' => fn ($query) => $query->whereIn('status', [EnrolmentStatus::Active->value, EnrolmentStatus::Paused->value]),
                 'enrolments as finished_count' => fn ($query) => $query->whereIn('status', [EnrolmentStatus::Completed->value, EnrolmentStatus::Exited->value, EnrolmentStatus::Cancelled->value]),

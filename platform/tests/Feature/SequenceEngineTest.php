@@ -239,3 +239,17 @@ it('pause holds the place, resume catches up, cancel stops for good', function (
     expect(Task::query()->where('lead_id', $this->lead->id)->count())->toBe(0)
         ->and($enrolment->refresh()->status)->toBe(EnrolmentStatus::Cancelled);
 });
+
+it('renders the sequences screen with the built-ins and their steps', function () {
+    Livewire::actingAs($this->owner)
+        ->test(\App\Livewire\Admin\Automation\SequencesIndex::class)
+        ->assertOk()
+        ->assertSee('Pick a sequence')
+        ->assertSee('Lead not reached')
+        ->call('select', $this->sequence->id)
+        ->assertOk()
+        // describe() renders {first_name} per lead; with none enrolled it says "the client".
+        ->assertSee('Call the client about the quotation')
+        ->assertSee('Send the mapped follow_up template')
+        ->assertSee('The steps');
+});
