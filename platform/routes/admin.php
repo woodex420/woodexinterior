@@ -52,6 +52,7 @@ use App\Livewire\Admin\Website\MenusIndex;
 use App\Livewire\Admin\Website\PageEditor;
 use App\Livewire\Admin\Website\PagesIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
+use App\Livewire\Admin\Website\SeoAgentIndex;
 use App\Livewire\Admin\Website\ThemeBuilder;
 use App\Livewire\Admin\Website\WebsiteSettings;
 use Illuminate\Support\Facades\Route;
@@ -123,6 +124,7 @@ Route::livewire('/website/media', MediaLibrary::class)->name('website.media')->m
 Route::livewire('/website/menus', MenusIndex::class)->name('website.menus')->middleware('can:website.edit');
 Route::livewire('/website/content', ContentLibraryIndex::class)->name('website.content')->middleware('can:website.edit');
 Route::livewire('/website/redirects', RedirectsIndex::class)->name('website.redirects')->middleware('can:website.edit');
+Route::livewire('/website/seo', SeoAgentIndex::class)->name('website.seo')->middleware('can:website.edit');
 Route::livewire('/website/settings', WebsiteSettings::class)->name('website.settings')->middleware('can:settings.manage');
 Route::livewire('/website/theme', ThemeBuilder::class)->name('website.theme')->middleware('can:theme.manage');
 

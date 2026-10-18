@@ -1,6 +1,6 @@
 # Woodex OS — Project Status & Quick Start
 
-**Updated:** 18 Oct 2026 · **Status: frontend-v1 wave under way (owner directive: port the marketing repo's frontend v1 into Woodex OS — no second system). Click-to-edit, the v26 mega menu, the v26 hero slider on home, the structured header/footer editor, page templates and the shared FAQ/testimonial/logo library landed. Next: SEO agent, team manager. Gate 1100 green. Backlog marathon continues after.**
+**Updated:** 18 Oct 2026 · **Status: frontend-v1 wave under way (owner directive: port the marketing repo's frontend v1 into Woodex OS — no second system). Click-to-edit, the v26 mega menu, the v26 hero slider on home, the structured header/footer editor, page templates, the shared content library and the keyless-first SEO agent landed. Next: team manager, speed dashboard. Gate 1105 green. Backlog marathon continues after.**
 
 One line: CRM + quotations + invoicing + payments + inbox + Telegram + website CMS + double-entry ledger core are live and gated; invoices and receipts now post to the general ledger automatically, dues have a screen with consent-gated reminders, and money can be collected from the phone. Remaining: two-brand documents/estimation, tracking boards, automation agents, MySQL migration, handover.
 

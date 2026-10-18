@@ -1912,3 +1912,37 @@ Scope docblocks need the concrete class (`Builder<ContentEntry>`), not `<self>`.
 
 Next in the confirmed order: **F8 SEO agent keyless-first (+F10 health folded in)** → F7 team →
 F9 speed → F11 theme presets.
+
+## 59. V2-3 F8 + F10 — the SEO agent (18 Oct 2026)
+
+Website → **SEO Agent** (docs/14 §5a). Keyless-first, owner's binding call: the deterministic sweep
+always runs — no key, no model, every finding a rule a person can re-check; one-click fixes mend
+what a rule can mend; AI proposals wake only when the studio's model key exists (the one key, from
+Settings → Chat Bot — the BOT pattern) and land only by the owner's click.
+
+- **Page audit** (`SeoAudit`, `app/Domain/Website/Seo/`): missing meta description (fixable —
+  written from the page's own first prose), long (>65) and short (<20) titles, duplicate titles,
+  slug hygiene (fixable — tidied with an automatic Redirect from the old address), empty image alt
+  texts (fixable — filled from the media library's title/alt/file name), thin content (<120 words,
+  advice). Worst page first, counts in the header.
+- **Website health tab (F10 folded in)**: broken redirects (fixable — removed), dead internal
+  links (checked against every page slug AND every concrete route URI — links to /contact-style
+  routes never false-positive), orphan pages (published, linked from no menu and no page).
+- **AI proposals** (`ProposeSeoCopy`): anthropic/openai/gemini, JSON-only prompt (≤60-char title,
+  ≤155-char description), shown as a proposal card — Apply/Discard buttons; nothing is written
+  until Apply. Keyless: the card is replaced by an "AI proposals are asleep" note linking to
+  Settings. Toast wording mirrors the BOT screens.
+- The weekly `woodex:seo-agent` digest (P8.5) is untouched — its three checks are a subset of the
+  audit's, and its output shape is load-bearing for the digest notification.
+- Tests `SeoAgentTest` — 5 green (rules + keyless card; description/slug+redirect/alt fixes with
+  the page dropping off the audit; F10 sweep + redirect removal; proposal → apply roundtrip with
+  Http::fake; empty-key stays silent). Gate: **109 files / 1105 passed / 0 failed**. Sidebar count
+  38 → 39 (SEO Agent item).
+
+Gotchas: toasts are dispatches (`assertDispatched('toast', message: …)`), not HTML. `audit` is a
+render() param — assert against the rendered chips, not `$component->get()`. PageFactory fills
+`excerpt` with lorem — tests wanting the description fix must pass `excerpt: ''`. mb_substr
+expectations: count your characters. Route::getRoutes() needs `->getRoutes()` before foreach for
+Larastan. Livewire array props need `@var array{...}` docblocks; empty default needs optional keys.
+
+Next in the confirmed order: **F7 team manager** → F9 speed dashboard → F11 theme presets.
