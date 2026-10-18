@@ -1,0 +1,83 @@
+name: Deploy to Hostinger
+
+# ACTIVATE: copy this file to .github/workflows/deploy-hostinger.yml (see docs/ci/README.md).
+# Manual one-click deploy (docs/06 §6.1). Does nothing until the HOSTINGER_* repository secrets exist.
+# Builds assets here (no Node.js on Hostinger), uploads public/build over SSH, then runs the
+# update commands on the server: DB backup → git checkout → composer install → migrate → optimize.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to deploy'
+        required: true
+        default: 'master'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    env:
+      DEPLOY_REF: ${{ inputs.ref }}
+      SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+      SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+      SSH_USER: ${{ secrets.HOSTINGER_USER }}
+      SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+      APP_PATH: ${{ secrets.HOSTINGER_APP_PATH }}
+    steps:
+      - name: Check configuration
+        run: |
+          for v in SSH_HOST SSH_PORT SSH_USER SSH_KEY APP_PATH; do
+            if [ -z "${!v}" ]; then echo "Missing secret for $v. See docs/06-DEPLOYMENT-HOSTINGER.md §6.1"; exit 1; fi
+          done
+          if ! printf '%s' "$DEPLOY_REF" | grep -Eq '^[A-Za-z0-9._/-]+$'; then echo "Invalid ref"; exit 1; fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: platform/package-lock.json
+
+      - name: Build assets
+        working-directory: platform
+        run: npm ci && npm run build
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Update code and dependencies on the server
+        run: |
+          ssh -i ~/.ssh/id_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" bash -s -- "$APP_PATH" "$DEPLOY_REF" <<'REMOTE'
+          set -euo pipefail
+          cd "$1"
+          php artisan backup:run --only-db --disable-notifications || echo "Backup skipped (configure spatie/laravel-backup)"
+          git fetch --all --tags --prune
+          git checkout "$2"
+          git pull --ff-only || true
+          COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader --no-interaction
+          REMOTE
+
+      - name: Upload built assets
+        run: rsync -az --delete -e "ssh -i ~/.ssh/id_deploy -p $SSH_PORT" platform/public/build/ "$SSH_USER@$SSH_HOST:$APP_PATH/public/build/"
+
+      - name: Migrate and optimise
+        run: |
+          ssh -i ~/.ssh/id_deploy -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" bash -s -- "$APP_PATH" <<'REMOTE'
+          set -euo pipefail
+          cd "$1"
+          php artisan migrate --force
+          php artisan optimize
+          php artisan woodex:heartbeat
+          REMOTE

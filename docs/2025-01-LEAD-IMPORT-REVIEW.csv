@@ -1,0 +1,11 @@
+csv_row,outcome,reason
+9,review,invalid_or_missing_phone
+23,existing,existing_or_archived_contact_untouched
+25,existing,existing_or_archived_contact_untouched
+26,review,invalid_or_missing_phone
+27,review,invalid_or_missing_phone
+28,review,missing_invalid_or_wrong_year_date
+29,review,missing_invalid_or_wrong_year_date
+30,review,invalid_or_missing_phone
+31,review,missing_invalid_or_wrong_year_date
+32,review,missing_invalid_or_wrong_year_date
