@@ -66,6 +66,8 @@ Schedule::command('woodex:review-requests')->dailyAt('10:30')
     ->when(fn (): bool => Automation::enabled('woodex:review-requests'));
 
 // P8.5 dormant agents: read-only digests for the owner, OFF until switched on (A0).
+Schedule::command('woodex:social-publish')->everyFifteenMinutes();
+
 Schedule::command('woodex:seo-agent')->weeklyOn(0, '08:00')
     ->when(fn (): bool => Automation::enabled('woodex:seo-agent'));
 

@@ -1,6 +1,6 @@
 # Woodex OS — Project Status & Quick Start
 
-**Updated:** 18 Oct 2026 · **Status: frontend-v1 wave under way (owner directive: port the marketing repo's frontend v1 into Woodex OS — no second system). Wave F, P5, V2-2 and the V2-5 conversion tooling complete (parity gate with recorded decisions, per-group conversion status). The group-by-group switch is the owner's host-side sequence. Next: P7 social, then P9. Gate 1129 green. Backlog marathon continues after.**
+**Updated:** 18 Oct 2026 · **Status: frontend-v1 wave under way (owner directive: port the marketing repo's frontend v1 into Woodex OS — no second system). Wave F, P5, V2-2, the V2-5 tooling and P7's internal half (social planner: composer, review, scheduler, AI captions) complete. Remaining: the owner's Meta/LinkedIn approvals (P7 external), the host-side conversion groups (V2-5), and P9. Gate 1134 green. Backlog marathon continues after.**
 
 One line: CRM + quotations + invoicing + payments + inbox + Telegram + website CMS + double-entry ledger core are live and gated; invoices and receipts now post to the general ledger automatically, dues have a screen with consent-gated reminders, and money can be collected from the phone. Remaining: two-brand documents/estimation, tracking boards, automation agents, MySQL migration, handover.
 

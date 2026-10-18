@@ -61,7 +61,7 @@ final class AdminNavigation
                 self::item('Alert Rules', 'bell', null, null, 'P5'),
             ]),
             self::group('Marketing', [
-                self::item('Social Planner', 'megaphone', null, null, 'P7'),
+                self::item('Social Planner', 'megaphone', 'admin.marketing.social', 'social.manage'),
                 self::item('Lead Ads', 'sparkles', null, null, 'P7'),
             ]),
             self::group('Website', [

@@ -2132,3 +2132,39 @@ What remains of V2-5 is per-group, on the host, behind the owner's Go: run the g
 record decisions, fix the reds, delete the group's files, deploy, settle a week (docs/13 §6–7).
 Then V2-6 (AI SEO assistant is effectively landed as F8's proposals half; Sveltia bridge stays
 deferred by decision).
+
+## 66. P7 — the social planner, keyless-first (18 Oct 2026)
+
+Marketing → **Social Planner** (SOC-005/006/009/010). P7's external half — Meta app review, LinkedIn
+access, page tokens, webhooks (SOC-001…004, 007, 008) — is the owner's to start (docs/16 §8, weeks
+to approve); the internal half is now whole, so the day the approvals land only the transports
+remain.
+
+- **Composer** (`social_posts`: EN + UR captions, link, first comment, hashtags, media_ids from the
+  shared website media library — SOC-010 — and targets facebook/instagram/linkedin). The walk:
+  draft → in review → approved → scheduled → published/failed; **an editor cannot approve their own
+  post** (someone else's eyes are the point). Withdraw returns a post to draft.
+- **AI assist** (SOC-009, `ProposeCaptions`): EN + natural-UR caption drafts behind the studio's
+  one model key (the BOT pattern) — keyless, the button hides; the studio keeps the pen.
+- **Scheduler** (`woodex:social-publish`, every 15 min): due posts hand to `SocialPublisher`.
+  `connectedAccounts()` is honestly empty until SOC-001 lands, so due posts **wait** — the command
+  says so and nothing is churned into failure by a clock. The transport slots in behind that one
+  method.
+- The month-grid calendar with drag-to-reschedule ships with the connected accounts (noted on the
+  screen); until then the plan lives in the list.
+- Tests `SocialPlannerTest` — 5 green (compose + shared media + no-network refusal; review flow
+  incl. self-approval refused; schedule → scheduler waits; 403 gate; AI keyless silent + key path).
+  Gate: **116 files / 1134 passed / 0 failed**. Sidebar count 42 → 43 (Social Planner went live).
+
+Gotchas: two `Http::fake()` calls in one test do not stack — the first (empty) fake keeps
+answering; declare one fake with patterns and let both keyless and keyed paths run against it.
+When a component's methods all throw "user() does not exist", the `use InteractsWithAdmin;` line
+inside the class body went missing (the import alone is not the trait). In python heredocs, `\$`
+is a literal backslash — write plain `$`.
+
+**Owner's P7 homework (the only blocker left):** start the Meta app review and LinkedIn product
+access; connect the pages when approved. Then: account store + tokens (SOC-001), inbox/webhooks
+(SOC-002/003), Lead Ads (SOC-004), LinkedIn (SOC-007), insights (SOC-008), calendar grid.
+
+Next per the marathon order: **P9** (security review, load pass, restore drill, Urdu templates,
+training, final v2.1 sync — docs/16 §9).

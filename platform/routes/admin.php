@@ -51,6 +51,7 @@ use App\Livewire\Admin\Website\MediaLibrary;
 use App\Livewire\Admin\Website\ContentLibraryIndex;
 use App\Livewire\Admin\Website\MenusIndex;
 use App\Livewire\Admin\Website\PageEditor;
+use App\Livewire\Admin\Marketing\SocialPlannerIndex;
 use App\Livewire\Admin\Website\PagesIndex;
 use App\Livewire\Admin\Website\TeamMembersIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
@@ -120,6 +121,8 @@ Route::get('/conversations/media/{message}', ConversationMediaController::class)
 Route::get('/media/{media}/{conversion?}', MediaController::class)->name('media.show')->whereIn('conversion', ['thumb']);
 
 // Website (phase P6, docs/09): the public website is content, edited here.
+Route::livewire('/marketing/social', SocialPlannerIndex::class)->name('marketing.social')->middleware('can:social.manage');
+
 Route::livewire('/website/pages', PagesIndex::class)->name('website.pages')->middleware('can:website.edit');
 Route::livewire('/website/pages/new', PageEditor::class)->name('website.pages.create')->middleware('can:website.edit');
 Route::livewire('/website/pages/{page}', PageEditor::class)->name('website.pages.edit')->middleware('can:website.edit');
