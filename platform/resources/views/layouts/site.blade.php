@@ -8,8 +8,9 @@
     $whatsapp ??= \App\Support\Phone::whatsappUrl($business->whatsapp, 'Assalam o Alaikum, I would like to discuss a project with Woodex Interior.');
     $services ??= \App\Domain\Website\Services\Menus::serviceLinks();
     $faqs ??= [];
+    $site ??= app(\App\Settings\SiteSettings::class);
     $navigation = \App\Domain\Website\Services\Menus::tree('header');
-    $footerNavigation = \App\Domain\Website\Services\Menus::items('footer');
+    $footerNavigation = \App\Domain\Website\Services\Menus::tree('footer');
     $cities = \App\Domain\Website\Services\Menus::cityLinks();
 @endphp
 <!DOCTYPE html>
@@ -28,7 +29,7 @@
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ $gtm->gtm_id }}" height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>
     @endif
 
-    @include('site.partials.header', ['tree' => $navigation, 'business' => $business, 'phone' => $phone])
+    @include('site.partials.header', ['tree' => $navigation, 'business' => $business, 'phone' => $phone, 'site' => $site])
 
     <main id="main">
         @yield('content')
@@ -41,6 +42,7 @@
         'business' => $business,
         'phone' => $phone,
         'whatsapp' => $whatsapp,
+        'site' => $site,
     ])
 
     {{-- P8.5 web chat widget: one tag covers the home page and every CMS page. The route 404s

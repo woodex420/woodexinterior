@@ -1802,3 +1802,53 @@ Tests: `MenusTreeTest` — 7 green (tree shape, cache + dashboard flush, flat fa
 parent + fourth-level refusal, level-scoped move, mega on top links only, site rendering of
 dropdown + mega + disclosures). Regression: Website suite 99 passed. Gate: **104 files /
 1084 passed / 0 failed** · Pint + Larastan clean.
+
+## 56. V2-3 F2 + F3 — the v26 hero slider and the structured header/footer (18 Oct 2026)
+
+Deep-search follow-up (owner directive of 18 Oct): the old admin v2.1 pro's Website section was
+mapped item by item against Woodex OS and the gaps became plan rows F5–F11 in docs/14 §5a (page
+templates, shared FAQ/testimonial/logo libraries, team, SEO agent, speed, site health, theme
+presets). Owner answers: **central libraries · keyless-first SEO agent · internal speed checks
+with PageSpeed behind a key · confirmed order**.
+
+**F2 — the v26 hero slider (reusable section + home conversion).**
+- `BlockType::Slider` — one `slides` repeater (photo, small label, heading, text, big display
+  word, two buttons). Joined the section library automatically; category Hero.
+- `site/sections/slider.blade.php` — Alpine carousel, no library: autoplay 6s that pauses on
+  hover and focus and never starts for `prefers-reduced-motion`; arrows, dots and a polite
+  counter; arrow-key control; the first photo is the LCP `<img>` with fetchpriority, later ones
+  lazy; fade transitions. H1 policy: a real Hero block wins, otherwise the FIRST slide carries
+  the page's only H1 (`$hasHeroBlock` computed in the section from the shared `$blocks` scope).
+- `PageRenderer`: `hasHero` now also counts a slider **that has at least one photo** (an empty
+  slider must leave the page its fallback title), and `mediaFor` collects image ids from
+  `slides` rows (`id` or `image_id`) — the gap that made slide photos vanish.
+- `woodex:home-slider` (SeedHomeSlider): guarded — skips a home that already has a slider, skips
+  slides whose photo is missing, refuses to run without any photo. Existing sections move one
+  row down. Seeded the 3 v26 slides (INTERIORS / WORKPLACE / ARCHITECTURE) — the runtime DB now
+  has them (home id 144; media ids 106/124/107 were already imported).
+- Home H1 note: the home page had NO blocks before this — the seeder was the first content it got.
+
+**F3 — the structured header/footer editor (owner answer: structured, not drag-drop).**
+- `SiteSettings` (migration `2026_10_18_153000` in database/settings/): header_cta_label/url,
+  social_links (facebook/instagram/linkedin/youtube/tiktok), footer_tagline, footer_show_services
+  /cities/contact switches, footer_copyright. Defaults keep today's footer untouched.
+- Website Settings screen: three new cards (Header & social / Footer / Tracking) in one
+  `display:contents` form; social URLs must be https; the footer card links to Menus for columns.
+- `header.blade.php`: the button's text and target come from settings.
+- `footer.blade.php` rewrite: brand column (tagline override, NTN, social icon buttons with
+  hand-drawn SVG paths), **link columns from Menus::tree('footer')** — a top link with children
+  is one column (title = the link, links = its children); plain top links stay in the bottom row,
+  so an unfilled menu keeps the old flat footer; services/NAP columns and cities row toggle;
+  copyright overridable.
+- Layout passes `SiteSettings` to header and footer; footer switched from `items()` to `tree()`.
+
+Gotchas: (1) spatie/laravel-settings requires a SettingsMigration row per new property — adding
+class properties with defaults is NOT enough (MissingSettings on save); database/settings/ is not
+in sync.sh's copy list — copy those by hand and `artisan migrate`. (2) Blade comments must open
+with exactly `{{--` — a stray `{--` leaks the whole comment into the HTML (three files hit this).
+(3) The wasm sandbox keeps compiled views across syncs — `rm storage/framework/views/*.php` after
+blade edits that tests assert against. (4) Test page cache: after changing settings in a test,
+`PageCache::invalidateAll(published)` like the dashboard does.
+
+Tests: `SliderSectionTest` 3, `HeaderFooterEditorTest` 5. Regression: Website suite 107 passed.
+Gate: **106 files / 1092 passed / 0 failed** · Pint + Larastan clean.

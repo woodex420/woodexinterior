@@ -37,6 +37,36 @@ class SiteSettings extends Settings
     /** @phpstan-var list<string> Events sent to GA4 as conversions (docs/09 §11.3) */
     public array $conversion_events;
 
+    /*
+     * V2-3 (docs/14): the structured header/footer editor. The layout is fixed and professional —
+     * the owner edits the words, the links and the switches here; the columns themselves live in
+     * Website → Menus (footer), where a top link with children is one footer column.
+     */
+
+    /** The header button's text. Empty keeps "Start your project". */
+    public ?string $header_cta_label = null;
+
+    /** Where the header button points. Empty keeps the enquiry form anchor. */
+    public ?string $header_cta_url = null;
+
+    /** @phpstan-var array<string, string> Studio social profiles: facebook, instagram, linkedin, youtube, tiktok — full URL or empty */
+    public array $social_links = [];
+
+    /** Overrides the business tagline in the footer when filled in. */
+    public ?string $footer_tagline = null;
+
+    /** Show the "What we do" services column in the footer. */
+    public bool $footer_show_services = true;
+
+    /** Show the "Where we work" cities row in the footer. */
+    public bool $footer_show_cities = true;
+
+    /** Show the studio's address, phone and hours column in the footer. */
+    public bool $footer_show_contact = true;
+
+    /** Overrides the footer's copyright line when filled in. */
+    public ?string $footer_copyright = null;
+
     public static function group(): string
     {
         return 'site';

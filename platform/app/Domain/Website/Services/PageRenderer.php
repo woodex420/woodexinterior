@@ -53,7 +53,11 @@ final class PageRenderer
             'schemaType' => $page->schema_type ?? $page->type->schemaType(),
             'robots' => $seo['robots'] ?? null, // null: the head prints its default "index, follow"
             'modified' => ($page->updated_at ?? now())->toDateString(),
-            'hasHero' => $blocks->contains(fn (PageBlock $block): bool => $block->type === BlockType::Hero),
+            // A slider only counts as the hero while it has at least one photo to show — an empty
+            // slider must leave the page its own title (V2-3).
+            'hasHero' => $blocks->contains(fn (PageBlock $block): bool => $block->type === BlockType::Hero
+                || ($block->type === BlockType::Slider && collect((array) ($block->data['slides'] ?? []))
+                    ->contains(fn (array $slide): bool => ($slide['image_id'] ?? null) !== null))),
         ];
     }
 
@@ -71,10 +75,10 @@ final class PageRenderer
                     $ids[] = (int) $value;
                 }
 
-                if (in_array((string) $key, ['images', 'logos'], true) && is_array($value)) {
+                if (in_array((string) $key, ['images', 'logos', 'slides'], true) && is_array($value)) {
                     foreach ($value as $item) {
-                        if (is_array($item) && isset($item['id'])) {
-                            $ids[] = (int) $item['id'];
+                        if (is_array($item)) {
+                            $ids[] = (int) ($item['id'] ?? $item['image_id'] ?? 0);
                         }
                     }
                 }

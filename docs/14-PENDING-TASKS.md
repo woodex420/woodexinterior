@@ -96,12 +96,36 @@ _Implementation detail, ordered into buildable steps: docs/15 §P6._
 |---|---|---|
 | **V2-1** | Design tokens + theme builder; all 15 section templates read tokens only | **DONE** — tokens are the live CSS's own vocabulary (D-116); `/assets/theme.css` re-skins the live v1 pages with no deploy, v2 pages link the hashed `/theme/{hash}.css` |
 | **V2-2** | Section library + page builder (drag, device preview, draft → publish) | **PART** — library with categories + descriptions, saved-by-the-studio sections, drag-to-reorder (wire:sort), duplicate, device preview (desktop/tablet/mobile), shareable 24 h signed preview links shipped; remaining: campaign free-canvas mode, inline text editing |
-| **V2-3** | Header/footer builder, media improvements, Pages/Menus completion | **ACTIVE (frontend v1 wave, 18 Oct)** — scope set from the marketing repo deep-search: capabilities port into Woodex OS, not a system mount (owner decision). Landed: click-to-edit (F4 — stable `block_key` per section, preview→editor bridge, never on cached public pages); nested menus + dropdowns + mega panel with the v26 numbered layout (F1 — `is_mega`, `Menus::tree()`, MenusIndex nesting, header rewrite). Next: Slider section + v26 home port (F2), structured header/footer editor (F3). v26 static design (frontend-v1 branch) is the owner's final design reference |
+| **V2-3** | Header/footer builder, media improvements, Pages/Menus completion | **ACTIVE (frontend v1 wave, 18 Oct)** — scope set from the marketing repo deep-search: capabilities port into Woodex OS, not a system mount (owner decision). Landed: click-to-edit (F4), nested menus + dropdowns + v26 mega panel (F1), the v26 hero slider section + home seeding (F2 — `BlockType::Slider`, Alpine carousel, `woodex:home-slider`), and the structured header/footer editor (F3 — SiteSettings header CTA/social/footer switches, footer columns from the footer menu tree). Next in order: F5 page templates → F6 shared libraries → F8 SEO agent (+F10 health) → F7 team → F9 speed → F11 theme presets. v26 static design (frontend-v1 branch) is the owner's final design reference |
 | **V2-4** | SEO: crawler rules, sitemap, canonicals, schema, then the auditor | **PART** — sitemap, canonicals and schema exist per page |
 | **V2-5** | The conversion itself, group by group (docs/13) | **TODO** — blocked by V2-1 and V2-2 |
 | **V2-6** | AI assistant for SEO + the Sveltia bridge | **TODO** — Sveltia deferred by recommendation (docs/12 §7) |
 
 ---
+
+### 5a · Frontend-v1 wave — the full gap list (deep-search of the marketing repo, 18 Oct)
+
+The old admin v2.1 pro (`frontend-v1/admin/`, the P17→P41 screens the owner starred) mapped item by item
+against Woodex OS. Already covered, OS-native and richer: All pages (type filters incl. Blog/Portfolio/
+Service/City), Page builder (drag, device preview, versions, click-to-edit), Section library + saved
+sections, Redirects, Forms→CRM, Estimator, Media, SEO (per-page + sitemap), Theme Builder (V2-1 tokens,
+v1 reset), plus every non-Website module (CRM, quotes, invoices, inbox, WhatsApp, users, backups).
+Menus (F1) now beats the old "Header & footer" screen: the old one rewrote nav HTML on 87 files; ours is
+one tree in the database, live everywhere at once.
+
+Still missing from the old system — the wave continues after F2/F3:
+
+| # | Piece | What the old system had | Plan |
+|---|---|---|---|
+| F5 | **Page templates** | Layout templates per type (article/study/city): hero style, sections on/off, order; apply to new or existing pages with a preview | Template = named section list (type + data) per PageType; "New page from template" + "Apply template" in the editor with preview; the 50 v26 section presets seed the library |
+| F6 | **Shared content libraries** | FAQs, Testimonials, Client logos managed centrally, referenced by any page | Central libraries (Website → Content) + blocks pick from them; per-page manual rows stay possible |
+| F7 | **Team** | Team manager: members with photo, role, bio; team section on About | `team_members` table + CRUD + a Team section block |
+| F8 | **SEO agent** | Scan all pages → prioritized issues (title/desc/alt/H1/keyphrase/thin/schema) → AI proposals → review + apply | Keyless-first deterministic scanner + one-click fixes (mirrors the BOT pattern); AI proposals light up when a key exists |
+| F9 | **Speed** | PageSpeed dashboard (mobile + desktop, history, top suggestions) | Internal checks always (image weight/format, page size, cache headers); Google PageSpeed API behind a settings key |
+| F10 | **Site health (website)** | Broken links, missing images, orphan pages, robots sanity | One "Website health" tab on the SEO agent screen (or System Health extension) |
+| F11 | **Theme presets** | 4 presets (Woodex classic, Gallery serif, Modern slate, Warm walnut) | Seed the 3 extra presets into the Theme Builder next to "back to v1" |
+
+Order after F2/F3: F5 → F6 → F8 (+F10 folded in) → F7 → F9 → F11.
 
 ## 5 · Later phases, untouched (listed so nothing is lost)
 

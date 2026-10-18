@@ -10,6 +10,9 @@ namespace App\Domain\Website\Enums;
 enum BlockType: string
 {
     case Hero = 'hero';
+
+    /** V2-3: the v26 home hero — several full-bleed slides that rotate, each with its own photo and buttons. */
+    case Slider = 'slider';
     case Intro = 'intro';
     case Text = 'text';
     case Services = 'services';
@@ -29,6 +32,7 @@ enum BlockType: string
     {
         return match ($this) {
             self::Hero => 'Hero',
+            self::Slider => 'Hero slider',
             self::Intro => 'Intro + key facts',
             self::Text => 'Text',
             self::Services => 'Services grid',
@@ -54,6 +58,7 @@ enum BlockType: string
     {
         return match ($this) {
             self::Hero => 'The opening: a big heading, a photo and the studio\'s first promise.',
+            self::Slider => 'The v26 opening: full-height slides that rotate, each with its own photo, text and buttons.',
             self::Intro => 'A short paragraph plus key figures — what this page is about.',
             self::Text => 'A heading and free text: the workhorse for telling any story.',
             self::Services => 'A grid of services with a line each.',
@@ -79,6 +84,7 @@ enum BlockType: string
     {
         return match ($this) {
             self::Hero => 'Hero',
+            self::Slider => 'Hero',
             self::Clients, self::Reviews, self::Gallery, self::Related, self::Author => 'Proof',
             self::Intro, self::Text, self::Services, self::Process, self::Specs, self::PriceTable, self::Faq => 'Content',
             self::Form, self::Map => 'Conversion',
@@ -94,6 +100,7 @@ enum BlockType: string
     {
         return match ($this) {
             self::Hero => ['eyebrow' => '', 'heading' => '', 'text' => '', 'image_id' => null, 'primary_label' => 'Start your project', 'primary_url' => '#enquiry', 'secondary_label' => '', 'secondary_url' => '', 'facts' => []],
+            self::Slider => ['slides' => []],
             self::Intro => ['eyebrow' => '', 'heading' => '', 'body' => '', 'image_id' => null, 'facts' => []],
             self::Text => ['heading' => '', 'body' => ''],
             self::Services => ['heading' => '', 'items' => []],
@@ -134,6 +141,19 @@ enum BlockType: string
                 ['key' => 'secondary_label', 'label' => 'Second button label', 'type' => 'text'],
                 ['key' => 'secondary_url', 'label' => 'Second button link', 'type' => 'text'],
                 ['key' => 'facts', 'label' => 'Key figures', 'type' => 'repeater', 'fields' => $nameValue],
+            ],
+            self::Slider => [
+                ['key' => 'slides', 'label' => 'Slides', 'type' => 'repeater', 'fields' => [
+                    ['key' => 'image_id', 'label' => 'Photo', 'type' => 'image'],
+                    ['key' => 'kicker', 'label' => 'Small label', 'type' => 'text'],
+                    ['key' => 'heading', 'label' => 'Heading', 'type' => 'textarea', 'rows' => 2],
+                    ['key' => 'text', 'label' => 'Text', 'type' => 'textarea', 'rows' => 2],
+                    ['key' => 'display', 'label' => 'Big display word (optional)', 'type' => 'text'],
+                    ['key' => 'primary_label', 'label' => 'Button label', 'type' => 'text'],
+                    ['key' => 'primary_url', 'label' => 'Button link', 'type' => 'text'],
+                    ['key' => 'secondary_label', 'label' => 'Second button label', 'type' => 'text'],
+                    ['key' => 'secondary_url', 'label' => 'Second button link', 'type' => 'text'],
+                ]],
             ],
             self::Intro => [
                 ['key' => 'eyebrow', 'label' => 'Eyebrow', 'type' => 'text'],
