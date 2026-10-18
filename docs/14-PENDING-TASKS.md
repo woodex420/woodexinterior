@@ -72,17 +72,17 @@ WhatsApp (this week)** · **a client's "ok" noticed without accepting the price 
 
 ## 3 · P5 — Telegram command centre (≈ 1 week)
 
-_Implementation detail, ordered into buildable steps: docs/15 §P5. Started 17 Oct (owner's direction: P5 → P6 next)._
+_Implementation detail, ordered into buildable steps: docs/15 §P5. **COMPLETE 18 Oct** — S1–S8 all landed; the owner's 1-hour staff-linking task remains._
 
 | ID | What | Status |
 |---|---|---|
-| **TEL-1** | Staff linking (`/link`), alerts to the right people, quiet hours | **PART** — linking, alerts and quiet hours exist; the matrix is not complete |
-| **TEL-2** | Commands: `/today` `/leads` `/lead <ref>` `/quotes` `/due` `/visits` `/report` `/health` `/approve` `/assign` `/note` | **PART** — only `/help` `/start` `/link` `/idea` `/issue` exist |
+| **TEL-1** | Staff linking (`/link`), alerts to the right people, quiet hours | **DONE** — linking, alert routing (now rule-driven, S7) and quiet hours |
+| **TEL-2** | Commands: `/today` `/leads` `/lead <ref>` `/quotes` `/due` `/visits` `/report` `/health` `/approve` `/assign` `/note` | **DONE** — all commands live through the command bus (S1/S2) |
 | **TEL-3** | Morning digest and evening summary | **TODO** |
 | **TEL-4** | Approvals from Telegram (quotation discounts, payments to verify) | **TODO** — the approvals screen exists; the Telegram route does not |
 | **SYS-008** | Health: cron heartbeat, queue and failed jobs, disk and DB size, last backup, mail test, integrations, versions, scheduled tasks with last run | **PART** — a health screen and heartbeat exist; extend to the full list |
 | **SYS-010** | Change-request board: from Telegram `/idea` `/issue` into an admin screen with status, phase and a reply to the requester | **PART** — the commands exist and store entries; there is no board to read them in |
-| **AUT-003** | Alert rules: event → condition → recipients → channels → quiet hours → priority, editable in Settings | **PART** — notification settings exist; the rule builder does not |
+| **AUT-003** | Alert rules: event → condition → recipients → channels → quiet hours → priority, editable in Settings | **DONE** — System → Alert Rules (S7): catalogue of 22 events, router behind every send, defaults = the shipped matrix |
 
 Exit criterion for P5: **the owner completes a full day of approvals from Telegram.**
 
@@ -96,7 +96,7 @@ _Implementation detail, ordered into buildable steps: docs/15 §P6._
 |---|---|---|
 | **V2-1** | Design tokens + theme builder; all 15 section templates read tokens only | **DONE** — tokens are the live CSS's own vocabulary (D-116); `/assets/theme.css` re-skins the live v1 pages with no deploy, v2 pages link the hashed `/theme/{hash}.css` |
 | **V2-2** | Section library + page builder (drag, device preview, draft → publish) | **PART** — library with categories + descriptions, saved-by-the-studio sections, drag-to-reorder (wire:sort), duplicate, device preview (desktop/tablet/mobile), shareable 24 h signed preview links shipped; remaining: campaign free-canvas mode, inline text editing |
-| **V2-3** | Header/footer builder, media improvements, Pages/Menus completion | **ACTIVE (frontend v1 wave, 18 Oct)** — scope set from the marketing repo deep-search: capabilities port into Woodex OS, not a system mount (owner decision). Landed: click-to-edit (F4), nested menus + dropdowns + v26 mega panel (F1), the v26 hero slider section + home seeding (F2 — `BlockType::Slider`, Alpine carousel, `woodex:home-slider`), and the structured header/footer editor (F3 — SiteSettings header CTA/social/footer switches, footer columns from the footer menu tree). Wave F is COMPLETE (F1–F11): theme presets landed last (Gallery serif / Modern slate / Warm walnut beside v1, presets as token overrides). Next per the marathon order: P5 completion → V2-2 leftovers → V2-5 → P7 → P9. Landed so far: F4 click-to-edit, F1 menus/mega, F2 slider, F3 header/footer editor, F5 page templates (starter/apply/save-back flows, 8 seeded layouts), F6 central FAQ/testimonial/logo library (Website → Content; sections pick members). v26 static design (frontend-v1 branch) is the owner's final design reference |
+| **V2-3** | Header/footer builder, media improvements, Pages/Menus completion | **ACTIVE (frontend v1 wave, 18 Oct)** — scope set from the marketing repo deep-search: capabilities port into Woodex OS, not a system mount (owner decision). Landed: click-to-edit (F4), nested menus + dropdowns + v26 mega panel (F1), the v26 hero slider section + home seeding (F2 — `BlockType::Slider`, Alpine carousel, `woodex:home-slider`), and the structured header/footer editor (F3 — SiteSettings header CTA/social/footer switches, footer columns from the footer menu tree). Wave F is COMPLETE (F1–F11) and P5 is COMPLETE (S1–S8; alert-rules builder landed last). Next per the marathon order: V2-2 leftovers → V2-5 → P7 → P9. Landed so far: F4 click-to-edit, F1 menus/mega, F2 slider, F3 header/footer editor, F5 page templates (starter/apply/save-back flows, 8 seeded layouts), F6 central FAQ/testimonial/logo library (Website → Content; sections pick members). v26 static design (frontend-v1 branch) is the owner's final design reference |
 | **V2-4** | SEO: crawler rules, sitemap, canonicals, schema, then the auditor | **PART** — sitemap, canonicals and schema exist per page |
 | **V2-5** | The conversion itself, group by group (docs/13) | **TODO** — blocked by V2-1 and V2-2 |
 | **V2-6** | AI assistant for SEO + the Sveltia bridge | **TODO** — Sveltia deferred by recommendation (docs/12 §7) |

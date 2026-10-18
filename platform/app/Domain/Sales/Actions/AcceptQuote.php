@@ -12,6 +12,7 @@ use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Notifications\QuoteNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Sales\Services\QuoteLinks;
 use App\Models\User;
 use App\Support\Phone;
@@ -95,7 +96,7 @@ final class AcceptQuote
         $quote = $original->refresh();
         $invoice = $quote->invoices()->latest('id')->first();
 
-        Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'accepted', ($by === null
+        app(AlertRouter::class)->send('quote.accepted', QuoteLinks::watchers($quote), new QuoteNotification($quote, 'accepted', ($by === null
             ? 'Accepted online by “'.trim($name).'”. '
             : "Accepted on WhatsApp, confirmed by {$by->name}. ").(
                 $invoice === null

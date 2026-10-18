@@ -8,6 +8,7 @@ use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteEvent;
 use App\Domain\Sales\Notifications\QuoteNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Sales\Services\QuoteLinks;
 use App\Settings\SalesSettings;
 use Carbon\CarbonInterface;
@@ -139,7 +140,7 @@ final class ChaseQuotations
                 ['total_minor' => (int) $quote->total_minor],
             );
 
-            Notification::send(QuoteLinks::watchers($quote), new QuoteNotification(
+            app(AlertRouter::class)->send('quote.chase', QuoteLinks::watchers($quote), new QuoteNotification(
                 $quote,
                 'expired',
                 $this->expiryLine($quote).' Send a fresh quotation if the work is still live.',
@@ -152,7 +153,7 @@ final class ChaseQuotations
     private function nudge(Quote $quote, string $type, string $line): void
     {
         $this->log->handle($quote, $type, null, $line, ['total_minor' => (int) $quote->total_minor]);
-        Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, $type, $line));
+        app(AlertRouter::class)->send('quote.chase', QuoteLinks::watchers($quote), new QuoteNotification($quote, $type, $line));
     }
 
     private function chaseLine(Quote $quote): string

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Domain\System\Notifications\AgentReportNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Website\Actions\CheckSeoHealth;
 use App\Models\User;
 use Illuminate\Console\Command;
@@ -47,7 +48,7 @@ class SeoAgent extends Command
             return;
         }
 
-        Notification::send($owners, new AgentReportNotification(
+        app(AlertRouter::class)->send('system.agent_report', $owners, new AgentReportNotification(
             kind: 'agent.seo',
             title: 'SEO health check',
             lines: $lines,

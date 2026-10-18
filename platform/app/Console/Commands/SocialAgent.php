@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Domain\System\Actions\CollectSocialPostIdeas;
 use App\Domain\System\Notifications\AgentReportNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,7 +48,7 @@ class SocialAgent extends Command
             return;
         }
 
-        Notification::send($owners, new AgentReportNotification(
+        app(AlertRouter::class)->send('system.agent_report', $owners, new AgentReportNotification(
             kind: 'agent.social',
             title: 'Social post ideas',
             lines: $lines,

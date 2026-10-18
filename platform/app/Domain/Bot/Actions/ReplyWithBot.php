@@ -20,6 +20,7 @@ use App\Domain\Conversations\Enums\MessageType;
 use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Models\Message;
 use App\Domain\System\Notifications\BotHandoffNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use App\Settings\BotSettings;
 use App\Settings\BusinessSettings;
@@ -208,7 +209,7 @@ final class ReplyWithBot
             ->get();
 
         if ($recipients->isNotEmpty()) {
-            Notification::send($recipients, new BotHandoffNotification($conversation, $reason));
+            app(AlertRouter::class)->send('chat.handoff', $recipients, new BotHandoffNotification($conversation, $reason));
         }
     }
 }

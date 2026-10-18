@@ -6,6 +6,7 @@ namespace App\Domain\Crm\Actions;
 
 use App\Domain\Crm\Models\Activity;
 use App\Domain\Crm\Notifications\MentionedNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Notification;
@@ -42,7 +43,7 @@ final class NotifyMentions
         $activity->forceFill(['data' => array_merge($activity->data ?? [], ['mentions' => $mentioned->modelKeys()])])->save();
         $activity->loadMissing(['lead.contact', 'contact']);
 
-        Notification::send($mentioned, new MentionedNotification($activity, $author));
+        app(AlertRouter::class)->send('crm.mentioned', $mentioned, new MentionedNotification($activity, $author));
 
         return $mentioned;
     }

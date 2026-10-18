@@ -8,6 +8,7 @@ use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Notifications\QuoteNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Sales\Services\QuoteApprovalRules;
 use App\Domain\System\Enums\ApprovalStatus;
 use App\Domain\System\Models\Approval;
@@ -88,7 +89,7 @@ final class DecideQuoteApproval
             }
 
             $approval->loadMissing('requester.telegramLink');
-            $approval->requester?->notify(new QuoteNotification($quote->refresh(), $approve ? 'approved' : 'rejected',
+            app(AlertRouter::class)->send('quote.approval', [$approval->requester], new QuoteNotification($quote->refresh(), $approve ? 'approved' : 'rejected',
                 ($approve ? 'Approved by ' : 'Declined by ').$by->name.($approve ? ': you can send it now.' : ': '.trim((string) $reason))));
 
             return $quote;

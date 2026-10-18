@@ -87,6 +87,7 @@ final class AdminNavigation
                 self::item('Health', 'health', 'admin.system.health', 'system.health'),
                 self::item('Audit log', 'activity', 'admin.system.audit', 'audit.view'),
                 self::item('Change Requests', 'lightbulb', 'admin.system.change-requests', 'system.change_requests'),
+                self::item('Alert Rules', 'bell', 'admin.system.alert-rules', 'settings.manage'),
             ]),
         ];
     }

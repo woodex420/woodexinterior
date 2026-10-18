@@ -8,6 +8,7 @@ use App\Domain\Conversations\Enums\MessageDirection;
 use App\Domain\Conversations\Enums\MessageStatus;
 use App\Domain\Conversations\Models\Message;
 use App\Domain\System\Notifications\WhatsAppUsageNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use App\Settings\IntegrationSettings;
 use Illuminate\Support\Facades\Notification;
@@ -66,7 +67,7 @@ final class CheckWhatsAppUsage
                 ->get();
 
             if ($recipients->isNotEmpty()) {
-                Notification::send($recipients, new WhatsAppUsageNotification($month, $text, $template, $cost, $this->settings->whatsapp_monthly_budget));
+                app(AlertRouter::class)->send('system.whatsapp_usage', $recipients, new WhatsAppUsageNotification($month, $text, $template, $cost, $this->settings->whatsapp_monthly_budget));
             }
         }
 

@@ -8,6 +8,7 @@ use App\Domain\Crm\Enums\ActivityType;
 use App\Domain\Crm\Models\Activity;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Notifications\SlaBreachedNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use App\Settings\NotificationSettings;
 use App\Settings\SalesSettings;
@@ -66,7 +67,7 @@ final class CheckLeadSla
                     $recipients = $this->recipients($lead);
 
                     if ($recipients->isNotEmpty()) {
-                        Notification::send($recipients, new SlaBreachedNotification($lead));
+                        app(AlertRouter::class)->send('lead.sla_breach', $recipients, new SlaBreachedNotification($lead));
                     }
 
                     $flagged++;
@@ -121,7 +122,7 @@ final class CheckLeadSla
                     $recipients = $recipients->unique('id')->values();
 
                     if ($recipients->isNotEmpty()) {
-                        Notification::send($recipients, new SlaBreachedNotification($lead, escalated: true));
+                        app(AlertRouter::class)->send('lead.sla_breach', $recipients, new SlaBreachedNotification($lead, escalated: true));
                     }
 
                     $escalated++;

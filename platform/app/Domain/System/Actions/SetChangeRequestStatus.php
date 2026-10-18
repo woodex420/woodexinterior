@@ -7,6 +7,7 @@ namespace App\Domain\System\Actions;
 use App\Domain\System\Enums\ChangeRequestStatus;
 use App\Domain\System\Models\ChangeRequest;
 use App\Domain\System\Notifications\ChangeRequestUpdatedNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -33,7 +34,7 @@ final class SetChangeRequestStatus
             $requester = $request->requester;
 
             if ($requester !== null && $requester->isNot($by)) {
-                $requester->notify(new ChangeRequestUpdatedNotification($request, $by));
+                app(AlertRouter::class)->send('system.change_request', [$requester], new ChangeRequestUpdatedNotification($request, $by));
             }
 
             return $request;

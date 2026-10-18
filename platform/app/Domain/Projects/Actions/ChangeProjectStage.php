@@ -11,6 +11,7 @@ use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Mail\ProjectMail;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Notifications\ProjectNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use App\Settings\SalesSettings;
 use Illuminate\Support\Facades\Mail;
@@ -52,7 +53,7 @@ final class ChangeProjectStage
             'occurred_at' => now(),
         ]);
 
-        Notification::send(
+        app(AlertRouter::class)->send('project.stage',
             User::query()->with('telegramLink')->permission('projects.view')->where('is_active', true)->get(),
             new ProjectNotification(
                 title: $project->code.': '.$from->label().' → '.$stage->label(),

@@ -12,6 +12,7 @@ use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteEvent;
 use App\Domain\Sales\Models\QuoteVersion;
 use App\Domain\Sales\Notifications\QuoteNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Sales\Services\QuoteLinks;
 use App\Domain\Sales\Services\QuoteWriteLock;
 use Illuminate\Support\Facades\DB;
@@ -71,7 +72,7 @@ final class RecordQuoteView
 
             if ($first && $type === 'viewed') {
                 $this->log->handle($quote, 'viewed', null, "{$quote->contact->name} opened {$version->snapshot['label']} for the first time ({$data['device']}).", $data, $attributes);
-                Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'first_view', 'Opened just now on '.$data['device'].'.'));
+                app(AlertRouter::class)->send('quote.viewed', QuoteLinks::watchers($quote), new QuoteNotification($quote, 'first_view', 'Opened just now on '.$data['device'].'.'));
 
                 return;
             }
@@ -87,7 +88,7 @@ final class RecordQuoteView
 
             if ($recent >= self::HOT_VIEWS && ($lastHot === null || $now->copy()->subDay()->gt($lastHot))) {
                 $quote->update(['meta' => [...($quote->meta ?? []), 'hot_notified_at' => $now->toIso8601String()]]);
-                Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'hot', "{$recent} views in the last 24 hours: a good moment to call."));
+                app(AlertRouter::class)->send('quote.viewed', QuoteLinks::watchers($quote), new QuoteNotification($quote, 'hot', "{$recent} views in the last 24 hours: a good moment to call."));
             }
         });
     }

@@ -8,6 +8,7 @@ use App\Domain\Sales\Enums\PaymentStatus;
 use App\Domain\Sales\Mail\PaymentMail;
 use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Notifications\PaymentNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -49,7 +50,7 @@ final class RejectPayment
                 Mail::to((string) $payment->contact->email)->queue((new PaymentMail($payment->id, 'rejected'))->afterCommit());
             }
 
-            Notification::send(
+            app(AlertRouter::class)->send('payment.rejected',
                 User::query()->with('telegramLink')->permission('invoices.view')->where('is_active', true)->get(),
                 new PaymentNotification($payment, 'rejected'),
             );

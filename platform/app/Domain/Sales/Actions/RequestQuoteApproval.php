@@ -8,6 +8,7 @@ use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Notifications\QuoteNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Sales\Services\QuoteApprovalRules;
 use App\Domain\Sales\Services\QuoteLinks;
 use App\Domain\Sales\Services\QuoteWriteLock;
@@ -74,7 +75,7 @@ final class RequestQuoteApproval
                 'discount_bp' => $assessment->discountBp, 'limit_bp' => $assessment->limitBp,
             ]);
 
-            Notification::send(QuoteLinks::approvers($by), new QuoteNotification($quote, 'approval_requested',
+            app(AlertRouter::class)->send('quote.approval', QuoteLinks::approvers($by), new QuoteNotification($quote, 'approval_requested',
                 'Requested by '.$by->name.': '.implode(' ', $assessment->reasons).(filled($note) ? "\n“".trim((string) $note).'”' : '')));
 
             return $approval;

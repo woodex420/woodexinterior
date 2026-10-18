@@ -9,6 +9,7 @@ use App\Domain\Crm\Enums\VisitStatus;
 use App\Domain\Crm\Models\SiteVisit;
 use App\Domain\Crm\Models\Task;
 use App\Domain\Crm\Notifications\TaskReminderNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Crm\Notifications\VisitReminderNotification;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -49,7 +50,7 @@ final class SendReminders
                     }
 
                     if ($task->assignee !== null && $task->assignee->is_active) {
-                        $task->assignee->notify(new TaskReminderNotification($task));
+                        app(AlertRouter::class)->send('task.due', [$task->assignee], new TaskReminderNotification($task));
                         $sent++;
                     }
                 }
@@ -90,7 +91,7 @@ final class SendReminders
                         $when = $key === 'staff_2h'
                             ? 'in '.max(1, (int) round($minutesLeft / 60)).' h'
                             : ($visit->scheduled_at->isTomorrow() ? 'tomorrow' : 'today');
-                        $recipient->notify(new VisitReminderNotification($visit, $when));
+                        app(AlertRouter::class)->send('visit.reminder', [$recipient], new VisitReminderNotification($visit, $when));
                         $sent++;
                     }
                 }

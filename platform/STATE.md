@@ -2035,3 +2035,41 @@ F1 menus/mega · F2 slider · F3 header/footer editor · F4 click-to-edit · F5 
 F6 shared content library · F7 team manager · F8+F10 SEO agent + website health · F9 speed
 dashboard · F11 theme presets. The v26 static design stayed untouched throughout (owner's rule).
 Next per the marathon order: **P5 completion → V2-2 leftovers → V2-5 → P7 → P9**.
+
+## 63. P5 S7 — the alert-rules builder (18 Oct 2026) — P5 complete
+
+The last P5 build step (AUT-003, TGM-002, docs/02 §8): **System → Alert Rules** (settings.manage).
+Nothing is pre-seeded — out of the box every alert behaves exactly as before this screen existed.
+
+- **`AlertCatalogue`**: the 22 events the OS raises today (leads, SLAs, tasks, visits, quotes,
+  payments, projects, mentions, chats, system reports, WhatsApp), each labelled with the routing it
+  ships with. The catalogue drives the screen's dropdown — no staling.
+- **`AlertRouter`** — the single door: 24 call sites (every `Notification::send`/`->notify` that is
+  a staff alert) now go through `app(AlertRouter::class)->send($event, $defaults, $notification)`.
+  No rule for the event → `Notification::send($defaults)` — byte-for-byte yesterday's behaviour.
+  Rules → each takes over: recipients (roles + named people; empty = silenced), channels
+  (in-app/Telegram/email, filtered to what the person can receive), quiet hours, priority.
+- **`RoutedAlert`** (queued wrapper): delegates toArray/toMail/toTelegram to the wrapped
+  notification unchanged; `isCritical()` (priority critical OR quiet-hours off) makes the Telegram
+  channel deliver into a muted chat at once instead of queueing. Router eager-loads
+  `telegramLink` (lazy loading is disabled here).
+- Skipped on purpose: StaffInvitation (a personal invite, not an alert), DigestNotification (its
+  own quiet-hours machinery, S4).
+- Tests `AlertRulesTest` — 6 green (catalogue integrity incl. a recursive scan proving every wired
+  event key exists; default routing unchanged; rule takeover with channel filtering; critical
+  wrapper; screen add/pause/edit/remove + empty-recipient refusal; 403 for non-managers).
+  Gate: **113 files / 1122 passed / 0 failed**. Sidebar count 41 → 42.
+
+Gotchas: `app(AlertRouter)` without `::class` is a *constant reference* in PHP — every call site
+needed `app(AlertRouter::class)`. `GLOB_BRACE` does not exist in the wasm PHP build — use
+RecursiveDirectoryIterator. Notifications under rules arrive as the `RoutedAlert` wrapper, so
+`assertSentTo(X::class)` in old tests would break — none did (default path sends the inner class
+unwrapped). Larastan: the base Notification contract has no channel methods — the wrapper guards
+with `method_exists` (which phpstan understands) instead of ignores.
+
+**P5 closed**: S1–S8 all done (command bus + 17 commands, callbacks, digests, health completion,
+change-requests board, alert rules, hardening). Exit criterion — a full day of approvals from
+Telegram — is now mechanically possible; the owner's 1-hour task (staff linking their chats)
+remains.
+
+Next per the marathon order: **V2-2 leftovers** → V2-5 → P7 → P9.

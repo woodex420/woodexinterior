@@ -43,6 +43,7 @@ use App\Livewire\Admin\System\DataImport;
 use App\Livewire\Admin\System\Health;
 use App\Livewire\Admin\System\Integrations;
 use App\Livewire\Admin\System\RecycleBin;
+use App\Livewire\Admin\System\AlertRulesIndex;
 use App\Livewire\Admin\System\SettingsPage;
 use App\Livewire\Admin\System\UsersIndex;
 use App\Livewire\Admin\System\WhatsAppTemplates;
@@ -151,6 +152,7 @@ Route::livewire('/system/health', Health::class)->name('system.health')->middlew
 Route::livewire('/automation', AutomationsIndex::class)->name('automation.index')->middleware('can:automation.manage');
 Route::livewire('/automation/sequences', SequencesIndex::class)->name('automation.sequences')->middleware('can:automation.manage');
 Route::livewire('/system/change-requests', ChangeRequests::class)->name('system.change-requests')->middleware('can:system.change_requests');
+Route::livewire('/system/alert-rules', AlertRulesIndex::class)->name('system.alert-rules')->middleware('can:settings.manage');
 Route::livewire('/system/audit', AuditLog::class)->name('system.audit')->middleware('can:audit.view');
 // Database update after a deploy (D-58): reachable while migrations are pending and before 2FA setup.
 Route::get('/system/updates', [SystemUpdateController::class, 'show'])->name('system.updates')

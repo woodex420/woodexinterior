@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Integrations\WhatsApp\Actions;
 
 use App\Domain\System\Notifications\WhatsAppQualityNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Models\User;
 use App\Settings\IntegrationSettings;
@@ -66,7 +67,7 @@ final class CheckWhatsAppQuality
                 ->get();
 
             if ($recipients->isNotEmpty()) {
-                Notification::send($recipients, new WhatsAppQualityNotification($previous, $rating));
+                app(AlertRouter::class)->send('system.whatsapp_quality', $recipients, new WhatsAppQualityNotification($previous, $rating));
             }
         }
 

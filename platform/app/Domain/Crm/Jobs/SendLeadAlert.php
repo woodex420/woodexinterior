@@ -6,6 +6,7 @@ namespace App\Domain\Crm\Jobs;
 
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Notifications\NewLeadNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\System\Models\Automation;
 use App\Models\User;
 use App\Settings\NotificationSettings;
@@ -46,7 +47,7 @@ final class SendLeadAlert implements ShouldQueue
         $recipients = $this->recipients($lead, $settings);
 
         if ($recipients->isNotEmpty()) {
-            Notification::send($recipients, new NewLeadNotification($lead, $this->isNewLead));
+            app(AlertRouter::class)->send('lead.new', $recipients, new NewLeadNotification($lead, $this->isNewLead));
         }
     }
 

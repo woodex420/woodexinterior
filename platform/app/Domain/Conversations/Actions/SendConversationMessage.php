@@ -13,6 +13,7 @@ use App\Domain\Conversations\Exceptions\OutsideWindow;
 use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Models\Message;
 use App\Domain\Conversations\Notifications\ConversationMentionedNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Crm\Actions\NotifyMentions;
 use App\Domain\Crm\Models\Contact;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
@@ -302,7 +303,7 @@ final class SendConversationMessage
         }
 
         $message->forceFill(['meta' => array_merge($message->meta ?? [], ['mentions' => $mentioned->modelKeys()])])->save();
-        Notification::send($mentioned, new ConversationMentionedNotification($message, $author));
+        app(AlertRouter::class)->send('conversation.mentioned', $mentioned, new ConversationMentionedNotification($message, $author));
     }
 
     /**

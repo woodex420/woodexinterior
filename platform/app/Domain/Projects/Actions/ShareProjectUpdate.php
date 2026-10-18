@@ -7,6 +7,7 @@ namespace App\Domain\Projects\Actions;
 use App\Domain\Projects\Mail\ProjectMail;
 use App\Domain\Projects\Models\ProjectUpdate;
 use App\Domain\Projects\Notifications\ProjectNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
@@ -45,7 +46,7 @@ final class ShareProjectUpdate
             ));
         }
 
-        Notification::send(
+        app(AlertRouter::class)->send('project.update',
             User::query()->with('telegramLink')->permission('projects.view')->where('is_active', true)->get(),
             new ProjectNotification(
                 title: 'Update shared on '.$update->project->code,

@@ -9,6 +9,7 @@ use App\Domain\Conversations\Models\Message;
 use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Notifications\QuoteNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Sales\Services\QuoteLinks;
 use Illuminate\Support\Facades\Notification;
 
@@ -79,7 +80,7 @@ final class SuggestQuoteAcceptance
             ['message_id' => $message->id, 'reply' => $reply],
         );
 
-        Notification::send(QuoteLinks::watchers($quote), new QuoteNotification(
+        app(AlertRouter::class)->send('quote.accepted', QuoteLinks::watchers($quote), new QuoteNotification(
             $quote,
             'acceptance_suggested',
             "“{$reply}” on WhatsApp — check it, then accept if it is a yes.",

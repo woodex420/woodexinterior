@@ -8,6 +8,7 @@ use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Notifications\QuoteNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Sales\Services\QuoteLinks;
 use App\Domain\Sales\Services\QuoteWriteLock;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +43,7 @@ final class RequestQuoteChanges
                 'comment' => $comment,
             ], ['channel' => 'link', 'ip' => $ip, 'user_agent' => mb_substr((string) $userAgent, 0, 250)]);
 
-            Notification::send(QuoteLinks::watchers($quote), new QuoteNotification($quote, 'changes_requested', '“'.Str::limit($comment, 300).'”'));
+            app(AlertRouter::class)->send('quote.changes_requested', QuoteLinks::watchers($quote), new QuoteNotification($quote, 'changes_requested', '“'.Str::limit($comment, 300).'”'));
 
             return $quote;
         });

@@ -10,6 +10,7 @@ use App\Domain\Sales\Enums\PaymentStatus;
 use App\Domain\Sales\Mail\PaymentMail;
 use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Notifications\PaymentNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Sales\Services\ReceiptPdf;
 use App\Models\User;
 use App\Support\Numbering;
@@ -130,7 +131,7 @@ final class RecordPayment
                 Mail::to((string) $payment->contact->email)->queue((new PaymentMail($payment->id, 'verified'))->afterCommit());
             }
 
-            Notification::send(
+            app(AlertRouter::class)->send('payment.verified',
                 User::query()->with('telegramLink')->permission('invoices.view')->where('is_active', true)->get(),
                 new PaymentNotification($payment, 'verified'),
             );

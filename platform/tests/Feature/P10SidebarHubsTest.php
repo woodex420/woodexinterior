@@ -59,7 +59,7 @@ it('consolidates the sidebar to the confirmed P10.1 map', function () {
         ->and(collect($groups['Sales']['items'])->pluck('label')->all())->toBe(['Estimations', 'Quotations', 'Invoices', 'Payments', 'Documents']);
 
     $live = collect(AdminNavigation::for($this->owner))->flatMap(fn (array $g): array => $g['items'])->filter(fn (array $item): bool => $item['route'] !== null);
-    expect($live)->toHaveCount(41); // 36 + Sequences (AUT-001) + Content (F6) + SEO Agent (F8) + Team (F7) + Speed (F9)
+    expect($live)->toHaveCount(42); // 36 + Sequences + Content + SEO Agent + Team + Speed + Alert Rules (P5 S7)
 });
 
 it('renders every hub tab for the owner', function (string $path, string $marker) {

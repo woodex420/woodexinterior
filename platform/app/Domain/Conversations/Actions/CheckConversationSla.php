@@ -7,6 +7,7 @@ namespace App\Domain\Conversations\Actions;
 use App\Domain\Conversations\Enums\ConversationStatus;
 use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Notifications\ConversationSlaBreachedNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use App\Settings\NotificationSettings;
 use App\Settings\SalesSettings;
@@ -50,7 +51,7 @@ final class CheckConversationSla
                     $recipients = $this->recipients($conversation, $this->settings->unassigned_lead_roles);
 
                     if ($recipients->isNotEmpty()) {
-                        Notification::send($recipients, new ConversationSlaBreachedNotification($conversation));
+                        app(AlertRouter::class)->send('conversation.sla', $recipients, new ConversationSlaBreachedNotification($conversation));
                     }
 
                     $flagged++;
@@ -84,7 +85,7 @@ final class CheckConversationSla
                     $recipients = $this->recipients($conversation, $this->settings->sla_final_roles);
 
                     if ($recipients->isNotEmpty()) {
-                        Notification::send($recipients, new ConversationSlaBreachedNotification($conversation, escalated: true));
+                        app(AlertRouter::class)->send('conversation.sla', $recipients, new ConversationSlaBreachedNotification($conversation, escalated: true));
                     }
 
                     $escalated++;

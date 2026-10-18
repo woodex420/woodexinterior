@@ -11,6 +11,7 @@ use App\Domain\Sales\Enums\InvoiceStatus;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\System\Models\MonthlyReport;
 use App\Domain\System\Notifications\MonthlyReportNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use App\Support\Reports\ReportRange;
 use App\Support\Reports\RevenueCollectionsReport;
@@ -134,7 +135,7 @@ final class GenerateMonthlyReport
             return;
         }
 
-        Notification::send($owners, new MonthlyReportNotification($report));
+        app(AlertRouter::class)->send('system.monthly_report', $owners, new MonthlyReportNotification($report));
 
         $report->forceFill(['notified_at' => now()])->save();
     }
