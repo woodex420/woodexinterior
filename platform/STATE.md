@@ -1689,3 +1689,47 @@ enroll alongside the test's own sequence; (3) `describe()` in blade got a `?Lead
 `new Lead`-in-view smell; (4) lazy loading is disabled in tests — eager load `runs.step`
 before filtering by step kind; (5) the sidebar item count test (P10SidebarHubsTest) counts
 live nav items — update it when nav grows (now 37).
+
+
+## 53. BOT-002/003/006/007/008/010 — the website assistant, keyless first (18 Oct 2026)
+
+The bot suite, built the way it should ship: **the machinery is complete and working today with
+no API key** — "none" is a real provider that answers honestly ("a human will reply") and hands
+the thread to the team. The day the owner puts a key in Settings → Bot, the same machinery starts
+thinking; nothing else changes.
+
+- **BOT-002 engine**: `App\Domain\Bot` — a `BotProvider` contract with four brains:
+  KeylessProvider (default), AnthropicProvider (Claude, default pick), OpenAIProvider,
+  GeminiProvider. Key encrypted at rest (`EncryptedStringCast`, never shown back), model
+  name editable, system prompt editable with a sensible built-in studio persona.
+- **BOT-003 knowledge**: `bot_knowledge` table + `SyncBotKnowledge` (mirrors every published
+  CMS page — title, excerpt, block text, tags stripped; re-runs refresh, unpublished pages'
+  mirrors go) + manual Q&A entries in Settings. Retrieval is deliberate term-scoring, not
+  vector search: the studio's knowledge is small, and a wrong answer costs more than a hand-off.
+- **BOT-007 guardrails, in code**: every reply passes `BotGuardrails::violations()` before the
+  visitor sees it — no timeline promises, no discounts, no price the knowledge does not carry
+  (digit-normalised, so "150,000" covers "Rs 150000"), no phone numbers or emails. A violation
+  is replaced with the safe sentence, recorded, and handed over.
+- **BOT-008 cost control**: `bot_usages` — one row per day/channel/provider (requests, replies,
+  tokens, hand-offs, guardrail hits). Daily token cap and per-thread bot-reply limit; when
+  either trips, the honest fallback + hand-off. The tab shows today's numbers live.
+- **BOT-006 hand-off**: the thread goes Pending and `BotHandoffNotification` reaches the
+  hand-off roles in-app and on Telegram: no key, model failure, guardrails, turn limit, or
+  studio hours (BOT-010's evenings-only mode — the team answers during the day).
+- **BOT-001/004** were already done by P8.5's widget + rule-based intake — the pending list is
+  corrected. BOT-005 (booking from chat) stays blocked: booking is switched off platform-wide.
+  BOT-009 is the usage counters on the tab; a dedicated analytics screen waits until there is
+  traffic worth charting.
+- Wire-in: `ReceiveWebChatMessage`'s live branch consults the bot inside try/catch — a failed
+  brain never loses the visitor's message.
+- Tests: `BotEngineTest` — 8 green (keyless, thinking+knowledge+tokens, guardrails stop,
+  guardrails allow, turn limit, studio-hours silence, model failure, settings render+save).
+  Gate: **102 files / 1073 passed / 0 failed** · Pint + Larastan clean.
+
+Gotchas: (1) `BusinessHours::isOpen()` takes a **CarbonImmutable** — `now()` is mutable Carbon;
+the TypeError was swallowed by the webchat's own try/catch and looked like "no hand-off";
+(2) the keyless provider's `isConfigured()` is true by design ("honest is always available") —
+the hand-off branch keys off `name() === 'none' || !isConfigured()`, not isConfigured alone;
+(3) spatie settings + `@var` on properties conflicts with the encrypted cast — the BotSettings
+docblock records the lesson; (4) `EncryptedStringCast` lives in `App\Settings\Casts`, not
+`App\Support`.

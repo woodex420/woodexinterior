@@ -3,7 +3,7 @@
                          :breadcrumbs="['System' => null, 'Settings' => null]" />
 
     <div class="mb-6 inline-flex rounded-lg border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-white/[0.03]" role="tablist">
-        @foreach (['business' => 'Business', 'sales' => 'Sales rules', 'leads' => 'Lead rules', 'notifications' => 'Notifications', 'whatsapp' => 'WhatsApp'] as $key => $label)
+        @foreach (['business' => 'Business', 'sales' => 'Sales rules', 'leads' => 'Lead rules', 'notifications' => 'Notifications', 'whatsapp' => 'WhatsApp', 'bot' => 'Bot'] as $key => $label)
             <button type="button" wire:click="$set('tab', '{{ $key }}')" role="tab" aria-selected="{{ $tab === $key ? 'true' : 'false' }}"
                     @class(['rounded-md px-4 py-1.5 text-theme-sm font-medium transition', 'bg-navy-900 text-white dark:bg-white dark:text-navy-900' => $tab === $key, 'text-gray-600 hover:text-gray-900 dark:text-gray-400' => $tab !== $key])>{{ $label }}</button>
         @endforeach
@@ -289,5 +289,89 @@
             </x-admin.card>
             <div class="flex justify-end"><x-admin.button type="submit" icon="check">Save notification settings</x-admin.button></div>
         </form>
+    @endif
+
+    @if ($tab === 'bot')
+        @php($botSettings = app(\App\Settings\BotSettings::class))
+        @php($botUsageRows = \App\Domain\Bot\Models\BotUsage::query()->whereDate('usage_date', today())->get())
+        @php($botKnowledge = \App\Domain\Bot\Models\BotKnowledge::query()->orderByDesc('id')->limit(30)->get())
+        <form wire:submit="saveBot">
+            <x-admin.card title="Website assistant" description="The chat widget's brain (BOT-002). It ships keyless: with no provider key, every question gets an honest 'a human will reply' and the team is alerted — the machinery works today, the thinking starts the day a key arrives. Guardrails are enforced in code, not asked for politely: no invented prices, no promised dates, no discounts, no other client's data.">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <x-admin.field label="Assistant" for="bot.enabled" hint="Off: the widget stays the rule-based intake and the team answers live threads. On: the bot answers live threads too.">
+                        <label class="flex items-center gap-2 pt-2"><input id="bot.enabled" type="checkbox" wire:model="bot.enabled" class="size-4 rounded border-gray-300"> <span class="text-theme-sm">Answer live chats</span></label>
+                    </x-admin.field>
+                    <x-admin.field label="Only outside studio hours" for="bot.outside_hours_only" hint="BOT-010: during working hours the team answers; the bot covers the evening.">
+                        <label class="flex items-center gap-2 pt-2"><input id="bot.outside_hours_only" type="checkbox" wire:model="bot.outside_hours_only" class="size-4 rounded border-gray-300"> <span class="text-theme-sm">Evenings only</span></label>
+                    </x-admin.field>
+                    <x-admin.field label="Provider" for="bot.provider" hint="'none' is the keyless a-human-will-reply mode.">
+                        <select id="bot.provider" wire:model="bot.provider" class="wx-input">
+                            <option value="none">None — a human will reply</option>
+                            <option value="anthropic">Claude (Anthropic)</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="gemini">Gemini (Google)</option>
+                        </select>
+                    </x-admin.field>
+                    <x-admin.field label="Model" for="bot.model" hint="Empty = the provider's default (claude-sonnet-4-5 / gpt-4o-mini / gemini-2.0-flash).">
+                        <input id="bot.model" type="text" wire:model="bot.model" class="wx-input" placeholder="provider default">
+                    </x-admin.field>
+                    <x-admin.field label="API key" for="bot.api_key" hint="Encrypted at rest, never shown back. Empty keeps the saved key.">
+                        <input id="bot.api_key" type="password" wire:model="bot.api_key" class="wx-input" autocomplete="new-password" placeholder="{{ $botSettings->api_key !== null && $botSettings->api_key !== '' ? '•••••••• (saved, unchanged)' : '' }}">
+                    </x-admin.field>
+                    <x-admin.field label="Daily token cap" for="bot.daily_token_cap" hint="BOT-008: when the day's tokens are spent, questions get the honest fallback. 0 = no cap.">
+                        <input id="bot.daily_token_cap" type="number" min="0" max="10000000" wire:model="bot.daily_token_cap" class="wx-input" inputmode="numeric">
+                    </x-admin.field>
+                    <x-admin.field label="Bot replies per thread" for="bot.conversation_turn_limit" hint="BOT-008: after this many bot replies on one thread, a human takes over. 0 = no limit.">
+                        <input id="bot.conversation_turn_limit" type="number" min="0" max="200" wire:model="bot.conversation_turn_limit" class="wx-input" inputmode="numeric">
+                    </x-admin.field>
+                    <div class="sm:col-span-2">
+                        <x-admin.field label="System prompt" for="bot.system_prompt" hint="Empty = the built-in studio persona with its guardrails (shown under the box). Your own words replace it entirely — keep the rules in them.">
+                            <textarea id="bot.system_prompt" wire:model="bot.system_prompt" rows="5" class="wx-input" placeholder="{{ $botSettings->prompt() }}"></textarea>
+                        </x-admin.field>
+                    </div>
+                </div>
+                <div class="mt-4 flex flex-wrap items-center gap-2">
+                    <x-admin.button type="submit" icon="check">Save</x-admin.button>
+                    @if ($botUsageRows->isNotEmpty())
+                        <span class="text-theme-xs text-gray-500">Today: {{ $botUsageRows->sum('replies') }} replies · {{ $botUsageRows->sum('tokens_in') + $botUsageRows->sum('tokens_out') }} tokens · {{ $botUsageRows->sum('handoffs') }} hand-offs · {{ $botUsageRows->sum('guardrail_hits') }} guardrail hit(s)</span>
+                    @else
+                        <span class="text-theme-xs text-gray-500">No bot traffic today.</span>
+                    @endif
+                </div>
+            </x-admin.card>
+        </form>
+
+        <x-admin.card class="mt-4" title="Knowledge" description="BOT-003: what the bot may state as fact. Pages are mirrored from the CMS with one click; the studio's own answers live beside them.">
+            <div class="flex flex-wrap items-center gap-2">
+                <x-admin.button variant="secondary" icon="refresh" wire:click="syncBotKnowledge" wire:confirm.lazy="Re-read every published page into the bot's knowledge?">Sync from published pages</x-admin.button>
+                <span class="text-theme-xs text-gray-500">{{ $botKnowledge->where('source', 'cms')->count() }} page entries · {{ $botKnowledge->where('source', 'manual')->count() }} manual</span>
+            </div>
+            <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <x-admin.field label="Add your own answer" for="botKnowledgeTitle">
+                    <input id="botKnowledgeTitle" type="text" wire:model="botKnowledgeTitle" class="wx-input" placeholder="Question or topic, e.g. 'Do you work in DHA Lahore?'">
+                </x-admin.field>
+                <x-admin.field label="The answer" for="botKnowledgeBody">
+                    <textarea id="botKnowledgeBody" wire:model="botKnowledgeBody" rows="3" class="wx-input" placeholder="Yes — Woodex Interior designs and installs across DHA Lahore…"></textarea>
+                </x-admin.field>
+            </div>
+            <div class="mt-2"><x-admin.button variant="secondary" icon="plus" wire:click="addBotKnowledge">Add entry</x-admin.button></div>
+            <ul class="mt-4 divide-y divide-gray-100 dark:divide-gray-800">
+                @forelse ($botKnowledge as $entry)
+                    <li class="flex items-start gap-3 py-2.5" wire:key="botk-{{ $entry->id }}">
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $entry->title }}
+                                <x-admin.badge color="{{ $entry->source === 'cms' ? 'gray' : 'navy' }}">{{ $entry->source === 'cms' ? 'page' : 'manual' }}</x-admin.badge>
+                            </p>
+                            <p class="line-clamp-1 text-theme-xs text-gray-500">{{ $entry->content }}</p>
+                        </div>
+                        @if ($entry->source === 'manual')
+                            <button type="button" wire:click="deleteBotKnowledge({{ $entry->id }})" wire:confirm="Remove this entry?" class="rounded-lg p-1.5 text-gray-400 hover:bg-error-50 hover:text-error-600" title="Remove"><x-icon name="trash" class="size-4" /></button>
+                        @endif
+                    </li>
+                @empty
+                    <li class="py-3 text-center text-theme-sm text-gray-500">Nothing yet — sync the pages or add your own answer.</li>
+                @endforelse
+            </ul>
+        </x-admin.card>
     @endif
 </div>

@@ -18,6 +18,7 @@ use App\Domain\Crm\Enums\LeadSource;
 use App\Domain\Crm\Jobs\AskForPhoneNumber;
 use App\Settings\BusinessSettings;
 use App\Support\Phone;
+use Throwable;
 
 /**
  * One visitor message through the widget's rule-based intake (P8.5): asked_name → asked_number →
@@ -69,7 +70,13 @@ final class ReceiveWebChatMessage
         } elseif ($state === self::STATE_ASKED_NUMBER) {
             $this->handleNumber($conversation, $body);
         } else {
-            // Live thread: nothing to run — the team replies from the inbox.
+            // Live thread: the assistant may answer (BOT-002) — if it is on, and only inside its
+            // rails; anything it declines becomes a hand-off the team hears about.
+            try {
+                app(\App\Domain\Bot\Actions\ReplyWithBot::class)->handle($conversation->refresh());
+            } catch (Throwable $botFailure) {
+                report($botFailure); // the visitor's message is stored; a failed bot never loses it
+            }
         }
 
         $conversation->refresh();

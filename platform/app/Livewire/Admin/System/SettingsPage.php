@@ -56,6 +56,18 @@ class SettingsPage extends Component
      */
     public array $whatsapp = [];
 
+    /**
+     * BOT-002…010: the website assistant's knobs, shown on its own tab.
+     *
+     * @var array<string, mixed>
+     */
+    public array $bot = [];
+
+    /** A manual knowledge entry being typed (BOT-003). */
+    public string $botKnowledgeTitle = '';
+
+    public string $botKnowledgeBody = '';
+
     /** @var array<string, mixed>|null */
     public ?array $whatsappStatus = null;
 
@@ -104,6 +116,17 @@ class SettingsPage extends Component
             'signatories' => array_values($sales->signatories),
             'execution_terms' => $sales->execution_terms,
             'design_terms' => $sales->design_terms,
+        ];
+
+        $bot = app(\App\Settings\BotSettings::class);
+        $this->bot = [
+            'enabled' => (bool) $bot->enabled,
+            'provider' => (string) $bot->provider,
+            'model' => (string) $bot->model,
+            'system_prompt' => (string) $bot->system_prompt,
+            'daily_token_cap' => (string) ($bot->daily_token_cap ?: 0),
+            'conversation_turn_limit' => (string) ($bot->conversation_turn_limit ?: 0),
+            'outside_hours_only' => (bool) $bot->outside_hours_only,
         ];
 
         $this->whatsapp = [
@@ -466,5 +489,82 @@ class SettingsPage extends Component
     private static function percentToBp(mixed $percent): int
     {
         return (int) round(((float) $percent) * 100);
+    }
+
+    /**
+     * BOT-002/008/010: the assistant's own switches. The API key is typed here but never shown
+     * back — an empty box keeps whatever is saved, exactly like the WhatsApp credentials.
+     */
+    public function saveBot(): void
+    {
+        abort_unless($this->user()->can('settings.manage'), 403);
+
+        $data = $this->validate([
+            'bot.enabled' => ['boolean'],
+            'bot.provider' => ['required', 'in:none,anthropic,openai,gemini'],
+            'bot.model' => ['nullable', 'string', 'max:64'],
+            'bot.system_prompt' => ['nullable', 'string', 'max:8000'],
+            'bot.daily_token_cap' => ['nullable', 'integer', 'min:0', 'max:10000000'],
+            'bot.conversation_turn_limit' => ['nullable', 'integer', 'min:0', 'max:200'],
+            'bot.outside_hours_only' => ['boolean'],
+            'bot.api_key' => ['nullable', 'string', 'max:512'],
+        ]);
+
+        $settings = app(\App\Settings\BotSettings::class);
+        $settings->enabled = (bool) ($data['bot']['enabled'] ?? false);
+        $settings->provider = (string) ($data['bot']['provider'] ?? 'none');
+        $settings->model = trim((string) ($data['bot']['model'] ?? ''));
+        $settings->system_prompt = trim((string) ($data['bot']['system_prompt'] ?? ''));
+        $settings->daily_token_cap = (int) ($data['bot']['daily_token_cap'] ?? 0);
+        $settings->conversation_turn_limit = (int) ($data['bot']['conversation_turn_limit'] ?? 0);
+        $settings->outside_hours_only = (bool) ($data['bot']['outside_hours_only'] ?? false);
+
+        $typedKey = trim((string) ($this->bot['api_key'] ?? ''));
+        if ($typedKey !== '') {
+            $settings->api_key = $typedKey;
+        }
+
+        $settings->save();
+
+        $this->toast('Bot settings saved.');
+    }
+
+    /** BOT-003: pull the published pages' words into the assistant's knowledge. */
+    public function syncBotKnowledge(): void
+    {
+        abort_unless($this->user()->can('settings.manage'), 403);
+
+        $result = app(\App\Domain\Bot\Actions\SyncBotKnowledge::class)->handle();
+
+        $this->toast('Knowledge synced: '.$result['entries'].' entr'.($result['entries'] === 1 ? 'y' : 'ies').' from '.$result['pages'].' published page(s).');
+    }
+
+    public function addBotKnowledge(): void
+    {
+        abort_unless($this->user()->can('settings.manage'), 403);
+
+        $data = $this->validate([
+            'botKnowledgeTitle' => ['required', 'string', 'max:120'],
+            'botKnowledgeBody' => ['required', 'string', 'max:6000'],
+        ]);
+
+        \App\Domain\Bot\Models\BotKnowledge::create([
+            'title' => trim((string) $data['botKnowledgeTitle']),
+            'content' => trim((string) $data['botKnowledgeBody']),
+            'source' => 'manual',
+            'is_active' => true,
+        ]);
+
+        $this->botKnowledgeTitle = '';
+        $this->botKnowledgeBody = '';
+        $this->toast('Knowledge entry added.');
+    }
+
+    public function deleteBotKnowledge(int $id): void
+    {
+        abort_unless($this->user()->can('settings.manage'), 403);
+
+        \App\Domain\Bot\Models\BotKnowledge::query()->whereKey($id)->where('source', 'manual')->delete();
+        $this->toast('Entry removed.');
     }
 }
