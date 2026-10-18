@@ -375,6 +375,66 @@
                 </ul>
             </x-admin.card>
 
+            {{-- PRJ-009: cost tracking — what it cost against what the quote said it would --}}
+            <x-admin.card title="Costs" description="Purchases and expenses against the quote's internal cost.">
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div class="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-800">
+                        <p class="text-theme-xs text-gray-500">Quote's internal cost</p>
+                        <p class="text-theme-sm font-medium tabular-nums text-gray-800 dark:text-white/90">
+                            {{ $quotedCostMinor !== null ? Money::ofMinor($quotedCostMinor)->format($lakh) : '—' }}
+                        </p>
+                    </div>
+                    <div class="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-800">
+                        <p class="text-theme-xs text-gray-500">Spent (recorded)</p>
+                        <p class="text-theme-sm font-medium tabular-nums text-gray-800 dark:text-white/90">{{ Money::ofMinor($spentMinor)->format($lakh) }}</p>
+                    </div>
+                    <div class="rounded-xl border px-4 py-3 {{ $overQuoted ? 'border-warning-500/40 bg-warning-50 dark:bg-warning-500/10' : 'border-gray-200 dark:border-gray-800' }}">
+                        <p class="text-theme-xs text-gray-500">Margin (quote − spent)</p>
+                        <p class="text-theme-sm font-medium tabular-nums {{ $marginMinor < 0 ? 'text-error-600' : 'text-gray-800 dark:text-white/90' }}">{{ Money::ofMinor($marginMinor)->format($lakh) }}</p>
+                        @if ($overQuoted)
+                            <p class="text-theme-xs text-warning-700">Spent is past the quote's internal cost.</p>
+                        @endif
+                    </div>
+                </div>
+
+                <ul class="mt-4 divide-y divide-gray-100 dark:divide-gray-800">
+                    @forelse ($expenses as $expense)
+                        <li wire:key="expense-{{ $expense->id }}" class="flex items-center justify-between gap-3 py-2.5">
+                            <div class="min-w-0">
+                                <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $expense->description }}</p>
+                                <p class="text-theme-xs text-gray-500">
+                                    {{ $expense->category->label() }}@if ($expense->unit) · {{ rtrim(rtrim((string) $expense->qty, '0'), '.') }} {{ $expense->unit }}@endif · {{ $expense->incurred_on->format('j M Y') }}@if ($expense->author) · by {{ $expense->author->name }}@endif
+                                </p>
+                            </div>
+                            <div class="flex shrink-0 items-center gap-2">
+                                <p class="text-theme-sm tabular-nums text-gray-800 dark:text-white/90">{{ Money::ofMinor($expense->amount_minor)->format($lakh) }}</p>
+                                @can('update', $project)
+                                    <button type="button" wire:click="deleteExpense({{ $expense->id }})" wire:confirm="Remove this expense line?" class="text-gray-400 hover:text-error-600" aria-label="Remove expense"><x-icon name="x" class="size-4" /></button>
+                                @endcan
+                            </div>
+                        </li>
+                    @empty
+                        <li class="py-2 text-theme-sm text-gray-500">Nothing recorded yet — add the first purchase or expense below.</li>
+                    @endforelse
+                </ul>
+
+                @can('update', $project)
+                    <form wire:submit.prevent="addExpense" class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-12">
+                        <input type="text" wire:model="expenseDescription" placeholder="What was bought or paid" class="wx-input sm:col-span-4" aria-label="Description">
+                        <select wire:model="expenseCategory" class="wx-input sm:col-span-2" aria-label="Category">
+                            @foreach (\App\Domain\Projects\Enums\ProjectExpenseCategory::cases() as $category)
+                                <option value="{{ $category->value }}">{{ $category->label() }}</option>
+                            @endforeach
+                        </select>
+                        <input type="number" step="any" min="0" wire:model="expenseQty" placeholder="Qty" class="wx-input sm:col-span-1" aria-label="Quantity">
+                        <input type="text" wire:model="expenseUnit" placeholder="Unit (sqft…)" class="wx-input sm:col-span-2" aria-label="Unit">
+                        <input type="number" step="any" min="0" wire:model="expenseAmount" placeholder="Cost (Rs)" class="wx-input sm:col-span-2" aria-label="Cost in rupees">
+                        <input type="date" wire:model="expenseIncurredOn" class="wx-input sm:col-span-1" aria-label="Date">
+                        <div class="sm:col-span-12"><x-admin.button icon="plus">Record expense</x-admin.button></div>
+                    </form>
+                @endcan
+            </x-admin.card>
+
             {{-- Files: drawings, approvals, photographs the team keeps --}}
             <x-admin.card title="Files ({{ $files->count() }})" :padding="false">
                 @can('update', $project)

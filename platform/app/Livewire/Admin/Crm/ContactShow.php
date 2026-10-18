@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Crm;
 
+use App\Domain\Crm\Actions\AnonymiseContact;
 use App\Domain\Crm\Actions\CaptureLead;
 use App\Domain\Crm\Actions\MergeContacts;
 use App\Domain\Crm\Actions\SaveContact;
@@ -76,6 +77,20 @@ class ContactShow extends Component
         app(TrashRecords::class)->deleteContact($contact);
         $this->toast("{$contact->name} and their enquiries moved to the recycle bin.");
         $this->redirectRoute('admin.contacts.index', navigate: true);
+    }
+
+    /**
+     * SYS-013: erase the person, keep the row — the books stay auditable.
+     */
+    public function anonymiseContact(): void
+    {
+        abort_unless($this->user()->can('leads.delete'), 403);
+
+        $name = $this->contact->name;
+        app(AnonymiseContact::class)->anonymise($this->contact);
+
+        unset($this->contact);
+        $this->toast("{$name} anonymised — the row stays for the books, the person is gone from it.", 'warning');
     }
 
     protected function attachable(): Contact

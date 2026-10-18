@@ -288,3 +288,57 @@ document.addEventListener('livewire:navigated', refreshWidgets);
 document.addEventListener('livewire:init', () => {
     window.Livewire.hook('morphed', refreshWidgets);
 });
+
+/* ---------- GLB-016: keyboard shortcuts — N new lead, Q new quote, / search, G then D dashboard ---------- */
+document.addEventListener('alpine:init', () => {
+    const Alpine = window.Alpine;
+
+    Alpine.data('wxShortcuts', () => ({
+        pendingG: false,
+
+        typing(target) {
+            if (!target) return false;
+            const tag = (target.tagName || '').toUpperCase();
+            return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable === true;
+        },
+
+        onKeydown(event) {
+            // Never fight the browser or another handler's modifiers.
+            if (event.ctrlKey || event.metaKey || event.altKey) return;
+            if (this.typing(event.target)) { this.pendingG = false; return; }
+
+            const key = event.key;
+
+            // 'G' arms the next key for one second: G then D → dashboard.
+            if (key === 'g' || key === 'G') { this.pendingG = true; setTimeout(() => { this.pendingG = false; }, 1000); return; }
+            if (this.pendingG && (key === 'd' || key === 'D')) {
+                this.pendingG = false;
+                this.go(this.$el.dataset.dashboard);
+                return;
+            }
+            this.pendingG = false;
+
+            if (key === 'n' || key === 'N') {
+                this.go(this.$el.dataset.newLead);
+            } else if (key === 'q' || key === 'Q') {
+                this.go(this.$el.dataset.newQuote);
+            } else if (key === '/') {
+                event.preventDefault();
+                window.dispatchEvent(new CustomEvent('focus-global-search'));
+            }
+        },
+
+        go(url) {
+            if (!url) return;
+            // Livewire's SPA navigation when possible; a full load when the URL is unchanged
+            // (e.g. pressing N while already on the leads list — the query param must re-land).
+            if (window.location.pathname + window.location.search === url.replace(/^https?:\/\/[^/]+/, '')) {
+                window.location.assign(url);
+            } else if (window.Livewire?.navigate) {
+                window.Livewire.navigate(url);
+            } else {
+                window.location.assign(url);
+            }
+        },
+    }));
+});

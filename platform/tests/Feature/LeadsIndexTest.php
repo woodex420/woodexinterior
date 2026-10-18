@@ -114,3 +114,21 @@ it('bulk assigns, moves and deletes selected leads within permissions', function
     $this->actingAs($sales);
     Livewire::test(LeadsIndex::class)->set('selected', [$ids[1]])->call('bulkDelete')->assertForbidden();
 });
+
+it('lands the N shortcut: /leads?new=1 opens the composer straight away', function () {
+    $sales = $this->userWithRole('sales');
+
+    Livewire::actingAs($sales)
+        ->withQueryParams(['new' => '1'])
+        ->test(LeadsIndex::class)
+        ->assertSet('showCreate', true);
+
+});
+
+it('opens the leads list quiet when no shortcut asks for the composer', function () {
+    $sales = $this->userWithRole('sales');
+
+    Livewire::actingAs($sales)
+        ->test(LeadsIndex::class)
+        ->assertSet('showCreate', false);
+});

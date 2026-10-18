@@ -94,6 +94,11 @@ class LeadsIndex extends Component
     {
         $this->authorize('viewAny', Lead::class);
         $this->applyDefaultView();
+
+        // GLB-016: the 'N' shortcut lands on /leads?new=1 — open the composer.
+        if (request()->boolean('new') && $this->user()->can('create', Lead::class)) {
+            $this->showCreate = true;
+        }
     }
 
     public function updating(string $name): void

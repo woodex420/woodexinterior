@@ -24,8 +24,21 @@
             @can('leads.delete')
                 <x-admin.button variant="secondary" icon="trash" wire:click="deleteContact" wire:confirm="Move {{ $contact->name }} and all their enquiries to the recycle bin? They can be restored." aria-label="Delete contact" />
             @endcan
+            @if (! $contact->anonymised_at)
+                <a href="{{ route('admin.contacts.data', $contact) }}" target="_blank" rel="noopener"><x-admin.button variant="secondary" icon="file">Export data</x-admin.button></a>
+                @can('leads.delete')
+                    <x-admin.button variant="secondary" icon="eye-slash" wire:click="anonymiseContact" wire:confirm="Anonymise {{ $contact->name }}? Their name, numbers, addresses and message texts are erased for good — the row and the money records stay. This cannot be undone." aria-label="Anonymise contact" />
+                @endcan
+            @endif
         </x-slot:actions>
     </x-admin.page-header>
+
+    @if ($contact->anonymised_at)
+        <div class="mb-5 flex items-start gap-3 rounded-xl border border-warning-500/30 bg-warning-50 px-4 py-3 text-warning-700 dark:bg-warning-500/10">
+            <x-icon name="eye-slash" class="mt-0.5 size-5 shrink-0" />
+            <p>Anonymised {{ $contact->anonymised_at->timezone('Asia/Karachi')->format('j M Y') }} at the person's request — personal fields and message texts are gone. The row stays for the books.</p>
+        </div>
+    @endif
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {{-- Profile --}}

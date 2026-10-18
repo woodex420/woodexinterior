@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ClientDataExportController;
 use App\Http\Controllers\Admin\ClientStatementController;
 use App\Http\Controllers\Admin\ConversationMediaController;
 use App\Http\Controllers\Admin\InvoicePdfController;
@@ -97,6 +98,7 @@ Route::get('/sales/dues', fn () => redirect()->route('admin.payments.index', ['t
 Route::get('/sales/tracking/quotes', fn () => redirect()->route('admin.quotes.index', ['tab' => 'tracking'], 301))->name('sales.tracking.quotes');
 Route::get('/sales/tracking/invoices', fn () => redirect()->route('admin.invoices.index', ['tab' => 'tracking'], 301))->name('sales.tracking.invoices');
 Route::get('/clients/{contact}/statement.pdf', ClientStatementController::class)->name('contacts.statement')->middleware('can:invoices.view')->whereNumber('contact');
+Route::get('/contacts/{contact}/data.json', \App\Http\Controllers\Admin\ContactDataExportController::class)->name('contacts.data')->middleware('can:leads.view')->whereNumber('contact');
 Route::livewire('/accounts/chart', ChartOfAccounts::class)->name('accounts.chart')->middleware('can:accounts.view');
 Route::livewire('/accounts/journals', JournalsIndex::class)->name('accounts.journals')->middleware('can:accounts.view');
 Route::livewire('/accounts/periods', PeriodsIndex::class)->name('accounts.periods')->middleware('can:accounts.view');

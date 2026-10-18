@@ -20,7 +20,12 @@
 <body class="h-full">
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[999999] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2">Skip to content</a>
 
-    <div x-data class="min-h-screen xl:flex">
+    {{-- GLB-016: keyboard shortcuts (N/Q//, G then D). Wires only the routes this user may use. --}}
+    <div x-data="wxShortcuts" x-on:keydown.window="onKeydown($event)"
+         data-new-lead="{{ auth()->user()?->can('create', \App\Domain\Crm\Models\Lead::class) ? route('admin.leads.index', ['tab' => 'list', 'new' => 1]) : '' }}"
+         data-new-quote="{{ auth()->user()?->can('quotes.manage') ? route('admin.quotes.create') : '' }}"
+         data-dashboard="{{ route('admin.dashboard') }}"
+         class="min-h-screen xl:flex">
         {{-- Mobile backdrop --}}
         <div x-cloak x-show="$store.sidebar.mobileOpen" x-transition.opacity @click="$store.sidebar.close()"
              class="fixed inset-0 z-40 bg-gray-900/50 xl:hidden"></div>

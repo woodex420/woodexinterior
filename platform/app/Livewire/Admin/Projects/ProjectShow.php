@@ -14,6 +14,7 @@ use App\Domain\Projects\Actions\ReachProjectMilestone;
 use App\Domain\Projects\Actions\RequestClientReviews;
 use App\Domain\Projects\Actions\ShareProjectUpdate;
 use App\Domain\Projects\Actions\StartHandover;
+use App\Domain\Projects\Enums\ProjectExpenseCategory;
 use App\Domain\Projects\Enums\ProjectStage;
 use App\Domain\Projects\Enums\ProjectStatus;
 use App\Domain\Projects\Mail\ProjectMail;
@@ -65,6 +66,19 @@ class ProjectShow extends Component
 
     public string $signatureName = '';
 
+    /** PRJ-009: cost tracking — expense line entry. */
+    public string $expenseDescription = '';
+
+    public string $expenseCategory = 'material';
+
+    public string $expenseQty = '1';
+
+    public string $expenseUnit = '';
+
+    public string $expenseAmount = '';
+
+    public string $expenseIncurredOn = '';
+
     public function mount(Project $project): void
     {
         $this->authorize('view', $project);
@@ -115,6 +129,43 @@ class ProjectShow extends Component
 
         $this->project->forceFill(['notes' => $this->notes])->save();
         $this->toast('Project details saved.');
+    }
+
+    /** PRJ-009: record a purchase or expense against the job. */
+    public function addExpense(): void
+    {
+        $this->authorize('update', $this->project);
+
+        $this->validate([
+            'expenseDescription' => ['required', 'string', 'max:200'],
+            'expenseCategory' => ['required', 'in:'.implode(',', ProjectExpenseCategory::values())],
+            'expenseQty' => ['required', 'numeric', 'gt:0'],
+            'expenseUnit' => ['nullable', 'string', 'max:20'],
+            'expenseAmount' => ['required', 'numeric', 'min:0'],
+            'expenseIncurredOn' => ['required', 'date'],
+        ]);
+
+        $this->project->expenses()->create([
+            'description' => $this->expenseDescription,
+            'category' => $this->expenseCategory,
+            'qty' => (float) $this->expenseQty,
+            'unit' => $this->expenseUnit !== '' ? $this->expenseUnit : null,
+            'amount_minor' => (int) round(((float) $this->expenseAmount) * 100),
+            'incurred_on' => $this->expenseIncurredOn,
+            'created_by' => $this->user()->id,
+        ]);
+
+        $this->reset('expenseDescription', 'expenseQty', 'expenseUnit', 'expenseAmount');
+        $this->toast('Expense recorded — the margin knows.');
+    }
+
+    public function deleteExpense(int $expenseId): void
+    {
+        $this->authorize('update', $this->project);
+
+        $expense = $this->project->expenses()->findOrFail($expenseId);
+        $expense->delete();
+        $this->toast('Expense removed.');
     }
 
     public function toggleMilestone(int $milestoneId): void
@@ -396,6 +447,11 @@ class ProjectShow extends Component
             'reviewDueOn' => app(RequestClientReviews::class)->dueOn($this->project),
             'progress' => $project->handoverProgress(),
             'lakh' => app(SalesSettings::class)->lakh_grouping,
+            'expenses' => $project->expenses()->with('author:id,name')->get(),
+            'quotedCostMinor' => $project->quotedCostMinor(),
+            'spentMinor' => $project->spentMinor(),
+            'marginMinor' => (int) ($project->quote->total_minor ?? 0) - $project->spentMinor(),
+            'overQuoted' => $project->quotedCostMinor() !== null && $project->spentMinor() > $project->quotedCostMinor(),
         ])->title($project->code.' · '.$project->name);
     }
 }

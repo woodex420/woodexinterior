@@ -115,6 +115,47 @@ class Project extends Model implements HasMedia
     }
 
     /**
+     * @return HasMany<ProjectExpense, $this>
+     */
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(ProjectExpense::class)->latest('incurred_on')->latest('id');
+    }
+
+    /**
+     * PRJ-009: what the quote's internal costs said this job would cost (null when the
+     * quote carries none — honest blank beats a zero that reads as "free").
+     */
+    public function quotedCostMinor(): ?int
+    {
+        $quote = $this->quote()->first();
+
+        if ($quote === null) {
+            return null;
+        }
+
+        $items = $quote->items()->get(['internal_cost_minor']);
+
+        if ($items->isEmpty()) {
+            return null;
+        }
+
+        $sum = (int) $items->sum('internal_cost_minor');
+
+        // The column defaults to 0, so "all zero" means the quote never carried costs —
+        // a blank beats a zero that reads as "this job was free to build".
+        return $sum > 0 ? $sum : null;
+    }
+
+    /**
+     * PRJ-009: what it has actually cost so far — recorded expenses only.
+     */
+    public function spentMinor(): int
+    {
+        return (int) $this->expenses()->sum('amount_minor');
+    }
+
+    /**
      * @return HasMany<ProjectUpdate, $this>
      */
     public function updates(): HasMany

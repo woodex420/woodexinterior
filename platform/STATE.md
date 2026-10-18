@@ -2168,3 +2168,46 @@ access; connect the pages when approved. Then: account store + tokens (SOC-001),
 
 Next per the marathon order: **P9** (security review, load pass, restore drill, Urdu templates,
 training, final v2.1 sync — docs/16 §9).
+
+## 67. P9's buildable half — privacy tools, shortcuts, cost tracking (18 Oct 2026)
+
+The marathon's last phase. P9 is mostly owner-side drills (security pass, load pass, restore
+drill, training videos, final v2.1 sync) — those now have an executable checklist in
+**docs/28-P9-HARDENING-RUNBOOK.md**. What could be built, was:
+
+- **SYS-013 privacy tools**: a contact's whole record as one JSON download (`Export data` on the
+  contact page, `leads.view`); **anonymise** (eye-slash, `leads.delete`) — the row stays for the
+  books but the person leaves it (name → 'Anonymised contact', phones/email/address/notes gone,
+  lead messages + activity bodies + chat transcripts → '[removed]', `anonymised_at` set, a
+  warning banner stays on the page); and **`woodex:privacy-retention`** daily at 02:30 — lost
+  leads with no quotation untouched for 30 days are deleted, non-lead chat transcripts go 12
+  months after their last message. `--dry-run` reports without touching.
+- **GLB-016 keyboard shortcuts**: `N` new lead (lands on `/leads?new=1`, composer open), `Q`
+  new quote (only with `quotes.manage`), `/` opens the search palette, `G then D` the
+  dashboard. Alpine component `wxShortcuts` in `resources/js/admin.js`; never fires while
+  typing; only the routes the user may use are wired into the DOM.
+- **PRJ-009 cost tracking**: `project_expenses` (description, category material/labour/
+  transport/other, qty+unit, amount, date, author) + the **Costs** card on the project page —
+  the quote's internal cost (honestly blank when the quote carries none: the column defaults
+  to 0, all-zero means never set), spent so far, margin (quote − spent) with an over-cost
+  warning. `projects.manage` records and removes; `projects.view` sees.
+- Tests: PrivacyToolsTest 5, ProjectCostsTest 4, LeadsIndexTest +2. Gate: **118 files /
+  1145 passed / 0 failed.**
+- Still open, owner-gated: SYS-009b off-site backup destination, SYS-011 API tokens (build
+  when an integration needs one), QUO-018/WEB-014 Urdu content, and the drills in docs/28.
+
+Gotchas: two stacked `Http::fake()` in one test — the first keeps answering, declare one with
+patterns; Livewire actions need `use InteractsWithAdmin;` inside the class body, the import
+alone is not the trait; a multi-line `@php … @endphp` block in a Blade file that also uses
+inline `@php(…)` directives corrupts the compiled view downstream (the inline regex goes
+greedy across the block) — compute in the component and pass props instead; `assertSee`
+HTML-escapes apostrophes, pass `false` to see raw text; `?->` on a never-null relation is a
+phpstan error even with `?? 0` — use `->prop ?? 0`; Quote is `number` not `ref`; route name
+is `admin.quotes.create`, not `.new`; a query param read in `mount()` persists across
+`Livewire::test()` calls within one Pest test — split the assertion into its own `it()`.
+
+**The marathon is now code-complete**: every pending task that can be built without the
+owner's accounts/approvals has shipped (CNV-008, AUT, BOT, Wave F, P5, V2-2, V2-5 tooling,
+P7 internal, P9 buildable). What remains lives with the owner: Meta/LinkedIn approvals (P7
+external), off-site backups + the drills (docs/28), the host-side conversion groups (V2-5),
+and the parked owner-gated items (CNV-006, WAP-007, BOT-005, model key/budget).

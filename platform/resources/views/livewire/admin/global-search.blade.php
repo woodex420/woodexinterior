@@ -2,6 +2,7 @@
 <div x-data="{ open: false }"
      x-on:keydown.window.ctrl.k.prevent="open = true; $nextTick(() => $refs.term.focus())"
      x-on:keydown.window.meta.k.prevent="open = true; $nextTick(() => $refs.term.focus())"
+     x-on:focus-global-search.window="open = true; $nextTick(() => $refs.term.focus())"
      x-on:open-search.window="open = true; $nextTick(() => $refs.term.focus())"
      class="max-w-md flex-1">
     <button type="button" x-on:click="open = true; $nextTick(() => $refs.term.focus())"

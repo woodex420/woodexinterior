@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Crm\Models;
 
+use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Crm\Enums\ClientType;
 use App\Domain\Crm\Models\Concerns\HasAttachments;
 use App\Domain\Crm\Policies\ContactPolicy;
@@ -48,6 +49,7 @@ class Contact extends Model implements HasMedia
             'consent_marketing' => 'boolean',
             'consent_whatsapp' => 'boolean',
             'opted_out_at' => 'datetime',
+            'anonymised_at' => 'datetime',
             'meta' => 'array',
             'last_activity_at' => 'datetime',
         ];
@@ -121,6 +123,16 @@ class Contact extends Model implements HasMedia
     public function activities(): HasMany
     {
         return $this->hasMany(Activity::class)->latest('occurred_at');
+    }
+
+    /**
+     * The conversations this person has had, across every channel (SYS-013 export/anonymise).
+     *
+     * @return HasMany<Conversation, $this>
+     */
+    public function conversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class);
     }
 
     /**
