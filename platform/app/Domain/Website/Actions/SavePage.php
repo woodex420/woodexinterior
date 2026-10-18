@@ -13,6 +13,7 @@ use App\Domain\Website\Services\Menus;
 use App\Domain\Website\Services\PageCache;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Writes a page and its sections (docs/09 §2.2). Every publish takes a snapshot first, so a page can be put back
@@ -67,17 +68,31 @@ final class SavePage
             $type = BlockType::from((string) $block['type']);
             $data = $this->clean($type, (array) ($block['data'] ?? []));
             $visible = (bool) ($block['visible'] ?? true);
+            $key = $this->blockKey($block);
 
             /** @var PageBlock $model */
             $model = PageBlock::query()->updateOrCreate(
                 ['id' => $block['id'] ?? null, 'page_id' => $page->id],
-                ['type' => $type, 'data' => $data, 'visible' => $visible, 'position' => $position],
+                ['type' => $type, 'block_key' => $key, 'data' => $data, 'visible' => $visible, 'position' => $position],
             );
 
             $keep[] = $model->id;
         }
 
         $page->blocks()->whereKeyNot($keep)->delete();
+    }
+
+    /**
+     * The section's stable key (V2-3 click-to-edit): kept when the editor sends one, minted when it
+     * does not — a restore rebuilds blocks without keys, and those must still become clickable.
+     *
+     * @param  array<string, mixed>  $block
+     */
+    private function blockKey(array $block): string
+    {
+        $key = (string) ($block['key'] ?? '');
+
+        return $key !== '' ? $key : 'b'.Str::lower(Str::random(8));
     }
 
     /**
@@ -138,6 +153,7 @@ final class SavePage
                 'seo' => $page->seo,
                 'blocks' => $page->blocks->map(fn (PageBlock $block): array => [
                     'type' => $block->type->value,
+                    'key' => $block->block_key,
                     'data' => $block->data,
                     'visible' => $block->visible,
                 ])->all(),

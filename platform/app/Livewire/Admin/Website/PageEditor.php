@@ -81,6 +81,9 @@ class PageEditor extends Component
 
     public bool $showVersions = false;
 
+    /** The key of the section clicked in the preview — its card is scrolled to and highlighted (V2-3). */
+    public string $activeBlock = '';
+
     public function mount(?Page $page = null): void
     {
         abort_unless($this->user()->can('website.edit'), 403);
@@ -240,6 +243,21 @@ class PageEditor extends Component
     }
 
     /**
+     * Click-to-edit (V2-3, docs/14): the preview reports which section was clicked; the editor jumps
+     * to that section's form. Keys it does not know (a section deleted since the draft was saved) are
+     * ignored instead of guessed at.
+     */
+    public function editSectionFromPreview(string $key): void
+    {
+        if (! collect($this->blocks)->contains(fn (array $block): bool => (string) $block['key'] === $key)) {
+            return;
+        }
+
+        $this->activeBlock = $key;
+        $this->dispatch('scroll-to-block', key: $key);
+    }
+
+    /**
      * A link the owner can open on their phone, no login, for a day.
      */
     public function makeShareLink(): void
@@ -347,7 +365,7 @@ class PageEditor extends Component
         ]);
     }
 
-    /** A key Livewire's drag-to-reorder can hold on to across requests; never persisted. */
+    /** A key Livewire's drag-to-reorder can hold on to across requests — and the preview can click on. */
     private function newKey(): string
     {
         return 'b'.Str::random(8);
@@ -407,7 +425,7 @@ class PageEditor extends Component
         $this->ogImageId = $page->seo['og_image_id'] ?? null;
         $this->blocks = $page->blocks->map(fn ($block): array => [
             'id' => $block->id,
-            'key' => $this->newKey(),
+            'key' => $block->block_key ?? $this->newKey(),
             'type' => $block->type->value,
             'visible' => $block->visible,
             'data' => $block->data ?? $block->type->fields(),

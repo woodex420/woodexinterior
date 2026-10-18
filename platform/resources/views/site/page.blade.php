@@ -23,6 +23,9 @@
     @endif
 
     @foreach ($blocks as $block)
-        @include($block->type->view(), ['block' => $block, 'page' => $page, 'media' => $media, 'business' => $business, 'phone' => $phone])
+        @php($sectionKey = $block->block_key)
+        <div @if ($sectionKey) data-wx-key="{{ $sectionKey }}" @endif>
+            @include($block->type->view(), ['block' => $block, 'page' => $page, 'media' => $media, 'business' => $business, 'phone' => $phone])
+        </div>
     @endforeach
 @endsection

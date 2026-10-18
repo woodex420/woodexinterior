@@ -96,7 +96,7 @@ _Implementation detail, ordered into buildable steps: docs/15 §P6._
 |---|---|---|
 | **V2-1** | Design tokens + theme builder; all 15 section templates read tokens only | **DONE** — tokens are the live CSS's own vocabulary (D-116); `/assets/theme.css` re-skins the live v1 pages with no deploy, v2 pages link the hashed `/theme/{hash}.css` |
 | **V2-2** | Section library + page builder (drag, device preview, draft → publish) | **PART** — library with categories + descriptions, saved-by-the-studio sections, drag-to-reorder (wire:sort), duplicate, device preview (desktop/tablet/mobile), shareable 24 h signed preview links shipped; remaining: campaign free-canvas mode, inline text editing |
-| **V2-3** | Header/footer builder, media improvements, Pages/Menus completion | **PART** — media, menus and pages screens exist |
+| **V2-3** | Header/footer builder, media improvements, Pages/Menus completion | **ACTIVE (frontend v1 wave, 18 Oct)** — scope set from the marketing repo deep-search: capabilities port into Woodex OS, not a system mount (owner decision). Landed: click-to-edit (stable `block_key` per section, preview→editor bridge, never on cached public pages). Next: mega menu + nested menus (F1), Slider section + v26 home port (F2), structured header/footer editor (F3). v26 static design (frontend-v1 branch) is the owner's final design reference |
 | **V2-4** | SEO: crawler rules, sitemap, canonicals, schema, then the auditor | **PART** — sitemap, canonicals and schema exist per page |
 | **V2-5** | The conversion itself, group by group (docs/13) | **TODO** — blocked by V2-1 and V2-2 |
 | **V2-6** | AI assistant for SEO + the Sveltia bridge | **TODO** — Sveltia deferred by recommendation (docs/12 §7) |

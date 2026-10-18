@@ -1733,3 +1733,42 @@ the hand-off branch keys off `name() === 'none' || !isConfigured()`, not isConfi
 (3) spatie settings + `@var` on properties conflicts with the encrypted cast — the BotSettings
 docblock records the lesson; (4) `EncryptedStringCast` lives in `App\Settings\Casts`, not
 `App\Support`.
+
+## 54. V2-3 frontend v1 — click-to-edit (18 Oct 2026, `frontend-v1` import wave)
+
+Owner directive (18 Oct): the marketing repo (`marketingwoodex-cloud/-marketingwoodex`, branch
+`arena/8a776c65-marketingwoodex`) holds "frontend v1": a visual flat-file builder on Hostinger PHP
+(builder.js/blocks.js + api/builder.php, P17→P38), the v26 static design (3-slide hero slider,
+4-column numbered mega menu) and the P22 flat-PHP admin. Four owner answers set the wave:
+(1) **port capabilities into Woodex OS** — no system mount (two CMSs = content drift; builder.php
+edits flat HTML the OS does not serve); (2) **frontend-v1 v26 is the final design** — the OS site
+matches it, no design changes unless the owner asks; (3) click-to-edit = jump-to-form, not inline
+typing; (4) build order: **builder UX first**, then nav/slider/header-footer.
+
+Landed first (F4): **click-to-edit**.
+- Migration `2026_10_18_151000`: `page_blocks.block_key` (nullable string 40) + backfill of every
+  existing row — a stable per-section identity that survives saves, reorders and restores.
+- `SavePage` persists the key (mints one when absent — the restore path sends blocks without keys)
+  and snapshots it, so a restored page keeps its sections clickable.
+- `site/page.blade.php` wraps every section include in `<div data-wx-key="…">` (CSS-neutral
+  wrapper; only when the block has a key).
+- `SiteRouter::editingPreview()` — `?preview=1` **and** a signed-in editor with `website.edit`:
+  the response gets one injected script (`data-wx-editor-tools`) that outlines the hovered section
+  and postMessages `{type:'wx-edit-section', key}` to the parent on click. That request is never
+  cached (signed-in user), and guests / share-token previews / plain editor visits never see it.
+- PageEditor: `editSectionFromPreview(key)` validates the key against its own blocks (a section
+  deleted since the draft was saved is ignored, not guessed at), sets `activeBlock`, dispatches
+  `scroll-to-block`; the card gets `id="blk-{key}"`, a brand highlight ring and smooth-scrolls into
+  view. Preview iframe: `sandbox="allow-same-origin allow-scripts"` (the tools need scripts);
+  parent-side bridge uses `@this.call(...)` behind a `window.__wxClickToEdit` guard so Livewire
+  redraws never double-bind the listener.
+- `reload()` now hydrates the persisted key (`$block->block_key ?? newKey()`) — without this the
+  editor's keys and the preview's keys drifted apart after every save.
+
+Lesson: python `str.replace(count=1)` hit the FIRST `'key' => $this->newKey()` (in `addBlock`),
+not the one in `reload()` — the failing assert (random key where the persisted one belonged)
+pointed at it. When patching repeated snippets, anchor the replacement on surrounding context.
+
+Tests: `ClickToEditTest` — 4 green (key on public page; editor tools only for previewing editors,
+never baked into the cached page; jump + unknown-key ignore + card id; key persistence and minting).
+Regression: Website suite 92 passed. Gate: **103 files / 1077 passed / 0 failed** · Pint + Larastan clean.

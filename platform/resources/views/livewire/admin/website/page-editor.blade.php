@@ -7,7 +7,12 @@
     $saved = $page !== null;
 @endphp
 
-<div>
+<div x-on:scroll-to-block.window="
+        const card = document.getElementById('blk-' + $event.detail.key);
+        if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    ">
     <x-admin.page-header :title="$saved ? $title : 'New page'"
                          :description="$saved ? 'Edit the page, then publish it. Everything on this page is editable: the text, the sections, the photos and what search engines read.' : 'A page of the public website. Give it a title and a URL, add sections, then publish.'"
                          :breadcrumbs="['Website' => null, 'Pages' => route('admin.website.pages'), ($saved ? $title : 'New page') => null]">
@@ -113,10 +118,11 @@
                 <div class="space-y-4" wire:sort="sortBlocks" wire:sort.options="{ handle: '.section-handle', animation: 150 }">
                     @forelse ($blocks as $index => $block)
                         @php $blockType = BlockType::from($block['type']); @endphp
-                        <div wire:key="blk-{{ $block['key'] }}" @class([
-                            'rounded-xl border',
+                        <div wire:key="blk-{{ $block['key'] }}" id="blk-{{ $block['key'] }}" @class([
+                            'rounded-xl border transition',
                             'border-gray-200 dark:border-gray-800' => $block['visible'] ?? true,
                             'border-dashed border-gray-300 opacity-70' => ! ($block['visible'] ?? true),
+                            'border-brand-500 ring-2 ring-brand-500/30' => $block['key'] === $activeBlock,
                         ])>
                             <header class="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-2.5 dark:border-gray-800">
                                 <div class="flex min-w-0 items-center gap-2">
@@ -218,7 +224,7 @@
 
         <div class="space-y-6">
             @if ($saved)
-                <x-admin.card title="Preview" description="How the page looks — saved changes only; press Save draft first.">
+                <x-admin.card title="Preview" description="How the page looks — saved changes only; press Save draft first. Click any section in the preview to jump to its form.">
                     <div class="flex flex-wrap items-center gap-2">
                         <button type="button" wire:click="setPreviewDevice('{{ $previewDevice === 'desktop' ? '' : 'desktop' }}')"
                                 @class(['wx-mini-btn' => true, 'border-brand-500 text-brand-700 dark:text-brand-300' => $previewDevice === 'desktop'])>Desktop</button>
@@ -242,7 +248,22 @@
                             <iframe src="{{ $page->path() }}?preview=1" title="Draft preview ({{ $previewDevice }})"
                                     class="origin-top-left border-0 bg-white"
                                     style="width: {{ $frame['w'] }}px; height: {{ $frameH }}px; transform: scale({{ $frame['scale'] }});"
-                                    sandbox="allow-same-origin"></iframe>
+                                    sandbox="allow-same-origin allow-scripts"></iframe>
+
+                            <script>
+                                // Click-to-edit (V2-3): the preview's editor tools postMessage the clicked
+                                // section's key; we hand it to this component, which scrolls to its form.
+                                if (window.__wxClickToEdit === undefined) {
+                                    window.__wxClickToEdit = true; // one listener, however often Livewire redraws
+                                    window.addEventListener('message', function (event) {
+                                        if (event.origin !== window.location.origin || ! event.data || event.data.type !== 'wx-edit-section') {
+                                            return;
+                                        }
+
+                                        @this.call('editSectionFromPreview', event.data.key);
+                                    });
+                                }
+                            </script>
                         </div>
                     @endif
 

@@ -61,7 +61,7 @@ final class SiteRouter
                 return null;
             }
 
-            return $this->render($page, $request->user() === null);
+            return $this->render($page, $request->user() === null, $this->editingPreview($request));
         }
 
         $redirect = Redirect::query()->where('from_path', $slug)->first();
@@ -79,7 +79,7 @@ final class SiteRouter
      * Signed-in staff are not visitors, so their view is never the one that gets cached (D-69): the first person
      * to open a page would otherwise decide whether everybody else is counted for the next day.
      */
-    private function render(Page $page, bool $cacheable): Response
+    private function render(Page $page, bool $cacheable, bool $editorTools = false): Response
     {
         $html = PageCache::html(
             $page,
@@ -87,7 +87,48 @@ final class SiteRouter
             $cacheable,
         );
 
+        if ($editorTools) {
+            // Click-to-edit (V2-3): a signed-in editor previewing the draft gets one small script that
+            // reports clicked sections to the page editor. Never on the cached public path.
+            $html = str_replace('</body>', $this->editorToolsScript().'</body>', $html);
+        }
+
         return new Response($html, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+    }
+
+    /**
+     * True only while a staff editor opens ?preview=1: those responses are never cached (the same request
+     * has a signed-in user), so the tooling below cannot leak into the pages visitors download.
+     */
+    private function editingPreview(Request $request): bool
+    {
+        return $request->boolean('preview') && $request->user() !== null && $request->user()->can('website.edit');
+    }
+
+    /**
+     * The preview's click-to-edit layer: hover outlines a section, a click tells the parent window
+     * (the page editor) which section it was, and links inside sections are followed only on the live site.
+     */
+    private function editorToolsScript(): string
+    {
+        return <<<'HTML'
+<script data-wx-editor-tools>
+(function () {
+    var style = document.createElement('style');
+    style.textContent = '[data-wx-key]{cursor:crosshair}[data-wx-key]:hover{outline:3px solid rgba(79,70,229,.55);outline-offset:-3px}';
+    document.head.appendChild(style);
+    document.addEventListener('click', function (event) {
+        var section = event.target && event.target.closest ? event.target.closest('[data-wx-key]') : null;
+        if (!section) {
+            return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        window.parent.postMessage({ type: 'wx-edit-section', key: section.getAttribute('data-wx-key') }, window.location.origin);
+    }, true);
+})();
+</script>
+HTML;
     }
 
     /**

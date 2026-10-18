@@ -1,6 +1,6 @@
 # Woodex OS — Project Status & Quick Start
 
-**Updated:** 18 Oct 2026 · **Status: BOT-002…010 shipped keyless — the website assistant's engine, knowledge, guardrails, cost caps and hand-offs all work today; add an API key and it thinks. Gate 1073 green. Backlog marathon (P4→P10) under way.**
+**Updated:** 18 Oct 2026 · **Status: frontend-v1 wave under way (owner directive: port the marketing repo's frontend v1 into Woodex OS — no second system). Click-to-edit landed in the page builder; next: mega menu, slider + v26 home, structured header/footer. Gate 1077 green. Backlog marathon continues after.**
 
 One line: CRM + quotations + invoicing + payments + inbox + Telegram + website CMS + double-entry ledger core are live and gated; invoices and receipts now post to the general ledger automatically, dues have a screen with consent-gated reminders, and money can be collected from the phone. Remaining: two-brand documents/estimation, tracking boards, automation agents, MySQL migration, handover.
 

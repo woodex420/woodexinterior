@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $page_id
  * @property BlockType $type
+ * @property string|null $block_key
  * @property int $position
  * @property array<string, mixed>|null $data
  * @property bool $visible
@@ -30,7 +31,7 @@ class PageBlock extends Model
         return PageBlockFactory::new();
     }
 
-    protected $fillable = ['page_id', 'type', 'position', 'data', 'visible'];
+    protected $fillable = ['page_id', 'type', 'block_key', 'position', 'data', 'visible'];
 
     protected function casts(): array
     {
