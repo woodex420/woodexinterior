@@ -10,8 +10,9 @@ use App\Domain\System\Models\Automation;
 use App\Domain\System\Notifications\AgentReportNotification;
 use App\Domain\Website\Models\Redirect;
 use App\Integrations\Telegram\TelegramChannel;
-use Database\Factories\Website\PageFactory;
+use App\Livewire\Admin\System\AutomationsIndex;
 use App\Models\User;
+use Database\Factories\Website\PageFactory;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Notification;
 
@@ -39,7 +40,7 @@ it('ships both agents dormant while every other automation stays on by default',
 
 it('shows the dormant agents on the dashboard and wakes one with the switch', function () {
     $test = Livewire::actingAs($this->owner)
-        ->test(\App\Livewire\Admin\System\AutomationsIndex::class)
+        ->test(AutomationsIndex::class)
         ->assertOk()
         ->assertSee('SEO health check')
         ->assertSee('Social post ideas')

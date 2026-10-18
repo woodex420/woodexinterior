@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Automation\Models;
 
 use App\Domain\Automation\Enums\SequenceTrigger;
-use App\Domain\Crm\Models\Lead;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -52,9 +52,9 @@ class AutomationSequence extends Model
     /**
      * The active sequences a given trigger should enroll into.
      *
-     * @return \Illuminate\Database\Eloquent\Collection<int, self>
+     * @return Collection<int, self>
      */
-    public static function forTrigger(SequenceTrigger $trigger): \Illuminate\Database\Eloquent\Collection
+    public static function forTrigger(SequenceTrigger $trigger): Collection
     {
         return self::query()->active()->where('trigger', $trigger->value)->orderBy('id')->get();
     }

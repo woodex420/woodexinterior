@@ -25,7 +25,7 @@ final class WeeklyDigest
         $start = CarbonImmutable::now()->startOfWeek()->subWeek(); // last Monday 00:00
         $end = $start->addWeek(); // this Monday 00:00 — the digest runs at 09:00
 
-        $lines = ['📊 The week '.$start->format('d M').' – '. $end->subDay()->format('d M')];
+        $lines = ['📊 The week '.$start->format('d M').' – '.$end->subDay()->format('d M')];
 
         if ($user->can('leads.view')) {
             $leads = Lead::query()->visibleTo($user)->whereBetween('created_at', [$start, $end]);

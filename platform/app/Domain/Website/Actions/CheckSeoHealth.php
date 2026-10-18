@@ -6,7 +6,6 @@ namespace App\Domain\Website\Actions;
 
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\Redirect;
-use Illuminate\Support\Collection;
 
 /**
  * The SEO agent's rule-based core (P8.5): a read-only weekly look at the website's search basics.

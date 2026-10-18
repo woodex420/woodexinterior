@@ -12,6 +12,7 @@ use App\Support\Concerns\HasPublicId;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -90,7 +91,7 @@ class Estimate extends Model
     /**
      * The priced catalog items on this estimate, resolved fresh (the snapshot keeps what was saved).
      *
-     * @return \Illuminate\Support\Collection<int, CatalogItem>
+     * @return Collection<int, CatalogItem>
      */
     public function catalogItems()
     {

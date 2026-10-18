@@ -3,13 +3,17 @@
 use App\Domain\Automation\Actions\EnrollLead;
 use App\Domain\Automation\Enums\EnrolmentStatus;
 use App\Domain\Automation\Enums\RunStatus;
+use App\Domain\Automation\Enums\SequenceTrigger;
 use App\Domain\Automation\Models\AutomationEnrolment;
 use App\Domain\Automation\Models\AutomationSequence;
 use App\Domain\Conversations\Actions\ReceiveWhatsAppMessage;
+use App\Domain\Conversations\Enums\MessageDirection;
+use App\Domain\Conversations\Enums\MessageStatus;
 use App\Domain\Conversations\Models\Conversation;
-use App\Domain\Crm\Actions\ManageTask;
 use App\Domain\Crm\Enums\TaskType;
+use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
+use App\Domain\Crm\Models\PipelineStage;
 use App\Domain\Crm\Models\Task;
 use App\Domain\System\Enums\WhatsAppTemplateStatus;
 use App\Domain\System\Models\WhatsAppTemplate;
@@ -46,14 +50,14 @@ beforeEach(function (): void {
     ]);
 
     // A lead with a WhatsApp conversation, the way a real one exists.
-    $contact = App\Domain\Crm\Models\Contact::create([
+    $contact = Contact::create([
         'name' => 'Bilal Mirza', 'phone' => '923224007688', 'whatsapp' => '923224007688',
         'source' => 'whatsapp', 'consent_whatsapp' => true,
     ]);
 
     $this->lead = Lead::factory()->create([
         'contact_id' => $contact->id,
-        'stage_id' => App\Domain\Crm\Models\PipelineStage::byKey('new')->id,
+        'stage_id' => PipelineStage::byKey('new')->id,
         'business_line' => 'interior', 'service' => 'wardrobe', 'city' => 'Lahore',
     ]);
 
@@ -76,7 +80,7 @@ beforeEach(function (): void {
 });
 
 it('walks a sequence: wait, send the mapped template, then the task', function () {
-    app(EnrollLead::class)->forTrigger(\App\Domain\Automation\Enums\SequenceTrigger::QuotationSent, $this->lead);
+    app(EnrollLead::class)->forTrigger(SequenceTrigger::QuotationSent, $this->lead);
 
     // Nothing runs before its time.
     Artisan::call('woodex:automation-run');
@@ -103,7 +107,7 @@ it('walks a sequence: wait, send the mapped template, then the task', function (
 });
 
 it('a client reply ends the sequence before anything more is sent', function () {
-    app(EnrollLead::class)->forTrigger(\App\Domain\Automation\Enums\SequenceTrigger::QuotationSent, $this->lead);
+    app(EnrollLead::class)->forTrigger(SequenceTrigger::QuotationSent, $this->lead);
 
     $this->travel(30)->minutes();
 
@@ -129,7 +133,7 @@ it('holds automated sends through quiet hours, unless the client wrote first', f
     $settings->automation_quiet_end = '09:00';
     $settings->save();
 
-    app(EnrollLead::class)->forTrigger(\App\Domain\Automation\Enums\SequenceTrigger::QuotationSent, $this->lead);
+    app(EnrollLead::class)->forTrigger(SequenceTrigger::QuotationSent, $this->lead);
 
     // 22:00, nobody spoke: the send waits for the morning.
     $this->travelTo(now()->setTime(22, 0)->addMinutes(61));
@@ -157,12 +161,12 @@ it('enforces the daily per-client cap across sequences', function () {
     // One automated template already went out today (the quotation send itself, say).
     $conversation = Conversation::query()->sole();
     $conversation->messages()->create([
-        'direction' => \App\Domain\Conversations\Enums\MessageDirection::Out,
-        'type' => 'template', 'body' => 'quote_ready_v2', 'status' => \App\Domain\Conversations\Enums\MessageStatus::Sent,
+        'direction' => MessageDirection::Out,
+        'type' => 'template', 'body' => 'quote_ready_v2', 'status' => MessageStatus::Sent,
         'sent_at' => now(),
     ]);
 
-    app(EnrollLead::class)->forTrigger(\App\Domain\Automation\Enums\SequenceTrigger::QuotationSent, $this->lead);
+    app(EnrollLead::class)->forTrigger(SequenceTrigger::QuotationSent, $this->lead);
     $this->travel(61)->minutes();
     Artisan::call('woodex:automation-run');
 
@@ -176,7 +180,7 @@ it('enforces the daily per-client cap across sequences', function () {
 it('skips the send when no approved template is mapped, and says so', function () {
     WhatsAppTemplate::query()->first()->forceFill(['event_key' => 'quotation'])->save();
 
-    app(EnrollLead::class)->forTrigger(\App\Domain\Automation\Enums\SequenceTrigger::QuotationSent, $this->lead);
+    app(EnrollLead::class)->forTrigger(SequenceTrigger::QuotationSent, $this->lead);
     $this->travel(61)->minutes();
     Artisan::call('woodex:automation-run');
 
@@ -198,10 +202,10 @@ it('exits a lead that is won or lost (nurture sequences excepted)', function () 
         ['position' => 3, 'kind' => 'wait', 'wait_minutes' => 10080],
     ]);
 
-    app(EnrollLead::class)->forTrigger(\App\Domain\Automation\Enums\SequenceTrigger::QuotationSent, $this->lead);
-    app(EnrollLead::class)->forTrigger(\App\Domain\Automation\Enums\SequenceTrigger::LeadLost, $this->lead);
+    app(EnrollLead::class)->forTrigger(SequenceTrigger::QuotationSent, $this->lead);
+    app(EnrollLead::class)->forTrigger(SequenceTrigger::LeadLost, $this->lead);
 
-    $lost = App\Domain\Crm\Models\PipelineStage::byKey('lost');
+    $lost = PipelineStage::byKey('lost');
     $this->lead->forceFill(['stage_id' => $lost->id])->save();
 
     $this->travel(61)->minutes();

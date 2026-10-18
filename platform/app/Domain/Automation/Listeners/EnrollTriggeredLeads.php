@@ -6,9 +6,9 @@ namespace App\Domain\Automation\Listeners;
 
 use App\Domain\Automation\Actions\EnrollLead;
 use App\Domain\Automation\Enums\SequenceTrigger;
+use App\Domain\Crm\Enums\StageType;
 use App\Domain\Crm\Events\LeadCaptured;
 use App\Domain\Crm\Events\LeadStageChanged;
-use App\Domain\Crm\Enums\StageType;
 
 /**
  * The triggers that come from events (AUT-001): a fresh enquiry starts the "not reached"

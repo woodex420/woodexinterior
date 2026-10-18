@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Sales\Actions;
 
 use App\Domain\Accounts\Actions\PostInvoiceToLedger;
+use App\Domain\Automation\Actions\EnrollLead;
+use App\Domain\Automation\Enums\SequenceTrigger;
 use App\Domain\Crm\Enums\BusinessLine;
+use App\Domain\Crm\Models\Lead;
 use App\Domain\Sales\Enums\InvoiceKind;
 use App\Domain\Sales\Enums\InvoiceStatus;
 use App\Domain\Sales\Enums\QuoteStatus;
@@ -130,10 +133,10 @@ final class RaiseAdvanceInvoice
 
                 // AUT-001: an invoice that exists starts the reminder sequences.
                 if ($quote->lead_id !== null) {
-                    $lead = \App\Domain\Crm\Models\Lead::query()->find($quote->lead_id);
+                    $lead = Lead::query()->find($quote->lead_id);
 
                     if ($lead !== null) {
-                        app(\App\Domain\Automation\Actions\EnrollLead::class)->forTrigger(\App\Domain\Automation\Enums\SequenceTrigger::InvoiceIssued, $lead);
+                        app(EnrollLead::class)->forTrigger(SequenceTrigger::InvoiceIssued, $lead);
                     }
                 }
             }

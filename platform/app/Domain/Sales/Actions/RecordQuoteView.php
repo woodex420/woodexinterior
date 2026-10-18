@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Actions;
 
+use App\Domain\Automation\Actions\EnrollLead;
+use App\Domain\Automation\Enums\SequenceTrigger;
+use App\Domain\Crm\Models\Lead;
 use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteEvent;
@@ -59,10 +62,10 @@ final class RecordQuoteView
 
             if ($first && $type === 'viewed' && $quote->lead_id !== null) {
                 // AUT-001: the client read it — the "seen but silent" sequences start from here.
-                $lead = \App\Domain\Crm\Models\Lead::query()->find($quote->lead_id);
+                $lead = Lead::query()->find($quote->lead_id);
 
                 if ($lead !== null) {
-                    app(\App\Domain\Automation\Actions\EnrollLead::class)->forTrigger(\App\Domain\Automation\Enums\SequenceTrigger::QuotationViewed, $lead);
+                    app(EnrollLead::class)->forTrigger(SequenceTrigger::QuotationViewed, $lead);
                 }
             }
 

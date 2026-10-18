@@ -2,7 +2,6 @@
 
 use App\Domain\Conversations\Actions\ReceiveWhatsAppMessage;
 use App\Domain\Conversations\Actions\SendConversationMessage;
-use App\Domain\Conversations\Enums\Channel;
 use App\Domain\Conversations\Enums\MessageDirection;
 use App\Domain\Conversations\Enums\MessageStatus;
 use App\Domain\Conversations\Enums\MessageType;
@@ -11,9 +10,11 @@ use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Models\Message;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Integrations\WhatsApp\Fakes\FakeWhatsAppGateway;
+use App\Livewire\Admin\Conversations\Inbox;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 /*
 | CNV-008: media back to the client. A photograph, a PDF, a voice note or a clip goes through the
@@ -98,7 +99,7 @@ it('refuses what WhatsApp refuses, and respects the window like text', function 
     // Not a kind WhatsApp takes.
     $spreadsheet = UploadedFile::fake()->create('boq.xlsx', 20, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     app(SendConversationMessage::class)->media($conversation, $spreadsheet, '', $this->owner);
-})->throws(Illuminate\Validation\ValidationException::class);
+})->throws(ValidationException::class);
 
 it('marks the message failed when Meta refuses the upload, but keeps the copy', function () {
     $conversation = whatsappConversation($this);
@@ -151,7 +152,7 @@ it('uploads and sends from the composer, with the caption doubling as the draft'
     $conversation = whatsappConversation($this);
 
     Livewire::actingAs($this->owner)
-        ->test(App\Livewire\Admin\Conversations\Inbox::class)
+        ->test(Inbox::class)
         ->call('select', $conversation->id)
         ->set('draft', 'This is the shade we discussed')
         ->set('attachment', UploadedFile::fake()->image('shade.jpg', 640, 480))
@@ -169,7 +170,7 @@ it('shows the attach button only on WhatsApp conversations', function () {
     $conversation = whatsappConversation($this);
 
     Livewire::actingAs($this->owner)
-        ->test(App\Livewire\Admin\Conversations\Inbox::class)
+        ->test(Inbox::class)
         ->call('select', $conversation->id)
         ->assertSee('wire:model="attachment"', false);
 
@@ -179,7 +180,7 @@ it('shows the attach button only on WhatsApp conversations', function () {
     ]);
 
     Livewire::actingAs($this->owner)
-        ->test(App\Livewire\Admin\Conversations\Inbox::class)
+        ->test(Inbox::class)
         ->call('select', $webChat->id)
         ->assertDontSee('wire:model="attachment"', false);
 });

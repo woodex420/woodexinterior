@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Automation\Actions;
 
 use App\Domain\Automation\Enums\EnrolmentStatus;
-use App\Domain\Automation\Enums\SequenceTrigger;
 use App\Domain\Automation\Enums\RunStatus;
+use App\Domain\Automation\Enums\SequenceTrigger;
 use App\Domain\Automation\Enums\StepKind;
 use App\Domain\Automation\Models\AutomationEnrolment;
 use App\Domain\Automation\Models\AutomationSequence;
-use App\Domain\Automation\Models\AutomationStep;
 use App\Domain\Automation\Models\AutomationStepRun;
 use App\Domain\Crm\Models\Lead;
 use Carbon\CarbonInterface;

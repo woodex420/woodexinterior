@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Crm\Actions;
 
+use App\Domain\Automation\Actions\EnrollLead;
+use App\Domain\Automation\Enums\SequenceTrigger;
 use App\Domain\Crm\Enums\LeadPriority;
 use App\Domain\Crm\Enums\TaskRecurrence;
 use App\Domain\Crm\Enums\TaskStatus;
@@ -62,7 +64,7 @@ final class ManageTask
                 $lead = Lead::query()->find($task->lead_id);
 
                 if ($lead !== null) {
-                    app(\App\Domain\Automation\Actions\EnrollLead::class)->forTrigger(\App\Domain\Automation\Enums\SequenceTrigger::VisitCompleted, $lead);
+                    app(EnrollLead::class)->forTrigger(SequenceTrigger::VisitCompleted, $lead);
                 }
             }
         }

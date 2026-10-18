@@ -10,6 +10,7 @@ use App\Livewire\Admin\Accounts\ChartOfAccounts;
 use App\Livewire\Admin\Accounts\JournalsIndex;
 use App\Livewire\Admin\Accounts\MethodAccounts;
 use App\Livewire\Admin\Accounts\PeriodsIndex;
+use App\Livewire\Admin\Automation\SequencesIndex;
 use App\Livewire\Admin\Conversations\CannedRepliesIndex;
 use App\Livewire\Admin\Conversations\Inbox;
 use App\Livewire\Admin\Crm\AssignmentRules;
@@ -140,7 +141,7 @@ Route::livewire('/users', UsersIndex::class)->name('users.index')->middleware('c
 Route::livewire('/system/health', Health::class)->name('system.health')->middleware('can:system.health');
 
 Route::livewire('/automation', AutomationsIndex::class)->name('automation.index')->middleware('can:automation.manage');
-Route::livewire('/automation/sequences', \App\Livewire\Admin\Automation\SequencesIndex::class)->name('automation.sequences')->middleware('can:automation.manage');
+Route::livewire('/automation/sequences', SequencesIndex::class)->name('automation.sequences')->middleware('can:automation.manage');
 Route::livewire('/system/change-requests', ChangeRequests::class)->name('system.change-requests')->middleware('can:system.change_requests');
 Route::livewire('/system/audit', AuditLog::class)->name('system.audit')->middleware('can:audit.view');
 // Database update after a deploy (D-58): reachable while migrations are pending and before 2FA setup.

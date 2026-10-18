@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domain\Automation\Listeners\EnrollTriggeredLeads;
 use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Policies\ConversationPolicy;
-use App\Domain\Automation\Listeners\EnrollTriggeredLeads;
 use App\Domain\Crm\Events\LeadCaptured;
 use App\Domain\Crm\Events\LeadStageChanged;
 use App\Domain\Crm\Listeners\AskForMissingNumber;

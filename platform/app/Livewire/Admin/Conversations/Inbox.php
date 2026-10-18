@@ -27,6 +27,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Throwable;
 
@@ -61,7 +62,7 @@ class Inbox extends Component
 
     public string $draft = '';
 
-    /** @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null A photograph, PDF, voice note or clip to send (CNV-008). */
+    /** @var TemporaryUploadedFile|null A photograph, PDF, voice note or clip to send (CNV-008). */
     public $attachment = null;
 
     public string $note = '';

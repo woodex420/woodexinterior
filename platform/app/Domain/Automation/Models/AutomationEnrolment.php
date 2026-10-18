@@ -7,8 +7,8 @@ namespace App\Domain\Automation\Models;
 use App\Domain\Automation\Enums\EnrolmentStatus;
 use App\Domain\Crm\Models\Lead;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * A lead inside a sequence (AUT-001). Pause/resume/cancel (AUT-005) only touch this row and the
