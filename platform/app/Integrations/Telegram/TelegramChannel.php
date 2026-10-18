@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Integrations\Telegram;
 
+use App\Domain\System\Models\PendingTelegramMessage;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
 use App\Models\User;
 use Illuminate\Notifications\Notification;
@@ -13,6 +14,10 @@ use Throwable;
 /**
  * Laravel notification channel. Notifications implement toTelegram(object $notifiable): TelegramMessage.
  * Delivery failures are logged, never thrown, so an outage cannot break saving business data.
+ *
+ * Quiet hours (S8 / TGM-008): a muted chat is never dropped — the message waits in
+ * PendingTelegramMessage until woodex:telegram-flush delivers it after the mute. A
+ * notification may declare isCritical(): true to bypass the mute entirely.
  */
 final class TelegramChannel
 {
@@ -31,9 +36,21 @@ final class TelegramChannel
             return;
         }
 
-        $chatId = $notifiable->routeNotificationFor('telegram', $notification);
+        $chatId = $notifiable instanceof User
+            ? $notifiable->telegramChatIdIgnoringMute()
+            : $notifiable->routeNotificationFor('telegram', $notification);
 
         if ($chatId === null || $chatId === '' || ! $this->gateway->isConfigured()) {
+            return;
+        }
+
+        if ($notifiable instanceof User && $this->isMuted($notifiable) && ! $this->isCritical($notification)) {
+            $link = $notifiable->telegramLink;
+
+            if ($link !== null) {
+                PendingTelegramMessage::queue($link, $notification->toTelegram($notifiable));
+            }
+
             return;
         }
 
@@ -42,5 +59,18 @@ final class TelegramChannel
         } catch (Throwable $exception) {
             Log::warning('Telegram notification delivery failed.', ['exception' => $exception::class]);
         }
+    }
+
+    private function isMuted(User $user): bool
+    {
+        $link = $user->telegramLink;
+
+        return $link !== null && $link->muted_until !== null && $link->muted_until->isFuture();
+    }
+
+    /** Critical alerts (a notification opting in with isCritical()) ignore quiet hours. */
+    private function isCritical(Notification $notification): bool
+    {
+        return method_exists($notification, 'isCritical') && (bool) $notification->isCritical();
     }
 }

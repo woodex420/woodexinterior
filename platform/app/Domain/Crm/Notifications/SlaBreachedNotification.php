@@ -24,7 +24,7 @@ final class SlaBreachedNotification extends Notification
     {
         $channels = ['database'];
 
-        if (method_exists($notifiable, 'routeNotificationForTelegram') && $notifiable->routeNotificationForTelegram() !== null) {
+        if (method_exists($notifiable, 'telegramChatIdIgnoringMute') && $notifiable->telegramChatIdIgnoringMute() !== null) {
             $channels[] = TelegramChannel::class;
         }
 

@@ -28,7 +28,7 @@ final class NewLeadNotification extends Notification
     {
         $channels = ['database'];
 
-        if (method_exists($notifiable, 'routeNotificationForTelegram') && $notifiable->routeNotificationForTelegram() !== null) {
+        if (method_exists($notifiable, 'telegramChatIdIgnoringMute') && $notifiable->telegramChatIdIgnoringMute() !== null) {
             $channels[] = TelegramChannel::class;
         } elseif ($notifiable instanceof User && $notifiable->email !== null) {
             // P8.5: a team member without a Telegram link still hears about the enquiry — by email.

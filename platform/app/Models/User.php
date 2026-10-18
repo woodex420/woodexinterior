@@ -86,14 +86,33 @@ class User extends Authenticatable
     }
 
     /**
-     * Telegram chat for alerts, if this user linked one (TGM-001).
+     * The chat this staff member's usable link points at, ignoring any mute (S8).
+     *
+     * Delivery decisions belong to the Telegram channel: a muted chat's alerts are
+     * queued (PendingTelegramMessage) rather than dropped, so this method exists to
+     * answer "could this notification ever reach Telegram?" without the mute hiding it.
      */
-    public function routeNotificationForTelegram(): ?int
+    public function telegramChatIdIgnoringMute(): ?int
     {
         $link = $this->telegramLink;
 
         if (! $this->is_active || $link === null || ! $link->is_active || $link->chat_id === null
             || $link->chat_id <= 0 || ($link->chat_type !== null && $link->chat_type !== 'private')) {
+            return null;
+        }
+
+        return (int) $link->chat_id;
+    }
+
+    /**
+     * Telegram chat for alerts, if this user linked one (TGM-001). Muted chats get
+     * nothing straight away — the channel queues their messages until the mute ends.
+     */
+    public function routeNotificationForTelegram(): ?int
+    {
+        $link = $this->telegramLink;
+
+        if ($this->telegramChatIdIgnoringMute() === null) {
             return null;
         }
 

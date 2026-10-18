@@ -72,7 +72,7 @@ changes are **never** offered here (TGM-005).
 **Done when:** the P5 exit test passes: an approval raised in the admin is approved from Telegram, and the
 timeline says who did it and from where.
 
-### S4 · Digests (TGM-003, ~0.5 d)
+### S4 · Digests (TGM-003) — DONE 18 Oct (`SendDigest`, DailyDigest/WeeklyDigest, 9 tests)
 
 `woodex:digest` scheduled: daily 09:00 (today's visits, due follow-ups, yesterday's leads/quotes/payments,
 cash collected) → every linked chat; weekly Monday 09:00 (funnel, win rate, top sources, receivables); monthly
@@ -98,7 +98,7 @@ only its next moves; closing a card requires a note, which the requester reads o
 Settings → Notifications: event → condition → recipients → channels → quiet-hours bypass → priority. Defaults
 match the current notification matrix; the catalogue is TGM-002's list.
 
-### S8 · Hardening (TGM-007/008, ~0.5 d)
+### S8 · Hardening (TGM-007/008) — DONE 18 Oct (unlink on deactivation shipped 17 Oct in ManageStaff; quiet-hours queue + critical bypass + cap/prune in the Telegram channel and woodex:telegram-flush; rate limits S1, button expiry S3)
 
 Rate limits per chat (done in S1, tested here) · button expiry (S3) · unlink on user deactivation · non-critical
 alerts batched during quiet hours, critical always delivered (partly exists — finish it).

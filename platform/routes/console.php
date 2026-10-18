@@ -34,6 +34,17 @@ Schedule::command('woodex:sla-check')->everyMinute()->withoutOverlapping(5)
 Schedule::command('woodex:reminders')->everyMinute()->withoutOverlapping(5)
     ->when(fn (): bool => Automation::enabled('woodex:reminders'));
 
+// S4 digests: every linked staff member's morning, and the week that just ended (P5).
+Schedule::command('woodex:digest --period=daily')->dailyAt('09:00')
+    ->when(fn (): bool => Automation::enabled('woodex:daily-digest'));
+
+Schedule::command('woodex:digest --period=weekly')->weeklyOn(1, '09:00')
+    ->when(fn (): bool => Automation::enabled('woodex:weekly-digest'));
+
+// S8: deliver what waited out a quiet period (TGM-008) — plumbing, keep it on.
+Schedule::command('woodex:telegram-flush')->everyMinute()->withoutOverlapping(5)
+    ->when(fn (): bool => Automation::enabled('woodex:telegram-flush'));
+
 // Monthly CRM report to the owner: the month that just ended, in one message (P8.5).
 Schedule::command('woodex:monthly-report')->monthlyOn(1, '09:00')
     ->when(fn (): bool => Automation::enabled('woodex:monthly-report'));

@@ -1521,3 +1521,48 @@ message a second into the future) avoids the same-second `gt()` trap; (4) a sile
 str.replace miss left admin.js unedited while everything else shipped — verify edits with
 grep before building; (5) the toast lives 8 seconds — E2E checks must wait for the event,
 then assert immediately.
+
+## 49. P5 S4+S8 — digests and quiet hours that queue (18 Oct 2026)
+
+The owner picked "finish the command centre" from the pending list. Recon showed docs/16's
+"S3–S8 remain" was stale: S3 (callback bus + 4 action commands), S5 (health completion), S6
+(change-requests board) and unlink-on-deactivation (TGM-007, in ManageStaff::setActive) were
+already shipped on 17 Oct. What genuinely remained: S4 digests and S8's quiet-hours batching.
+
+- `woodex:digest {--period=daily|weekly}` (SendDigest): daily 09:00 and Mondays 09:00, one
+  message per **linked** chat. `DailyDigest` (app/Domain/System/Telegram/Digests): today's
+  visits, the member's open tasks, follow-ups due (visibleTo, open, next_action_at ≤ today),
+  yesterday's leads/quotes/money-in, approvals waiting — each line only for roles that may see
+  it (payments.view, quotes.approve…). `WeeklyDigest`: last week's leads + top sources, won/
+  lost, quotes sent/accepted, collected, still-to-collect with overdue count. Delivered via
+  `DigestNotification` (SendsToDatabaseAndTelegram): Telegram copy and the in-app bell copy are
+  the same composed text. Switches: woodex:daily-digest, woodex:weekly-digest (Automation
+  catalog, default ON).
+- **Quiet hours queue (TGM-008)**: `telegram_pending_messages` table + `PendingTelegramMessage`
+  (cap 20 per chat, oldest kept; delivered rows pruned after a week). `TelegramChannel` is now
+  the single delivery decision point: muted chat + normal notification → queued; a notification
+  may declare `isCritical(): true` to bypass the mute (none do yet — classification arrives with
+  the alert-rules engine, S7/other lane). via() checks `User::telegramChatIdIgnoringMute()` so a
+  muted link still reaches the channel (it used to exclude it — alerts were silently dropped,
+  and the mail fallback fired instead). `woodex:telegram-flush` every minute
+  (FlushPendingTelegramMessages) delivers the backlog oldest-first once the mute has actually
+  ended; a failed send stays queued. The digest waits out a mute like any alert — "quiet hours
+  apply to the daily digest" from the S4 spec.
+- Tests: `TelegramDigestTest` — 9 green (content + permission split, weekly window anchored on
+  startOfWeek, mute→queue→flush round-trip, buttons survive the queue, critical bypass, cap 20,
+  catalog entries). Gate: **97 files / 1040 passed / 0 failed** · Pint clean · Larastan 0.
+- Ops note: the sandbox reset wiped /tmp AND reset the repo checkout to d77016b with an empty
+  index; history was restored from the pushed branch (`git fetch` + `reset --soft` + `add -A`)
+  — the working tree was never at risk. The gate script was rebuilt at /tmp/woodex-run/shard-gate.sh
+  (Feature shards + tests/Unit).
+- Honest gap: no live-phone verification yet — the owner's Telegram is not linked in the
+  preview (needs /start CODE from his profile). Everything is covered by the fake-gateway tests.
+
+Gotchas: (1) `test()->artisan()` / `$this->artisan()` in this suite return the **exit code
+(int)**, not a PendingCommand — `->assertSuccessful()` does not exist; (2) name the migration's
+table to match the model's convention BEFORE debugging phantom "no such table" errors — the
+migration created `telegram_pending_messages` while the model derived
+`pending_telegram_messages`, and copy-pasting the wrong name into debug probes made two
+different-looking states; (3) `withoutOverlapping` on the flush is unnecessary (minute cadence,
+fast command) but harmless; (4) Eloquent timestamps: a table without created_at/updated_at
+needs `$timestamps = false` or the insert fails on sqlite.

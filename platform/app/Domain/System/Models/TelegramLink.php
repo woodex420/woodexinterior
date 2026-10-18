@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -39,6 +40,16 @@ class TelegramLink extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Messages waiting out this chat's quiet hours (S8). Delivered by woodex:telegram-flush.
+     *
+     * @return HasMany<PendingTelegramMessage, $this>
+     */
+    public function pendingMessages(): HasMany
+    {
+        return $this->hasMany(PendingTelegramMessage::class, 'telegram_link_id');
     }
 
     /**

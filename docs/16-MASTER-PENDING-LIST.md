@@ -87,7 +87,7 @@ Remaining, split for two agents:
 | AUT-001/002/005/006 | **Follow-up sequences engine + built-ins + limits** | A |
 | BOT-001…010 | **Chat widget, bot engine, knowledge base, qualification, hand-off, guardrails, cost caps** | A |
 
-## 6 · P5 Telegram command centre — S1/S2 done, S3–S8 remain (docs/15)
+## 6 · P5 Telegram command centre — COMPLETE (S1–S8 shipped 17–18 Oct; docs/15 has the per-step history)
 
 | Step | Task | Lane |
 |---|---|---|
