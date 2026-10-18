@@ -110,6 +110,9 @@ class SettingsPage extends Component
             'waba_id' => (string) ($integrations->whatsapp_waba_id ?? ''),
             'phone_number_id' => (string) ($integrations->whatsapp_phone_number_id ?? ''),
             'api_version' => (string) ($integrations->whatsapp_api_version ?: 'v23.0'),
+            'text_cost' => (string) ($integrations->whatsapp_text_cost ?: 0),
+            'template_cost' => (string) ($integrations->whatsapp_template_cost ?: 0),
+            'monthly_budget' => (string) ($integrations->whatsapp_monthly_budget ?: 0),
             'token' => '',
             'app_secret' => '',
             'verify_token' => '',
@@ -314,6 +317,9 @@ class SettingsPage extends Component
             'whatsapp.token' => ['nullable', 'string', 'max:512'],
             'whatsapp.app_secret' => ['nullable', 'string', 'max:256'],
             'whatsapp.verify_token' => ['nullable', 'string', 'max:128'],
+            'whatsapp.text_cost' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'whatsapp.template_cost' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'whatsapp.monthly_budget' => ['nullable', 'integer', 'min:0', 'max:10000000'],
         ], [
             'whatsapp.waba_id.regex' => 'The business account id is a number, taken from Meta → WhatsApp → API Setup.',
             'whatsapp.phone_number_id.regex' => 'The phone number id is a number, taken from Meta → WhatsApp → API Setup.',
@@ -323,6 +329,11 @@ class SettingsPage extends Component
         $settings->whatsapp_waba_id = blank($data['whatsapp']['waba_id'] ?? null) ? null : trim((string) $data['whatsapp']['waba_id']);
         $settings->whatsapp_phone_number_id = blank($data['whatsapp']['phone_number_id'] ?? null) ? null : trim((string) $data['whatsapp']['phone_number_id']);
         $settings->whatsapp_api_version = trim((string) $data['whatsapp']['api_version']);
+
+        // WAP-008: the cost meter's rate table and budget. Zero means "count only, no rupees".
+        $settings->whatsapp_text_cost = (int) ($data['whatsapp']['text_cost'] ?? 0);
+        $settings->whatsapp_template_cost = (int) ($data['whatsapp']['template_cost'] ?? 0);
+        $settings->whatsapp_monthly_budget = (int) ($data['whatsapp']['monthly_budget'] ?? 0);
 
         // Only a value that was typed replaces what is saved; an empty box means "keep it".
         foreach (['token' => 'whatsapp_token', 'app_secret' => 'whatsapp_app_secret', 'verify_token' => 'whatsapp_verify_token'] as $field => $property) {

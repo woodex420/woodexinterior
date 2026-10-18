@@ -40,6 +40,18 @@ class IntegrationSettings extends Settings
     /** Filled by the last successful test connection, so the card can name the number it is using. */
     public ?string $whatsapp_verified_name = null;
 
+    /** WAP-008: rupees Meta charges per successfully sent free-form message. 0 = not tracked. */
+    public int $whatsapp_text_cost = 0;
+
+    /** WAP-008: rupees Meta charges per sent template message. 0 = not tracked. */
+    public int $whatsapp_template_cost = 0;
+
+    /** WAP-008: monthly WhatsApp spend the studio does not want to cross. 0 = no alert. */
+    public int $whatsapp_monthly_budget = 0;
+
+    /** WAP-008: the month whose budget alert already went out ('2026-10'), so it fires once a month at most. */
+    public ?string $whatsapp_budget_alerted_month = null;
+
     public ?string $whatsapp_display_phone = null;
 
     public ?string $whatsapp_quality_rating = null;

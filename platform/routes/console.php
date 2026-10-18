@@ -45,6 +45,10 @@ Schedule::command('woodex:digest --period=weekly')->weeklyOn(1, '09:00')
 Schedule::command('woodex:telegram-flush')->everyMinute()->withoutOverlapping(5)
     ->when(fn (): bool => Automation::enabled('woodex:telegram-flush'));
 
+// WAP-008/WAP-010: daily WhatsApp health — quality rating + monthly cost against budget.
+Schedule::command('woodex:whatsapp-health')->dailyAt('09:10')
+    ->when(fn (): bool => Automation::enabled('woodex:whatsapp-health'));
+
 // Monthly CRM report to the owner: the month that just ended, in one message (P8.5).
 Schedule::command('woodex:monthly-report')->monthlyOn(1, '09:00')
     ->when(fn (): bool => Automation::enabled('woodex:monthly-report'));

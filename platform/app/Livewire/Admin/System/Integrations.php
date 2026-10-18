@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\System;
 
+use App\Domain\Conversations\Enums\MessageDirection;
+use App\Domain\Conversations\Enums\MessageStatus;
+use App\Domain\Conversations\Models\Message;
 use App\Domain\Crm\Enums\LeadSource;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\System\Models\IntegrationLog;
@@ -319,7 +322,54 @@ class Integrations extends Component
             WhatsAppTemplate::query()->usable()->count(),
         );
 
+        try {
+            $rating = app(IntegrationSettings::class)->whatsapp_quality_rating;
+        } catch (Throwable) {
+            $rating = null;
+        }
+
+        if (is_string($rating) && $rating !== '') {
+            $parts[] = 'quality '.strtolower($rating);
+        }
+
+        $month = $this->monthUsage();
+
+        if ($month['messages'] > 0) {
+            $parts[] = sprintf(
+                'this month: %d sent%s',
+                $month['messages'],
+                $month['cost'] > 0 ? ' · est. Rs '.number_format($month['cost']) : '',
+            );
+        }
+
         return implode(' · ', $parts);
+    }
+
+    /**
+     * This month's successfully sent WhatsApp messages and their estimated cost (WAP-008).
+     * The daily woodex:whatsapp-health command uses the same numbers for the budget alert.
+     *
+     * @return array{messages: int, cost: int}
+     */
+    private function monthUsage(): array
+    {
+        $counts = Message::query()
+            ->join('conversations', 'conversations.id', '=', 'messages.conversation_id')
+            ->where('conversations.channel', 'whatsapp')
+            ->where('messages.direction', MessageDirection::Out->value)
+            ->where('messages.type', '!=', 'note')
+            ->where('messages.status', '!=', MessageStatus::Failed->value)
+            ->whereBetween('messages.created_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->groupBy('messages.type')
+            ->selectRaw('messages.type, count(*) as c')
+            ->pluck('c', 'messages.type');
+
+        $settings = app(IntegrationSettings::class);
+
+        $cost = ((int) ($counts['text'] ?? 0)) * $settings->whatsapp_text_cost
+            + ((int) ($counts['template'] ?? 0)) * $settings->whatsapp_template_cost;
+
+        return ['messages' => (int) $counts->sum(), 'cost' => $cost];
     }
 
     public function render(): View

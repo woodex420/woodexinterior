@@ -16,6 +16,9 @@ final class FakeWhatsAppGateway implements WhatsAppGateway
     /** @var list<array{to: string, body: ?string, template: ?string, language: string, components: list<array<string, mixed>>}> */
     public array $sent = [];
 
+    /** What Meta would say the number's quality is (WAP-010 tests). */
+    public string $qualityRating = 'GREEN';
+
     /** @var list<array<string, mixed>> */
     public array $submitted = [];
 
@@ -85,7 +88,7 @@ final class FakeWhatsAppGateway implements WhatsAppGateway
             'ok' => true,
             'display_phone_number' => '+92 300 1234567',
             'verified_name' => 'Woodex Interior',
-            'quality_rating' => 'GREEN',
+            'quality_rating' => $this->qualityRating,
             'error' => null,
         ];
     }

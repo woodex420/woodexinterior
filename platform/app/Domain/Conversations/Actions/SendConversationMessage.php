@@ -12,12 +12,15 @@ use App\Domain\Conversations\Exceptions\ConsentRequired;
 use App\Domain\Conversations\Exceptions\OutsideWindow;
 use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Models\Message;
+use App\Domain\Conversations\Notifications\ConversationMentionedNotification;
+use App\Domain\Crm\Actions\NotifyMentions;
 use App\Domain\Crm\Models\Contact;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 
 /**
  * A reply from the team (WAP-004).
@@ -72,6 +75,7 @@ final class SendConversationMessage
 
             if ($result->ok) {
                 $conversation->touchLastMessage(MessageDirection::Out, $body);
+                $this->clearReplyClock($conversation);
             }
 
             return $message;
@@ -131,13 +135,14 @@ final class SendConversationMessage
 
             if ($result->ok) {
                 $conversation->touchLastMessage(MessageDirection::Out, 'Template: '.$name);
+                $this->clearReplyClock($conversation);
             }
 
             return $message;
         });
     }
 
-    /** An internal note: written for the team, never sent (CNV-003). */
+    /** An internal note: written for the team, never sent (CNV-003). @mentions notify the teammate (CNV-003b). */
     public function note(Conversation $conversation, string $body, User $user): Message
     {
         $conversation = $this->authorizedConversation($conversation, $user);
@@ -151,7 +156,48 @@ final class SendConversationMessage
             'sent_at' => now(),
         ]);
 
+        $this->notifyMentions($message, $user);
+
         return $message;
+    }
+
+    /**
+     * "@Sara", "@Sara Khan" or "@sara.khan" in a note: the same matcher the CRM notes use
+     * (App\Domain\Crm\Actions\NotifyMentions), applied to the inbox. The author is never notified.
+     */
+    private function notifyMentions(Message $message, User $author): void
+    {
+        $body = (string) $message->body;
+
+        if (! str_contains($body, '@')) {
+            return;
+        }
+
+        $mentioned = User::query()
+            ->with('telegramLink')
+            ->where('is_active', true)
+            ->get()
+            ->filter(fn (User $user): bool => $user->id !== $author->id && NotifyMentions::mentions($body, $user))
+            ->values();
+
+        if ($mentioned->isEmpty()) {
+            return;
+        }
+
+        $message->forceFill(['meta' => array_merge($message->meta ?? [], ['mentions' => $mentioned->modelKeys()])])->save();
+        Notification::send($mentioned, new ConversationMentionedNotification($message, $author));
+    }
+
+    /**
+     * CNV-007: a staff reply stops the reply clock; the next inbound message arms a fresh one.
+     */
+    private function clearReplyClock(Conversation $conversation): void
+    {
+        $conversation->forceFill([
+            'reply_due_at' => null,
+            'reply_sla_breached_at' => null,
+            'reply_sla_escalated_at' => null,
+        ])->save();
     }
 
     private function authorizedConversation(Conversation $conversation, ?User $user): Conversation

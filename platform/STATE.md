@@ -1566,3 +1566,41 @@ migration created `telegram_pending_messages` while the model derived
 different-looking states; (3) `withoutOverlapping` on the flush is unnecessary (minute cadence,
 fast command) but harmless; (4) Eloquent timestamps: a table without created_at/updated_at
 needs `$timestamps = false` or the insert fails on sqlite.
+
+## 50. P4 inbox quick wins — mentions, conversation SLA, WhatsApp health (18 Oct 2026)
+
+The owner picked the batch from the pending list. Four of the five shipped; media sending
+(CNV-008) is the one left, by design — it is a gateway-upload + composer piece of its own.
+
+- **@mentions in internal notes (CNV-003b)**: `SendConversationMessage::note()` now runs the
+  CRM's mention matcher (`NotifyMentions::mentions`) over the note body, stashes the mentioned
+  ids in message meta and notifies each teammate (in-app + Telegram, `ConversationMentionedNotification`,
+  link straight to the inbox). The author is never notified; a plain note stays plain.
+- **Conversation reply SLA (CNV-007)**: new columns `reply_due_at` / `reply_sla_breached_at` /
+  `reply_sla_escalated_at` on conversations. Every inbound WhatsApp message arms the clock —
+  the first reply gets `conversation_first_reply_minutes` (default 30), later ones
+  `conversation_next_reply_minutes` (default 15) — and any staff reply (text/template) clears
+  it. `woodex:sla-check` now also runs `CheckConversationSla`: breach → assignee +
+  unassigned-lead roles; still unanswered after `sla_escalation_minutes` → the final roles,
+  once, with atomic claims. Website chats are deliberately not armed — the lead SLA and the
+  live-chat bell already cover them; double alerts train people to ignore alerts.
+- **WhatsApp quality watch (WAP-010)**: `CheckWhatsAppQuality` runs in the new daily
+  `woodex:whatsapp-health` (09:10, Automation catalog): stores Meta's rating, alerts
+  integrations managers the day it drops (GREEN→YELLOW→RED). Honest gap kept in the code
+  comment: Meta does not expose the messaging-limit tier on the phone-number node, so that
+  half waits for a real API surface. The Integrations card now shows "quality green".
+- **Cost meter (WAP-008)**: Settings → WhatsApp gained Cost per message / per template /
+  Monthly budget (rupees, 0 = count only). `CheckWhatsAppUsage` (same daily command) counts
+  this month's successfully sent messages — failed sends, notes and website chats excluded —
+  prices them, and alerts integrations managers once per month when the estimate crosses the
+  budget. The messages table is the truth; no rollup table to keep in step. The Integrations
+  card shows "this month: N sent · est. Rs X".
+- Tests: `InboxQuickWinsTest` — 6 green. Gate: **88 files / 1046 passed / 0 failed**
+  (947 Feature + 99 Unit) · Pint clean · Larastan 0.
+
+Gotchas: (1) new datetime columns must be added to the model's casts — a raw string
+`reply_due_at` breaks `diffInMinutes` the moment a test touches it; (2) Conversation has no
+`open()` scope (unlike Lead) — filter by the status column; (3) Carbon 3's diffInMinutes is
+signed — `now()->diffInMinutes($future)` is positive, the other way round is negative;
+(4) `App\Models\User`, never `App\Domain\System\Models\User` — the wrong import only
+explodes at runtime, Larastan passes it silently.

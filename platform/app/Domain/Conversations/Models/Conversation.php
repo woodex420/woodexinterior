@@ -70,6 +70,9 @@ class Conversation extends Model
             'last_message_at' => 'immutable_datetime',
             'snoozed_until' => 'immutable_datetime',
             'closed_at' => 'immutable_datetime',
+            'reply_due_at' => 'immutable_datetime',
+            'reply_sla_breached_at' => 'immutable_datetime',
+            'reply_sla_escalated_at' => 'immutable_datetime',
         ];
     }
 

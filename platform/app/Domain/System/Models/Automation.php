@@ -81,6 +81,14 @@ class Automation extends Model
                 'toggleable' => false,
             ],
             [
+                'key' => 'woodex:whatsapp-health',
+                'scheduled' => true,
+                'name' => 'WhatsApp health check',
+                'description' => 'A daily read-only look at the studio\'s WhatsApp number: Meta\'s quality rating (alert the same day it drops) and this month\'s message count and cost against the budget you set in Settings → WhatsApp. Nothing is sent to clients.',
+                'cadence' => 'Daily 09:10',
+                'toggleable' => true,
+            ],
+            [
                 'key' => 'woodex:monthly-report',
                 'scheduled' => true,
                 'name' => 'Monthly CRM report',

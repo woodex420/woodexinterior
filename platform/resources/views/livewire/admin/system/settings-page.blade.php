@@ -97,6 +97,15 @@
                     <x-admin.field label="Graph API version" for="whatsapp.api_version" hint="Meta retires old versions; keep it current.">
                         <input id="whatsapp.api_version" type="text" wire:model="whatsapp.api_version" class="wx-input" placeholder="v23.0">
                     </x-admin.field>
+                    <x-admin.field label="Cost per message (Rs)" for="whatsapp.text_cost" hint="What Meta charges for one free-form message. 0 = count only, no rupee estimate.">
+                        <input id="whatsapp.text_cost" type="number" min="0" max="100000" wire:model="whatsapp.text_cost" class="wx-input" inputmode="numeric">
+                    </x-admin.field>
+                    <x-admin.field label="Cost per template (Rs)" for="whatsapp.template_cost" hint="What Meta charges for one template message. Templates are priced separately.">
+                        <input id="whatsapp.template_cost" type="number" min="0" max="100000" wire:model="whatsapp.template_cost" class="wx-input" inputmode="numeric">
+                    </x-admin.field>
+                    <x-admin.field label="Monthly budget (Rs)" for="whatsapp.monthly_budget" hint="You get one alert the month the estimate crosses this. 0 = no alert.">
+                        <input id="whatsapp.monthly_budget" type="number" min="0" max="10000000" wire:model="whatsapp.monthly_budget" class="wx-input" inputmode="numeric">
+                    </x-admin.field>
                 </div>
 
                 <div class="mt-5 flex flex-wrap items-center gap-2">

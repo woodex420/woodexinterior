@@ -50,6 +50,12 @@ class SalesSettings extends Settings
     /** Minutes after a breach before the second escalation (owner) */
     public int $sla_escalation_minutes;
 
+    /** CNV-007: WhatsApp conversations — target for the first reply after an inbound message. */
+    public int $conversation_first_reply_minutes = 30;
+
+    /** CNV-007: WhatsApp conversations — target for every later reply. */
+    public int $conversation_next_reply_minutes = 15;
+
     /**
      * Lead scoring rules (CRM-011), see App\Domain\Crm\Actions\ScoreLead.
      *

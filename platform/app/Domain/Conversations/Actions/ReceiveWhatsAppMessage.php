@@ -33,7 +33,10 @@ final class ReceiveWhatsAppMessage
     /** Words that mean "stop messaging me" (WAP-006). Matched on the trimmed, uppercased body. */
     private const array OPT_OUT = ['STOP', 'STOPALL', 'UNSUBSCRIBE', 'CANCEL', 'بند کریں'];
 
-    public function __construct(private readonly WhatsAppGateway $whatsapp) {}
+    public function __construct(
+        private readonly WhatsAppGateway $whatsapp,
+        private readonly SetConversationReplyDue $armReplyClock,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $value  The `entry[0].changes[0].value` part of Meta's webhook payload
@@ -94,6 +97,9 @@ final class ReceiveWhatsAppMessage
             }
 
             $this->optOut($contact, $body);
+
+            // CNV-007: the reply clock starts (or re-arms) with every inbound message.
+            $this->armReplyClock->handle($conversation);
 
             return $message;
         });
