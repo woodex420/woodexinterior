@@ -1882,3 +1882,33 @@ page opens with and in what order — never the text.** Three flows:
 
 Next in the confirmed order: **F6 central FAQ/testimonial/logo libraries** → F8 SEO agent
 (+F10 health) → F7 team → F9 speed → F11 theme presets.
+
+## 58. V2-3 F6 — the shared content library (18 Oct 2026)
+
+FAQs, testimonials and client logos are studio assets, not page furniture — one answer edited once
+should stand corrected on every page that quotes it (docs/14 §5a, owner's call: central libraries).
+The library lives under **Website → Content** with three tabs (FAQs / Testimonials / Client logos);
+entries are added, removed and reordered there. The library's order is the order everywhere — a
+page picks **members**, never sequence.
+
+- `content_entries` (`kind` faq|testimonial|logo, `data` json in the exact row shape its section
+  renders, `position`). `ContentLibrary` service caches id-lists per kind for a day (menus
+  pattern) and is flushed by the dashboard screen on every change. `pick()` returns entries in
+  library order regardless of the order they were picked in.
+- The FAQ, Reviews and Clients sections grew a `library` field (`library_ids`) — a multi-select of
+  the kind's entries, next to the section's own rows. Rendering merges **library rows first, then
+  the section's own rows**; empty library pick = manual only. Per-page manual rows stay possible.
+- The kind decides, not the id: a Reviews section handed a FAQ id simply shows nothing for it.
+- `PageRenderer`: FAQPage rich results include library FAQs; the media map resolves library logo
+  photos (`mediaFor` follows Clients `library_ids` → entries → `media_id`).
+- Tests `ContentLibraryTest` — 4 green (dashboard add/move/validation; FAQ+testimonial merge with
+  ordering; logos with photo resolution; editor offers the pick-list). Gate: **108 files / 1100
+  passed / 0 failed**. P10SidebarHubsTest sidebar count 37 → 38 (new Content item).
+
+Gotchas recorded: blade component attributes must never carry PHP strings containing quotes —
+`:hint="'…it\'s…'"` compiles to broken PHP; build the string in `@php` and pass a plain variable.
+Scope docblocks need the concrete class (`Builder<ContentEntry>`), not `<self>`. Livewire
+`validate()` throws, so a "return null when not ready" branch is dead code to phpstan.
+
+Next in the confirmed order: **F8 SEO agent keyless-first (+F10 health folded in)** → F7 team →
+F9 speed → F11 theme presets.

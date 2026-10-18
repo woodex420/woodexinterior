@@ -1,5 +1,8 @@
 {{-- Questions and answers: native <details>, open without JavaScript, mirrored in the FAQPage schema. --}}
-@php $items = array_values(array_filter((array) $block->field('items', []))); @endphp
+@php
+    $libraryRows = \App\Domain\Website\Services\ContentLibrary::rows((array) $block->field('library_ids', []), 'faq');
+    $items = [...$libraryRows, ...array_values(array_filter((array) $block->field('items', [])))];
+@endphp
 <section class="border-y border-line bg-soft">
     <div class="mx-auto max-w-3xl px-5 py-16 md:px-8 md:py-24">
         <h2 class="text-[clamp(28px,3.6vw,44px)]">{{ $block->field('heading', 'Common questions') }}</h2>

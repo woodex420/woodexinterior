@@ -1,5 +1,8 @@
 {{-- Client logos, from the media library. --}}
-@php $logos = array_values(array_filter((array) $block->field('logos', []))); @endphp
+@php
+    $libraryRows = \App\Domain\Website\Services\ContentLibrary::rows((array) $block->field('library_ids', []), 'logo');
+    $logos = [...$libraryRows, ...array_values(array_filter((array) $block->field('logos', [])))];
+@endphp
 <section class="mx-auto max-w-6xl px-5 py-14 md:px-8">
     <h2 class="text-center text-xs tracking-[0.16em] text-muted uppercase">{{ $block->field('heading', 'Trusted by') }}</h2>
     <ul class="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-6">

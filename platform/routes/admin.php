@@ -47,6 +47,7 @@ use App\Livewire\Admin\System\SettingsPage;
 use App\Livewire\Admin\System\UsersIndex;
 use App\Livewire\Admin\System\WhatsAppTemplates;
 use App\Livewire\Admin\Website\MediaLibrary;
+use App\Livewire\Admin\Website\ContentLibraryIndex;
 use App\Livewire\Admin\Website\MenusIndex;
 use App\Livewire\Admin\Website\PageEditor;
 use App\Livewire\Admin\Website\PagesIndex;
@@ -120,6 +121,7 @@ Route::livewire('/website/pages/new', PageEditor::class)->name('website.pages.cr
 Route::livewire('/website/pages/{page}', PageEditor::class)->name('website.pages.edit')->middleware('can:website.edit');
 Route::livewire('/website/media', MediaLibrary::class)->name('website.media')->middleware('can:website.edit');
 Route::livewire('/website/menus', MenusIndex::class)->name('website.menus')->middleware('can:website.edit');
+Route::livewire('/website/content', ContentLibraryIndex::class)->name('website.content')->middleware('can:website.edit');
 Route::livewire('/website/redirects', RedirectsIndex::class)->name('website.redirects')->middleware('can:website.edit');
 Route::livewire('/website/settings', WebsiteSettings::class)->name('website.settings')->middleware('can:settings.manage');
 Route::livewire('/website/theme', ThemeBuilder::class)->name('website.theme')->middleware('can:theme.manage');

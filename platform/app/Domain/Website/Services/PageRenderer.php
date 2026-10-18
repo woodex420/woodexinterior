@@ -8,6 +8,7 @@ use App\Domain\Website\Enums\BlockType;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\PageBlock;
+use App\Domain\Website\Services\ContentLibrary;
 use App\Settings\BusinessSettings;
 use App\Support\Phone;
 use Illuminate\Support\Collection;
@@ -28,7 +29,12 @@ final class PageRenderer
         $blocks = $page->blocks->where('visible', true)->values();
         $media = $this->mediaFor($blocks, $page->featured_image_id);
 
-        $faqs = $blocks->where('type', BlockType::Faq)->flatMap(fn (PageBlock $block): array => $block->data['items'] ?? [])->values()->all();
+        $faqs = $blocks->where('type', BlockType::Faq)->flatMap(function (PageBlock $block): array {
+            // The shared library's answers feed the rich results exactly like the page's own (V2-3 F6).
+            $libraryRows = ContentLibrary::rows((array) ($block->data['library_ids'] ?? []), 'faq');
+
+            return [...$libraryRows, ...(array) ($block->data['items'] ?? [])];
+        })->values()->all();
         $services = $blocks->where('type', BlockType::Services)->flatMap(fn (PageBlock $block): array => $block->data['items'] ?? [])->values()->all();
 
         $seo = $page->seo ?? [];
@@ -70,6 +76,13 @@ final class PageRenderer
         $ids = [];
 
         foreach ($blocks as $block) {
+            // Logos picked from the shared library: their photos must load on the page too (V2-3 F6).
+            if ($block->type === BlockType::Clients && isset($block->data['library_ids']) && is_array($block->data['library_ids'])) {
+                foreach (ContentLibrary::rows($block->data['library_ids'], 'logo') as $logo) {
+                    $ids[] = (int) ($logo['id'] ?? 0);
+                }
+            }
+
             foreach ((array) ($block->data ?? []) as $key => $value) {
                 if (str_ends_with((string) $key, '_id') && is_numeric($value)) {
                     $ids[] = (int) $value;

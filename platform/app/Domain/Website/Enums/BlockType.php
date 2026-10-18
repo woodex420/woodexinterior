@@ -106,22 +106,22 @@ enum BlockType: string
             self::Services => ['heading' => '', 'items' => []],
             self::Process => ['heading' => '', 'stages' => []],
             self::Gallery => ['heading' => '', 'images' => []],
-            self::Faq => ['heading' => 'Common questions', 'items' => []],
+            self::Faq => ['heading' => 'Common questions', 'items' => [], 'library_ids' => []],
             self::Related => ['heading' => 'Related', 'page_ids' => []],
             self::Form => ['heading' => 'Start your project', 'text' => '', 'show_contact' => true],
-            self::Reviews => ['heading' => 'What our clients say', 'items' => []],
+            self::Reviews => ['heading' => 'What our clients say', 'items' => [], 'library_ids' => []],
             self::Specs => ['heading' => 'Materials & finishes', 'rows' => []],
             self::PriceTable => ['heading' => 'Indicative investment', 'rows' => [], 'note' => ''],
             self::Author => ['name' => '', 'role' => '', 'bio' => '', 'image_id' => null],
             self::Map => ['heading' => 'Studio', 'embed_url' => ''],
-            self::Clients => ['heading' => 'Trusted by', 'logos' => []],
+            self::Clients => ['heading' => 'Trusted by', 'logos' => [], 'library_ids' => []],
         };
     }
 
     /**
      * The fields the page editor shows for this section (docs/09 §4).
      *
-     * @return list<array{key: string, label: string, type: string, rows?: int, fields?: list<array{key: string, label: string, type: string, rows?: int}>}>
+     * @return list<array{key: string, label: string, type: string, rows?: int, kind?: string, fields?: list<array{key: string, label: string, type: string, rows?: int}>}>
      */
     public function schema(): array
     {
@@ -193,6 +193,7 @@ enum BlockType: string
             ],
             self::Faq => [
                 ['key' => 'heading', 'label' => 'Heading', 'type' => 'text'],
+                ['key' => 'library_ids', 'label' => 'From the shared FAQ library', 'type' => 'library', 'kind' => 'faq'],
                 ['key' => 'items', 'label' => 'Questions', 'type' => 'repeater', 'fields' => [
                     ['key' => 'question', 'label' => 'Question', 'type' => 'text'],
                     ['key' => 'answer', 'label' => 'Answer', 'type' => 'textarea', 'rows' => 3],
@@ -209,6 +210,7 @@ enum BlockType: string
             ],
             self::Reviews => [
                 ['key' => 'heading', 'label' => 'Heading', 'type' => 'text'],
+                ['key' => 'library_ids', 'label' => 'From the shared testimonials library', 'type' => 'library', 'kind' => 'testimonial'],
                 ['key' => 'items', 'label' => 'Reviews', 'type' => 'repeater', 'fields' => [
                     ['key' => 'text', 'label' => 'Review', 'type' => 'textarea', 'rows' => 3],
                     ['key' => 'name', 'label' => 'Client name', 'type' => 'text'],
@@ -237,6 +239,7 @@ enum BlockType: string
             ],
             self::Clients => [
                 ['key' => 'heading', 'label' => 'Heading', 'type' => 'text'],
+                ['key' => 'library_ids', 'label' => 'From the shared logos library', 'type' => 'library', 'kind' => 'logo'],
                 ['key' => 'logos', 'label' => 'Logos', 'type' => 'repeater', 'fields' => [
                     ['key' => 'id', 'label' => 'Logo', 'type' => 'image'],
                     ['key' => 'alt', 'label' => 'Alt text', 'type' => 'text'],

@@ -170,6 +170,23 @@
                                                 </select>
                                             </x-admin.field>
                                             @break
+                                        @case('library')
+                                            @php
+                                                $libraryEntries = \App\Domain\Website\Services\ContentLibrary::entries($field['kind'] ?? 'faq');
+                                                $libLabel = $field['label'];
+                                                $libHint = 'Hold Ctrl (Cmd on Mac) to pick more than one. Managed in Website → Content — the page shows them in the library order.';
+                                            @endphp
+                                            <x-admin.field :label="$libLabel" :hint="$libHint">
+                                                <select multiple size="4" wire:model.blur="{{ $path }}" class="wx-input" @if ($libraryEntries === []) disabled @endif>
+                                                    @foreach ($libraryEntries as $libraryEntry)
+                                                        <option value="{{ $libraryEntry->id }}">{{ $libraryEntry->label() }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @if ($libraryEntries === [])
+                                                    <p class="mt-1 text-theme-xs text-gray-400">The library is empty — add entries under Website → Content first.</p>
+                                                @endif
+                                            </x-admin.field>
+                                            @break
                                         @case('pages')
                                             <x-admin.field :label="$field['label']" hint="Hold Ctrl (Cmd on Mac) to pick more than one.">
                                                 <select multiple size="4" wire:model.blur="{{ $path }}" class="wx-input">

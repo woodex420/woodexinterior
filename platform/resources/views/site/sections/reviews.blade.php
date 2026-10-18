@@ -1,5 +1,8 @@
 {{-- Reviews are quoted verbatim: never rewritten, never invented (docs/09 §9). --}}
-@php $items = array_values(array_filter((array) $block->field('items', []))); @endphp
+@php
+    $libraryRows = \App\Domain\Website\Services\ContentLibrary::rows((array) $block->field('library_ids', []), 'testimonial');
+    $items = [...$libraryRows, ...array_values(array_filter((array) $block->field('items', [])))];
+@endphp
 <section class="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-24">
     <h2 class="text-[clamp(28px,3.6vw,44px)]">{{ $block->field('heading', 'What our clients say') }}</h2>
     <div class="mt-10 grid gap-6 md:grid-cols-3">
