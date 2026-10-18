@@ -24,6 +24,7 @@ class ProductionSeeder extends Seeder
             CannedRepliesSeeder::class,
             AutomationSequenceSeeder::class,
             ThemeTokensSeeder::class,
+            PageTemplatesSeeder::class,
         ]);
     }
 }

@@ -223,6 +223,27 @@
         </div>
 
         <div class="space-y-6">
+            <x-admin.card title="Templates" description="A layout for this kind of page: which sections, in what order. Applying replaces the sections below — nothing is saved until you press Save draft.">
+                <div class="space-y-2">
+                    @foreach ($templates as $template)
+                        <div class="flex items-start justify-between gap-3 rounded-xl border border-gray-200 px-3 py-2 dark:border-gray-800">
+                            <div class="min-w-0">
+                                <p class="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">
+                                    {{ $template->name }}
+                                    @if ($template->is_default)<span class="ml-1 rounded-full bg-brand-50 px-1.5 py-0.5 text-[10px] text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">Default</span>@endif
+                                </p>
+                                <p class="text-theme-xs text-gray-500">{{ $template->page_type->label() }} · {{ count($template->sections) }} sections</p>
+                            </div>
+                            <button type="button" wire:click="applyTemplate({{ $template->id }})"
+                                    wire:confirm="Replace this page's sections with “{{ $template->name }}”? Your current sections are not saved anywhere until Save draft."
+                                    class="wx-mini-btn shrink-0">Apply</button>
+                        </div>
+                    @endforeach
+                    <button type="button" wire:click="$set('showTemplateModal', true)"
+                            class="mt-1 text-theme-sm text-brand-600 hover:underline">Save this page's layout as a template…</button>
+                </div>
+            </x-admin.card>
+
             @if ($saved)
                 <x-admin.card title="Preview" description="How the page looks — saved changes only; press Save draft first. Click any section in the preview to jump to its form.">
                     <div class="flex flex-wrap items-center gap-2">
@@ -354,6 +375,17 @@
             <x-admin.field label="Name" for="sectionName">
                 <input id="sectionName" type="text" wire:model="sectionName" class="wx-input" placeholder="Signature hero">
             </x-admin.field>
+        </x-admin.modal>
+    @endif
+    {{-- V2-3 F5: save this page's layout as a template. --}}
+    @if ($showTemplateModal)
+        <x-admin.modal name="showTemplateModal" title="Save as a page template" description="The sections below, in their order, become the starting layout for future pages — the photos are not copied." submit="saveAsTemplate">
+            <x-admin.field label="Template name" for="templateName">
+                <input id="templateName" type="text" wire:model="templateName" class="wx-input" placeholder="Service page — our layout" required>
+            </x-admin.field>
+            <x-slot:footer>
+                <x-admin.button type="submit" icon="save">Save template</x-admin.button>
+            </x-slot:footer>
         </x-admin.modal>
     @endif
 </div>

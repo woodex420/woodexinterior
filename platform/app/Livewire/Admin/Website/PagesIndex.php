@@ -7,11 +7,13 @@ namespace App\Livewire\Admin\Website;
 use App\Domain\Website\Enums\PageStatus;
 use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\Page;
+use App\Domain\Website\Models\PageTemplate;
 use App\Domain\Website\Services\Menus;
 use App\Domain\Website\Services\PageCache;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -47,6 +49,41 @@ class PagesIndex extends Component
         PageCache::invalidate($page);
         Menus::flush();
         $this->toast('“'.$page->title.'” is no longer public.');
+    }
+
+    /**
+     * Start a page from a template (V2-3 F5): the layout's sections land on a fresh draft, ready
+     * to fill in. Nothing is public until it is edited and published like any other page.
+     */
+    public function createFromTemplate(int $templateId): void
+    {
+        $template = PageTemplate::query()->findOrFail($templateId);
+
+        $base = Str::slug($template->name);
+        $slug = '/'.$base.'/';
+
+        for ($i = 2; Page::query()->where('slug', $slug)->exists(); $i++) {
+            $slug = '/'.$base.'-'.$i.'/';
+        }
+
+        $page = Page::query()->create([
+            'type' => $template->page_type,
+            'slug' => $slug,
+            'title' => $template->name,
+            'status' => PageStatus::Draft,
+        ]);
+
+        foreach ($template->toBlocks() as $position => $block) {
+            $page->blocks()->create([
+                'type' => $block['type'],
+                'block_key' => $block['key'],
+                'data' => $block['data'],
+                'visible' => true,
+                'position' => $position,
+            ]);
+        }
+
+        $this->redirectRoute('admin.website.pages.edit', $page, navigate: true);
     }
 
     public function duplicate(int $pageId): void
@@ -107,6 +144,7 @@ class PagesIndex extends Component
         ];
 
         return view('livewire.admin.website.pages-index', [
+            'templates' => PageTemplate::query()->orderBy('page_type')->orderByDesc('is_default')->orderBy('name')->get(),
             'pages' => $pages,
             'counts' => $counts,
             'types' => collect(PageType::cases())->mapWithKeys(fn (PageType $type): array => [$type->value => $type->label()])->all(),

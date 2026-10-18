@@ -9,6 +9,38 @@
         </x-slot:actions>
     </x-admin.page-header>
 
+    {{-- V2-3 F5: start a page from a template — the layout's sections land on a fresh draft. --}}
+    <div x-data="{ open: false }" class="mb-4">
+        <button type="button" @click="open = !open" :aria-expanded="open.toString()"
+                class="wx-mini-btn text-theme-sm" aria-controls="template-picker">
+            {{ count($templates) }} page templates — start from one ▾
+        </button>
+
+        <div id="template-picker" x-cloak x-show="open" @click.outside="open = false"
+             class="mt-2 grid grid-cols-1 gap-3 rounded-2xl border border-gray-200 bg-white p-4 md:grid-cols-2 xl:grid-cols-3 dark:border-gray-800 dark:bg-gray-900">
+            @foreach ($templates as $template)
+                <div class="rounded-xl border border-gray-200 p-3 dark:border-gray-800">
+                    <div class="flex items-start justify-between gap-2">
+                        <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $template->name }}</p>
+                        @if ($template->is_default)
+                            <span class="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-medium text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">Default</span>
+                        @endif
+                    </div>
+                    <p class="mt-0.5 text-theme-xs text-gray-500">{{ $template->page_type->label() }} · {{ count($template->sections) }} sections</p>
+                    <p class="mt-1.5 text-theme-xs text-gray-500">{{ $template->description }}</p>
+                    <p class="mt-2 text-[11px] leading-relaxed text-gray-400">
+                        @foreach (array_slice($template->sections, 0, 6) as $section)
+                            <span class="rounded bg-gray-100 px-1.5 py-0.5 dark:bg-white/5">{{ \App\Domain\Website\Enums\BlockType::from($section['type'])->label() }}</span>
+                        @endforeach
+                        @if (count($template->sections) > 6)<span class="text-gray-400">+{{ count($template->sections) - 6 }}</span>@endif
+                    </p>
+                    <button type="button" wire:click="createFromTemplate({{ $template->id }})"
+                            class="mt-3 text-theme-sm font-medium text-brand-600 hover:underline">Start this page →</button>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
     <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-4">
         <div class="relative md:col-span-2">
             <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-gray-400" />

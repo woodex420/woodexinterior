@@ -11,6 +11,7 @@ use App\Domain\Website\Enums\PageStatus;
 use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
+use App\Domain\Website\Models\PageTemplate;
 use App\Domain\Website\Models\PageVersion;
 use App\Domain\Website\Models\SavedSection;
 use App\Domain\Website\Services\PageCache;
@@ -73,6 +74,11 @@ class PageEditor extends Component
     public int $sectionIndex = 0;
 
     public string $sectionName = '';
+
+    /** V2-3 F5: saving this page's layout as a template, for reuse on future pages. */
+    public bool $showTemplateModal = false;
+
+    public string $templateName = '';
 
     /** '', desktop, tablet or mobile — the width of the inline preview frame. */
     public string $previewDevice = '';
@@ -235,6 +241,51 @@ class PageEditor extends Component
     }
 
     /**
+     * Apply a template to this page (V2-3 F5): the sections are replaced by the template's layout.
+     * Nothing is written to the database until Save draft — a template applied by mistake is one
+     * click away from gone.
+     */
+    public function applyTemplate(int $templateId): void
+    {
+        $template = PageTemplate::query()->findOrFail($templateId);
+
+        $this->blocks = $template->toBlocks();
+        $this->activeBlock = '';
+        $this->toast('“'.$template->name.'” applied — press Save draft to keep it.');
+    }
+
+    /**
+     * Save this page's section layout as a template: which sections, in what order, with their
+     * starter text — so the next page of this kind starts one click from done.
+     */
+    public function saveAsTemplate(): void
+    {
+        $this->validateOnly('templateName', ['templateName' => ['required', 'string', 'max:120']]);
+
+        if ($this->blocks === []) {
+            $this->showTemplateModal = false;
+            $this->toast('Add sections first — a template is a layout, not an empty page.', 'error');
+
+            return;
+        }
+
+        PageTemplate::query()->create([
+            'name' => trim($this->templateName),
+            'page_type' => PageType::from($this->type),
+            'description' => 'Saved from this page by '.$this->user()->name.'.',
+            'sections' => collect($this->blocks)->map(fn (array $block): array => [
+                'type' => (string) $block['type'],
+                'data' => (array) $block['data'],
+            ])->values()->all(),
+            'created_by' => $this->user()->id,
+        ]);
+
+        $this->showTemplateModal = false;
+        $this->templateName = '';
+        $this->toast('Saved as a template — start the next page from it.');
+    }
+
+    /**
      * The inline preview width (docs/12 §5.3): desktop, tablet or mobile.
      */
     public function setPreviewDevice(string $device): void
@@ -360,6 +411,7 @@ class PageEditor extends Component
                 ->map(fn (BlockType $type): array => ['value' => $type->value, 'label' => $type->label(), 'description' => $type->description(), 'category' => $type->category()])
                 ->groupBy('category'),
             'savedSections' => SavedSection::query()->with('creator')->orderBy('name')->get(),
+            'templates' => PageTemplate::query()->orderBy('page_type')->orderByDesc('is_default')->orderBy('name')->get(),
             'pages' => Page::query()->orderBy('title')->get(['id', 'title', 'slug']),
             'media' => Media::query()->orderByDesc('id')->get(['id', 'title', 'alt', 'path']),
         ]);

@@ -1852,3 +1852,33 @@ blade edits that tests assert against. (4) Test page cache: after changing setti
 
 Tests: `SliderSectionTest` 3, `HeaderFooterEditorTest` 5. Regression: Website suite 107 passed.
 Gate: **106 files / 1092 passed / 0 failed** · Pint + Larastan clean.
+
+## 57. V2-3 F5 — page templates (18 Oct 2026)
+
+The old system's page-template contract, kept (docs/14 §5a): **the layout decides which sections a
+page opens with and in what order — never the text.** Three flows:
+
+- **Start from one** — Pages shows "N page templates — start from one" above the table; each card
+  carries the type, the section count, a description and section chips. `createFromTemplate`
+  mints a draft page (unique slug, template name as the title) with the template's sections —
+  each with a `block_key`, so the page is click-to-editable from its first save — and jumps
+  straight into the editor.
+- **Apply to the page being edited** — a Templates card in the page editor lists every template;
+  Apply (behind a wire:confirm) replaces the section list in memory only. Nothing reaches the
+  database until Save draft, so a template applied by mistake is one click from gone.
+- **Save this page's layout as one** — modal in the editor stores the current sections (type +
+  data, keys stripped) as a template for the page's type; an empty page is refused.
+
+- Migration `2026_10_18_154000`: `page_templates` (name, page_type, description, is_default,
+  sections json, created_by). `PageTemplate::toBlocks()` mints editor blocks and cleans section
+  data against `BlockType::fields()` — a template saved before a section gained or lost a field
+  still applies cleanly.
+- `PageTemplatesSeeder` (in ProductionSeeder, idempotent by name): 8 layouts — Service full/short,
+  City, Insight article, Project study, Home — v26, Landing enquiry, About. One default per type.
+  Seeded into the preview DB alongside the migration.
+- Tests `PageTemplatesTest` — 4 green (seeder validity incl. one-default-per-type + data-fits-type;
+  start-from-template with unique slugs; apply replaces in memory without touching the DB;
+  save-as-template round-trip + empty-page refusal). Gate: **107 files / 1096 passed / 0 failed**.
+
+Next in the confirmed order: **F6 central FAQ/testimonial/logo libraries** → F8 SEO agent
+(+F10 health) → F7 team → F9 speed → F11 theme presets.
