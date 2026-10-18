@@ -54,6 +54,7 @@ use App\Livewire\Admin\Website\PagesIndex;
 use App\Livewire\Admin\Website\TeamMembersIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
 use App\Livewire\Admin\Website\SeoAgentIndex;
+use App\Livewire\Admin\Website\SpeedIndex;
 use App\Livewire\Admin\Website\ThemeBuilder;
 use App\Livewire\Admin\Website\WebsiteSettings;
 use Illuminate\Support\Facades\Route;
@@ -127,6 +128,7 @@ Route::livewire('/website/content', ContentLibraryIndex::class)->name('website.c
 Route::livewire('/website/team', TeamMembersIndex::class)->name('website.team')->middleware('can:website.edit');
 Route::livewire('/website/redirects', RedirectsIndex::class)->name('website.redirects')->middleware('can:website.edit');
 Route::livewire('/website/seo', SeoAgentIndex::class)->name('website.seo')->middleware('can:website.edit');
+Route::livewire('/website/speed', SpeedIndex::class)->name('website.speed')->middleware('can:website.edit');
 Route::livewire('/website/settings', WebsiteSettings::class)->name('website.settings')->middleware('can:settings.manage');
 Route::livewire('/website/theme', ThemeBuilder::class)->name('website.theme')->middleware('can:theme.manage');
 

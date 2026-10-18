@@ -1973,3 +1973,34 @@ Gotchas: every exhaustive `match` on BlockType (label/description/category) must
 name is Eloquent's accessor magic for `id` and collides.
 
 Next in the confirmed order: **F9 speed dashboard** → F11 theme presets.
+
+## 61. V2-3 F9 — the speed dashboard (18 Oct 2026)
+
+Website → **Speed** (docs/14 §5a). The owner's binding call, kept: internal checks always run —
+keyless, at home, nothing asked of anyone; Google's PageSpeed API behind the studio's own key.
+
+- **Internal audit** (`InternalSpeedAudit`): every published page — image count, total image weight
+  (file sizes straight from the disk), images over 300 KB flagged heavy, images not in
+  webp/avif/svg flagged old-format, cached HTML KB when the page cache holds it; heaviest page
+  first; site totals + cache on/off chip. Files that are gone weigh nothing (the SEO agent's
+  health sweep reports missing images — not double-counted here).
+- **PageSpeed** (`PageSpeed` service): runs Google's v5 API per page/strategy, extracts score +
+  the worded highlights (paint times, total weight, render-blocking, modern formats, unused JS).
+  90-second timeout; failures toast plainly. **`pagespeed_runs`** keeps every run — the score is a
+  line over time, not one number.
+- **The key** (`SpeedSettings`, encrypted cast, saved on the Speed screen itself): empty → the
+  score buttons stay hidden and nothing leaves the server; saved → awake; removable. Never shown
+  back. Drafts are refused ("Google cannot see drafts").
+- Tests `SpeedDashboardTest` — 4 green (keyless weighing incl. heavy + old-format flags with
+  Storage::fake; key saved encrypted + never echoed + removable; run against the page's canonical
+  URL stored as history with metrics; drafts refused with nothing sent). Gate: **111 files / 1113
+  passed / 0 failed**. Sidebar count 40 → 41 (Speed item, new lucide 'gauge' icon).
+
+Gotchas: spatie settings migrations extend `Spatie\LaravelSettings\Migrations\SettingsMigration`
+(the Migrations namespace matters — and the file must be copied to the runtime's database/settings
+by hand, sync.sh does not). `PageSpeedRun` → default table would be `page_speed_runs`; the
+migration says `pagespeed_runs`, so the model pins `$table`. PageFactory's default state IS a
+draft — no `draft()` helper.
+
+Wave F now stands at F1–F10 (F5 pages, F6 library, F8+F10 SEO/health, F7 team, F9 speed). One left:
+**F11 theme presets**.

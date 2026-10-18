@@ -71,6 +71,7 @@ final class AdminNavigation
                 self::item('Content', 'book', 'admin.website.content', 'website.edit'),
                 self::item('Team', 'users', 'admin.website.team', 'website.edit'),
                 self::item('SEO Agent', 'search', 'admin.website.seo', 'website.edit'),
+                self::item('Speed', 'gauge', 'admin.website.speed', 'website.edit'),
                 self::item('SEO & Redirects', 'globe', 'admin.website.redirects', 'website.edit'),
                 self::item('Website Settings', 'settings', 'admin.website.settings', 'settings.manage'),
                 self::item('Theme Builder', 'palette', 'admin.website.theme', 'theme.manage'),
