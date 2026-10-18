@@ -40,6 +40,7 @@ function sectionSample(BlockType $type, int $imageId, int $pageId): array
         BlockType::Author => ['marker' => 'Imtiaz Ahmad', 'data' => ['name' => 'Imtiaz Ahmad', 'role' => 'Principal', 'bio' => 'Founded Woodex Interior in 2016.', 'image_id' => $imageId]],
         BlockType::Map => ['marker' => 'Studio location', 'data' => ['heading' => 'Studio location', 'embed_url' => 'https://www.openstreetmap.org/export/embed.html']],
         BlockType::Clients => ['marker' => 'Trusted by', 'data' => ['heading' => 'Trusted by', 'logos' => [['id' => $imageId, 'alt' => 'Client logo']]]],
+        BlockType::Team => ['marker' => 'Sana Raza', 'data' => ['heading' => 'The people', 'items' => [['id' => $imageId, 'name' => 'Sana Raza', 'role' => 'Principal', 'bio' => 'Joined in 2018.']]]],
         BlockType::Slider => ['marker' => 'Spaces shaped by purpose', 'data' => ['slides' => [['image_id' => $imageId, 'kicker' => 'Woodex Interior', 'heading' => 'Spaces shaped by purpose', 'text' => 'One accountable team.', 'display' => '', 'primary_label' => 'Start your project', 'primary_url' => '/contact/', 'secondary_label' => '', 'secondary_url' => '']]]],
     };
 }

@@ -4,24 +4,31 @@ declare(strict_types=1);
 
 namespace App\Domain\Website\Services;
 
+use App\Domain\Website\Contracts\LibraryEntry;
 use App\Domain\Website\Models\ContentEntry;
+use App\Domain\Website\Models\TeamMember;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * The shared content library behind the FAQ, Reviews and Clients sections (V2-3 F6, docs/14 §5a).
- * Entries are managed once in Website → Content; a page's section points at the ones it wants and
- * renders them in the library's order. Cached per kind — a day, like the menus — and flushed by the
- * dashboard screen on every change.
+ * The shared library behind the FAQ, Reviews, Clients and Team sections (V2-3 F6/F7, docs/14 §5a).
+ * Entries are managed once in Website → Content (or → Team for the studio's people); a page's
+ * section points at the ones it wants and renders them in the library's order. Cached per kind — a
+ * day, like the menus — and flushed by the dashboard screens on every change.
  */
 final class ContentLibrary
 {
     /**
      * The entries of one kind, in the library's order.
      *
-     * @return list<ContentEntry>
+     * @return list<LibraryEntry>
      */
     public static function entries(string $kind): array
     {
+        // The studio's people live in their own table (F7); everything else is a content entry (F6).
+        if ($kind === 'team') {
+            return TeamMember::query()->ordered()->get()->all();
+        }
+
         /** @var list<int> $ids */
         $ids = Cache::remember('website.library.'.$kind, now()->addDay(), fn (): array => ContentEntry::query()
             ->ofKind($kind)
@@ -43,7 +50,7 @@ final class ContentLibrary
      * one list the studio curates; pages choose members, never sequence.
      *
      * @param  list<int>  $ids
-     * @return list<ContentEntry>
+     * @return list<LibraryEntry>
      */
     public static function pick(array $ids, string $kind): array
     {
@@ -51,7 +58,7 @@ final class ContentLibrary
 
         return array_values(array_filter(
             self::entries($kind),
-            fn (ContentEntry $entry): bool => in_array($entry->id, $wanted, true),
+            fn (LibraryEntry $entry): bool => in_array($entry->entryId(), $wanted, true),
         ));
     }
 
@@ -63,12 +70,12 @@ final class ContentLibrary
      */
     public static function rows(array $ids, string $kind): array
     {
-        return array_map(fn (ContentEntry $entry): array => $entry->toRow(), self::pick($ids, $kind));
+        return array_map(fn (LibraryEntry $entry): array => $entry->toRow(), self::pick($ids, $kind));
     }
 
     public static function flush(): void
     {
-        foreach (ContentEntry::KINDS as $kind) {
+        foreach ([...ContentEntry::KINDS, 'team'] as $kind) {
             Cache::forget('website.library.'.$kind);
         }
     }

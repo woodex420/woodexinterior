@@ -141,6 +141,7 @@ class PageTemplatesSeeder extends Seeder
                 'sections' => [
                     $section(BlockType::Hero),
                     $section(BlockType::Intro, ['heading' => 'The studio, in short']),
+                    $section(BlockType::Team, ['heading' => 'The people']),
                     $section(BlockType::Author),
                     $section(BlockType::Process, ['heading' => 'How we work']),
                     $section(BlockType::Reviews),

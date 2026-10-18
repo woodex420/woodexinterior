@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Website\Models;
 
+use App\Domain\Website\Contracts\LibraryEntry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property array<string, mixed> $data
  * @property int $position
  */
-class ContentEntry extends Model
+class ContentEntry extends Model implements LibraryEntry
 {
     public const string FAQ = 'faq';
 
@@ -46,6 +47,11 @@ class ContentEntry extends Model
     public function scopeOfKind(Builder $query, string $kind): Builder
     {
         return $query->where('kind', $kind);
+    }
+
+    public function entryId(): int
+    {
+        return (int) $this->id;
     }
 
     /**

@@ -1946,3 +1946,30 @@ expectations: count your characters. Route::getRoutes() needs `->getRoutes()` be
 Larastan. Livewire array props need `@var array{...}` docblocks; empty default needs optional keys.
 
 Next in the confirmed order: **F7 team manager** → F9 speed dashboard → F11 theme presets.
+
+## 60. V2-3 F7 — the team manager (18 Oct 2026)
+
+The studio's people (docs/14 §5a): members with a photo, a role and a short bio, managed once under
+Website → **Team**, and a **Team section** any page's editor adds from the shelf. The library
+contract from F6 now spans two tables — `LibraryEntry` (entryId/label/toRow) is implemented by both
+`ContentEntry` (FAQs/testimonials/logos) and `TeamMember` (F7's own `team_members` table, per the
+spec) — so sections, the editor's pick-lists and the media resolver treat both identically.
+
+- `team_members` (name, role, bio, media_id FK website_media, position). CRUD screen with up/down
+  ordering (siblings swap); the studio's order is the order everywhere, like the content library.
+- `BlockType::Team`: heading + library pick (kind `team`) + manual repeater (photo/name/role/bio) —
+  a guest collaborator can be written on the page without joining the library.
+- Section renders member cards (photo, name, role, bio) — library members first in studio order,
+  then the page's own rows; **renders nothing when both are empty** (no orphan headings).
+- `PageRenderer::mediaFor` follows Team picks → members' photos (Clients/Team share one branch).
+- The About template now carries the Team section (seeded templates re-run on the runtime DB).
+- Tests `TeamSectionTest` — 4 green (CRUD + order; members with photos then a page-written guest in
+  order; empty section renders nothing; editor pick-list + About template carries Team).
+  SiteRenderingTest's all-sections fixture grew the Team row. Gate: **110 files / 1109 passed /
+  0 failed**. Sidebar count 39 → 40 (Team item).
+
+Gotchas: every exhaustive `match` on BlockType (label/description/category) must gain the new case
+— SiteRenderingTest's fixture too. Interface ids: use `entryId()`, never `getIdAttribute()` — that
+name is Eloquent's accessor magic for `id` and collides.
+
+Next in the confirmed order: **F9 speed dashboard** → F11 theme presets.

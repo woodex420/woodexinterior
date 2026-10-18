@@ -28,6 +28,9 @@ enum BlockType: string
     case Map = 'map';
     case Clients = 'clients';
 
+    /** V2-3 F7: the studio's people — picked from Website → Team, or written on the page. */
+    case Team = 'team';
+
     public function label(): string
     {
         return match ($this) {
@@ -47,6 +50,7 @@ enum BlockType: string
             self::Author => 'Author',
             self::Map => 'Map + contact',
             self::Clients => 'Client logos',
+            self::Team => 'Team',
         };
     }
 
@@ -73,6 +77,7 @@ enum BlockType: string
             self::Author => 'The person behind the studio: photo, bio, credentials.',
             self::Map => 'The studio\'s address on a map, with phone and hours.',
             self::Clients => 'Client logos — the quiet trust signal.',
+            self::Team => 'The studio\'s people, with photos, roles and short bios.',
         };
     }
 
@@ -85,7 +90,7 @@ enum BlockType: string
         return match ($this) {
             self::Hero => 'Hero',
             self::Slider => 'Hero',
-            self::Clients, self::Reviews, self::Gallery, self::Related, self::Author => 'Proof',
+            self::Clients, self::Reviews, self::Gallery, self::Related, self::Author, self::Team => 'Proof',
             self::Intro, self::Text, self::Services, self::Process, self::Specs, self::PriceTable, self::Faq => 'Content',
             self::Form, self::Map => 'Conversion',
         };
@@ -115,6 +120,7 @@ enum BlockType: string
             self::Author => ['name' => '', 'role' => '', 'bio' => '', 'image_id' => null],
             self::Map => ['heading' => 'Studio', 'embed_url' => ''],
             self::Clients => ['heading' => 'Trusted by', 'logos' => [], 'library_ids' => []],
+            self::Team => ['heading' => 'Our team', 'items' => [], 'library_ids' => []],
         };
     }
 
@@ -243,6 +249,16 @@ enum BlockType: string
                 ['key' => 'logos', 'label' => 'Logos', 'type' => 'repeater', 'fields' => [
                     ['key' => 'id', 'label' => 'Logo', 'type' => 'image'],
                     ['key' => 'alt', 'label' => 'Alt text', 'type' => 'text'],
+                ]],
+            ],
+            self::Team => [
+                ['key' => 'heading', 'label' => 'Heading', 'type' => 'text'],
+                ['key' => 'library_ids', 'label' => 'From the studio\'s team (Website → Team)', 'type' => 'library', 'kind' => 'team'],
+                ['key' => 'items', 'label' => 'Write someone on this page', 'type' => 'repeater', 'fields' => [
+                    ['key' => 'id', 'label' => 'Photo', 'type' => 'image'],
+                    ['key' => 'name', 'label' => 'Name', 'type' => 'text'],
+                    ['key' => 'role', 'label' => 'Role', 'type' => 'text'],
+                    ['key' => 'bio', 'label' => 'Bio', 'type' => 'textarea', 'rows' => 2],
                 ]],
             ],
         };

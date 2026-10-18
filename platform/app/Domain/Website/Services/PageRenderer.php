@@ -76,10 +76,10 @@ final class PageRenderer
         $ids = [];
 
         foreach ($blocks as $block) {
-            // Logos picked from the shared library: their photos must load on the page too (V2-3 F6).
-            if ($block->type === BlockType::Clients && isset($block->data['library_ids']) && is_array($block->data['library_ids'])) {
-                foreach (ContentLibrary::rows($block->data['library_ids'], 'logo') as $logo) {
-                    $ids[] = (int) ($logo['id'] ?? 0);
+            // Photos picked from the shared libraries: their images must load on the page too (V2-3 F6/F7).
+            if (in_array($block->type, [BlockType::Clients, BlockType::Team], true) && isset($block->data['library_ids']) && is_array($block->data['library_ids'])) {
+                foreach (ContentLibrary::rows($block->data['library_ids'], $block->type === BlockType::Team ? 'team' : 'logo') as $row) {
+                    $ids[] = (int) ($row['id'] ?? 0);
                 }
             }
 

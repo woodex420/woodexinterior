@@ -51,6 +51,7 @@ use App\Livewire\Admin\Website\ContentLibraryIndex;
 use App\Livewire\Admin\Website\MenusIndex;
 use App\Livewire\Admin\Website\PageEditor;
 use App\Livewire\Admin\Website\PagesIndex;
+use App\Livewire\Admin\Website\TeamMembersIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
 use App\Livewire\Admin\Website\SeoAgentIndex;
 use App\Livewire\Admin\Website\ThemeBuilder;
@@ -123,6 +124,7 @@ Route::livewire('/website/pages/{page}', PageEditor::class)->name('website.pages
 Route::livewire('/website/media', MediaLibrary::class)->name('website.media')->middleware('can:website.edit');
 Route::livewire('/website/menus', MenusIndex::class)->name('website.menus')->middleware('can:website.edit');
 Route::livewire('/website/content', ContentLibraryIndex::class)->name('website.content')->middleware('can:website.edit');
+Route::livewire('/website/team', TeamMembersIndex::class)->name('website.team')->middleware('can:website.edit');
 Route::livewire('/website/redirects', RedirectsIndex::class)->name('website.redirects')->middleware('can:website.edit');
 Route::livewire('/website/seo', SeoAgentIndex::class)->name('website.seo')->middleware('can:website.edit');
 Route::livewire('/website/settings', WebsiteSettings::class)->name('website.settings')->middleware('can:settings.manage');
