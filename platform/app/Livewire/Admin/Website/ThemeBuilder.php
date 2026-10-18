@@ -6,6 +6,7 @@ namespace App\Livewire\Admin\Website;
 
 use App\Domain\Website\Models\ThemeToken;
 use App\Domain\Website\Support\ThemeCss;
+use App\Domain\Website\Support\ThemePresets;
 use Database\Seeders\ThemeTokensSeeder;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
@@ -47,7 +48,46 @@ class ThemeBuilder extends Component
 
         $theme->flush();
         $this->loadTokens();
-        $this->dispatch('toast', 'Theme saved — every page now wears it.');
+        $this->dispatch('toast', message: 'Theme saved — every page now wears it.', type: 'success');
+    }
+
+    /**
+     * Wear one of the shipped presets (V2-3 F11): the preset's keys are written, every other token
+     * keeps its value — and "Back to v1 palette" still undoes the whole look in one click.
+     */
+    public function applyPreset(string $preset, ThemeCss $theme): void
+    {
+        $this->authorize('theme.manage');
+
+        $found = ThemePresets::find($preset);
+
+        if ($found === null) {
+            $this->dispatch('toast', message: 'That preset is not on the shelf.', type: 'error');
+
+            return;
+        }
+
+        foreach ($found['tokens'] as $key => $value) {
+            ThemeToken::query()->where('key', $key)->update(['value' => $this->normalise($value, $this->typeOf($key))]);
+        }
+
+        $theme->flush();
+        $this->loadTokens();
+        $this->dispatch('toast', message: $found['name'].' applied — every page now wears it.', type: 'success');
+    }
+
+    /**
+     * A preset value goes through the same normalisation as a hand-edited one; unknown keys keep text.
+     */
+    private function typeOf(string $key): string
+    {
+        foreach ($this->tokens as $token) {
+            if ($token['key'] === $key) {
+                return $token['type'];
+            }
+        }
+
+        return 'text';
     }
 
     /**
@@ -63,7 +103,7 @@ class ThemeBuilder extends Component
 
         $theme->flush();
         $this->loadTokens();
-        $this->dispatch('toast', 'Back to the v1 palette.');
+        $this->dispatch('toast', message: 'Back to the v1 palette.', type: 'success');
     }
 
     /**

@@ -10,6 +10,23 @@
         </x-slot:actions>
     </x-admin.page-header>
 
+    <x-admin.card class="mb-6" title="Presets" :padding="false">
+        <div class="grid grid-cols-1 gap-4 px-5 py-4 md:grid-cols-3">
+            @foreach (\App\Domain\Website\Support\ThemePresets::presets() as $preset)
+                <button type="button" wire:click="applyPreset('{{ $preset['name'] }}')" wire:loading.attr="disabled"
+                        class="rounded-2xl border border-gray-100 bg-white p-4 text-left transition hover:border-brand-500 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <div class="flex gap-1.5">
+                        @foreach ($preset['swatches'] as $swatch)
+                            <span class="size-6 rounded-full ring-1 ring-black/10" style="background: {{ $swatch }}"></span>
+                        @endforeach
+                    </div>
+                    <p class="mt-3 text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $preset['name'] }}</p>
+                    <p class="mt-1 text-theme-xs text-gray-500">{{ $preset['description'] }}</p>
+                </button>
+            @endforeach
+        </div>
+    </x-admin.card>
+
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         @foreach ($this->groups as $group)
             <x-admin.card :title="$group['label']">

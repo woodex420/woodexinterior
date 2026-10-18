@@ -2004,3 +2004,34 @@ draft — no `draft()` helper.
 
 Wave F now stands at F1–F10 (F5 pages, F6 library, F8+F10 SEO/health, F7 team, F9 speed). One left:
 **F11 theme presets**.
+
+## 62. V2-3 F11 — theme presets (18 Oct 2026) — Wave F complete
+
+The Theme Builder grew a **Presets** card above the token groups (docs/14 §5a): three complete looks
+beside the studio's own v1 — **Gallery serif** (warm paper, deep ink, serif headings, frames almost
+square), **Modern slate** (cool architectural blues, steel accent, softer corners), **Warm walnut**
+(walnut browns, brass, room-warm surfaces). Together with "Back to v1 palette" the shelf now holds
+the four the plan named.
+
+- `ThemePresets` (static, like ThemeTokensSeeder): each preset is **only the token keys it
+  changes** — every other token keeps its value. No code, no files: applying one is the same as
+  editing every token by hand, so undo is always one click (resetToV1).
+- `applyPreset(name)`: validates against the shelf, writes through the same `normalise()` as a
+  hand-edit (hex canonicalised uppercase), flushes the CSS, reloads the editor state. Unknown
+  names toast and change nothing.
+- Preset swatch strips render the four anchor colours, drawn from the preset data itself.
+- Tests `ThemePresetsTest` — 3 green (every preset's keys exist + values well-formed; Warm walnut
+  roundtrip incl. the stylesheet carrying the colour and resetToV1 undoing it; unknown names
+  refused). Gate: **112 files / 1116 passed / 0 failed**.
+
+Gotchas: `$this->dispatch('toast', 'msg')` positional vs `assertDispatched('toast', message: …)`
+named do not match in tests — dispatch with named params (`message:`, `type:`); ThemeBuilder's own
+save/reset dispatches were converted to named for consistency. Apostrophes in single-quoted PHP
+strings bite every time — double-quote or reword.
+
+### Wave F closed (V2-3)
+
+F1 menus/mega · F2 slider · F3 header/footer editor · F4 click-to-edit · F5 page templates ·
+F6 shared content library · F7 team manager · F8+F10 SEO agent + website health · F9 speed
+dashboard · F11 theme presets. The v26 static design stayed untouched throughout (owner's rule).
+Next per the marathon order: **P5 completion → V2-2 leftovers → V2-5 → P7 → P9**.
