@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?int $parent_id
  * @property int $position
  * @property string $target
+ * @property bool $is_mega
  */
 class NavigationItem extends Model
 {
@@ -34,7 +35,12 @@ class NavigationItem extends Model
 
     public const string FOOTER = 'footer';
 
-    protected $fillable = ['menu', 'label', 'url', 'parent_id', 'position', 'target'];
+    protected $fillable = ['menu', 'label', 'url', 'parent_id', 'position', 'target', 'is_mega'];
+
+    protected function casts(): array
+    {
+        return ['is_mega' => 'boolean'];
+    }
 
     /** @return BelongsTo<self, $this> */
     public function parent(): BelongsTo

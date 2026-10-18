@@ -1772,3 +1772,33 @@ pointed at it. When patching repeated snippets, anchor the replacement on surrou
 Tests: `ClickToEditTest` — 4 green (key on public page; editor tools only for previewing editors,
 never baked into the cached page; jump + unknown-key ignore + card id; key persistence and minting).
 Regression: Website suite 92 passed. Gate: **103 files / 1077 passed / 0 failed** · Pint + Larastan clean.
+
+## 55. V2-3 F1 — the menu tree: dropdowns and the mega panel (18 Oct 2026)
+
+The v26 header rebuilt in Woodex OS: a top link with children opens a dropdown on hover and on
+keyboard focus; its **mega switch** (owner answer of 18 Oct) turns the dropdown into the wide
+numbered panel — one column per child (01/02/03…), the child's own links under it, and a
+"everything →" line back to the hub page. On the phone the drawer folds each parent into a
+`<details>` disclosure.
+
+- Migration `2026_10_18_152000`: `navigation_items.is_mega` (bool, default false).
+- `Menus::tree($menu)` — recursive (three levels used), cached `website.menu.tree.{menu}` for a
+  day; `flush()` clears flat + tree caches. Fallback: the built-in defaults as a flat tree.
+  Laravel gotcha: `groupBy('parent_id')` keys null-parent rows under `''`, not null — the tree
+  groups under the string `'0'` instead.
+- `MenusIndex` rewritten: add with "Sits under" (top / a top link / a dropdown link — a fourth
+  level is refused with a toast), remove cascades children (the FK already did), `move()` swaps
+  positions **inside the link's own level only**, `toggleMega()` works on top links only. Rows
+  render through the new `menus-row` partial, indented by level, with a "＋ add under" action
+  that preselects the parent and focuses the form.
+- `header.blade.php` rewritten: `group` hover + `group-focus-within` open the panels (keyboard:
+  tab into the trigger, the panel opens, children are tabbable), `aria-haspopup`, chevron rotates,
+  mega panel is centred and fluid (`min(72rem, 100vw-3rem)`) with a 4-column grid on desktop,
+  2 on small screens; mobile drawer keeps the accordions.
+- `layouts/site.blade.php` passes `Menus::tree('header')` to the header; the footer stays flat
+  until F3.
+
+Tests: `MenusTreeTest` — 7 green (tree shape, cache + dashboard flush, flat fallback, add under
+parent + fourth-level refusal, level-scoped move, mega on top links only, site rendering of
+dropdown + mega + disclosures). Regression: Website suite 99 passed. Gate: **104 files /
+1084 passed / 0 failed** · Pint + Larastan clean.

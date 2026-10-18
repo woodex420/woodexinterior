@@ -8,7 +8,7 @@
     $whatsapp ??= \App\Support\Phone::whatsappUrl($business->whatsapp, 'Assalam o Alaikum, I would like to discuss a project with Woodex Interior.');
     $services ??= \App\Domain\Website\Services\Menus::serviceLinks();
     $faqs ??= [];
-    $navigation = \App\Domain\Website\Services\Menus::items('header');
+    $navigation = \App\Domain\Website\Services\Menus::tree('header');
     $footerNavigation = \App\Domain\Website\Services\Menus::items('footer');
     $cities = \App\Domain\Website\Services\Menus::cityLinks();
 @endphp
@@ -28,7 +28,7 @@
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ $gtm->gtm_id }}" height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>
     @endif
 
-    @include('site.partials.header', ['navigation' => $navigation, 'business' => $business, 'phone' => $phone])
+    @include('site.partials.header', ['tree' => $navigation, 'business' => $business, 'phone' => $phone])
 
     <main id="main">
         @yield('content')

@@ -1,5 +1,5 @@
-<div>
-    <x-admin.page-header title="Menus" description="The links in the header and the footer of every page. Add a service to the menu here and it appears on the whole website at once."
+<div x-on:focus-label.window="$el.querySelector('#label')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); document.getElementById('label')?.focus()">
+    <x-admin.page-header title="Menus" description="The links in the header and the footer of every page. A link can sit under another link: a top link with children opens a dropdown, and its mega switch widens it into the numbered panel. Add a service here and it appears on the whole website at once."
                          :breadcrumbs="['Website' => null, 'Menus' => null]" />
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
@@ -24,6 +24,13 @@
                         @endforeach
                     </select>
                 </x-admin.field>
+                <x-admin.field label="Sits under" for="parent" hint="Top level for the bar itself; under a top link for its dropdown; under a dropdown link for a mega column.">
+                    <select id="parent" wire:model="parent" class="wx-input">
+                        @foreach ($parentOptions as $option)
+                            <option value="{{ $option['id'] }}">{{ $option['label'] }}</option>
+                        @endforeach
+                    </select>
+                </x-admin.field>
                 <x-admin.field label="Opens in" for="target">
                     <select id="target" wire:model="target" class="wx-input">
                         <option value="_self">Same tab</option>
@@ -40,24 +47,18 @@
                     <tr>
                         <th class="px-5 py-3 font-medium">Text</th>
                         <th class="px-5 py-3 font-medium">Link</th>
-                        <th class="hidden px-5 py-3 font-medium md:table-cell">Opens in</th>
+                        <th class="hidden px-5 py-3 font-medium md:table-cell">Opens as</th>
                         <th class="px-5 py-3"><span class="sr-only">Actions</span></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                    @forelse ($items as $item)
-                        <tr wire:key="nav-{{ $item->id }}" class="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
-                            <td class="px-5 py-3 font-medium text-gray-800 dark:text-white/90">{{ $item->label }}</td>
-                            <td class="px-5 py-3 font-mono text-theme-xs text-gray-600 dark:text-gray-400">{{ $item->url }}</td>
-                            <td class="hidden px-5 py-3 text-theme-xs text-gray-500 md:table-cell">{{ $item->target === '_blank' ? 'New tab' : 'Same tab' }}</td>
-                            <td class="px-5 py-3">
-                                <div class="flex items-center justify-end gap-2">
-                                    <button type="button" wire:click="move({{ $item->id }}, -1)" class="wx-mini-btn" aria-label="Move up" @if ($loop->first) disabled @endif>↑</button>
-                                    <button type="button" wire:click="move({{ $item->id }}, 1)" class="wx-mini-btn" aria-label="Move down" @if ($loop->last) disabled @endif>↓</button>
-                                    <button type="button" wire:click="remove({{ $item->id }})" class="text-theme-sm text-error-600 hover:underline">Remove</button>
-                                </div>
-                            </td>
-                        </tr>
+                    @php
+                        // Rows in reading order: top link, its children, their children — position is per level.
+                        $rows = $items->whereNull('parent_id')->values();
+                        $childrenOf = fn ($parentId) => $items->where('parent_id', $parentId)->values();
+                    @endphp
+                    @forelse ($rows as $item)
+                        @include('livewire.admin.website.menus-row', ['item' => $item, 'level' => 0, 'childrenOf' => $childrenOf])
                     @empty
                         <tr>
                             <td colspan="4">

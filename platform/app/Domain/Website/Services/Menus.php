@@ -46,6 +46,55 @@ final class Menus
     }
 
     /**
+     * The menu as a tree: top items with their children and grandchildren, ready for dropdowns and
+     * mega panels (V2-3). Falls back to the flat built-in defaults — no children — when nobody has
+     * filled the menu in, so the header always has its structure.
+     *
+     * @return list<array{label: string, url: string, target: string, is_mega: bool, children: list<array<string, mixed>>}>
+     */
+    public static function tree(string $menu): array
+    {
+        /** @var list<array{label: string, url: string, target: string, is_mega: bool, children: list<array<string, mixed>>}> $tree */
+        $tree = Cache::remember('website.menu.tree.'.$menu, now()->addDay(), fn (): array => self::buildTree($menu));
+
+        if ($tree === []) {
+            return array_map(
+                static fn (array $item): array => ['label' => $item['label'], 'url' => $item['url'], 'target' => $item['target'], 'is_mega' => false, 'children' => []],
+                self::defaults($menu),
+            );
+        }
+
+        return $tree;
+    }
+
+    /** @return list<array{label: string, url: string, target: string, is_mega: bool, children: list<array<string, mixed>>}> */
+    private static function buildTree(string $menu): array
+    {
+        $items = NavigationItem::query()
+            ->where('menu', $menu)
+            ->orderBy('position')
+            ->get(['id', 'parent_id', 'label', 'url', 'target', 'is_mega']);
+
+        // Top-level items sit under key 0 (their parent is null); every child sits under its parent's id.
+        $byParent = $items->groupBy(fn (NavigationItem $item): string => (string) ($item->parent_id ?? 0));
+
+        $childrenOf = function (string $parentId) use (&$childrenOf, $byParent): array {
+            return collect($byParent->get($parentId, []))
+                ->map(fn (NavigationItem $item): array => [
+                    'label' => $item->label,
+                    'url' => $item->url,
+                    'target' => $item->target ?: '_self',
+                    'is_mega' => (bool) $item->is_mega,
+                    'children' => $childrenOf((string) $item->id),
+                ])
+                ->values()
+                ->all();
+        };
+
+        return $childrenOf('0');
+    }
+
+    /**
      * The navigation a studio's website needs before anybody has opened Website -> Menus.
      *
      * Without this the header and the footer were empty, and with them the site had no structure: 27 of the 89
@@ -147,6 +196,7 @@ final class Menus
 
         foreach (['header', 'footer', 'services'] as $menu) {
             Cache::forget('website.menu.'.$menu);
+            Cache::forget('website.menu.tree.'.$menu);
         }
     }
 }
