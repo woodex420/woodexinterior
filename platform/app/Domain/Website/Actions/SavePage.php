@@ -11,6 +11,7 @@ use App\Domain\Website\Models\PageBlock;
 use App\Domain\Website\Models\PageVersion;
 use App\Domain\Website\Services\Menus;
 use App\Domain\Website\Services\PageCache;
+use App\Domain\Website\Support\CanvasHtml;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -37,6 +38,12 @@ final class SavePage
                 'schema_type' => $input['schema_type'] ?: $input['type']->schemaType(),
                 'author_id' => $page->author_id ?? $user?->id,
                 'sort' => (int) ($input['sort'] ?? 0),
+                // The campaign canvas (D-107): hand-placed HTML instead of sections, scripts
+                // stripped at the door. The sections underneath stay — switching back loses nothing.
+                'template' => ($input['template'] ?? null) === 'canvas' ? 'canvas' : null,
+                'canvas_html' => ($input['template'] ?? null) === 'canvas' && trim((string) ($input['canvas_html'] ?? '')) !== ''
+                    ? CanvasHtml::clean((string) $input['canvas_html'])
+                    : null,
             ]);
 
             if ($publish) {

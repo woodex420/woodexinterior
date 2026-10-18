@@ -63,6 +63,11 @@ class PageEditor extends Component
     /** @var list<array{id: ?int, key: string, type: string, visible: bool, data: array<string, mixed>}> */
     public array $blocks = [];
 
+    /** The campaign canvas (D-107): a page whose template is "canvas" renders hand-placed HTML. */
+    public bool $isCanvas = false;
+
+    public string $canvasHtml = '';
+
     public string $newBlockType = '';
 
     /** @var list<string> What still stands between this page and publishing. */
@@ -350,6 +355,30 @@ class PageEditor extends Component
         return $item;
     }
 
+    /**
+     * Switch this page between the structured sections and the campaign canvas (D-107). The
+     * sections are never touched — they wait underneath, so switching back loses nothing. The
+     * switch itself is editor state only, like applying a template: nothing changes on the site
+     * until Save draft.
+     */
+    public function toggleCanvas(): void
+    {
+        $this->isCanvas = ! $this->isCanvas;
+
+        if ($this->isCanvas && trim($this->canvasHtml) === '') {
+            $this->canvasHtml = <<<'HTML'
+                <section class="mx-auto max-w-3xl px-5 py-20 text-center">
+                    <h1 class="text-4xl font-medium">A campaign headline, in your own words</h1>
+                    <p class="mt-4 text-lg">One page, hand-placed — free of the theme's sections. Scripts are stripped on save.</p>
+                </section>
+                HTML;
+        }
+
+        $this->toast($this->isCanvas
+            ? 'Campaign canvas on — this page now renders hand-placed HTML (save to apply).'
+            : 'Back to the structured sections (save to apply).');
+    }
+
     public function save(bool $publish = false): void
     {
         $page = $this->page();
@@ -429,7 +458,7 @@ class PageEditor extends Component
     }
 
     /**
-     * @return array{type: PageType, slug: string, title: string, excerpt: ?string, seo: array<string, mixed>, schema_type: ?string, sort: int, blocks: list<array<string, mixed>>}
+     * @return array{type: PageType, slug: string, title: string, excerpt: ?string, seo: array<string, mixed>, schema_type: ?string, sort: int, template: ?string, canvas_html: string, blocks: list<array<string, mixed>>}
      */
     private function input(): array
     {
@@ -449,6 +478,8 @@ class PageEditor extends Component
             ],
             'schema_type' => null,
             'sort' => $this->sort,
+            'template' => $this->isCanvas ? 'canvas' : null,
+            'canvas_html' => $this->canvasHtml,
         ];
     }
 
@@ -459,6 +490,8 @@ class PageEditor extends Component
             $this->type = PageType::Service->value;
             $this->status = PageStatus::Draft->value;
             $this->blocks = [];
+            $this->isCanvas = false;
+            $this->canvasHtml = '';
 
             return;
         }
@@ -475,6 +508,8 @@ class PageEditor extends Component
         $this->seoRobots = (string) ($page->seo['robots'] ?? '');
         $this->focusKeyword = (string) ($page->seo['focus_keyword'] ?? '');
         $this->ogImageId = $page->seo['og_image_id'] ?? null;
+        $this->isCanvas = $page->template === 'canvas';
+        $this->canvasHtml = (string) $page->canvas_html;
         $this->blocks = $page->blocks->map(fn ($block): array => [
             'id' => $block->id,
             'key' => $block->block_key ?? $this->newKey(),

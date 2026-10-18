@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property PageStatus $status
  * @property ?CarbonImmutable $published_at
  * @property ?string $template
+ * @property string|null $canvas_html
  * @property ?int $author_id
  * @property array<string, mixed>|null $seo
  * @property ?string $schema_type
@@ -48,7 +49,7 @@ class Page extends Model
     }
 
     protected $fillable = [
-        'type', 'slug', 'parent_id', 'title', 'excerpt', 'status', 'published_at', 'template',
+        'type', 'slug', 'parent_id', 'title', 'excerpt', 'status', 'published_at', 'template', 'canvas_html',
         'author_id', 'seo', 'schema_type', 'featured_image_id', 'sort',
     ];
 

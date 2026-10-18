@@ -93,6 +93,9 @@
                                 <x-admin.badge :color="match ($status) { PageStatus::Published => 'success', PageStatus::Review => 'warning', default => 'gray' }">
                                     {{ $status->label() }}
                                 </x-admin.badge>
+                                @if ($page->template === 'canvas')
+                                    <x-admin.badge color="warning">canvas</x-admin.badge>
+                                @endif
                                 @if ($status === PageStatus::Published && $page->published_at?->isFuture())
                                     <span class="block text-theme-xs text-gray-500">from {{ $page->published_at->format('d M Y') }}</span>
                                 @endif

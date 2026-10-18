@@ -74,6 +74,22 @@
                 </div>
             </x-admin.card>
 
+            @if (! $isCanvas)
+                <x-admin.card title="Campaign canvas" description="For landing pages only (D-107): switch this page to hand-placed HTML, free of the theme's sections. Clearly marked in the Pages list; switch back any time — the sections wait underneath.">
+                    <button type="button" wire:click="toggleCanvas" class="wx-mini-btn">Switch to the campaign canvas</button>
+                </x-admin.card>
+            @endif
+
+            @if ($isCanvas)
+                <x-admin.card title="Campaign canvas" description="This page renders hand-placed HTML — free of the theme's sections, scripts stripped on save. The sections underneath wait untouched; switch back any time.">
+                    <textarea wire:model="canvasHtml" rows="20" class="wx-input font-mono text-theme-xs" spellcheck="false" aria-label="Campaign HTML"></textarea>
+                    <p class="mt-2 text-theme-xs text-gray-400">Saved as-is except &lt;script&gt;, on-event attributes and javascript: links — those are removed at the door.</p>
+                    <div class="mt-3">
+                        <button type="button" wire:click="toggleCanvas" class="wx-mini-btn">Back to the structured sections</button>
+                    </div>
+                </x-admin.card>
+            @endif
+            @if (! $isCanvas)
             <x-admin.card title="Section library" description="Click a section to add it to the page below — the studio's shelves, in reading order.">
                 <div class="space-y-4">
                     @foreach ($library as $category => $entries)
@@ -113,7 +129,9 @@
                     </div>
                 </div>
             </x-admin.card>
+            @endif
 
+            @if (! $isCanvas)
             <x-admin.card title="Sections" description="Drag the handle to reorder. One section per card, in the order visitors read them. A section you untick keeps its content but stops showing.">
                 <div class="space-y-4" wire:sort="sortBlocks" wire:sort.options="{ handle: '.section-handle', animation: 150 }">
                     @forelse ($blocks as $index => $block)
@@ -240,6 +258,8 @@
         </div>
 
         <div class="space-y-6">
+            @endif
+
             <x-admin.card title="Templates" description="A layout for this kind of page: which sections, in what order. Applying replaces the sections below — nothing is saved until you press Save draft.">
                 <div class="space-y-2">
                     @foreach ($templates as $template)

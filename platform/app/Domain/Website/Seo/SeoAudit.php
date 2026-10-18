@@ -77,7 +77,7 @@ final class SeoAudit
             }
 
             $words = $this->wordCount($page);
-            if ($page->isPublished() && $words < 120) {
+            if ($page->isPublished() && $page->template !== 'canvas' && $words < 120) {
                 $issues[] = ['code' => 'thin_content', 'message' => sprintf('Only about %d words of body text — search engines read thin pages as thin answers.', $words), 'fix' => null];
             }
 

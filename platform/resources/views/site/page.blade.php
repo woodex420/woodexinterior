@@ -14,7 +14,10 @@
 @endphp
 
 @section('content')
-    @if (! $hasHero)
+    @if ($page->template === 'canvas')
+        {{-- The campaign canvas (D-107): hand-placed HTML, sanitised on save, full width — the theme's section chrome deliberately stays out. --}}
+        {!! $page->canvas_html !!}
+    @elseif (! $hasHero)
         <section class="mx-auto max-w-6xl px-5 pt-14 md:px-8">
             <p class="text-[13px] font-medium tracking-[0.12em] text-wood-600 uppercase">{{ $page->type->label() }}</p>
             <h1 class="mt-4 max-w-3xl text-[clamp(32px,5vw,58px)]">{{ $title }}</h1>
@@ -22,10 +25,12 @@
         </section>
     @endif
 
-    @foreach ($blocks as $block)
-        @php($sectionKey = $block->block_key)
-        <div @if ($sectionKey) data-wx-key="{{ $sectionKey }}" @endif>
-            @include($block->type->view(), ['block' => $block, 'page' => $page, 'media' => $media, 'business' => $business, 'phone' => $phone])
-        </div>
-    @endforeach
+    @if ($page->template !== 'canvas')
+        @foreach ($blocks as $block)
+            @php($sectionKey = $block->block_key)
+            <div @if ($sectionKey) data-wx-key="{{ $sectionKey }}" @endif>
+                @include($block->type->view(), ['block' => $block, 'page' => $page, 'media' => $media, 'business' => $business, 'phone' => $phone])
+            </div>
+        @endforeach
+    @endif
 @endsection

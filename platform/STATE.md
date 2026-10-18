@@ -2073,3 +2073,29 @@ Telegram — is now mechanically possible; the owner's 1-hour task (staff linkin
 remains.
 
 Next per the marathon order: **V2-2 leftovers** → V2-5 → P7 → P9.
+
+## 64. V2-2 closed — the campaign free canvas (18 Oct 2026)
+
+The V2-2 row's two remainders are done: inline text editing shipped as F4's click-to-edit, and the
+campaign canvas (D-107, docs/12 §5.3) landed now.
+
+- **The canvas**: a page whose `template` is `canvas` renders `pages.canvas_html` — hand-placed
+  HTML, full width, no section chrome, no fallback h1. In the editor, switching to the canvas
+  replaces the section library/sections cards with one big HTML area (starter scaffold on first
+  switch); the **sections stay untouched underneath**, so switching back restores the page exactly.
+  The switch and the HTML are editor state until Save draft, like applying a template. Pages list
+  flags canvas pages with a badge; SeoAudit skips its thin-content rule for them (a landing page is
+  short by design).
+- **The guardrail** (`CanvasHtml::clean`, applied in `SavePage` on save): script blocks, on-event
+  attributes and javascript:/data:/vbscript: URLs (including entity/whitespace tricks) never reach
+  a visitor. Layout, inline styles, iframes and embeds are the studio's own hand.
+- Theme tokens stay linked (harmless) but the canvas is excluded from re-skins by design — its
+  layout is hand-placed and cannot be re-flowed.
+- Tests `CampaignCanvasTest` — 4 green (raw render incl. dormant section and single h1; the
+  sanitiser keeps iframes/styles/good links; editor switch → save → site, and back again; Pages
+  list badge). Gate: **114 files / 1126 passed / 0 failed**.
+
+Gotchas: a new column on Page needs `Page::$fillable` — mass assignment drops it silently
+otherwise (both the factory and `SavePage`'s fill are mass assignment).
+
+Next per the marathon order: **V2-5 — the conversion itself** (docs/13 parity gate) → P7 → P9.
