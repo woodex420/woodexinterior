@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ClientStatementController;
+use App\Http\Controllers\Admin\ConversationMediaController;
 use App\Http\Controllers\Admin\InvoicePdfController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\QuotePdfController;
@@ -107,6 +108,7 @@ Route::livewire('/projects/{project}', ProjectShow::class)->name('projects.show'
 
 // Conversations (P4, CNV-001/CNV-002, WAP-001…WAP-004): one inbox for WhatsApp and the website chat widget.
 Route::livewire('/inbox', Inbox::class)->name('inbox')->middleware('can:inbox.view');
+Route::get('/conversations/media/{message}', ConversationMediaController::class)->name('conversations.media')->middleware('can:inbox.view');
 
 // Private attachments (GLB-006)
 Route::get('/media/{media}/{conversion?}', MediaController::class)->name('media.show')->whereIn('conversion', ['thumb']);

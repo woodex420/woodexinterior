@@ -58,6 +58,71 @@ final class WhatsAppCloudApi implements WhatsAppGateway
         ]);
     }
 
+    public function sendMedia(string $to, string $type, string $mediaId, ?string $caption = null, ?string $filename = null): SendResult
+    {
+        $object = ['id' => $mediaId];
+
+        if ($caption !== null && $caption !== '' && in_array($type, ['image', 'document', 'video'], true)) {
+            $object['caption'] = $caption;
+        }
+
+        if ($type === 'document' && $filename !== null && $filename !== '') {
+            // WhatsApp shows this name on the client's bubble; without it Meta invents one.
+            $object['filename'] = $filename;
+        }
+
+        return $this->send([
+            'messaging_product' => 'whatsapp',
+            'recipient_type' => 'individual',
+            'to' => $to,
+            'type' => $type,
+            $type => $object,
+        ]);
+    }
+
+    public function uploadMedia(string $content, string $mime, string $filename): ?string
+    {
+        if (! $this->isConfigured()) {
+            return null;
+        }
+
+        $started = microtime(true);
+        $status = null;
+        $mediaId = null;
+        $error = null;
+
+        try {
+            $response = Http::timeout(30)->connectTimeout(5)->acceptJson()
+                ->withToken((string) $this->credentials->token())
+                ->attach('file', $content, $filename, ['Content-Type' => $mime])
+                ->post($this->url('media'), ['messaging_product' => 'whatsapp']);
+
+            $status = $response->status();
+            $id = $response->json('id');
+            $mediaId = $response->successful() && is_string($id) && $id !== '' ? $id : null;
+            $error = $mediaId !== null ? null : (is_string($response->json('error.message')) ? (string) $response->json('error.message') : 'Meta did not take the file.');
+        } catch (Throwable $exception) {
+            report($exception);
+            $error = $exception->getMessage();
+        }
+
+        IntegrationLog::create([
+            'integration' => 'whatsapp',
+            'direction' => 'out',
+            'action' => 'media.upload',
+            'status_code' => $status,
+            'ok' => $mediaId !== null,
+            'duration_ms' => (int) round((microtime(true) - $started) * 1000),
+            // Never the token, never the file itself: only what kind of thing it was.
+            'request' => ['mime' => $mime, 'filename' => $filename, 'bytes' => strlen($content)],
+            'response' => $mediaId !== null ? ['media_id' => $mediaId] : null,
+            'error' => $error,
+            'created_at' => now(),
+        ]);
+
+        return $mediaId;
+    }
+
     public function media(string $mediaId): ?array
     {
         if (! $this->isConfigured()) {

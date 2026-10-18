@@ -1,3 +1,4 @@
+@use('App\Domain\Conversations\Enums\Channel')
 @use('App\Domain\Conversations\Enums\MessageStatus')
 @use('App\Domain\Conversations\Enums\MessageType')
 <div wire:poll.10s="refresh">
@@ -128,10 +129,30 @@
                                     'bg-navy-900 text-white dark:bg-white dark:text-navy-900' => $message->direction === App\Domain\Conversations\Enums\MessageDirection::Out,
                                     'bg-gray-100 text-gray-900 dark:bg-white/10 dark:text-white' => $message->direction !== App\Domain\Conversations\Enums\MessageDirection::Out,
                                 ])>
-                                    @if ($message->type !== MessageType::Text && $message->type !== MessageType::Template)
-                                        <p class="mb-1 text-theme-xs uppercase opacity-70">{{ $message->type->value }}</p>
+                                    @if ($message->media_path !== null && $message->media_disk !== null)
+                                        @php($mediaUrl = route('admin.conversations.media', $message))
+                                        @php($mime = (string) $message->media_mime)
+                                        @if (str_starts_with($mime, 'image/'))
+                                            <a href="{{ $mediaUrl }}" target="_blank" rel="noopener" class="mb-1 block">
+                                                <img src="{{ $mediaUrl }}" alt="{{ $message->media_name ?? 'Photograph' }}" class="max-h-56 rounded-lg" loading="lazy">
+                                            </a>
+                                        @elseif (str_starts_with($mime, 'video/'))
+                                            <video src="{{ $mediaUrl }}" controls preload="metadata" class="mb-1 max-h-56 rounded-lg"></video>
+                                        @elseif (str_starts_with($mime, 'audio/'))
+                                            <audio src="{{ $mediaUrl }}" controls preload="metadata" class="mb-1"></audio>
+                                        @else
+                                            <a href="{{ $mediaUrl }}" target="_blank" rel="noopener" class="mb-1 flex items-center gap-2 underline decoration-dotted">
+                                                <x-icon name="download" class="size-4" />
+                                                <span class="max-w-56 truncate">{{ $message->media_name ?? 'Document' }}</span>
+                                            </a>
+                                        @endif
                                     @endif
-                                    <p class="whitespace-pre-wrap">{{ $message->body }}</p>
+                                    @if ($message->type !== MessageType::Text && $message->type !== MessageType::Template && $message->type !== MessageType::Note)
+                                        <p class="mb-1 text-theme-xs uppercase opacity-70">{{ $message->media_path === null ? $message->type->value : '' }}</p>
+                                    @endif
+                                    @if ($message->body !== null && $message->body !== '')
+                                        <p class="whitespace-pre-wrap">{{ $message->body }}</p>
+                                    @endif
                                     <p class="mt-1 flex items-center gap-1.5 text-theme-xs opacity-70">
                                         {{ $message->created_at->format('H:i') }}
                                         @if ($message->direction === App\Domain\Conversations\Enums\MessageDirection::Out)
@@ -169,8 +190,32 @@
                         </div>
                     @endif
 
+                    @if ($selected->channel === Channel::Whatsapp)
+                        <div class="mb-2 flex items-center gap-2">
+                            <label class="cursor-pointer rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5" title="Attach a photo, PDF, voice note or clip">
+                                <x-icon name="paperclip" class="size-5" />
+                                <input type="file" wire:model="attachment" class="sr-only" accept="image/*,audio/*,video/*,.pdf">
+                            </label>
+                            @if ($attachment)
+                                <div class="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-gray-200 px-2.5 py-1.5 dark:border-gray-700" wire:key="attachment-chip">
+                                    @if (is_object($attachment) && str_starts_with((string) $attachment->getMimeType(), 'image/'))
+                                        <img src="{{ $attachment->temporaryUrl() }}" alt="" class="size-9 shrink-0 rounded object-cover">
+                                    @else
+                                        <x-icon name="file" class="size-5 shrink-0 text-gray-400" />
+                                    @endif
+                                    <span class="min-w-0 flex-1 truncate text-theme-xs text-gray-600 dark:text-gray-300">{{ $attachment?->getClientOriginalName() }}</span>
+                                    <button type="button" wire:click="removeAttachment" class="rounded p-1 text-gray-400 hover:text-error-600" title="Remove">
+                                        <x-icon name="x" class="size-4" />
+                                    </button>
+                                </div>
+                            @endif
+                            <div wire:loading wire:target="attachment" class="text-theme-xs text-gray-500">Uploading…</div>
+                            @error('attachment') <p class="text-theme-xs text-error-600">{{ $message }}</p> @enderror
+                        </div>
+                    @endif
+
                     <div class="flex items-end gap-2">
-                        <textarea wire:model="draft" rows="2" placeholder="Write a reply… (type / for saved replies)" class="wx-input" aria-label="Reply" @disabled(! $selected->allowsFreeFormReply())></textarea>
+                        <textarea wire:model="draft" rows="2" placeholder="{{ $attachment ? 'Caption (optional)…' : 'Write a reply… (type / for saved replies)' }}" class="wx-input" aria-label="Reply" @disabled(! $selected->allowsFreeFormReply())></textarea>
                         <x-admin.button variant="primary" wire:click="send" icon="send" :disabled="! $selected->allowsFreeFormReply()">Send</x-admin.button>
                     </div>
 

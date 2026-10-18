@@ -7,6 +7,7 @@ namespace App\Livewire\Admin\Conversations;
 use App\Domain\Conversations\Actions\SendConversationMessage;
 use App\Domain\Conversations\Enums\Channel;
 use App\Domain\Conversations\Enums\ConversationStatus;
+use App\Domain\Conversations\Enums\MessageStatus;
 use App\Domain\Conversations\Exceptions\ConsentRequired;
 use App\Domain\Conversations\Exceptions\OutsideWindow;
 use App\Domain\Conversations\Models\CannedReply;
@@ -26,6 +27,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Throwable;
 
 /**
@@ -41,6 +43,7 @@ use Throwable;
 class Inbox extends Component
 {
     use InteractsWithAdmin;
+    use WithFileUploads;
 
     #[Url(except: 'open')]
     public string $status = 'open';
@@ -57,6 +60,9 @@ class Inbox extends Component
     public ?int $selectedId = null;
 
     public string $draft = '';
+
+    /** @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null A photograph, PDF, voice note or clip to send (CNV-008). */
+    public $attachment = null;
 
     public string $note = '';
 
@@ -101,6 +107,7 @@ class Inbox extends Component
         $this->selectedId = $id;
         $this->draft = '';
         $this->note = '';
+        $this->attachment = null;
         $conversation->markRead();
     }
 
@@ -148,18 +155,53 @@ class Inbox extends Component
         $reply->increment('usage_count');
     }
 
+    /**
+     * The moment a file lands, say if WhatsApp will not take it — better than a refusal after Send.
+     */
+    public function updatedAttachment(): void
+    {
+        if ($this->attachment === null) {
+            return;
+        }
+
+        $mime = strtolower((string) $this->attachment->getMimeType());
+        $ok = str_starts_with($mime, 'image/') || str_starts_with($mime, 'audio/') || str_starts_with($mime, 'video/') || $mime === 'application/pdf';
+
+        if (! $ok) {
+            $this->toast('WhatsApp takes images, PDFs, audio and video only.', 'error');
+            $this->attachment = null;
+
+            return;
+        }
+
+        $limit = str_starts_with($mime, 'image/') ? 5 : 16;
+
+        if ($this->attachment->getSize() > $limit * 1_000_000) {
+            $this->toast('That file is over '.$limit.' MB — WhatsApp will not take it.', 'error');
+            $this->attachment = null;
+        }
+    }
+
+    public function removeAttachment(): void
+    {
+        $this->attachment = null;
+    }
+
     public function send(SendConversationMessage $action): void
     {
         $conversation = $this->selected();
 
-        if ($conversation === null || trim($this->draft) === '') {
+        if ($conversation === null || ($this->attachment === null && trim($this->draft) === '')) {
             return;
         }
 
         $this->authorize('reply', $conversation);
 
         try {
-            $action->handle($conversation, $this->draft, Auth::user());
+            // CNV-008: with a file attached, the typed text becomes the caption on the media.
+            $message = $this->attachment !== null
+                ? $action->media($conversation, $this->attachment, $this->draft, Auth::user())
+                : $action->handle($conversation, $this->draft, Auth::user());
         } catch (OutsideWindow|ConsentRequired $exception) {
             $this->toast($exception->getMessage(), 'error');
 
@@ -174,7 +216,8 @@ class Inbox extends Component
         }
 
         $this->draft = '';
-        $this->toast('Sent.');
+        $this->attachment = null;
+        $this->toast($message->status === MessageStatus::Sent ? 'Sent.' : 'Saved as failed — WhatsApp refused it.');
     }
 
     public function addNote(SendConversationMessage $action): void

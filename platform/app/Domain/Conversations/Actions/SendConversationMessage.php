@@ -16,8 +16,13 @@ use App\Domain\Conversations\Notifications\ConversationMentionedNotification;
 use App\Domain\Crm\Actions\NotifyMentions;
 use App\Domain\Crm\Models\Contact;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
+use App\Integrations\WhatsApp\SendResult;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
@@ -80,6 +85,118 @@ final class SendConversationMessage
 
             return $message;
         });
+    }
+
+    /**
+     * Media back to the client (CNV-008): a photograph, a PDF, a voice note, a clip.
+     *
+     * Meta's media id lives 30 days and is only a handle — the studio's copy is kept on the same
+     * disk the inbound media lands on, so what was sent is still visible in the thread next year.
+     * Sending media is a free-form message: the 24-hour window and consent apply exactly as for text.
+     *
+     * @throws OutsideWindow when the window has closed
+     * @throws ValidationException when the file is not a kind WhatsApp takes, or is too large
+     */
+    public function media(Conversation $conversation, UploadedFile $file, string $caption = '', ?User $user = null): Message
+    {
+        $conversation = $this->authorizedConversation($conversation, $user);
+
+        if ($conversation->channel !== Channel::Whatsapp) {
+            throw new \InvalidArgumentException('Media can only be sent on WhatsApp conversations for now.');
+        }
+
+        $this->assertConsent($conversation);
+
+        if (! $conversation->isInWindow()) {
+            throw new OutsideWindow;
+        }
+
+        $type = $this->mediaType($file);
+        $caption = trim($caption);
+
+        // The studio's copy first: even a failed Meta upload stays in the history, marked failed, like text.
+        $path = 'conversations/'.now()->format('Y/m').'/'.Str::ulid()->toBase32().'.'.strtolower($file->getClientOriginalExtension() ?: 'bin');
+        Storage::disk('local')->put($path, $file->getContent());
+
+        $mediaId = $this->whatsapp->uploadMedia($file->getContent(), (string) $file->getMimeType(), (string) $file->getClientOriginalName());
+
+        $result = $mediaId === null
+            ? SendResult::failed('Meta did not accept the file.')
+            : $this->whatsapp->sendMedia((string) $conversation->external_number, $type->value, $mediaId, $caption !== '' ? $caption : null, $type === MessageType::Document ? (string) $file->getClientOriginalName() : null);
+
+        return DB::transaction(function () use ($conversation, $type, $caption, $user, $result, $path, $file): Message {
+            /** @var Message $message */
+            $message = $conversation->messages()->create([
+                'direction' => MessageDirection::Out,
+                'type' => $type,
+                'body' => $caption !== '' ? $caption : null,
+                'user_id' => $user?->id,
+                'external_id' => $result->messageId,
+                'status' => $result->ok ? MessageStatus::Sent : MessageStatus::Failed,
+                'error_message' => $result->ok ? null : $result->error,
+                'sent_at' => $result->ok ? now() : null,
+                'media_disk' => 'local',
+                'media_path' => $path,
+                'media_mime' => (string) $file->getMimeType(),
+                'media_name' => (string) $file->getClientOriginalName(),
+                'meta' => ['sent' => true],
+            ]);
+
+            if ($result->ok) {
+                $conversation->touchLastMessage(MessageDirection::Out, $this->mediaPreview($type, $caption));
+                $this->clearReplyClock($conversation);
+            }
+
+            return $message;
+        });
+    }
+
+    /** WhatsApp takes four kinds of media; the studio sends three of them on purpose (no stickers). */
+    private function mediaType(UploadedFile $file): MessageType
+    {
+        $mime = strtolower((string) $file->getMimeType());
+
+        $type = match (true) {
+            str_starts_with($mime, 'image/') => MessageType::Image,
+            str_starts_with($mime, 'audio/') => MessageType::Audio,
+            str_starts_with($mime, 'video/') => MessageType::Video,
+            $mime === 'application/pdf' => MessageType::Document,
+            default => null,
+        };
+
+        if ($type === null) {
+            throw ValidationException::withMessages([
+                'attachment' => 'WhatsApp takes images, PDFs, audio and video — convert the file first ('.$mime.').',
+            ]);
+        }
+
+        $limit = match ($type) {
+            MessageType::Image => 5_000_000,
+            MessageType::Document => 100_000_000,
+            default => 16_000_000,
+        };
+
+        if ($file->getSize() > $limit) {
+            throw ValidationException::withMessages([
+                'attachment' => 'That file is '.number_format($file->getSize() / 1_000_000, 1).' MB; WhatsApp allows '.number_format($limit / 1_000_000).' MB for '.$type->value.'s.',
+            ]);
+        }
+
+        return $type;
+    }
+
+    /** The words the conversation list shows for a media message — the same vocabulary the inbox uses. */
+    private function mediaPreview(MessageType $type, string $caption): string
+    {
+        $word = match ($type) {
+            MessageType::Image => 'Photograph',
+            MessageType::Document => 'Document',
+            MessageType::Audio => 'Voice note',
+            MessageType::Video => 'Video',
+            default => 'Media',
+        };
+
+        return $caption !== '' ? $word.' — '.$caption : $word;
     }
 
     /** A web_chat reply: stored directly, marked sent, shown by the widget's polling. */

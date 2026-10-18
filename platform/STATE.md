@@ -1604,3 +1604,40 @@ Gotchas: (1) new datetime columns must be added to the model's casts — a raw s
 signed — `now()->diffInMinutes($future)` is positive, the other way round is negative;
 (4) `App\Models\User`, never `App\Domain\System\Models\User` — the wrong import only
 explodes at runtime, Larastan passes it silently.
+
+
+## 51. CNV-008 — media back to the client (18 Oct 2026)
+
+The last quick win, in its own wave as planned. One rule held throughout: media is a free-form
+message — consent and the 24-hour window apply exactly as for text, no exceptions for pictures.
+
+- **Gateway**: `uploadMedia()` (multipart POST to /{phone-number-id}/media, logged as
+  `media.upload` with only mime/name/bytes — never the token, never the file) and `sendMedia()`
+  (image/document/audio/video by Meta id, caption under images/docs/clips, filename on
+  documents). Fake gateway records both legs.
+- **Send**: `SendConversationMessage::media()` — classifies the mime (image/audio/video/PDF;
+  anything else is a ValidationException, sizes capped at Meta's limits 5/16/16/100 MB), keeps
+  the studio's copy on the `local` disk FIRST (a failed Meta upload still lands in the thread as
+  failed, like text), then upload → send → message row with media_* filled. `last_preview` says
+  "Photograph — caption"; a successful media reply clears the CNV-007 reply clock like any reply.
+- **Composer**: paperclip on WhatsApp threads only (web chat stays text), instant feedback on a
+  type/size Meta would refuse, the typed text becomes the caption, chip preview with remove.
+- **The thread finally renders media — both directions.** Inbound photographs were stored since
+  WAP-003 but invisible; now images, audio, video and document links render through
+  `/admin/conversations/media/{message}` (`ConversationMediaController`): private disk, per-
+  conversation `inbox.view` authorization, inline for image/audio/video/PDF, download for the
+  rest, `X-Content-Type-Options: nosniff`.
+- Tests: `ConversationMediaTest` — 8 green (action, refusal, window, file serving permissions,
+  composer upload flow, WhatsApp-only attach). Gate: **100 files / 1057 passed / 0 failed** ·
+  Pint + Larastan clean.
+
+Scope notes: in-browser voice recording and location sending are not in — an audio file can be
+attached as a voice note, and location needs a picker worth its own slice. The web-chat widget
+stays text-only (v1 widget).
+
+Gotchas: (1) Livewire 3's temp upload class is
+`Livewire\Features\SupportFileUploads\TemporaryUploadedFile` — it extends Laravel's
+UploadedFile, so it flows into actions typed against `Illuminate\Http\UploadedFile`, but the
+old `Livewire\TemporaryUploadedFile` namespace is v2 and Larastan rightly rejects it;
+(2) `x-icon` names: `paperclip` and `x` exist, `close` does not; (3) the rebuilt sandbox keeps
+node on PATH — shard-gate.sh now honours `$NODE` and falls back to `command -v node`.

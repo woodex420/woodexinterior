@@ -19,6 +19,12 @@ final class FakeWhatsAppGateway implements WhatsAppGateway
     /** What Meta would say the number's quality is (WAP-010 tests). */
     public string $qualityRating = 'GREEN';
 
+    /** @var list<array{mime: string, filename: string, bytes: int}> What was uploaded to "Meta" (CNV-008). */
+    public array $uploads = [];
+
+    /** @var list<array{to: string, type: string, media_id: string, caption: ?string, filename: ?string}> Media sends (CNV-008). */
+    public array $mediaSent = [];
+
     /** @var list<array<string, mixed>> */
     public array $submitted = [];
 
@@ -63,6 +69,24 @@ final class FakeWhatsAppGateway implements WhatsAppGateway
         $this->sent[] = ['to' => $to, 'body' => null, 'template' => $template, 'language' => $language, 'components' => $components];
 
         return $this->result();
+    }
+
+    public function sendMedia(string $to, string $type, string $mediaId, ?string $caption = null, ?string $filename = null): SendResult
+    {
+        $this->mediaSent[] = ['to' => $to, 'type' => $type, 'media_id' => $mediaId, 'caption' => $caption, 'filename' => $filename];
+
+        return $this->result();
+    }
+
+    public function uploadMedia(string $content, string $mime, string $filename): ?string
+    {
+        if (! $this->configured) {
+            return null;
+        }
+
+        $this->uploads[] = ['mime' => $mime, 'filename' => $filename, 'bytes' => strlen($content)];
+
+        return 'MEDIA-'.count($this->uploads);
     }
 
     /**

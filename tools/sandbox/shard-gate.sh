@@ -5,7 +5,7 @@
 set -u
 
 APP=/tmp/woodex-run/app
-NODE=/tmp/phpwasm/node_modules/.bin/node
+NODE="${NODE:-$(command -v node)}"
 PHP="/tmp/phpwasm/php-cli.mjs"
 SHARDS="${1:-9}"
 LOG=/tmp/shard-gate.log

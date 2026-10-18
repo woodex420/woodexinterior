@@ -28,6 +28,19 @@ interface WhatsAppGateway
     public function sendTemplate(string $to, string $template, string $language = 'en', array $components = []): SendResult;
 
     /**
+     * Upload a file to Meta and get its media id back (CNV-008). The id is what a send references,
+     * and it stays valid for 30 days — enough for a reply, never for storage: we keep our own copy.
+     */
+    public function uploadMedia(string $content, string $mime, string $filename): ?string;
+
+    /**
+     * Send previously uploaded media: image, document, audio or video (CNV-008). Free-form, so Meta's
+     * 24-hour window applies exactly as it does for text. The caption is optional; WhatsApp shows it
+     * under the image or as the document's description.
+     */
+    public function sendMedia(string $to, string $type, string $mediaId, ?string $caption = null, ?string $filename = null): SendResult;
+
+    /**
      * Where a piece of inbound media can be fetched from (WAP-003).
      *
      * @return array{url: string, mime_type: string, sha256: string, file_size: int}|null
