@@ -28,7 +28,7 @@ owner or on Meta.
 
 ### 2.1 Done (part 1, shipped)
 
-Inbox with assignment and internal notes (CNV-001/002, CNV-003 **without @mentions**) · 24-hour window awareness
+Inbox with assignment and internal notes (CNV-001/002, CNV-003 **with @mentions since 18 Oct**) · 24-hour window awareness
 with the template fallback (CNV-005) · polling so a thread updates without a reload (CNV-006 partial) · receive
 text, image, document, audio, video, location, contacts, buttons, reactions (WAP-003) · send free-form and
 templates, with delivery/read/failed statuses (WAP-004) · signed webhook with idempotent processing (WAP-002) ·
@@ -47,12 +47,12 @@ WhatsApp (this week)** · **a client's "ok" noticed without accepting the price 
 | **WAP-005** | ~~Template manager: sync, submit, status, map to events~~ | **DONE** | Automation → WhatsApp Templates. Sync mirrors Meta (paging, rejection reasons, removals marked not deleted); submit validates and sends examples; mapping is one approved template per moment, and the quotation send uses it. |
 | **CNV-004** | ~~Canned replies with variables, EN/UR, `/` shortcut in the composer~~ | **DONE 17 Oct** | `canned_replies` table + `CannedReply` model (variables `{first_name}` `{studio_name}` `{studio_hours}` `{quote_link}`, quote link = latest sent quotation's portal link); `/` picker in the inbox composer fills them per client; Settings → Canned replies manages them (EN/Roman Urdu, seeded with 7). |
 | **CNV-006** | Real-time: new message, typing and status pushed (Laravel broadcasting), keeping the 5 s/30 s poll as fallback | **PART** | Polling works today. Broadcasting needs a driver that works on Hostinger (Pusher/Ably key, or self-hosted Soketi) — **owner decision on the provider**. |
-| **CNV-007** | Conversation SLA: first reply and next reply targets, with escalation to Telegram | **TODO** | Mirrors the lead SLA that already exists. |
+| **CNV-007** | Conversation SLA: first reply and next reply targets, with escalation to Telegram | **DONE 18 Oct** | Reply clock on WhatsApp conversations: 30 min first reply, 15 min after that (Settings → Sales), armed by inbound, cleared by any staff reply; `woodex:sla-check` flags breaches and escalates. Website chats excluded on purpose — the lead SLA + live-chat bell already cover them. |
 | **CNV-008** | Send media back: images, PDFs, voice notes, location | **PART** | Receiving works; sending needs media upload to the Graph API (not yet in the gateway). |
 | **CNV-009** | AI assist in the inbox: suggested reply, summarise, translate EN↔UR/Roman Urdu, edited by staff before sending | **TODO** | Depends on BOT-002's provider abstraction. |
 | **WAP-007** | Broadcasts to segments with opt-in, scheduling, throttling, per-recipient status and a cost estimate before sending | **TODO** | Needs WAP-005 and WAP-008. Owner decision: do we send marketing broadcasts at all? |
-| **WAP-008** | Usage and cost meter: monthly counts by category × rate table, threshold alerts to Telegram | **TODO** | Settings work + a scheduled daily rollup. |
-| **WAP-010** | Quality monitoring: number quality rating and messaging limit on the Integrations page, alert on downgrade | **TODO** | Small once WAP-001's page exists. |
+| **WAP-008** | Usage and cost meter: monthly counts by category × rate table, threshold alerts to Telegram | **DONE 18 Oct** | Rates + monthly budget in Settings → WhatsApp; daily `woodex:whatsapp-health` counts successfully sent messages (failed, notes, web chats excluded) and alerts once per month when the estimate crosses the budget. |
+| **WAP-010** | Quality monitoring: number quality rating and messaging limit on the Integrations page, alert on downgrade | **DONE 18 Oct** | Daily quality check in `woodex:whatsapp-health` stores the rating, alerts the day it drops; shown on the Integrations card. Messaging-limit tier waits for a real Meta API surface (not exposed on the phone-number node). |
 | **AUT-001** | Follow-up sequences engine: ordered steps (wait → send template/email → create task → change stage), enrolled by trigger or by hand, exits when the client replies or the lead is won/lost | **TODO** | The biggest single piece of P4 after the bot. |
 | **AUT-002** | Built-in sequences, editable: lead not reached · quote not viewed · quote viewed not accepted · invoice reminders · post-visit · lost-lead nurture · review request | **PART** | **Quotation follow-ups shipped this week** (chase after N days, warn before lapse, lapse when stale) as a focused command. The rest waits for AUT-001. |
 | **AUT-005** | Execution log per enrolment (step, time, result, error) with pause/resume/cancel | **TODO** | Comes with AUT-001. |
