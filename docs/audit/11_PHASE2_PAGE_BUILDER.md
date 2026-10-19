@@ -335,3 +335,47 @@ receives a v2.1 font code, the store always receives a complete CSS stack
 
 `git revert` the theme commit. Tokens are rows, not schema: the seeder additions and the bridge can
 be removed without touching `pages` or the builder's HTML storage.
+
+## 13. Media — the builder's picker is the OS media library (2026-10-20)
+
+**Scope (first half of the media slice).** Replacing an image, setting a background or picking a
+photo in the builder uses `website_media`, the same table the OS Media screen edits. No second
+upload folder, no second list.
+
+### 13.1 What changed
+
+* `App\Domain\Website\Builder\BuilderMedia` — the picker's two actions:
+  * `urls()` — newest 300 images, as the URLs `Media::url()` already serves (`/media/{id}/{name}?v=…`).
+  * `upload()` — validates `jpg/jpeg/png/webp/avif`, ≤ 5 MB, stores under
+    `storage/app/public/website/Y/m/`, reads the real pixel size and creates a `website_media` row
+    with alt text from the file name.
+* `BuilderApi` — `media` now returns the library (was `[]`), and `upload` is routed through the
+  controller with the uploaded file. `media_delete` remains a named “not in this slice” error
+  because deletion must go through the OS Media screen's in-use check.
+* `builder.js` — one OS PORT fix: on a site with a single page, a header/footer edit opens an empty
+  “Header / footer updated” dialog instead of saying the page was saved.
+
+### 13.2 Verified in the running app
+
+* Browser run: opened the home page, selected the logo (`img.brand-mark`), opened the picker —
+  **108 images**, chose one → canvas replaced the `src`, toast “Image updated”; **Save** →
+  “Saved & live ✓ (backup kept)”; `/?preview=1` then contains `/media/213/…`.
+* `tests/Feature/Website/BuilderMediaTest.php` — **5 passed / 22 assertions** (list order, upload row
+  + dimensions + stored file, PDF refused, >5 MB refused, permission enforced).
+* `Feature/Website` — **240 passed / 3,881 assertions**. Pint 836 files PASS, PHPStan 0 errors.
+* Screenshot: `docs/audit/evidence/phase2-builder-media.png`.
+
+### 13.3 Known limits
+
+* **The public URL still serves the static file.** `/` is `public/index.html`; the builder writes the
+  database copy, which is visible at `/?preview=1` (the builder's “View page” already points there).
+  Publishing to the real URL is Phase 3 (cutover per page group), as approved — nothing here changes
+  the live site yet.
+* Uploads in the sandbox are slow (php-wasm): a 130 KB page save measured ~68 s. Not a product
+  limit; the same save is milliseconds on PHP-FPM.
+* Free-photo search (`import_url`) is not implemented: Openverse search runs in the browser, the
+  server-side copy is still a named error.
+
+### 13.4 Rollback
+
+Revert the commit. `BuilderMedia` is additive; the table and the files stay, so nothing is lost.

@@ -12,6 +12,7 @@ use App\Domain\Website\Models\PageVersion;
 use App\Domain\Website\Support\HtmlGuard;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -28,6 +29,7 @@ final class BuilderApi
     public function __construct(
         private readonly SaveHtmlPage $save,
         private readonly ThemeBridge $theme,
+        private readonly BuilderMedia $media,
     ) {}
 
     /**
@@ -45,17 +47,25 @@ final class BuilderApi
             'backup_get' => $this->backupGet($in),
             'restore' => $this->restore($in, $user),
             'page_new' => $this->pageNew($in, $user),
-            'media' => ['ok' => true, 'media' => []],
+            'media' => ['ok' => true, 'media' => $this->media->urls()],
             'media_usage' => ['ok' => true, 'used' => []],
             'theme_get' => ['ok' => true, 'vars' => $this->theme->vars()],
             'theme' => $this->saveTheme($in, $user),
             'logout' => ['ok' => true],
             'login', 'setup', 'password' => ['ok' => false, 'error' => 'Sign in through Woodex OS — the builder has no password of its own.'],
-            'upload', 'media_delete', 'blocks_save', 'blocks_delete', 'blocks_import',
+            'media_delete', 'blocks_save', 'blocks_delete', 'blocks_import',
             'blocks_usage', 'blocks_sync', 'import_url', 'fetch_page', 'appr_apply' => $this->later($action),
             'blocks_list' => ['ok' => true, 'blocks' => []],
             default => ['ok' => false, 'error' => 'Unknown builder action: '.$action],
         };
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function upload(?UploadedFile $file, ?User $user): array
+    {
+        return $this->media->upload($file, $user);
     }
 
     /**

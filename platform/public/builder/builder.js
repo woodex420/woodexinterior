@@ -236,6 +236,8 @@
   }
   function propagateGlobal(changes) {
     var others = S.pages.filter(function (p) { return p.path !== S.path; }), i = 0, upd = 0, skip = [], fail = [];
+    // OS PORT: on a one-page site there is nothing to propagate — say "saved", don't open an empty dialog.
+    if (!others.length) { S.regOrig = regionSnap(S.doc); updateDirty(); toast("Saved & live ✓ (backup kept)"); return; }
     $("#save").disabled = true; S.propagating = true;
     function next() {
       if (i >= others.length) {

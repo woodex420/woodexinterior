@@ -37,7 +37,11 @@ final class WebsiteBuilderController
     public function api(Request $request, BuilderApi $api): JsonResponse
     {
         try {
-            $out = $api->handle((string) $request->input('action', 'status'), $request->all(), $request->user());
+            $action = (string) $request->input('action', 'status');
+
+            $out = $action === 'upload'
+                ? $api->upload($request->file('file'), $request->user())
+                : $api->handle($action, $request->all(), $request->user());
         } catch (StalePageException $e) {
             return response()->json(['ok' => false, 'error' => $e->getMessage()], 409);
         } catch (ValidationException $e) {
