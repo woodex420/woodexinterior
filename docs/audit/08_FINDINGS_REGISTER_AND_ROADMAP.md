@@ -108,6 +108,13 @@ pass on the new one. **Rollback:** revert the phase branch; no schema changes.
 **Exit criteria:** builder-check plus new tests for each capability; every builder action reversible;
 no change to public HTML without a publish. **Rollback:** per-capability flags in `config/website.php`.
 
+**Progress (19 Oct 2026):** the first slice is in `11_PHASE2_PAGE_BUILDER.md` — per-device spacing and
+visibility, conflict-safe saving (fingerprint, no schema change), multi-select/copy/paste, the
+static-file shadow notice, and the four feature flags. Full gate green (1,225 passed / 1 skipped /
+127 files); builder-check now exercises the device CSS and the clipboard in a browser. Still open:
+the `columns` primitive, per-breakpoint typography, the per-element inspector, autosave recovery,
+theme presets and the parity report.
+
 **Reference input:** B-05 is resolved. The v2.1 builder source is available at
 `marketingwoodex-cloud/-marketingwoodex`, branch `arena/8a776c65-marketingwoodex`, SHA `720d817`
 (`frontend-v1/builder/*`, `api/builder.php`). Phase 2 compares behaviour against that source; it is a
@@ -203,7 +210,7 @@ No migrations, no production writes, no feature removal without a separate confi
 | Audit every file across FE, BE, APIs, DB, integrations, tests, deploy | `01`–`07` | Done (1,738 files scanned; production access blocked) |
 | Feature preservation matrix | `03` M-01…M-27, W-01…W-08 | Done |
 | Map every page/redirect to route/permission/API/entity/test | `02` | Done for 53 nav items + 158 routes; redirect rows are data, 0 seeded |
-| Page Builder completeness | `03` §4, `05` §3, `08` §3 Phase 2 | Planned |
+| Page Builder completeness | `03` §4, `05` §3, `08` §3 Phase 2 | **In progress** — first slice in `11` |
 | Organised main branch, clean deps, env, tests, deploy docs | `04` §10 | Proposed |
 | QA evidence, no placeholders/fake success | `06` | Partial — production and screen-level pending |
 | Phased, reversible delivery | `08` §3 | Proposed |

@@ -11,7 +11,18 @@
     $schemaType = $schemaType ?? ($page->schema_type ?? $page->type->schemaType());
     $modified = $modified ?? ($page->updated_at ?? now())->toDateString();
     $ogImageAlt = $title;
+    // Per-section device styles (SectionStyle): generated from integers only, scoped by block key.
+    $sectionCss = collect($blocks ?? [])
+        ->map(fn ($block): string => \App\Domain\Website\Support\SectionStyle::css($block->settings, (string) $block->block_key))
+        ->filter()
+        ->implode("\n");
 @endphp
+
+@if ($sectionCss !== '')
+    @push('head')
+        <style>{!! $sectionCss !!}</style>
+    @endpush
+@endif
 
 @section('content')
     @if ($page->template === 'canvas')

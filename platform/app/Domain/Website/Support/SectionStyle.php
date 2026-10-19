@@ -47,10 +47,44 @@ final class SectionStyle
         'centre' => 'Centred',
     ];
 
-    /** @return array{label: string, background: string, spacing: string, width: string, align: string} */
+    /** The three widths the editor offers, widest first. Desktop is the base the others inherit. */
+    public const array DEVICES = ['desktop', 'tablet', 'mobile'];
+
+    /** @var array<string, string> */
+    public const array DEVICE_LABELS = [
+        'desktop' => 'Desktop',
+        'tablet' => 'Tablet · ≤1024px',
+        'mobile' => 'Mobile · ≤640px',
+    ];
+
+    /** Spacing is written in pixels and kept within a sane band; empty means "as designed". */
+    private const int MAX_SPACING = 200;
+
+    /**
+     * @return array{label: string, background: string, spacing: string, width: string, align: string, responsive: array<string, array{top: ?int, bottom: ?int, hidden: bool}>}
+     */
     public static function defaults(): array
     {
-        return ['label' => '', 'background' => '', 'spacing' => '', 'width' => '', 'align' => ''];
+        return [
+            'label' => '',
+            'background' => '',
+            'spacing' => '',
+            'width' => '',
+            'align' => '',
+            'responsive' => self::emptyResponsive(),
+        ];
+    }
+
+    /**
+     * @return array<string, array{top: ?int, bottom: ?int, hidden: bool}>
+     */
+    private static function emptyResponsive(): array
+    {
+        return [
+            'desktop' => ['top' => null, 'bottom' => null, 'hidden' => false],
+            'tablet' => ['top' => null, 'bottom' => null, 'hidden' => false],
+            'mobile' => ['top' => null, 'bottom' => null, 'hidden' => false],
+        ];
     }
 
     /**
@@ -58,11 +92,24 @@ final class SectionStyle
      * dropped, never printed into the page.
      *
      * @param  array<string, mixed>|null  $settings
-     * @return array{label: string, background: string, spacing: string, width: string, align: string}
+     * @return array{label: string, background: string, spacing: string, width: string, align: string, responsive: array<string, array{top: ?int, bottom: ?int, hidden: bool}>}
      */
     public static function clean(?array $settings): array
     {
         $settings ??= [];
+        $responsive = self::emptyResponsive();
+        $rawResponsive = is_array($settings['responsive'] ?? null) ? $settings['responsive'] : [];
+
+        foreach (self::DEVICES as $device) {
+            $raw = is_array($rawResponsive[$device] ?? null) ? $rawResponsive[$device] : [];
+
+            $responsive[$device] = [
+                'top' => self::pixels($raw['top'] ?? null),
+                'bottom' => self::pixels($raw['bottom'] ?? null),
+                // The whole section cannot be hidden on desktop — the visible toggle is the switch there.
+                'hidden' => $device !== 'desktop' && (bool) ($raw['hidden'] ?? false),
+            ];
+        }
 
         return [
             'label' => mb_substr(trim(strip_tags((string) ($settings['label'] ?? ''))), 0, 60),
@@ -70,7 +117,77 @@ final class SectionStyle
             'spacing' => self::oneOf($settings['spacing'] ?? '', self::SPACINGS),
             'width' => self::oneOf($settings['width'] ?? '', self::WIDTHS),
             'align' => self::oneOf($settings['align'] ?? '', self::ALIGNMENTS),
+            'responsive' => $responsive,
         ];
+    }
+
+    /**
+     * The per-device CSS for one section, scoped to its block key. Empty when nothing was set, so a
+     * page with no responsive choices adds no bytes. Values are integers and the key is sanitised,
+     * so the result is safe to print raw in a <style> block.
+     *
+     * @param  array<string, mixed>|null  $settings
+     */
+    public static function css(?array $settings, string $key): string
+    {
+        $key = (string) preg_replace('/[^A-Za-z0-9_-]/', '', $key);
+
+        if ($key === '') {
+            return '';
+        }
+
+        if (! config('website.builder.responsive_styles', true)) {
+            return '';
+        }
+
+        $settings = self::clean($settings);
+        $selector = '[data-wx-key="'.$key.'"]';
+        $css = '';
+        $base = self::declarations($settings['responsive']['desktop']);
+
+        if ($base !== '') {
+            $css .= $selector.'{'.$base.'}';
+        }
+
+        foreach (['tablet' => 1024, 'mobile' => 640] as $device => $width) {
+            $declarations = self::declarations($settings['responsive'][$device]);
+
+            if ($declarations !== '') {
+                $css .= '@media (max-width:'.$width.'px){'.$selector.'{'.$declarations.'}}';
+            }
+        }
+
+        return $css;
+    }
+
+    /** @param array{top: ?int, bottom: ?int, hidden: bool} $device */
+    private static function declarations(array $device): string
+    {
+        $css = '';
+
+        if ($device['hidden']) {
+            $css .= 'display:none;';
+        }
+
+        if ($device['top'] !== null) {
+            $css .= 'padding-top:'.$device['top'].'px;';
+        }
+
+        if ($device['bottom'] !== null) {
+            $css .= 'padding-bottom:'.$device['bottom'].'px;';
+        }
+
+        return $css;
+    }
+
+    /** Empty, or a whole number of pixels inside the allowed band. */
+    private static function pixels(mixed $value): ?int
+    {
+        if ($value === null || $value === '' || ! is_numeric($value)) {
+            return null;
+        }
+
+        return max(0, min(self::MAX_SPACING, (int) $value));
     }
 
     /**

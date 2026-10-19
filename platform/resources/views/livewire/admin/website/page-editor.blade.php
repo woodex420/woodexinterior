@@ -30,6 +30,23 @@
         </x-slot:actions>
     </x-admin.page-header>
 
+    @if ($shadowedBy !== null)
+        <div class="mb-6 rounded-2xl border border-warning-300 bg-warning-50 p-4 text-theme-sm text-warning-800" role="status">
+            <p class="font-medium">This address is currently answered by the exported v1 page</p>
+            <p class="mt-1">Publishing here will not change what visitors see until <code class="rounded bg-white/60 px-1">{{ $shadowedBy }}</code> is removed from the public folder in the Phase 3 cutover. The draft and the <code class="rounded bg-white/60 px-1">?preview=1</code> preview are unaffected.</p>
+        </div>
+    @endif
+
+    @if ($conflict)
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-error-300 bg-error-50 p-4 text-theme-sm text-error-800" role="alert">
+            <div>
+                <p class="font-medium">This page changed after you opened it</p>
+                <p class="mt-1">Nothing was saved, so your edits are still here. Copy anything you need, then reload the newest version — or open the page in a second tab to compare.</p>
+            </div>
+            <x-admin.button variant="secondary" wire:click="reloadLatest">Reload latest version</x-admin.button>
+        </div>
+    @endif
+
     @if ($issues !== [])
         <div class="mb-6 rounded-2xl border border-warning-300 bg-warning-50 p-4 text-theme-sm text-warning-800" role="alert">
             <p class="font-medium">This page is not ready to publish yet</p>
@@ -319,6 +336,24 @@
                     </button>
                 </x-slot:actions>
 
+                @if (config('website.builder.section_clipboard', true))
+                <div class="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-800 dark:bg-white/[0.02]">
+                    <label class="flex items-center gap-2 text-theme-sm text-gray-600 dark:text-gray-300">
+                        <input type="checkbox" wire:click="toggleSelectAll" @checked(count($selectedKeys) === count($blocks) && $blocks !== []) class="rounded border-gray-300">
+                        Select all
+                    </label>
+                    <span class="text-theme-xs text-gray-500">{{ count($selectedKeys) }} selected</span>
+                    <span class="mx-1 h-4 w-px bg-gray-200 dark:bg-gray-700"></span>
+                    <button type="button" wire:click="copySelected" class="wx-seg-btn" @disabled($selectedKeys === [])>Copy</button>
+                    <button type="button" wire:click="pasteClipboard" class="wx-seg-btn">Paste</button>
+                    <button type="button" wire:click="duplicateSelected" class="wx-seg-btn" @disabled($selectedKeys === [])>Duplicate</button>
+                    <button type="button" wire:click="deleteSelected" class="wx-seg-btn text-error-600" @disabled($selectedKeys === [])>Delete</button>
+                    @if ($selectedKeys !== [])
+                        <button type="button" wire:click="$set('selectedKeys', [])" class="wx-seg-btn">Clear</button>
+                    @endif
+                </div>
+                @endif
+
                 <div class="space-y-4" wire:sort="sortBlocks">
                     @forelse ($blocks as $index => $block)
                         @php $blockType = BlockType::from($block['type']); @endphp
@@ -330,8 +365,15 @@
                         ])>
                             <header class="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-2.5 dark:border-gray-800">
                                 <div class="flex min-w-0 items-center gap-2">
+                                    @if (config('website.builder.section_clipboard', true))
+                                        <input type="checkbox" wire:click="toggleSelect('{{ $block['key'] }}')" @checked(in_array($block['key'], $selectedKeys, true))
+                                               class="rounded border-gray-300" aria-label="Select this section" wire:sort:ignore>
+                                    @endif
                                     <span wire:sort:handle class="section-handle cursor-grab select-none text-gray-300 hover:text-gray-500 active:cursor-grabbing" title="Drag to reorder" aria-hidden="true">⠿</span>
                                     <span class="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ \App\Domain\Website\Support\SectionStyle::title($block['settings'] ?? [], $blockType->label()) }}</span>
+                                    @if (($block['settings']['responsive']['mobile']['hidden'] ?? false))
+                                        <span class="shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-theme-xs text-gray-500 dark:bg-white/5 dark:text-gray-400">hidden on mobile</span>
+                                    @endif
                                     <label class="flex shrink-0 items-center gap-1.5 text-theme-xs text-gray-500">
                                         <input type="checkbox" wire:click="toggleBlock({{ $index }})" @checked($block['visible'] ?? true) class="rounded border-gray-300"> visible
                                     </label>
@@ -384,6 +426,47 @@
                                     </select>
                                 </label>
                                 <p class="self-end text-theme-xs text-gray-400">The page follows these as you change them.</p>
+                            </div>
+
+                            {{-- Per-device spacing (Phase 2, v2.1 parity): desktop is the base, tablet and
+                                 mobile inherit it and override only what is set here. --}}
+                            <div class="border-b border-gray-100 bg-gray-50/70 px-4 py-3 dark:border-gray-800 dark:bg-white/[0.02]"
+                                 x-data="{ dev: 'desktop' }">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <span class="wx-label mb-0">Per-device spacing</span>
+                                    <div class="flex gap-1" role="tablist" aria-label="Device">
+                                        @foreach (\App\Domain\Website\Support\SectionStyle::DEVICE_LABELS as $device => $deviceLabel)
+                                            <button type="button" role="tab" x-on:click="dev = '{{ $device }}'"
+                                                    x-bind:aria-selected="dev === '{{ $device }}'"
+                                                    x-bind:class="dev === '{{ $device }}' ? 'bg-navy-700 text-white' : 'bg-white text-gray-600 dark:bg-gray-900 dark:text-gray-300'"
+                                                    class="rounded-md border border-gray-200 px-2.5 py-1 text-theme-xs font-medium dark:border-gray-700">{{ $deviceLabel }}</button>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                @foreach (\App\Domain\Website\Support\SectionStyle::DEVICES as $device)
+                                    <div x-show="dev === '{{ $device }}'" x-cloak class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                                        <label class="block">
+                                            <span class="wx-label">Space above (px)</span>
+                                            <input type="number" min="0" max="200" step="4" placeholder="As designed"
+                                                   wire:model.live.debounce.500ms="blocks.{{ $index }}.settings.responsive.{{ $device }}.top" class="wx-input">
+                                        </label>
+                                        <label class="block">
+                                            <span class="wx-label">Space below (px)</span>
+                                            <input type="number" min="0" max="200" step="4" placeholder="As designed"
+                                                   wire:model.live.debounce.500ms="blocks.{{ $index }}.settings.responsive.{{ $device }}.bottom" class="wx-input">
+                                        </label>
+                                        @if ($device !== 'desktop')
+                                            <label class="flex items-end gap-2 pb-2 text-theme-sm text-gray-600 dark:text-gray-300">
+                                                <input type="checkbox" wire:model.live="blocks.{{ $index }}.settings.responsive.{{ $device }}.hidden" class="rounded border-gray-300">
+                                                Hide on this device
+                                            </label>
+                                        @else
+                                            <p class="self-end pb-2 text-theme-xs text-gray-400">Empty means as designed.</p>
+                                        @endif
+                                    </div>
+                                @endforeach
+                                <p class="mt-2 text-theme-xs text-gray-400">Desktop is the base; tablet and mobile inherit it and change only the values you set.</p>
                             </div>
 
                             <div class="space-y-3 p-4">

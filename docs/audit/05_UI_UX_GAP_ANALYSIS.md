@@ -42,9 +42,11 @@ Website group deliberately mirrors the v2.1 pro's starred section item for item.
 - **N-02 — P4b is undefined.** "Client Portal" and "Handovers" carry phase `P4b`; none of the 36 pre-audit documents
   mentions `P4b` (grep over the original `docs/` set returned nothing). P4, P5 and P7 are used by other items, so only the
   `b` variant is orphaned. Planned items render without a link and with the raw phase tag.
+  **Update (19 Oct, Phase 1 A-05):** the convention is now recorded in `docs/07-DECISIONS.md`; the nav
+  rename to "Phase 4 — portal" wording is still open.
 - **N-03 — stale plan signal.** The client portal **is built and tested** (signed portal pages, six-digit
   code, quote/invoice/project views). Showing it as future work understates the product. Handover
-  *items* exist as an entity; whether the screen is complete is a Phase 1 question.
+  *items* exist as an entity. Phase 1 closed without an admin handover screen, so the item stays open.
 - **N-07 — Bot has a backend but no screen.** `app/Domain/Bot/` holds five providers, guardrails, a
   reply action and two models; the Chat Bot nav item is still marked planned `P4`. Either the screen
   was dropped or it is configured from Conversations — Phase 1 must establish which, because an

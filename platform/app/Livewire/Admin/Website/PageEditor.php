@@ -17,8 +17,10 @@ use App\Domain\Website\Models\SavedSection;
 use App\Domain\Website\Services\PageAudit;
 use App\Domain\Website\Services\PageCache;
 use App\Domain\Website\Services\PageValidator;
+use App\Domain\Website\Support\PageFingerprint;
 use App\Domain\Website\Support\PreviewLink;
 use App\Domain\Website\Support\SectionStyle;
+use App\Domain\Website\Support\StaticShadow;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Validator;
@@ -100,6 +102,16 @@ class PageEditor extends Component
     /** True while a change waits for the debounce — the frame is showing an older draft. */
     public bool $previewStale = false;
 
+    /**
+     * Phase 2: a fingerprint of the page as this editor opened it. If the page in the database no
+     * longer matches, somebody else saved it — no schema change, no counter to trust.
+     */
+    #[Locked]
+    public string $sourceHash = '';
+
+    /** Set when a save was refused because the page moved on; cleared by reloadLatest(). */
+    public bool $conflict = false;
+
     /** Why the preview cannot show yet (an unsaved page without a title, a taken URL, …). */
     public string $previewNotice = '';
 
@@ -126,6 +138,15 @@ class PageEditor extends Component
 
     /** The layers panel's search: it filters the short list, never the page. */
     public string $layerQuery = '';
+
+    /**
+     * Multi-select (Phase 2, builder parity): the keys ticked in the Sections list. Actions apply to
+     * the ticked sections only, so a long page can be copied or cleared in one go.
+     *
+     * @var list<string>
+     */
+    #[Locked]
+    public array $selectedKeys = [];
 
     /** How many changes can be taken back (the stacks themselves stay out of the view). */
     protected const int HISTORY_LIMIT = 25;
@@ -347,6 +368,171 @@ class PageEditor extends Component
     /**
      * A copy of a section that works, placed right under it — the cheapest way to build a long page.
      */
+    /** The selection toolbar, and every action behind it, is one switch (config/website.php). */
+    private function selectionEnabled(): bool
+    {
+        return (bool) config('website.builder.section_clipboard', true);
+    }
+
+    public function toggleSelect(string $key): void
+    {
+        if (! $this->selectionEnabled()) {
+            return;
+        }
+
+        if (! collect($this->blocks)->contains(fn (array $block): bool => (string) $block['key'] === $key)) {
+            return;
+        }
+
+        $this->selectedKeys = in_array($key, $this->selectedKeys, true)
+            ? array_values(array_diff($this->selectedKeys, [$key]))
+            : [...$this->selectedKeys, $key];
+    }
+
+    /** Tick every section; the second press clears the selection. */
+    public function toggleSelectAll(): void
+    {
+        if (! $this->selectionEnabled()) {
+            return;
+        }
+
+        $this->selectedKeys = count($this->selectedKeys) === count($this->blocks)
+            ? []
+            : array_values(array_map(fn (array $block): string => (string) $block['key'], $this->blocks));
+    }
+
+    /**
+     * Put the ticked sections on the editor's clipboard (kept in the session, so they can be pasted
+     * into another page). The copy is the data only — ids and keys belong to the page they came from.
+     */
+    public function copySelected(): void
+    {
+        if (! $this->selectionEnabled()) {
+            return;
+        }
+
+        $copied = [];
+
+        foreach ($this->blocks as $block) {
+            if (! in_array((string) $block['key'], $this->selectedKeys, true)) {
+                continue;
+            }
+
+            $copied[] = [
+                'type' => (string) $block['type'],
+                'data' => (array) ($block['data'] ?? []),
+                'settings' => SectionStyle::clean((array) ($block['settings'] ?? [])),
+                'visible' => (bool) ($block['visible'] ?? true),
+            ];
+        }
+
+        if ($copied === []) {
+            $this->toast('Tick a section first, then copy.', 'error');
+
+            return;
+        }
+
+        session(['website.section_clipboard' => $copied]);
+        $this->toast(count($copied).' '.(count($copied) === 1 ? 'section' : 'sections').' copied — paste here or on another page.');
+    }
+
+    /** Paste the clipboard under the last section. Unknown types are dropped, never guessed at. */
+    public function pasteClipboard(): void
+    {
+        if (! $this->selectionEnabled()) {
+            return;
+        }
+
+        $copied = session('website.section_clipboard', []);
+
+        if (! is_array($copied) || $copied === []) {
+            $this->toast('The clipboard is empty — copy a section first.', 'error');
+
+            return;
+        }
+
+        $known = array_map(fn (BlockType $type): string => $type->value, BlockType::cases());
+
+        $pasted = [];
+
+        foreach ($copied as $block) {
+            if (! is_array($block) || ! in_array((string) ($block['type'] ?? ''), $known, true)) {
+                continue;
+            }
+
+            $type = BlockType::from((string) $block['type']);
+            $pasted[] = [
+                'id' => null,
+                'key' => $this->newKey(),
+                'type' => $type->value,
+                'visible' => (bool) ($block['visible'] ?? true),
+                'data' => array_merge($type->fields(), (array) ($block['data'] ?? [])),
+                'settings' => SectionStyle::clean((array) ($block['settings'] ?? [])),
+            ];
+        }
+
+        if ($pasted === []) {
+            $this->toast('Nothing on the clipboard can be pasted here.', 'error');
+
+            return;
+        }
+
+        $this->remember();
+        $this->blocks = [...$this->blocks, ...$pasted];
+        $this->selectedKeys = array_values(array_map(fn (array $block): string => (string) $block['key'], $pasted));
+        $this->markPreviewStale();
+        $this->toast(count($pasted).' '.(count($pasted) === 1 ? 'section' : 'sections').' pasted.');
+    }
+
+    /** Duplicate every ticked section, in page order, under the last section. */
+    public function duplicateSelected(): void
+    {
+        if (! $this->selectionEnabled()) {
+            return;
+        }
+
+        $copies = [];
+
+        foreach ($this->blocks as $block) {
+            if (! in_array((string) $block['key'], $this->selectedKeys, true)) {
+                continue;
+            }
+
+            $copy = $block;
+            $copy['id'] = null;
+            $copy['key'] = $this->newKey();
+            $copies[] = $copy;
+        }
+
+        if ($copies === []) {
+            return;
+        }
+
+        $this->remember();
+        $this->blocks = [...$this->blocks, ...$copies];
+        $this->selectedKeys = array_values(array_map(fn (array $block): string => (string) $block['key'], $copies));
+        $this->markPreviewStale();
+        $this->toast(count($copies).' '.(count($copies) === 1 ? 'section' : 'sections').' duplicated.');
+    }
+
+    /** Delete the ticked sections — one undo step, so a slip of the hand is recoverable. */
+    public function deleteSelected(): void
+    {
+        if (! $this->selectionEnabled() || $this->selectedKeys === []) {
+            return;
+        }
+
+        $this->remember();
+        $this->blocks = array_values(array_filter(
+            $this->blocks,
+            fn (array $block): bool => ! in_array((string) $block['key'], $this->selectedKeys, true),
+        ));
+        $count = count($this->selectedKeys);
+        $this->selectedKeys = [];
+        $this->markPreviewStale();
+        $this->toast($count.' '.($count === 1 ? 'section' : 'sections').' deleted — undo puts them back.');
+    }
+
     public function duplicateBlock(int $index): void
     {
         if (! isset($this->blocks[$index])) {
@@ -582,6 +768,13 @@ class PageEditor extends Component
             abort_unless($this->user()->can('website.publish'), 403);
         }
 
+        if ($this->pageMovedOn()) {
+            $this->conflict = true;
+            $this->toast('Someone saved this page after you opened it. Reload the latest version before saving.', 'error');
+
+            return;
+        }
+
         $this->validate();
 
         // One opening section per page: the first hero wins, the rest keep their content but stop
@@ -605,6 +798,9 @@ class PageEditor extends Component
 
         $saved = (new SavePage)($page, $input, $this->blocks, $publish, $this->user());
 
+        // Our own write is not somebody else's: the editor continues on the new fingerprint.
+        $this->sourceHash = PageFingerprint::of($saved->fresh(['blocks']));
+
         if ($hiddenHeroes > 0) {
             $this->toast('One opening section per page: '.$hiddenHeroes.' other hero '.
                 ($hiddenHeroes === 1 ? 'is' : 'are').' kept below but hidden — its content is still there.');
@@ -622,6 +818,13 @@ class PageEditor extends Component
      */
     private function persistDraft(): bool
     {
+        if ($this->pageMovedOn()) {
+            $this->conflict = true;
+            $this->previewNotice = 'This page changed elsewhere. Reload the latest version to keep previewing — nothing was saved.';
+
+            return false;
+        }
+
         if (trim($this->title) === '' || trim($this->slug) === '') {
             $this->previewNotice = 'Give the page a title and a URL — the preview appears the moment it can be saved.';
 
@@ -776,6 +979,7 @@ class PageEditor extends Component
                 ->map(fn (BlockType $type): array => ['value' => $type->value, 'label' => $type->label(), 'description' => $type->description(), 'category' => $type->category()])
                 ->groupBy('category'),
             'canUseRawHtml' => $this->canUseRawHtml(),
+            'shadowedBy' => config('website.builder.shadow_notice', true) ? StaticShadow::file($this->slug) : null,
             'savedSections' => SavedSection::query()->with('creator')->orderBy('name')->get(),
             'templates' => PageTemplate::query()->orderBy('page_type')->orderByDesc('is_default')->orderBy('name')->get(),
             'pages' => Page::query()->orderBy('title')->get(['id', 'title', 'slug']),
@@ -803,6 +1007,39 @@ class PageEditor extends Component
     private function page(): Page
     {
         return $this->pageId !== null ? Page::query()->findOrFail($this->pageId) : new Page;
+    }
+
+    /** Has anyone saved this page since this editor loaded it? */
+    private function pageMovedOn(): bool
+    {
+        if ($this->pageId === null || ! config('website.builder.conflict_check', true)) {
+            return false;
+        }
+
+        if ($this->sourceHash === '') {
+            return false;
+        }
+
+        $current = Page::query()->with('blocks')->find($this->pageId);
+
+        return $current !== null && PageFingerprint::of($current) !== $this->sourceHash;
+    }
+
+    /** Drop the local copy and open the version that is really in the database. */
+    public function reloadLatest(): void
+    {
+        abort_unless($this->user()->can('website.edit'), 403);
+
+        if ($this->pageId === null) {
+            return;
+        }
+
+        $this->reload(Page::query()->with('blocks')->findOrFail($this->pageId));
+        $this->conflict = false;
+        $this->issues = [];
+        $this->previewNotice = '';
+        $this->previewNonce++;
+        $this->toast('Loaded the latest saved version.');
     }
 
     /**
@@ -840,6 +1077,7 @@ class PageEditor extends Component
             $this->blocks = [];
             $this->isCanvas = false;
             $this->canvasHtml = '';
+            $this->sourceHash = '';
 
             return;
         }
@@ -858,6 +1096,7 @@ class PageEditor extends Component
         $this->ogImageId = $page->seo['og_image_id'] ?? null;
         $this->isCanvas = $page->template === 'canvas';
         $this->canvasHtml = (string) $page->canvas_html;
+        $this->sourceHash = PageFingerprint::of($page);
         $this->blocks = $page->blocks->map(fn ($block): array => [
             'id' => $block->id,
             'key' => $block->block_key ?? $this->newKey(),

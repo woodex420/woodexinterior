@@ -79,6 +79,11 @@ it('drops a value it does not know instead of printing it', function () {
         'spacing' => 'compact',
         'width' => '',
         'align' => '',
+        'responsive' => [
+            'desktop' => ['top' => null, 'bottom' => null, 'hidden' => false],
+            'tablet' => ['top' => null, 'bottom' => null, 'hidden' => false],
+            'mobile' => ['top' => null, 'bottom' => null, 'hidden' => false],
+        ],
     ]);
 
     expect(SectionStyle::classes(['background' => 'bg-red-500']))
@@ -211,4 +216,81 @@ it('cleans an HTML block when it is saved, not only when it renders', function (
 
     expect($saved)->not->toBeNull()
         ->and($saved->data['code'])->toBe('<p>Hello</p>');
+});
+
+it('writes per-device spacing as scoped css, with tablet and mobile inheriting desktop', function () {
+    $settings = SectionStyle::clean([
+        'responsive' => [
+            'desktop' => ['top' => 80, 'bottom' => 64],
+            'tablet' => ['top' => 48],
+            'mobile' => ['bottom' => 24, 'hidden' => false],
+        ],
+    ]);
+
+    $css = SectionStyle::css($settings, 'hero1');
+
+    expect($css)
+        ->toContain('[data-wx-key="hero1"]{padding-top:80px;padding-bottom:64px;}')
+        ->toContain('@media (max-width:1024px){[data-wx-key="hero1"]{padding-top:48px;}}')
+        ->toContain('@media (max-width:640px){[data-wx-key="hero1"]{padding-bottom:24px;}}')
+        ->and($css)->not->toContain('display:none');
+});
+
+it('hides a section on a named device without hiding it everywhere', function () {
+    $settings = SectionStyle::clean([
+        'responsive' => ['mobile' => ['hidden' => true]],
+    ]);
+
+    $css = SectionStyle::css($settings, 'promo');
+
+    expect($css)->toBe('@media (max-width:640px){[data-wx-key="promo"]{display:none;}}')
+        ->and(SectionStyle::clean([
+            'responsive' => ['desktop' => ['hidden' => true]],
+        ])['responsive']['desktop']['hidden'])->toBeFalse();
+});
+
+it('clamps spacing and drops values that are not numbers', function () {
+    $clean = SectionStyle::clean([
+        'responsive' => [
+            'desktop' => ['top' => 999, 'bottom' => -20],
+            'tablet' => ['top' => '80px;position:fixed'],
+        ],
+    ]);
+
+    expect($clean['responsive']['desktop']['top'])->toBe(200)
+        ->and($clean['responsive']['desktop']['bottom'])->toBe(0)
+        ->and($clean['responsive']['tablet']['top'])->toBeNull()
+        ->and(SectionStyle::css($clean, 'bad key!"'))->toContain('[data-wx-key="badkey"]');
+});
+
+it('puts the section device css in the page head and only when it is set', function () {
+    $page = Page::factory()->published()->asType(PageType::Service)->withSlug('/responsive/')->create([
+        'title' => 'Responsive section',
+        'excerpt' => 'Two sections, one tuned for phones.',
+    ]);
+
+    $page->blocks()->create([
+        'type' => BlockType::Text,
+        'block_key' => 'tuned1',
+        'data' => ['heading' => 'Tuned', 'body' => 'Space changes on a phone.'],
+        'settings' => ['responsive' => ['mobile' => ['top' => 24, 'bottom' => 24]]],
+        'visible' => true,
+        'position' => 0,
+    ]);
+
+    $page->blocks()->create([
+        'type' => BlockType::Text,
+        'block_key' => 'plain1',
+        'data' => ['heading' => 'Plain', 'body' => 'No device rules.'],
+        'visible' => true,
+        'position' => 1,
+    ]);
+
+    $body = $this->siteGet('/responsive/')->assertOk()->getContent();
+
+    expect($body)
+        ->toContain('@media (max-width:640px){[data-wx-key="tuned1"]{padding-top:24px;padding-bottom:24px;}}')
+        ->toContain('data-wx-key="tuned1"')
+        ->toContain('data-wx-key="plain1"')
+        ->not->toContain('[data-wx-key="plain1"]{');
 });

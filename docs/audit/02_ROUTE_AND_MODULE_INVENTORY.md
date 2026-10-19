@@ -117,9 +117,9 @@ component guard was spot-checked in this phase: Contacts ✓, Tasks ✓, Leads (
 | N-01 | **Alert Rules is duplicated** — a disabled `P5` item in Automation and the live screen in System | two `self::item('Alert Rules', …)` entries; `admin.system.alert-rules` exists | P2 |
 | N-02 | **P4b is undefined in the source and docs** (no file in the original 36-document set mentions it). The brief also asks what P4/P4B/P5/P7 mean | P4 = Conversations, P5 = Telegram command centre, P7 = Social in `docs/01-MASTER-PLAN.md` §integration table; P4b has no definition anywhere | P2 (needs owner) |
 | N-03 | **"Client Portal" and "Handovers" are shown as planned (P4b)** although the client portal is built: `portal` routes, `p/{project}/handover`, `ClientPortalTest`, `ProjectPortalController`, `portal_access_codes` table | route list + tests | P2 (nav out of date) |
-| N-04 | **Phase codes are shown raw** — planned items display `P4`, `P5`, `P7`, `P4b` with no legend anywhere in the UI or docs | `AdminNavigation.php`; `grep P4b docs/` → 0 hits | P3 (wording) |
-| N-05 | **Reports and Tasks & Visits have no component behaviour test.** A later check found `P10SidebarHubsTest` renders both routes and `ReportsKitTest` covers report maths, but neither component's actions are exercised | `P10SidebarHubsTest`, `ReportsKitTest` | P2 (coverage gap) |
-| N-06 | The brief lists **System → Alert Rules** and **Automation → Alert Rules**; the canonical screen is `admin.system.alert-rules`. Recommendation: keep System, delete the Automation duplicate | as above | P2 |
+| N-04 | **Phase codes are shown raw** — planned items display `P4`, `P5`, `P7`, `P4b` with no legend anywhere in the UI or docs | `AdminNavigation.php`; `grep P4b docs/` → 0 hits at audit time; convention added in A-05 (`docs/07`) | P3 (wording) |
+| N-05 | The brief lists **System → Alert Rules** and **Automation → Alert Rules**; the canonical screen is `admin.system.alert-rules`. Recommendation: keep System, delete the Automation duplicate | as above | P2 |
+| Q-07 | **Reports and Tasks & Visits have no component behaviour test.** `P10SidebarHubsTest` renders both routes and `ReportsKitTest` covers report maths, but neither component's actions are exercised | `P10SidebarHubsTest`, `ReportsKitTest` | P2 (coverage gap) |
 
 Navigation behaviour (grouped/collapsible, active state, breadcrumbs, direct URL, refresh,
 back/forward, mobile) was **not** exercised in Phase 0; the Blade shell and the 68-route smoke prove

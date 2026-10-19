@@ -62,3 +62,30 @@ Notes on what these files do **not** cover:
   evidence for the builder comes from `tools/sandbox/builder-check.mjs` and is summarised in `03`.
 - PHPStan ran against the synced copy (`/tmp/woodex-run/app`), which is byte-identical to
   `platform/` at sync time; paths in the output are relative to `app/`.
+
+## Phase 2 evidence (19 Oct 2026, first builder slice)
+
+Captured on `arena/8be318a2-woodexinterior` after the changes, against the same synced runtime.
+
+| File | Produced by | Result |
+|---|---|---|
+| `phase2-all-tests.txt` | `sh /tmp/run_all_tests.sh`, 13 batches of 10 | **127 files, 1,225 passed, 1 skipped, 0 failed, 8,518 assertions** |
+| `phase2-test-failures.txt` | same | **empty** (0 bytes) |
+| `phase2-pint.txt` | `pint --test` | **PASS, 821 files** |
+| `phase2-phpstan.txt` | `phpstan analyse --memory-limit=1G` | **`[OK] No errors`**, 556 files |
+| `phase2-smoke.txt` | `sh tools/sandbox/smoke.sh` | **SMOKE OK (68 pages)** |
+| `phase2-builder-check.txt` | `node tools/sandbox/builder-check.mjs` | **BUILDER CHECK OK**, 15 steps incl. per-device CSS and copy/paste |
+
+SHA-256 at capture:
+
+```
+b3055f82fce9c57c36ca8529eb890f2dea703ca98261d6a8d73baa669d0e893f  phase2-all-tests.txt
+91ac479142d5537bebbb636faad8d3f87eac49047ceb9b5fd2db3e42ff0fa02b  phase2-builder-check.txt
+cf4314ca1ba01802ee874866096acb842ab222a0bcad0d56be86058e2cee64ee  phase2-phpstan.txt
+26e7d6bad39fa8dcb342bcab06e3be1a03294a2a951cefaddf02a688db838f9f  phase2-pint.txt
+99204b8b732aacf41a43ab99e87fce7ddc052bc6765cc0c4491d9a21da959d2c  phase2-smoke.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  phase2-test-failures.txt
+```
+
+The all-tests file contains ANSI colour codes because the batch runner did not strip them; the
+`Tests:` lines are still readable and the totals above were re-summed independently from all 13 lines.

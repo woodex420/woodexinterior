@@ -22,6 +22,7 @@
         'phone' => $phone,
         'faqs' => $faqs,
     ])
+    @stack('head')
 </head>
 <body class="bg-paper">
     @php $gtm = app(\App\Settings\SiteSettings::class); @endphp

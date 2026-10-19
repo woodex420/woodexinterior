@@ -2343,3 +2343,32 @@ audit → safety → builder → cutover → modules → polish → QA → deplo
 
 Tests: **1,212 passed / 1 skipped / 0 failed** across 125 files (8,475 assertions). No migrations.
 `composer.lock` remains open until the first CI run resolves and prints it.
+
+
+## 19 Oct 2026 — Phase 2 (page builder), first slice
+
+Authorised by the owner's "Phase 2". Scope from `docs/audit/08` §3, delivered in four parts; the rest
+(columns primitive, typography, inspector, autosave recovery, theme presets, parity report) stays open
+in `docs/audit/11`.
+
+- **Per-device section styles.** `SectionStyle` gains `responsive.{desktop,tablet,mobile}.{top,bottom,hidden}`
+  inside the existing settings JSON (no migration). Integers only, clamped 0–200; desktop is the base,
+  tablet ≤1024 and mobile ≤640 inherit and override only what is set. `SectionStyle::css()` emits
+  `[data-wx-key="…"]` rules into a `<style>` in the head (`@stack('head')` added to the site layout).
+  Pages with no device values render exactly as before.
+- **Conflict-safe saving without a schema change.** `PageFingerprint::of()` hashes type/title/slug/
+  excerpt/SEO/template/canvas and every block; the editor keeps the hash it opened (`#[Locked]`),
+  refuses a save when the database no longer matches, keeps the typed edits on screen and offers
+  "Reload latest version". Optimistic, not a row lock — stated as such in the doc.
+- **Multi-select + clipboard.** Tick sections, copy to the session, paste here or on another page
+  (unknown types dropped, fresh keys, cleaned settings); duplicate/delete are one undo step.
+- **Shadow notice (W-01 interim).** `StaticShadow` detects `public/{slug}/index.html`; the editor names
+  the file that is really answering the URL. Publishing is not blocked.
+- **Rollback:** `config/website.php` → `builder.{responsive_styles,section_clipboard,conflict_check,shadow_notice}`,
+  each with an env var; off is a server-side no-op.
+
+Gate: **1,225 passed / 1 skipped / 0 failed**, 127 files, 8,518 assertions; Pint 821 files PASS;
+PHPStan 0 errors (556 files); smoke 68 pages; builder-check OK, 15 steps, now including per-device CSS
+and copy/paste in the real browser. Builder-check's layers-search wait was fixed (poll instead of a
+fixed 1.2 s). No migrations. Docs: `docs/audit/11_PHASE2_PAGE_BUILDER.md`, evidence in
+`docs/audit/evidence/phase2-*`.

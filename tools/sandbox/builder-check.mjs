@@ -309,11 +309,18 @@ if (!layers || layers.rows < 2) {
         input.dispatchEvent(new Event('input', { bubbles: true }));
         return before;
     });
-    await sleep(1200);
-    const after = await page.evaluate(() => {
-        const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Layers');
-        return card ? card.querySelectorAll('ul li').length : -1;
-    });
+    // The editor is heavier than it was (device controls, selection toolbar), and this runs in the
+    // wasm preview: wait for the list to actually change rather than assuming a fixed round-trip.
+    let after = -1;
+    for (let i = 0; i < 30; i++) {
+        await sleep(200);
+        after = await page.evaluate(() => {
+            const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Layers');
+            return card ? card.querySelectorAll('ul li').length : -1;
+        });
+
+        if (after !== filtered) break;
+    }
 
     if (filtered === null || after < 1 || after >= filtered) {
         fail(`the layers search did not narrow the list (${filtered} -> ${after})`);
@@ -411,6 +418,93 @@ if (!backgroundSet) {
     else step('the section background reached the preview');
 }
 await page.screenshot({ path: `${SHOTS}/builder-5-section-settings.png`, fullPage: false });
+
+// ---- 5b. per-device spacing reaches the preview as scoped css -------------------------------------
+const mobileTab = await page.evaluate(() => {
+    const tab = [...document.querySelectorAll('button')].find((b) => /Mobile/.test(b.textContent) && /640/.test(b.textContent));
+    if (!tab) return false;
+    tab.click();
+    return true;
+});
+
+if (!mobileTab) {
+    fail('the per-device spacing tabs are missing');
+} else {
+    const typed = await page.evaluate(() => {
+        const label = [...document.querySelectorAll('label')].find((l) => /space above/i.test(l.textContent) && l.offsetParent !== null);
+        const input = label?.querySelector('input[type="number"]');
+        if (!input) return false;
+        input.value = '24';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        return true;
+    });
+
+    const scoped = typed && await (async () => {
+        for (let i = 0; i < 50; i++) {
+            const found = await page.evaluate(() => {
+                const frame = document.querySelector('iframe[title^="Draft preview"]');
+                const head = frame?.contentDocument?.head?.innerHTML ?? '';
+                return /max-width:\s*640px/.test(head) && /padding-top:\s*24px/.test(head);
+            });
+            if (found) return true;
+            await sleep(400);
+        }
+        return false;
+    })();
+
+    if (!typed) fail('the mobile spacing field was not found');
+    else if (!scoped) fail('the per-device spacing never reached the preview as css');
+    else step('per-device spacing reached the preview (mobile ≤640px)');
+}
+
+// ---- 5c. multi-select, copy and paste a section ---------------------------------------------------
+const beforePaste = await page.evaluate(() => document.querySelectorAll('[id^="blk-"]').length);
+
+const clipboard = await page.evaluate(() => {
+    const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Sections');
+    const tick = card?.querySelector('input[aria-label="Select this section"]');
+    const button = (text) => [...(card?.querySelectorAll('button') ?? [])].find((b) => b.textContent.trim() === text);
+    if (!tick) return { ok: false, why: 'no selection tick box' };
+    tick.click();
+    return { ok: true, copy: !!button('Copy'), paste: !!button('Paste') };
+});
+
+if (!clipboard.ok || !clipboard.copy || !clipboard.paste) {
+    fail(`multi-select toolbar is incomplete (${JSON.stringify(clipboard)})`);
+} else {
+    await sleep(600);
+    const selected = await page.evaluate(() => document.body.innerText.includes('1 selected'));
+
+    await page.evaluate(() => {
+        const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Sections');
+        [...card.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Copy')?.click();
+    });
+    await sleep(700);
+    await page.evaluate(() => {
+        const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Sections');
+        [...card.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Paste')?.click();
+    });
+
+    const pasted = await (async () => {
+        for (let i = 0; i < 30; i++) {
+            const count = await page.evaluate(() => document.querySelectorAll('[id^="blk-"]').length);
+            if (count === beforePaste + 1) return true;
+            await sleep(300);
+        }
+        return false;
+    })();
+
+    if (!selected) fail('the selection toolbar did not report the ticked section');
+    else if (!pasted) fail(`paste did not add a section (${beforePaste} before)`);
+    else step('one section copied and pasted — section count ' + beforePaste + ' → ' + (beforePaste + 1));
+
+    // Undo the paste so the rest of the check starts from the template's own sections.
+    await page.evaluate(() => {
+        const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Sections');
+        [...card.querySelectorAll('button')].find((b) => b.textContent.includes('Undo'))?.click();
+    });
+    await sleep(800);
+}
 
 // ---- 6. a brand-new page previews before the first explicit Save ---------------------------------
 await page.goto(`${BASE}/admin/website/pages/new`, { waitUntil: 'networkidle0' });
