@@ -104,6 +104,6 @@ validation unless the builder writes blocks back.
 2. The exported `platform/public/<slug>/index.html` files still answer visitors by design; a CMS page
    of the same slug is only reachable through the builder preview. Migrating page by page is a
    separate decision, and the owner has said the frontend is final.
-3. Per-element editing (the pro builder's Content/Style/Advanced panels on arbitrary elements) is not
-   possible on typed blocks by definition; the HTML block is the escape hatch for a section that needs
-   it.
+3. The 50 v26 sections are not page templates yet: `PageTemplate` seeds a handful by hand. Importing
+   all fifty is the next parity item, and it needs the owner's word on which ones count as a whole
+   page rather than a lone section.
