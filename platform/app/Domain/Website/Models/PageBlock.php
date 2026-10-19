@@ -52,7 +52,11 @@ class PageBlock extends Model
         return $this->belongsTo(Page::class);
     }
 
-    /** The wrapper's settings, always complete: an old section with none keeps its design. */
+    /**
+     * The wrapper's settings, always complete: an old section with none keeps its design.
+     *
+     * @return array{label: string, background: string, spacing: string, width: string, align: string}
+     */
     public function style(): array
     {
         return SectionStyle::clean($this->settings);

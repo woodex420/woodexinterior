@@ -92,7 +92,11 @@ final class SectionStyle
         ]));
     }
 
-    /** The section's name in the editor: the label the studio gave it, or the type's own name. */
+    /**
+     * The section's name in the editor: the label the studio gave it, or the type's own name.
+     *
+     * @param  array<string, mixed>|null  $settings
+     */
     public static function title(?array $settings, string $fallback): string
     {
         $label = trim((string) ($settings['label'] ?? ''));
