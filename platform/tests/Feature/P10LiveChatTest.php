@@ -1,9 +1,12 @@
 <?php
 
 use App\Domain\Conversations\Enums\Channel;
+use App\Domain\Conversations\Enums\MessageDirection;
 use App\Domain\Conversations\Models\Conversation;
+use App\Domain\Conversations\Models\Message;
 use App\Livewire\Admin\Conversations\LiveChatBell;
 use App\Settings\NotificationSettings;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Str;
 
 use function Pest\Livewire\livewire;
@@ -11,8 +14,8 @@ use function Pest\Livewire\livewire;
 /*
 | P10.2 (docs/27, owner decision P10-C): the live-chat presence in the admin header. A visitor
 | texting the website bubble shows up on every admin page — unread count on the icon, a green dot
-| while the visitor is active, one toast per new message. The drawer NEVER opens by itself; it
-| opens on a click. Nothing is sent anywhere automatically (A0): the only send is the staff
+| while the visitor is active, one toast per new message. The drawer opens itself on a new message
+| (owner request, 2026-10-20); it still opens on a click any other time. Nothing is sent anywhere automatically (A0): the only send is the staff
 | reply a human typed, on a thread the visitor opened.
 */
 
@@ -30,6 +33,21 @@ function webChat(array $attributes = []): Conversation
         'last_message_at' => now(),
         'last_preview' => 'Salam, kitchen ke lia rate chahiye.',
     ], $attributes));
+}
+
+/** A visitor message with a controllable timestamp — the bell watches inbound messages, not last_direction. */
+function visitorMessage(Conversation $conversation, string $body, ?CarbonInterface $at = null): Message
+{
+    $at ??= now();
+
+    return Message::query()->create([
+        'conversation_id' => $conversation->id,
+        'direction' => MessageDirection::In,
+        'body' => $body,
+        'delivered_at' => $at,
+        'created_at' => $at,
+        'updated_at' => $at,
+    ]);
 }
 
 it('stays out of the header for staff who cannot use the inbox', function () {
@@ -65,40 +83,44 @@ it('lists website chats only — WhatsApp never enters the live drawer', functio
 });
 
 it('never replays history as a toast', function () {
-    webChat(['last_message_at' => now()->subMinutes(5)]);
+    $conversation = webChat(['last_message_at' => now()->subMinutes(5)]);
+    visitorMessage($conversation, 'Kya rate hai?', now()->subMinutes(5));
 
     livewire(LiveChatBell::class)
+        ->call('poll')
         ->assertNotDispatched('chat-alert');
 });
 
-it('toasts a new visitor message once and never opens the drawer by itself', function () {
+it('toasts a new visitor message once and opens the drawer on it', function () {
     $conversation = webChat(['last_message_at' => now()->subMinutes(5)]);
+    visitorMessage($conversation, 'Purana sawal', now()->subMinutes(5));
 
     $component = livewire(LiveChatBell::class);
-    $component->assertNotDispatched('chat-alert');
+    $component->call('poll')->assertNotDispatched('chat-alert')->assertSet('drawer', false);
 
-    // The visitor texts again.
-    $conversation->forceFill(['last_message_at' => now(), 'last_preview' => 'Kitna time lagega?'])->save();
+    // The visitor texts again (owner request, 2026-10-20: the drawer opens itself on a new message).
+    visitorMessage($conversation, 'Kitna time lagega?', now()->addSecond());
 
-    // A poll cycle is just another render — any interaction triggers it.
-    $component->set('draft', 'ping')->assertDispatched('chat-alert')
-        ->assertSet('drawer', false)
+    $component->call('poll')
+        ->assertDispatched('chat-alert')
+        ->assertSet('drawer', true)
+        ->assertSet('selectedId', $conversation->id)
         ->assertSeeHtml('Kitna time lagega?');
 
-    // Announced once: the next render stays quiet.
-    $component->set('draft', 'ping again')->assertNotDispatched('chat-alert');
+    // Announced once: the next tick stays quiet and does not re-open anything.
+    $component->call('poll')->assertNotDispatched('chat-alert');
 });
 
 it('stops toasting once a teammate has read the thread', function () {
     $conversation = webChat(['last_message_at' => now()->subMinutes(5)]);
 
     $component = livewire(LiveChatBell::class);
-    $conversation->forceFill(['last_message_at' => now(), 'last_preview' => 'New message'])->save();
+    visitorMessage($conversation, 'New message', now()->addSecond());
 
     // Another teammate reads it in the inbox before our poll fires.
     $conversation->forceFill(['unread_count' => 0])->save();
 
-    $component->set('draft', 'ping')->assertNotDispatched('chat-alert');
+    $component->call('poll')->assertNotDispatched('chat-alert');
 });
 
 it('opens the drawer on request, picks the newest thread and marks it read', function () {
@@ -157,8 +179,8 @@ it('switches the sound on for the whole studio from the drawer', function () {
 
     // The toast carries the sound flag so the browser may ding once per message.
     $component = livewire(LiveChatBell::class);
-    $conversation->forceFill(['last_message_at' => now()->addSeconds(5), 'last_preview' => 'Ding me'])->save();
-    $component->set('draft', 'ping')->assertDispatched('chat-alert');
+    visitorMessage($conversation, 'Ding me', now()->addSeconds(5));
+    $component->call('poll')->assertDispatched('chat-alert');
 
     livewire(LiveChatBell::class)->call('toggleSound');
     expect(app(NotificationSettings::class)->chat_alert_sound)->toBeFalse();

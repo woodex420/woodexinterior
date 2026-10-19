@@ -2,7 +2,9 @@
 @php
     $user = auth()->user();
 @endphp
-<header class="sticky top-0 z-30 flex h-[72px] items-center gap-3 border-b border-gray-200 bg-white/90 px-4 backdrop-blur md:px-6 dark:border-gray-800 dark:bg-gray-900/90">
+{{-- No backdrop-blur on the header: a filtered ancestor becomes the containing block for position: fixed,
+     which trapped the website-chat drawer inside this 72px bar. A solid header looks the same. --}}
+<header class="sticky top-0 z-30 flex h-[72px] items-center gap-3 border-b border-gray-200 bg-white px-4 md:px-6 dark:border-gray-800 dark:bg-gray-900">
     <button type="button" @click="$store.sidebar.toggle()"
             class="flex size-10 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5"
             aria-label="Toggle sidebar">

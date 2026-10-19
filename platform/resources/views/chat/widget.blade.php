@@ -166,7 +166,11 @@ const WX_CHAT = @json($wxChatConfig);
         form.addEventListener('submit', function (event) {
             event.preventDefault();
             var text = input.value.trim();
-            if (!text) { return; }
+
+            // Never swallow what the visitor typed: while the thread is opening (busy) or before
+            // the token has arrived, the words stay in the box and the next Enter sends them.
+            if (!text || state.busy || !state.token) { return; }
+
             input.value = '';
             send(text);
         });

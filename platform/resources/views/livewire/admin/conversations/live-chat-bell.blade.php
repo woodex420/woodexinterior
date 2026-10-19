@@ -1,25 +1,24 @@
 <div x-data="{ drawer: $wire.entangle('drawer') }" {{-- children read $wire.drawer: the magic is injected per Livewire component, so a morph cannot race the scope --}}
      x-on:open-live-chat.window="$wire.openDrawer()"
-     @if ($canUse) wire:poll.10s.visible @endif>
+     @if ($canUse) wire:poll.10s.visible="poll" @endif>
     @if ($canUse)
-        @php($show = $unread > 0 || $visitorActive)
-        @if ($show)
-            <div class="relative">
-                <button type="button" x-on:click="$wire.openDrawer()"
-                        class="relative flex size-10 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5"
-                        aria-label="Website chat{{ $unread > 0 ? " ({$unread} unread)" : '' }}">
-                    <x-icon name="whatsapp" />
-                    @if ($unread > 0)
-                        <span class="absolute -top-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full bg-wood-500 text-[10px] font-semibold text-white">{{ min($unread, 9) }}{{ $unread > 9 ? '+' : '' }}</span>
-                    @endif
-                    @if ($visitorActive)
-                        <span class="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-white bg-success-500 dark:border-gray-900" title="A visitor is chatting right now"></span>
-                    @endif
-                </button>
-            </div>
-        @endif
+        {{-- The bell is always there: an empty drawer is still how the team opens a thread, and a
+             button that appears only when somebody is typing is a button nobody can find. --}}
+        <div class="relative">
+            <button type="button" x-on:click="$wire.openDrawer()"
+                    class="relative flex size-10 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5"
+                    aria-label="Website chat{{ $unread > 0 ? " ({$unread} unread)" : '' }}">
+                <x-icon name="whatsapp" />
+                @if ($unread > 0)
+                    <span class="absolute -top-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full bg-wood-500 text-[10px] font-semibold text-white">{{ min($unread, 9) }}{{ $unread > 9 ? '+' : '' }}</span>
+                @endif
+                @if ($visitorActive)
+                    <span class="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-white bg-success-500 dark:border-gray-900" title="A visitor is chatting right now"></span>
+                @endif
+            </button>
+        </div>
 
-        {{-- The drawer: opened only by a click, never by a message (owner decision P10-C). --}}
+        {{-- The drawer: opened by a click, or by poll() when a visitor writes (owner request 2026-10-20). --}}
         <div x-cloak x-show="$wire.drawer" x-transition.opacity class="fixed inset-0 z-[9998] bg-gray-900/40" @click="$wire.drawer = false"></div>
         <aside x-cloak x-show="$wire.drawer"
                x-transition:enter="transition ease-out duration-200" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
