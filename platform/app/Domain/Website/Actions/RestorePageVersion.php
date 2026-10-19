@@ -10,6 +10,7 @@ use App\Domain\Website\Models\PageBlock;
 use App\Domain\Website\Models\PageVersion;
 use App\Domain\Website\Services\Menus;
 use App\Domain\Website\Services\PageCache;
+use App\Domain\Website\Support\SectionStyle;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -39,6 +40,7 @@ final class RestorePageVersion
                     'page_id' => $page->id,
                     'type' => BlockType::from((string) $block['type']),
                     'data' => $block['data'] ?? [],
+                    'settings' => SectionStyle::clean((array) ($block['settings'] ?? [])),
                     'visible' => (bool) ($block['visible'] ?? true),
                     'position' => $position,
                 ]);
@@ -56,6 +58,7 @@ final class RestorePageVersion
                 'id' => $block->id,
                 'type' => $block->type->value,
                 'data' => $block->data,
+                'settings' => $block->settings,
                 'visible' => $block->visible,
             ])->all(), $page->isPublished(), $user);
 

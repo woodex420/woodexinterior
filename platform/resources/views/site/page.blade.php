@@ -27,8 +27,13 @@
 
     @if ($page->template !== 'canvas')
         @foreach ($blocks as $block)
-            @php($sectionKey = $block->block_key)
-            <div @if ($sectionKey) data-wx-key="{{ $sectionKey }}" @endif>
+            @php
+                $sectionKey = $block->block_key;
+                // The section's own look choices (SectionStyle): background, spacing, width, alignment.
+                // A section with no settings keeps exactly the design its view was built with.
+                $sectionClasses = \App\Domain\Website\Support\SectionStyle::classes($block->settings);
+            @endphp
+            <div @class($sectionClasses) @if ($sectionKey) data-wx-key="{{ $sectionKey }}" @endif>
                 @include($block->type->view(), ['block' => $block, 'page' => $page, 'media' => $media, 'business' => $business, 'phone' => $phone])
             </div>
         @endforeach

@@ -31,6 +31,13 @@ enum BlockType: string
     /** V2-3 F7: the studio's people — picked from Website → Team, or written on the page. */
     case Team = 'team';
 
+    /**
+     * Hand-written HTML for the section no typed block covers (19 Oct, builder parity with the old
+     * admin's HTML editor). Sanitised on save and again when it renders: scripts, on-event attributes
+     * and javascript: URLs never reach a visitor.
+     */
+    case Html = 'html';
+
     public function label(): string
     {
         return match ($this) {
@@ -51,6 +58,7 @@ enum BlockType: string
             self::Map => 'Map + contact',
             self::Clients => 'Client logos',
             self::Team => 'Team',
+            self::Html => 'HTML block',
         };
     }
 
@@ -78,6 +86,7 @@ enum BlockType: string
             self::Map => 'The studio\'s address on a map, with phone and hours.',
             self::Clients => 'Client logos — the quiet trust signal.',
             self::Team => 'The studio\'s people, with photos, roles and short bios.',
+            self::Html => 'Your own HTML, for a section the library does not cover. Scripts are removed when it is saved.',
         };
     }
 
@@ -91,7 +100,7 @@ enum BlockType: string
             self::Hero => 'Hero',
             self::Slider => 'Hero',
             self::Clients, self::Reviews, self::Gallery, self::Related, self::Author, self::Team => 'Proof',
-            self::Intro, self::Text, self::Services, self::Process, self::Specs, self::PriceTable, self::Faq => 'Content',
+            self::Intro, self::Text, self::Services, self::Process, self::Specs, self::PriceTable, self::Faq, self::Html => 'Content',
             self::Form, self::Map => 'Conversion',
         };
     }
@@ -121,6 +130,7 @@ enum BlockType: string
             self::Map => ['heading' => 'Studio', 'embed_url' => ''],
             self::Clients => ['heading' => 'Trusted by', 'logos' => [], 'library_ids' => []],
             self::Team => ['heading' => 'Our team', 'items' => [], 'library_ids' => []],
+            self::Html => ['code' => ''],
         };
     }
 
@@ -250,6 +260,9 @@ enum BlockType: string
                     ['key' => 'id', 'label' => 'Logo', 'type' => 'image'],
                     ['key' => 'alt', 'label' => 'Alt text', 'type' => 'text'],
                 ]],
+            ],
+            self::Html => [
+                ['key' => 'code', 'label' => 'HTML', 'type' => 'code', 'rows' => 14],
             ],
             self::Team => [
                 ['key' => 'heading', 'label' => 'Heading', 'type' => 'text'],

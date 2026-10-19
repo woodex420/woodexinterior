@@ -32,9 +32,9 @@ The reference is a VvvebJs-style **HTML** editor: it edits the page's own markup
 |---|---|---|
 | Canvas | Free selection of any element, hover outline, floating toolbar (parent, up, down, duplicate, delete, HTML, quick styles, save as block, drag-move) | Sections only; fields in a side form |
 | Content panel | Text/tag/link/image/video/map editing, section label | Typed fields per block |
-| Section panel | Container width (boxed/full), height, background image/video/YouTube, parallax, overlay colour + opacity, top/bottom separators (wave, slant, curve, triangle, zigzag), centre, swap image side, hide | Not available (design fixed per block type) |
+| Section panel | Container width (boxed/full), height, background image/video/YouTube, parallax, overlay colour + opacity, top/bottom separators (wave, slant, curve, triangle, zigzag), centre, swap image side, hide | **Partly**: background preset, spacing, width, centre, name, hide (19 Oct). Background image/video, overlay and separators still not available |
 | Style panel | Display, position, size, margin, padding, border, radius, typography (1 500+ Google Fonts), colour, background image, hover/focus/active states, transitions, transforms, per-device (desktop / ≤1024 / ≤640) | Not available |
-| Advanced panel | id, classes, ARIA, hide per device, custom CSS | Not available |
+| Advanced panel | id, classes, ARIA, hide per device, custom CSS | An **HTML block** (19 Oct) gives a whole section free markup; per-element CSS still not available |
 | Layers tree | Whole DOM hierarchy, drag to reorder, search | Flat section list |
 | Undo / redo | 100 snapshots, Ctrl+Z / Ctrl+Y | Not available |
 | Code editor | Whole page HTML + CodeMirror, sanitising | `canvasHtml` (campaign HTML) only |
@@ -72,19 +72,36 @@ undo, code editor. This is the closest to v2.1 pro but changes the storage model
 the section library and the click-to-edit contract — a multi-week build, and it loses block-level
 validation unless the builder writes blocks back.
 
-## 5. Recommendation
+## 5. The owner's decisions (19 Oct)
 
-Do **B now**, then **A**: they are additive and keep every guarantee the current CMS has (publish
-gate, Slider-led home, no double hero, preview before first save, click-to-edit). Revisit **C** only
-if the owner wants free-form HTML editing on top of the block model — in that case the sane version
-is an "HTML block" type that is sanitised on save, not a replacement of the storage model.
+- **Builder model: hybrid.** Typed sections stay, and one new **HTML block** gives a page hand-written
+  markup where the library does not cover it. Implemented in this round: `BlockType::Html`, cleaned
+  on save and again on render by `CanvasHtml` (scripts, `on*=` and `javascript:` never reach a
+  visitor).
+- **frontend-v1 stays the visitor-facing site.** Its 87 pages are final and approved; they are not
+  being replaced, and the CMS must offer the same features the v2.1 pro admin offers. The builder's
+  preview reads the CMS, the live site keeps the exported HTML — and `?preview=1` is now routed to the
+  CMS even where an exported `index.html` exists (`.htaccess`, the sandbox server, and the PHP
+  runtime's rewrite rules).
+- **Next feature: the section style panel** — done in this round (see below).
 
-## 6. Open questions for the owner
+## 6. Delivered in this round
 
-1. Should the builder stay **block-based** (sections you add, fill in, reorder) or become a
-   **free-form HTML canvas** like `/builder/` in the reference repo?
-2. Should the 87 frontend-v1 pages be **imported into the CMS** (editable in the builder, static
-   files removed) or stay as frozen files that only the CMS pages compete with? Today a static
-   `index.html` shadows a CMS page of the same slug, except in `?preview=1`.
-3. Which panel is worth building first after the template import: **section style panel**, **layers +
-   undo/redo**, or the **SEO/accessibility audit**?
+| Feature | Where |
+|---|---|
+| Section settings: name, background (white / light / sand / navy), spacing (compact / normal / spacious / none), width (boxed / full), alignment (centre) | `App\Domain\Website\Support\SectionStyle`, `page_blocks.settings`, the section card in the builder |
+| The page follows the settings live | `site/page.blade.php` wrapper (`wx-sec--…`), `resources/css/site.css` |
+| Settings survive save, preview, snapshot and version restore | `SavePage`, `RestorePageVersion` |
+| HTML block with a code box and sanitising | `BlockType::Html`, `site/sections/html.blade.php`, `CanvasHtml` |
+| Real-browser proof the settings reach the preview | `tools/sandbox/builder-check.mjs` (step 5) |
+
+## 7. Still open
+
+1. **Layers + undo/redo** and the **SEO / accessibility audit** are the two remaining v2.1 pro panels
+   that the block model does not have yet.
+2. The exported `platform/public/<slug>/index.html` files still answer visitors by design; a CMS page
+   of the same slug is only reachable through the builder preview. Migrating page by page is a
+   separate decision, and the owner has said the frontend is final.
+3. Per-element editing (the pro builder's Content/Style/Advanced panels on arbitrary elements) is not
+   possible on typed blocks by definition; the HTML block is the escape hatch for a section that needs
+   it.

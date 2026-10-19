@@ -6,6 +6,7 @@ namespace App\Domain\Website\Models;
 
 use App\Domain\Website\Enums\BlockType;
 use App\Domain\Website\Enums\PageType;
+use App\Domain\Website\Support\SectionStyle;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -58,6 +59,7 @@ class PageTemplate extends Model
                 'type' => (string) $section['type'],
                 'visible' => true,
                 'data' => $this->sectionData($section),
+                'settings' => SectionStyle::clean((array) ($section['settings'] ?? [])),
             ])
             ->values()
             ->all();

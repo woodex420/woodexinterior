@@ -12,6 +12,7 @@ use App\Domain\Website\Models\PageVersion;
 use App\Domain\Website\Services\Menus;
 use App\Domain\Website\Services\PageCache;
 use App\Domain\Website\Support\CanvasHtml;
+use App\Domain\Website\Support\SectionStyle;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -80,7 +81,7 @@ final class SavePage
             /** @var PageBlock $model */
             $model = PageBlock::query()->updateOrCreate(
                 ['id' => $block['id'] ?? null, 'page_id' => $page->id],
-                ['type' => $type, 'block_key' => $key, 'data' => $data, 'visible' => $visible, 'position' => $position],
+                ['type' => $type, 'block_key' => $key, 'data' => $data, 'settings' => SectionStyle::clean((array) ($block['settings'] ?? [])), 'visible' => $visible, 'position' => $position],
             );
 
             $keep[] = $model->id;
@@ -115,6 +116,14 @@ final class SavePage
 
         foreach ($type->fields() as $key => $default) {
             $value = $data[$key] ?? $default;
+
+            // The HTML block is the one section whose text is markup: it is cleaned here (and again
+            // when it renders), so a pasted <script> never reaches the database in the first place.
+            if ($type === BlockType::Html && $key === 'code') {
+                $clean[$key] = CanvasHtml::clean(is_string($value) ? $value : (string) $value);
+
+                continue;
+            }
 
             if (is_string($value) && $key !== 'body') {
                 $value = trim($value);
@@ -162,6 +171,7 @@ final class SavePage
                     'type' => $block->type->value,
                     'key' => $block->block_key,
                     'data' => $block->data,
+                    'settings' => $block->settings,
                     'visible' => $block->visible,
                 ])->all(),
             ],

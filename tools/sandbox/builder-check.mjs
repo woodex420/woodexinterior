@@ -143,7 +143,19 @@ await page.screenshot({ path: `${SHOTS}/builder-1-editor.png`, fullPage: false }
 
 // ---- 2. typing updates the preview, without pressing Save ----------------------------------------
 const marker = `Live check ${Date.now().toString().slice(-6)}`;
-const field = await page.$('[id^="blk-"] textarea, [id^="blk-"] input[type="text"]');
+// The section's own settings (name, background …) sit at the top of the card now, so ask for a
+// content field explicitly: typing into the section's *name* would prove nothing about the page.
+// The binding attribute carries its modifiers (wire:model.live.debounce.700ms), so match on the
+// attribute name rather than on a fixed spelling.
+const fieldHandle = await page.evaluateHandle(() => {
+    const card = document.querySelector('[id^="blk-"]');
+    if (!card) return null;
+    return [...card.querySelectorAll('textarea, input[type="text"]')].find((el) => {
+        const binding = el.getAttributeNames().find((name) => name.startsWith('wire:model'));
+        return binding !== undefined && !(el.getAttribute(binding) ?? '').includes('.settings.');
+    }) ?? null;
+});
+const field = fieldHandle.asElement();
 if (!field) {
     fail('no text field in the sections');
 } else {
@@ -185,9 +197,23 @@ const before = await blockTitles();
 if (before.length < 2) {
     fail(`need two sections to drag, found ${before.length}`);
 } else {
-    // Bring the list into view first: the second section's handle may be below the fold and the
-    // first section's top above it, which would make the drop land outside the container.
-    await page.evaluate(() => document.querySelector('[wire\\:sort]')?.scrollIntoView({ block: 'start' }));
+    // Put both drop points in the same screenful: the bottom of the first card (where the drop
+    // lands) and the second card's handle. The cards are tall, so scrolling the list to its top is
+    // not enough — the handle would be below the fold.
+    await page.evaluate(() => {
+        const cards = [...document.querySelectorAll('[id^="blk-"]')];
+        if (!cards[0]) return;
+        const bottom = cards[0].getBoundingClientRect().bottom + window.scrollY;
+        window.scrollTo(0, Math.max(0, bottom - 220));
+    });
+    await sleep(400);
+    await page.evaluate(() => {
+        const cards = [...document.querySelectorAll('[id^="blk-"]')];
+        const handle = cards[1]?.querySelector('.section-handle');
+        if (handle && handle.getBoundingClientRect().bottom > window.innerHeight - 80) {
+            handle.scrollIntoView({ block: 'center' });
+        }
+    });
     await sleep(400);
 
     const handleBox = await page.evaluate(() => {
@@ -196,7 +222,7 @@ if (before.length < 2) {
         const first = cards[0]?.getBoundingClientRect();
         const h = handle?.getBoundingClientRect();
         if (!h || !first) return null;
-        const top = Math.max(120, Math.min(first.top + 50, window.innerHeight - 80));
+        const top = Math.max(120, Math.min(first.bottom - 50, window.innerHeight - 80));
         return { x: h.x + h.width / 2, y: h.y + h.height / 2, targetX: first.x + 60, targetY: top };
     });
 
@@ -257,7 +283,39 @@ if (!clickedKey) {
 }
 await page.screenshot({ path: `${SHOTS}/builder-4-click-to-edit.png`, fullPage: false });
 
-// ---- 5. a brand-new page previews before the first explicit Save ---------------------------------
+// ---- 5. the section settings reach the page (background, spacing) --------------------------------
+const backgroundSet = await page.evaluate(() => {
+    const card = document.querySelector('[id^="blk-"]');
+    if (!card) return false;
+    const label = [...card.querySelectorAll('label')].find((l) => /background/i.test(l.textContent));
+    const select = label?.querySelector('select');
+    if (!select) return false;
+    select.value = 'beige';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+});
+
+if (!backgroundSet) {
+    fail('the first section has no background setting');
+} else {
+    const painted = await (async () => {
+        for (let i = 0; i < 40; i++) {
+            const found = await page.evaluate(() => {
+                const frame = document.querySelector('iframe[title^="Draft preview"]');
+                return !!frame?.contentDocument?.querySelector('.wx-sec--bg-beige');
+            });
+            if (found) return true;
+            await sleep(400);
+        }
+        return false;
+    })();
+
+    if (!painted) fail('the background setting never reached the preview');
+    else step('the section background reached the preview');
+}
+await page.screenshot({ path: `${SHOTS}/builder-5-section-settings.png`, fullPage: false });
+
+// ---- 6. a brand-new page previews before the first explicit Save ---------------------------------
 await page.goto(`${BASE}/admin/website/pages/new`, { waitUntil: 'networkidle0' });
 const newTitle = `Builder check ${Date.now().toString().slice(-5)}`;
 await page.type('#title', newTitle, { delay: 20 });

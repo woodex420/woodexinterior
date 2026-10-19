@@ -17,6 +17,7 @@ use App\Domain\Website\Models\SavedSection;
 use App\Domain\Website\Services\PageCache;
 use App\Domain\Website\Services\PageValidator;
 use App\Domain\Website\Support\PreviewLink;
+use App\Domain\Website\Support\SectionStyle;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Validator;
@@ -183,6 +184,7 @@ class PageEditor extends Component
             'type' => $block->value,
             'visible' => true,
             'data' => $block->fields(),
+            'settings' => SectionStyle::defaults(),
         ];
 
         $this->newBlockType = '';
@@ -304,6 +306,7 @@ class PageEditor extends Component
             'type' => $saved->type->value,
             'visible' => true,
             'data' => $saved->data,
+            'settings' => SectionStyle::defaults(),
         ];
 
         $this->markPreviewStale();
@@ -712,6 +715,7 @@ class PageEditor extends Component
             'type' => $block->type->value,
             'visible' => $block->visible,
             'data' => $block->data ?? $block->type->fields(),
+            'settings' => SectionStyle::clean($block->settings),
         ])->all();
     }
 

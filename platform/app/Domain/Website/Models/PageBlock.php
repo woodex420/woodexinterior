@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Website\Models;
 
 use App\Domain\Website\Enums\BlockType;
+use App\Domain\Website\Support\SectionStyle;
 use Database\Factories\Website\PageBlockFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $block_key
  * @property int $position
  * @property array<string, mixed>|null $data
+ * @property array<string, mixed>|null $settings the wrapper's look (SectionStyle), not its content
  * @property bool $visible
  */
 class PageBlock extends Model
@@ -31,13 +33,14 @@ class PageBlock extends Model
         return PageBlockFactory::new();
     }
 
-    protected $fillable = ['page_id', 'type', 'block_key', 'position', 'data', 'visible'];
+    protected $fillable = ['page_id', 'type', 'block_key', 'position', 'data', 'settings', 'visible'];
 
     protected function casts(): array
     {
         return [
             'type' => BlockType::class,
             'data' => 'array',
+            'settings' => 'array',
             'position' => 'integer',
             'visible' => 'boolean',
         ];
@@ -47,6 +50,12 @@ class PageBlock extends Model
     public function page(): BelongsTo
     {
         return $this->belongsTo(Page::class);
+    }
+
+    /** The wrapper's settings, always complete: an old section with none keeps its design. */
+    public function style(): array
+    {
+        return SectionStyle::clean($this->settings);
     }
 
     /** Missing keys fall back to the defaults of the block type, so a section never renders half-empty. */

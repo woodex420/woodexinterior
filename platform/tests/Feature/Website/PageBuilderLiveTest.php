@@ -9,6 +9,7 @@ use App\Http\Middleware\SecurityHeaders;
 use App\Livewire\Admin\Website\HeroSlidesIndex;
 use App\Livewire\Admin\Website\PageEditor;
 use App\Models\User;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Livewire\Livewire;
@@ -189,16 +190,25 @@ it('serves a draft preview to a signed-in editor through the real route', functi
     $page = Page::factory()->withSlug('/draft-route/')->create(['title' => 'Draft route']);
     $page->blocks()->create(hero_block(['heading' => 'A draft opening']));
 
-    $this->followingRedirects()
-        ->actingAs($this->editor)
-        ->get('/draft-route?preview=1')
-        ->assertOk()
-        ->assertSee('A draft opening')
-        ->assertSee('wx-edit-section');
+    // The kernel, not $this->get(): Laravel's test client trims the trailing slash from the URL,
+    // which is the canonical form of every public page — the request would be redirected to itself.
+    $kernel = $this->app->make(Kernel::class);
+
+    $this->actingAs($this->editor);
+    $preview = $kernel->handle(Request::create('/draft-route/?preview=1', 'GET'));
+
+    expect($preview->getStatusCode())->toBe(200)
+        ->and($preview->getContent())->toContain('A draft opening')
+        ->and($preview->getContent())->toContain('wx-edit-section');
 
     auth()->logout();
 
-    $this->followingRedirects()->get('/draft-route?preview=1')->assertNotFound();
+    // A preview link without permission is sent back to the page itself, which the original website
+    // answers with its exported file (the sandbox and .htaccess keep that address off the CMS).
+    $guest = $kernel->handle(Request::create('/draft-route/?preview=1', 'GET'));
+
+    expect($guest->getStatusCode())->toBe(302)
+        ->and($guest->headers->get('location'))->toBe('/draft-route/');
 });
 
 it('lets the admin frame the preview from its own domain, and nobody else', function () {

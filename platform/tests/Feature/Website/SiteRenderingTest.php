@@ -42,6 +42,9 @@ function sectionSample(BlockType $type, int $imageId, int $pageId): array
         BlockType::Clients => ['marker' => 'Trusted by', 'data' => ['heading' => 'Trusted by', 'logos' => [['id' => $imageId, 'alt' => 'Client logo']]]],
         BlockType::Team => ['marker' => 'Sana Raza', 'data' => ['heading' => 'The people', 'items' => [['id' => $imageId, 'name' => 'Sana Raza', 'role' => 'Principal', 'bio' => 'Joined in 2018.']]]],
         BlockType::Slider => ['marker' => 'Spaces shaped by purpose', 'data' => ['slides' => [['image_id' => $imageId, 'kicker' => 'Woodex Interior', 'heading' => 'Spaces shaped by purpose', 'text' => 'One accountable team.', 'display' => '', 'primary_label' => 'Start your project', 'primary_url' => '/contact/', 'secondary_label' => '', 'secondary_url' => '']]]],
+        // The HTML block (19 Oct): the one section whose content is markup. The sample is ordinary
+        // inline HTML so the page proves it renders — the sanitising is SectionStyleTest's job.
+        BlockType::Html => ['marker' => 'Made by hand', 'data' => ['code' => '<div class="own-markup"><h2>Made by hand</h2><p>A section written in HTML.</p></div>']],
     };
 }
 

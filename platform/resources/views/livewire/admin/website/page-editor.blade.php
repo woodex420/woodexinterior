@@ -226,7 +226,7 @@
                             <header class="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-2.5 dark:border-gray-800">
                                 <div class="flex min-w-0 items-center gap-2">
                                     <span wire:sort:handle class="section-handle cursor-grab select-none text-gray-300 hover:text-gray-500 active:cursor-grabbing" title="Drag to reorder" aria-hidden="true">⠿</span>
-                                    <span class="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $blockType->label() }}</span>
+                                    <span class="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ \App\Domain\Website\Support\SectionStyle::title($block['settings'] ?? [], $blockType->label()) }}</span>
                                     <label class="flex shrink-0 items-center gap-1.5 text-theme-xs text-gray-500">
                                         <input type="checkbox" wire:click="toggleBlock({{ $index }})" @checked($block['visible'] ?? true) class="rounded border-gray-300"> visible
                                     </label>
@@ -240,6 +240,47 @@
                                 </div>
                             </header>
 
+                            @php $style = $block['settings'] ?? \App\Domain\Website\Support\SectionStyle::defaults(); @endphp
+                            <div class="grid grid-cols-1 gap-2 border-b border-gray-100 bg-gray-50/70 px-4 py-3 sm:grid-cols-2 lg:grid-cols-3 dark:border-gray-800 dark:bg-white/[0.02]">
+                                <label class="block">
+                                    <span class="wx-label">Section name <span class="font-normal text-gray-400">(in the editor)</span></span>
+                                    <input type="text" wire:model.live.debounce.700ms="blocks.{{ $index }}.settings.label" class="wx-input" placeholder="{{ $blockType->label() }}">
+                                </label>
+                                <label class="block">
+                                    <span class="wx-label">Background</span>
+                                    <select wire:model.live="blocks.{{ $index }}.settings.background" class="wx-input">
+                                        @foreach (\App\Domain\Website\Support\SectionStyle::BACKGROUNDS as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </label>
+                                <label class="block">
+                                    <span class="wx-label">Spacing</span>
+                                    <select wire:model.live="blocks.{{ $index }}.settings.spacing" class="wx-input">
+                                        @foreach (\App\Domain\Website\Support\SectionStyle::SPACINGS as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </label>
+                                <label class="block">
+                                    <span class="wx-label">Content width</span>
+                                    <select wire:model.live="blocks.{{ $index }}.settings.width" class="wx-input">
+                                        @foreach (\App\Domain\Website\Support\SectionStyle::WIDTHS as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </label>
+                                <label class="block">
+                                    <span class="wx-label">Alignment</span>
+                                    <select wire:model.live="blocks.{{ $index }}.settings.align" class="wx-input">
+                                        @foreach (\App\Domain\Website\Support\SectionStyle::ALIGNMENTS as $value => $label)
+                                            <option value="{{ $value }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </label>
+                                <p class="self-end text-theme-xs text-gray-400">The page follows these as you change them.</p>
+                            </div>
+
                             <div class="space-y-3 p-4">
                                 @foreach ($blockType->schema() as $field)
                                     @php $path = 'blocks.'.$index.'.data.'.$field['key']; @endphp
@@ -252,6 +293,11 @@
                                         @case('textarea')
                                             <x-admin.field :label="$field['label']">
                                                 <textarea rows="{{ $field['rows'] ?? 3 }}" wire:model.live.debounce.700ms="{{ $path }}" class="wx-input"></textarea>
+                                            </x-admin.field>
+                                            @break
+                                        @case('code')
+                                            <x-admin.field :label="$field['label']" hint="Your own markup. Scripts, on-event attributes (onclick…) and javascript: links are removed when the section is saved.">
+                                                <textarea rows="{{ $field['rows'] ?? 12 }}" wire:model.live.debounce.700ms="{{ $path }}" class="wx-input font-mono text-theme-xs" spellcheck="false" placeholder="&lt;section&gt;…&lt;/section&gt;"></textarea>
                                             </x-admin.field>
                                             @break
                                         @case('bool')
