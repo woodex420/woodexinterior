@@ -102,6 +102,12 @@
         @endif
 
         <script>
+            // The Pages list links to #page-check: bring the card into view when the editor opens.
+            if (location.hash === '#page-check') {
+                var card = document.getElementById('page-check');
+                if (card) setTimeout(function () { card.scrollIntoView({ block: 'start' }); }, 150);
+            }
+
             // Click-to-edit (V2-3): the preview's editor tools postMessage the clicked section's
             // key; we hand it to this component, which scrolls to its form. The key is checked
             // against the open page server-side, so a message from another frame edits nothing.
