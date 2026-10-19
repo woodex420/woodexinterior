@@ -154,7 +154,11 @@ final class PageAudit
         return $findings;
     }
 
-    /** How many H1s the page prints: a hero, a slider's first slide, or one inside an HTML block. */
+    /**
+     * How many H1s the page prints: a hero, a slider's first slide, or one inside an HTML block.
+     *
+     * @param  array<int, array<string, mixed>>  $blocks
+     */
     public static function h1Count(array $blocks): int
     {
         $count = 0;
@@ -183,7 +187,10 @@ final class PageAudit
         return $count;
     }
 
-    /** @return list<string> */
+    /**
+     * @param  array<int, array<string, mixed>>  $blocks
+     * @return list<string>
+     */
     private static function headings(array $blocks): array
     {
         $headings = [];
@@ -213,7 +220,10 @@ final class PageAudit
         return $headings;
     }
 
-    /** @return list<int> */
+    /**
+     * @param  array<string, mixed>  $data
+     * @return list<int>
+     */
     private static function imagesIn(array $data): array
     {
         $ids = [];
@@ -241,7 +251,12 @@ final class PageAudit
         return array_values(array_unique(array_filter($ids)));
     }
 
-    /** @return list<array{0: string, 1: string}> label/url pairs a visitor can click. */
+    /**
+     * Label/url pairs a visitor can click.
+     *
+     * @param  array<string, mixed>  $data
+     * @return list<array{0: string, 1: string}>
+     */
     private static function linksIn(string $type, array $data): array
     {
         $links = [];
@@ -263,7 +278,11 @@ final class PageAudit
         return array_values(array_filter($links, fn (array $pair): bool => $pair[0] !== '' || $pair[1] !== ''));
     }
 
-    /** The section's name for a message: its own label when it has one, otherwise its type. */
+    /**
+     * The section's name for a message: its own label when it has one, otherwise its type.
+     *
+     * @param  array<string, mixed>  $block
+     */
     private static function name(array $block): string
     {
         $label = trim((string) ($block['settings']['label'] ?? ''));
