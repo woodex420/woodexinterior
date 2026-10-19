@@ -45,6 +45,18 @@ const handler = new PHPRequestHandler({
         return php;
     },
     getFileNotFoundAction: () => ({ type: 'internal-redirect', uri: '/index.php' }),
+    // Apache's front-controller rule (public/.htaccess): a URL that is not a real file is answered by
+    // index.php. The PHP runtime's built-in server would otherwise serve a folder's index.html itself —
+    // and the original website is 85 such folders. Without this the CMS never sees /about/, so a draft
+    // preview (and its click-to-edit layer) is silently replaced by the frozen file.
+    // Files with an extension and the asset folders are left to the server; Laravel still reads the
+    // original REQUEST_URI, because a rewrite only changes the script that runs.
+    rewriteRules: [
+        {
+            match: /^\/(?!index\.php$|build\/|assets\/|storage\/|media\/)(?![^?]*\.[a-z0-9]{2,5}$).*/,
+            replacement: '/index.php',
+        },
+    ],
 });
 
 // https://HOST/x -> /x, bare https://HOST -> /, and the JSON-escaped forms (https:\/\/HOST\/x -> \/x).
