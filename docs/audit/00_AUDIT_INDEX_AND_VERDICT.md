@@ -3,8 +3,8 @@
 **Date:** 2026-10-19 · **Commit audited:** `b817322de95a4ccbd146238c42d931333523b884`
 
 > **Post-audit update — Phase 1 closed (see [`10_PHASE1_CLOSURE.md`](10_PHASE1_CLOSURE.md)).**
-> S-03 (stored XSS), Q-02 (CI), Q-03 (Pint), Q-04 (status drift), Q-05 (PHPStan) and Q-08 (flaky check)
-> are fixed; S-01 is partially closed with a 66-screen route × role matrix; B-05 is resolved with the
+> S-03 (stored XSS), Q-03 (Pint), Q-04 (status drift), Q-05 (PHPStan) and Q-08 (flaky check)
+> are fixed; the CI workflows are committed but their push needs the GitHub *workflows* permission; S-01 is partially closed with a 66-screen route × role matrix; B-05 is resolved with the
 > verified v2.1 source (`09`). `composer.lock`, break-glass recovery, off-site backups and production
 > verification remain open. Tests now: **1,212 passed / 1 skipped**. The verdict below describes the
 > Phase 0 baseline and is retained as the historical snapshot.

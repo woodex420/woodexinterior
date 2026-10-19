@@ -13,7 +13,7 @@ one new seeder entry; every other change is a guard, a test, a workflow or a doc
 |---|---|---|---|
 | **S-03** stored XSS in the HTML block | Regex cleaner bypassed by unquoted attributes and entities | **DOM allow-list** in `CanvasHtml`: unknown tags unwrapped, scripts/forms/svg dropped, `on*` removed, URLs decoded then scheme-checked, `srcdoc` removed, CSS imports/expressions stripped. Free HTML is **owner-only** via the new `website.raw_html` permission, enforced in `SavePage` and the editor | `HtmlSanitizerTest` (15 cases, including every previously successful payload); `RawHtmlAccessTest` (6); `evidence/phase1-*` |
 | **S-01** authorization unproven | 54 admin routes without route-level permission; 3 spot checks | **26 middleware guards added** to hubs, show pages, PDFs and legacy redirects. `AdminRouteAccessTest` walks every parameterless admin GET as the **support** role and asserts 200 only on the 7 screens its permissions allow, 301 on the 4 permitted redirects, **403 everywhere else**; a second test asserts every screen redirects to login when signed out | `AdminRouteAccessTest` (2 tests, 66 screens each); route diff |
-| **Q-02** CI dormant | Two templates in `docs/ci/` | Workflows copied to `.github/workflows/` (CI + manual deploy); documentation updated | `.github/workflows/*.yml` |
+| **Q-02** CI dormant | Two templates in `docs/ci/` | Workflows copied to `.github/workflows/` (CI + manual deploy) and committed locally. **Push blocked:** the Arena GitHub App lacks the `workflows` permission, so GitHub rejected the push of that one commit; reconnect GitHub with workflow permission and push | `.github/workflows/*.yml`; push error recorded below |
 | **Q-03** Pint red (33 files) | `pint --test` exit 1 | **PASS — 817 files** | `evidence/phase1-pint.txt` |
 | **Q-05** PHPStan red (6 errors) | 6 errors in 2 files | **0 errors** (array shapes added to `LibraryEntry::toRow`, its two implementations, and `SiteHealthIndex::pagesWithoutAlt`) | `evidence/phase1-phpstan.txt` |
 | **Q-04** stale status | 1,145 tests / 118 files / claims of clean | `PROJECT_STATUS.md` now reports the verified numbers and points here | `PROJECT_STATUS.md` |
@@ -60,11 +60,25 @@ receive it. The editor hides the HTML block and canvas button when the permissio
 
 | Item | Why it is open | Next step |
 |---|---|---|
-| **Q-01** `composer.lock` | No `composer` binary in the sandbox; the allowed hosts do not serve a PHAR | First CI run resolves dependencies and prints the lock (gzip+base64) between `WOODEX_LOCK_BEGIN/END`; commit that file, then switch CI to `composer install` |
+| **Q-01** `composer.lock` | No `composer` binary in the sandbox; the allowed hosts do not serve a PHAR | First CI run resolves dependencies and prints the lock (gzip+base64) between `WOODEX_LOCK_BEGIN/END`; commit that file, then switch CI to `composer install`. Blocked until Q-02's push lands |
 | **S-01** parameterized routes | The new matrix covers parameterless screens; model routes rely on the 8 policies and the existing 100 `403` assertions, not a single exhaustive table | Phase 6: seed one row per entity and extend the matrix to `{id}` routes |
 | **S-02** break-glass | No tested path if the owner loses their 2FA device | Document + test a one-time CLI/`install` recovery code |
 | **S-04** off-site backups | Needs an S3/SFTP destination and a restore drill | Owner decision D8 (S3 recommended) |
 | **Production verification** | Sandbox cannot reach the live host | Phase 7, read-only checklist |
+
+## 4b. Push status (important)
+
+The Phase 1 code and documentation are pushed as `e4f6974`. The CI workflow commit `b69eb10` exists on
+the local branch but **could not be pushed**:
+
+```
+! [remote rejected] ... (refusing to allow a GitHub App to create or update workflow
+  `.github/workflows/deploy-hostinger.yml` without `workflows` permission)
+```
+
+This is a connection permission, not a code problem. Reconnect GitHub in Arena with the **workflows**
+permission, then run `git push origin arena/8be318a2-woodexinterior`. The commit is ready; no work is
+lost. Until then CI does not run on GitHub and the lockfile step in §4 cannot execute.
 
 ## 5. Reversibility
 

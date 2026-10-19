@@ -2335,7 +2335,7 @@ audit → safety → builder → cutover → modules → polish → QA → deplo
 - **S-01 partially closed.** 26 admin routes gained route-level permissions; `AdminRouteAccessTest`
   probes all 66 parameterless admin GETs as the support role (7×200, 4×301, 55×403) and signed-out
   (all → login).
-- **Q-02/Q-03/Q-05/Q-04/Q-08 closed.** CI workflows are in `.github/workflows/`; Pint passes 817 files;
+- **Q-03/Q-05/Q-04/Q-08 closed; Q-02 ready.** CI workflows are committed locally in `.github/workflows/` (push pending GitHub workflows permission); Pint passes 817 files;
   PHPStan 0 errors; status numbers corrected; builder check ignores aborted beacon requests.
 - **B-05 resolved.** The v2.1 reference is `marketingwoodex-cloud/-marketingwoodex@720d817`, branch
   `arena/8a776c65-marketingwoodex` — `frontend-v1/builder/*`, including `templates-v26.js` and the

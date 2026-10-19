@@ -1,6 +1,6 @@
 # Woodex OS — Project Status & Quick Start
 
-**Updated:** 19 Oct 2026 (Phase 1) · **Status: Phase 0 audit accepted and Phase 1 (truth & safety) closed — stored-XSS path removed, free HTML owner-only, route access matrix green, CI active, Pint/PHPStan clean. The old-admin Website parity is closed (docs/14 §5a, STATE §69) — the four screens the v2.1 pro reference had and Woodex OS lacked (Section library, Hero slides, SEO overview, Site health) are live, and every starred old-admin item sits in the sidebar under its old name (All pages, Page builder, Header & footer, Redirects, Content library, Theme). The studio's January 2025 lead sheet is imported (21 leads through the historical-import path). Audit + QA baseline from 18 Oct stands: gate green, DB clean, preview healthy.**
+**Updated:** 19 Oct 2026 (Phase 1) · **Status: Phase 0 audit accepted and Phase 1 (truth & safety) closed — stored-XSS path removed, free HTML owner-only, route access matrix green, CI workflows committed (push pending GitHub permission), Pint/PHPStan clean. The old-admin Website parity is closed (docs/14 §5a, STATE §69) — the four screens the v2.1 pro reference had and Woodex OS lacked (Section library, Hero slides, SEO overview, Site health) are live, and every starred old-admin item sits in the sidebar under its old name (All pages, Page builder, Header & footer, Redirects, Content library, Theme). The studio's January 2025 lead sheet is imported (21 leads through the historical-import path). Audit + QA baseline from 18 Oct stands: gate green, DB clean, preview healthy.**
 
 One line: CRM + quotations + invoicing + payments + inbox + Telegram + website CMS + double-entry ledger core are live and gated; invoices and receipts now post to the general ledger automatically, dues have a screen with consent-gated reminders, and money can be collected from the phone. Remaining: two-brand documents/estimation, tracking boards, automation agents, MySQL migration, handover.
 
@@ -8,7 +8,7 @@ One line: CRM + quotations + invoicing + payments + inbox + Telegram + website C
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · Preline · SQLite (sandbox) → MySQL (production, planned) |
 | Tests | **1,212 passing** · 125 files (batched gate) · Pint clean · Larastan 0 |
-| Quality | Pint **817 files clean** · Larastan **0 errors** · **CI active** (`.github/workflows/`) · PHPStan and Pint block the build |
+| Quality | Pint **817 files clean** · Larastan **0 errors** · **CI workflows committed** (`.github/workflows/`; push blocked pending GitHub *workflows* permission) · PHPStan and Pint clean |
 | Progress log | [`platform/STATE.md`](platform/STATE.md) (chronological) · plan [`docs/27-P10-MASTER-PLAN.md`](docs/27-P10-MASTER-PLAN.md) |
 | Sandbox preview | port 8080 · login `owner@woodex.test` / `Woodex-Preview-2026` (demo data seeded) |
 
