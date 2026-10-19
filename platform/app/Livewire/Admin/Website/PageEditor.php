@@ -14,6 +14,7 @@ use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\PageTemplate;
 use App\Domain\Website\Models\PageVersion;
 use App\Domain\Website\Models\SavedSection;
+use App\Domain\Website\Services\PageAudit;
 use App\Domain\Website\Services\PageCache;
 use App\Domain\Website\Services\PageValidator;
 use App\Domain\Website\Support\PreviewLink;
@@ -109,6 +110,26 @@ class PageEditor extends Component
     /** The key of the section clicked in the preview — its card is scrolled to and highlighted (V2-3). */
     public string $activeBlock = '';
 
+    /**
+     * Undo / redo (19 Oct, builder parity with admin v2.1 pro): one snapshot per structural change,
+     * so an add, a drag, a delete or a style choice can be taken back before it is saved. Typing is
+     * left to the browser's own undo — the shortcuts only fire outside a field.
+     *
+     * @var list<array{blocks: list<array<string, mixed>>, activeBlock: string}>
+     */
+    #[Locked]
+    public array $undoStack = [];
+
+    /** @var list<array{blocks: list<array<string, mixed>>, activeBlock: string}> */
+    #[Locked]
+    public array $redoStack = [];
+
+    /** The layers panel's search: it filters the short list, never the page. */
+    public string $layerQuery = '';
+
+    /** How many changes can be taken back (the stacks themselves stay out of the view). */
+    protected const int HISTORY_LIMIT = 25;
+
     public function mount(?Page $page = null): void
     {
         abort_unless($this->user()->can('website.edit'), 403);
@@ -122,11 +143,81 @@ class PageEditor extends Component
      */
     public function updated(string $property): void
     {
-        if (in_array($property, ['previewLive', 'previewDevice', 'previewNonce', 'previewStale', 'previewNotice', 'shareUrl', 'activeBlock'], true)) {
+        if (in_array($property, ['previewLive', 'previewDevice', 'previewNonce', 'previewStale', 'previewNotice', 'shareUrl', 'activeBlock', 'layerQuery', 'undoStack', 'redoStack'], true)) {
             return;
         }
 
         $this->markPreviewStale();
+    }
+
+    /**
+     * Before a *style* choice lands, keep the state it replaces. A select is one change, so a
+     * background or spacing can be undone; the section's name is typed and keeps the browser's undo.
+     */
+    public function updating(string $property): void
+    {
+        if (preg_match('/^blocks\.\d+\.settings\.(background|spacing|width|align)$/', $property) === 1) {
+            $this->remember();
+        }
+    }
+
+    /** Keep the current state, for one Ctrl+Z. Every structural action calls this before it changes anything. */
+    private function remember(): void
+    {
+        $this->undoStack[] = ['blocks' => $this->blocks, 'activeBlock' => $this->activeBlock];
+
+        if (count($this->undoStack) > self::HISTORY_LIMIT) {
+            array_shift($this->undoStack);
+        }
+
+        $this->redoStack = [];
+    }
+
+    /** Take the last structural change back. The preview follows, like every other edit. */
+    public function undo(): void
+    {
+        $snapshot = array_pop($this->undoStack);
+
+        if ($snapshot === null) {
+            return;
+        }
+
+        $this->redoStack[] = ['blocks' => $this->blocks, 'activeBlock' => $this->activeBlock];
+        $this->blocks = $snapshot['blocks'];
+        $this->activeBlock = $snapshot['activeBlock'];
+
+        $this->markPreviewStale();
+        $this->toast('Undone.');
+    }
+
+    /** Put the change that was just undone back. */
+    public function redo(): void
+    {
+        $snapshot = array_pop($this->redoStack);
+
+        if ($snapshot === null) {
+            return;
+        }
+
+        $this->undoStack[] = ['blocks' => $this->blocks, 'activeBlock' => $this->activeBlock];
+        $this->blocks = $snapshot['blocks'];
+        $this->activeBlock = $snapshot['activeBlock'];
+
+        $this->markPreviewStale();
+        $this->toast('Redone.');
+    }
+
+    /** A row in the layers panel: highlight that section and bring its form into view. */
+    public function focusBlock(int $index): void
+    {
+        $block = $this->blocks[$index] ?? null;
+
+        if ($block === null) {
+            return;
+        }
+
+        $this->activeBlock = (string) $block['key'];
+        $this->dispatch('scroll-to-block', key: $this->activeBlock);
     }
 
     /** The frame is showing an older draft; the debounce in the blade asks for a refresh shortly. */
@@ -178,6 +269,8 @@ class PageEditor extends Component
     {
         $block = BlockType::from($type);
 
+        $this->remember();
+
         $this->blocks[] = [
             'id' => null,
             'key' => $this->newKey(),
@@ -193,6 +286,8 @@ class PageEditor extends Component
 
     public function removeBlock(int $index): void
     {
+        $this->remember();
+
         unset($this->blocks[$index]);
         $this->blocks = array_values($this->blocks);
         $this->markPreviewStale();
@@ -206,6 +301,8 @@ class PageEditor extends Component
             return;
         }
 
+        $this->remember();
+
         [$this->blocks[$index], $this->blocks[$to]] = [$this->blocks[$to], $this->blocks[$index]];
         $this->blocks = array_values($this->blocks);
         $this->markPreviewStale();
@@ -213,6 +310,8 @@ class PageEditor extends Component
 
     public function toggleBlock(int $index): void
     {
+        $this->remember();
+
         $this->blocks[$index]['visible'] = ! (bool) ($this->blocks[$index]['visible'] ?? true);
         $this->markPreviewStale();
     }
@@ -232,6 +331,8 @@ class PageEditor extends Component
             return;
         }
 
+        $this->remember();
+
         $moved = $blocks->pull($from);
         $blocks->splice(max(0, min($position, $blocks->count())), 0, [$moved]);
 
@@ -247,6 +348,8 @@ class PageEditor extends Component
         if (! isset($this->blocks[$index])) {
             return;
         }
+
+        $this->remember();
 
         $copy = $this->blocks[$index];
         $copy['id'] = null;
@@ -300,6 +403,8 @@ class PageEditor extends Component
     {
         $saved = SavedSection::query()->findOrFail($savedId);
 
+        $this->remember();
+
         $this->blocks[] = [
             'id' => null,
             'key' => $this->newKey(),
@@ -324,6 +429,8 @@ class PageEditor extends Component
      */
     public function applyTemplate(int $templateId): void
     {
+        $this->remember();
+
         $template = PageTemplate::query()->findOrFail($templateId);
 
         $this->blocks = $template->toBlocks();
@@ -400,12 +507,16 @@ class PageEditor extends Component
 
     public function addItem(int $index, string $key): void
     {
+        $this->remember();
+
         $this->blocks[$index]['data'][$key][] = $this->emptyItem($index, $key);
         $this->markPreviewStale();
     }
 
     public function removeItem(int $index, string $key, int $position): void
     {
+        $this->remember();
+
         unset($this->blocks[$index]['data'][$key][$position]);
         $this->blocks[$index]['data'][$key] = array_values($this->blocks[$index]['data'][$key]);
         $this->markPreviewStale();
@@ -631,6 +742,8 @@ class PageEditor extends Component
 
     public function render(): View
     {
+        $media = Media::query()->orderByDesc('id')->get(['id', 'title', 'alt', 'path']);
+
         return view('livewire.admin.website.page-editor', [
             'page' => $this->pageId !== null ? Page::query()->with(['versions.user'])->find($this->pageId) : null,
             'types' => collect(PageType::cases())->mapWithKeys(fn (PageType $type): array => [$type->value => $type->label()])->all(),
@@ -641,7 +754,18 @@ class PageEditor extends Component
             'savedSections' => SavedSection::query()->with('creator')->orderBy('name')->get(),
             'templates' => PageTemplate::query()->orderBy('page_type')->orderByDesc('is_default')->orderBy('name')->get(),
             'pages' => Page::query()->orderBy('title')->get(['id', 'title', 'slug']),
-            'media' => Media::query()->orderByDesc('id')->get(['id', 'title', 'alt', 'path']),
+            'media' => $media,
+            // The builder's own check (19 Oct): what would be improved before Publish is pressed.
+            'audit' => PageAudit::findings(
+                $this->title,
+                $this->seoTitle,
+                $this->seoDescription,
+                $this->focusKeyword,
+                $this->blocks,
+                $media->mapWithKeys(fn (Media $image): array => [$image->id => (string) $image->alt])->all(),
+            ),
+            'canUndo' => $this->undoStack !== [],
+            'canRedo' => $this->redoStack !== [],
         ]);
     }
 

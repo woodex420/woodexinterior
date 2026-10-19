@@ -92,13 +92,15 @@ validation unless the builder writes blocks back.
 | Section settings: name, background (white / light / sand / navy), spacing (compact / normal / spacious / none), width (boxed / full), alignment (centre) | `App\Domain\Website\Support\SectionStyle`, `page_blocks.settings`, the section card in the builder |
 | The page follows the settings live | `site/page.blade.php` wrapper (`wx-sec--…`), `resources/css/site.css` |
 | Settings survive save, preview, snapshot and version restore | `SavePage`, `RestorePageVersion` |
+| Layers: the page as a list, search, jump to a section, move, hide | the Layers card in the editor |
+| Undo / redo for structure and style (buttons + Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z) | `PageEditor::undo/redo/remember`, 25 snapshots |
 | HTML block with a code box and sanitising | `BlockType::Html`, `site/sections/html.blade.php`, `CanvasHtml` |
 | Real-browser proof the settings reach the preview | `tools/sandbox/builder-check.mjs` (step 5) |
 
 ## 7. Still open
 
-1. **Layers + undo/redo** and the **SEO / accessibility audit** are the two remaining v2.1 pro panels
-   that the block model does not have yet.
+1. **Per-element styling** (the pro builder's Content/Style/Advanced panels on an arbitrary element)
+   remains out of reach for typed blocks; the HTML block is the escape hatch.
 2. The exported `platform/public/<slug>/index.html` files still answer visitors by design; a CMS page
    of the same slug is only reachable through the builder preview. Migrating page by page is a
    separate decision, and the owner has said the frontend is final.

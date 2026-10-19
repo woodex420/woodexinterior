@@ -248,6 +248,72 @@ if (before.length < 2) {
 }
 await page.screenshot({ path: `${SHOTS}/builder-3-drag.png`, fullPage: false });
 
+// ---- 3b. undo / redo the drag from the toolbar -----------------------------------------------------
+const afterDrag = await blockTitles();
+const undoButton = await page.$('button[title^="Undo"]');
+const redoButton = await page.$('button[title^="Redo"]');
+
+if (!undoButton || !redoButton) {
+    fail('the builder has no undo / redo buttons');
+} else {
+    await undoButton.click();
+    await sleep(1800);
+    const undone = await blockTitles();
+
+    if (JSON.stringify(undone) !== JSON.stringify(before)) {
+        fail(`undo did not restore the order: ${JSON.stringify(undone.slice(0, 3))}`);
+    } else {
+        await redoButton.click();
+        await sleep(1800);
+        const redone = await blockTitles();
+
+        if (JSON.stringify(redone) !== JSON.stringify(afterDrag)) fail('redo did not put the change back');
+        else step('undo and redo restored the section order');
+    }
+}
+
+// ---- 3c. the layers panel: a row per section, and a search that filters the list --------------------
+const layers = await page.evaluate(() => {
+    const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Layers');
+    if (!card) return null;
+    return { rows: card.querySelectorAll('ul li').length, search: !!card.querySelector('input[type="search"]') };
+});
+
+if (!layers || layers.rows < 2) {
+    fail('the layers panel does not list the sections');
+} else {
+    const filtered = await page.evaluate(() => {
+        const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Layers');
+        const input = card?.querySelector('input[type="search"]');
+        if (!input) return null;
+        const before = card.querySelectorAll('ul li').length;
+        input.value = 'hero';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        return before;
+    });
+    await sleep(1200);
+    const after = await page.evaluate(() => {
+        const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Layers');
+        return card ? card.querySelectorAll('ul li').length : -1;
+    });
+
+    if (filtered === null || after < 1 || after >= filtered) {
+        fail(`the layers search did not narrow the list (${filtered} -> ${after})`);
+    } else {
+        step(`layers listed ${filtered} sections and the search narrowed them to ${after}`);
+    }
+
+    // Clear the filter so the rest of the check sees the whole page.
+    await page.evaluate(() => {
+        const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Layers');
+        const input = card?.querySelector('input[type="search"]');
+        if (!input) return;
+        input.value = '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await sleep(800);
+}
+
 // ---- 4. click a section in the preview and land on its form --------------------------------------
 // The drag above reloads the preview; give the new frame time to paint its section markers.
 const clickedKey = await (async () => {
@@ -282,6 +348,19 @@ if (!clickedKey) {
     else step(`click-to-edit jumped to section ${clickedKey}`);
 }
 await page.screenshot({ path: `${SHOTS}/builder-4-click-to-edit.png`, fullPage: false });
+
+// ---- 4b. the page check is there, and it is talking about this page -------------------------------
+const audit = await page.evaluate(() => {
+    const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Search engine');
+    if (!card) return null;
+    return {
+        title: card.textContent.includes('Page check'),
+        findings: card.querySelectorAll('ul li').length,
+    };
+});
+
+if (!audit || !audit.title) fail('the Search engine card has no page check');
+else step(`the page check is in the editor (${audit.findings} item(s))`);
 
 // ---- 5. the section settings reach the page (background, spacing) --------------------------------
 const backgroundSet = await page.evaluate(() => {

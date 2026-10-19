@@ -115,6 +115,31 @@
 
                     @this.call('editSectionFromPreview', data.key);
                 });
+
+                // Undo / redo (19 Oct, admin v2.1 pro parity): Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z take a
+                // structural change back. Inside a field the browser's own text undo wins — which is
+                // exactly what someone typing expects.
+                window.addEventListener('keydown', function (event) {
+                    var target = event.target;
+
+                    if (target && typeof target.closest === 'function' && target.closest('input, textarea, select, [contenteditable]')) {
+                        return;
+                    }
+
+                    if (!(event.ctrlKey || event.metaKey)) {
+                        return;
+                    }
+
+                    var key = String(event.key).toLowerCase();
+
+                    if (key === 'z') {
+                        event.preventDefault();
+                        @this.call(event.shiftKey ? 'redo' : 'undo');
+                    } else if (key === 'y') {
+                        event.preventDefault();
+                        @this.call('redo');
+                    }
+                });
             }
         </script>
     </x-admin.card>
@@ -213,7 +238,79 @@
             @endif
 
             @if (! $isCanvas)
+            {{-- Layers (19 Oct, admin v2.1 pro parity): the page at a glance, without the forms. A row
+                 jumps to its section; the arrows move it; the eye hides it. The search box filters the
+                 list only — the page is never filtered. --}}
+            <x-admin.card title="Layers" description="The page from top to bottom. Click a row to open its form, move it with the arrows, or hide it without deleting anything.">
+                @php
+                    $needle = mb_strtolower(trim($layerQuery));
+                    $layers = collect($blocks)
+                        ->map(fn (array $block, int $index): array => [
+                            'index' => $index,
+                            'block' => $block,
+                            'type' => BlockType::from($block['type']),
+                            'name' => \App\Domain\Website\Support\SectionStyle::title($block['settings'] ?? [], BlockType::from($block['type'])->label()),
+                        ])
+                        ->filter(fn (array $layer): bool => $needle === ''
+                            || str_contains(mb_strtolower($layer['name'].' '.$layer['type']->label()), $needle))
+                        ->values();
+                @endphp
+
+                @if ($blocks !== [])
+                    <div class="mb-3 flex flex-wrap items-center gap-2">
+                        <input type="search" wire:model.live.debounce.300ms="layerQuery" class="wx-input sm:max-w-xs"
+                               placeholder="Search sections (name or type)…" aria-label="Search sections">
+                        <span class="text-theme-xs text-gray-500">{{ count($blocks) }} {{ \Illuminate\Support\Str::plural('section', count($blocks)) }}</span>
+                    </div>
+
+                    @if ($layers->isEmpty())
+                        <p class="text-theme-sm text-gray-500">No section matches “{{ $layerQuery }}”.</p>
+                    @else
+                        <ul class="divide-y divide-gray-100 dark:divide-gray-800">
+                            @foreach ($layers as $layer)
+                                @php
+                                    $index = $layer['index'];
+                                    $block = $layer['block'];
+                                    $blockType = $layer['type'];
+                                    $shown = $block['visible'] ?? true;
+                                @endphp
+                                <li wire:key="layer-{{ $block['key'] }}" class="flex items-center gap-2 py-2">
+                                    <span class="w-6 shrink-0 text-theme-xs text-gray-400">{{ $index + 1 }}</span>
+                                    <button type="button" wire:click="focusBlock({{ $index }})" class="min-w-0 flex-1 text-left">
+                                        <span @class(['block truncate text-theme-sm font-medium', 'text-gray-800 dark:text-white/90' => $shown, 'text-gray-400 line-through dark:text-gray-500' => ! $shown])>{{ $layer['name'] }}</span>
+                                        <span class="block text-theme-xs text-gray-500">
+                                            @if ($layer['name'] !== $blockType->label()){{ $blockType->label() }} · @endif{{ $shown ? 'visible' : 'hidden' }}
+                                        </span>
+                                    </button>
+                                    <button type="button" wire:click="moveBlock({{ $index }}, -1)" class="wx-mini-btn" aria-label="Move up" title="Move up" @disabled($index === 0)>
+                                        <span aria-hidden="true">↑</span>
+                                    </button>
+                                    <button type="button" wire:click="moveBlock({{ $index }}, 1)" class="wx-mini-btn" aria-label="Move down" title="Move down" @disabled($index === count($blocks) - 1)>
+                                        <span aria-hidden="true">↓</span>
+                                    </button>
+                                    <button type="button" wire:click="toggleBlock({{ $index }})" class="wx-mini-btn"
+                                            aria-label="{{ $shown ? 'Hide' : 'Show' }} section" title="{{ $shown ? 'Hide' : 'Show' }}">
+                                        <x-icon :name="$shown ? 'eye' : 'eye-slash'" class="size-4" />
+                                    </button>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                @else
+                    <p class="text-theme-sm text-gray-500">Nothing on the page yet — add a section below and it appears here.</p>
+                @endif
+            </x-admin.card>
+
             <x-admin.card title="Sections" description="Drag the handle to reorder. One section per card, in the order visitors read them. A section you untick keeps its content but stops showing.">
+                <x-slot:actions>
+                    <button type="button" wire:click="undo" class="wx-seg-btn" title="Undo the last change (Ctrl+Z)" @disabled(! $canUndo)>
+                        <x-icon name="undo" class="size-3.5" /> Undo
+                    </button>
+                    <button type="button" wire:click="redo" class="wx-seg-btn" title="Redo (Ctrl+Y)" @disabled(! $canRedo)>
+                        <x-icon name="redo" class="size-3.5" /> Redo
+                    </button>
+                </x-slot:actions>
+
                 <div class="space-y-4" wire:sort="sortBlocks">
                     @forelse ($blocks as $index => $block)
                         @php $blockType = BlockType::from($block['type']); @endphp
@@ -408,7 +505,32 @@
                 </div>
             </x-admin.card>
 
-            <x-admin.card title="Search engine">
+            <x-admin.card title="Search engine" description="What search engines read, and the check the builder runs on it.">
+                <div class="mb-5 rounded-xl border border-gray-200 bg-gray-50/70 p-3 dark:border-gray-800 dark:bg-white/[0.02]">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">Page check</p>
+                        @if ($audit === [])
+                            <span class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs text-success-700 dark:bg-success-500/10 dark:text-success-400">Everything checks out</span>
+                        @else
+                            <span class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs text-warning-700 dark:bg-warning-500/10 dark:text-warning-400">{{ count($audit) }} to look at</span>
+                        @endif
+                    </div>
+                    @if ($audit !== [])
+                        <ul class="mt-2 space-y-1.5">
+                            @foreach ($audit as $finding)
+                                <li class="flex items-start gap-2 text-theme-sm">
+                                    <span @class([
+                                        'mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold',
+                                        'bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-400' => $finding['level'] === 'bad',
+                                        'bg-warning-50 text-warning-600 dark:bg-warning-500/10 dark:text-warning-400' => $finding['level'] !== 'bad',
+                                    ]) aria-hidden="true">{{ $finding['level'] === 'bad' ? '!' : '·' }}</span>
+                                    <span class="text-gray-600 dark:text-gray-300"><span class="font-medium text-gray-500">{{ $finding['area'] }}:</span> {{ $finding['message'] }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+
                 <div class="space-y-4">
                     <x-admin.field label="SEO title" for="seoTitle" hint="{{ strlen($seoTitle) }}/60 · how it appears as the blue link in Google.">
                         <input id="seoTitle" type="text" wire:model.live.debounce.700ms="seoTitle" class="wx-input" placeholder="Interior Design in Lahore | Woodex Interior">
