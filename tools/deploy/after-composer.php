@@ -32,6 +32,14 @@ if (is_file($themeStub)) {
     @unlink($themeStub);
 }
 
+// Phase 3 cutover of the home page (docs/11 §14): the v1 home page now lives at
+// platform/resources/legacy/home-v1.html, and a copy left in public/ would keep answering `/` through
+// DirectoryIndex. Rolling the cutover back means reverting this block together with the file move.
+$homeStub = $platform.'/public/index.html';
+if (is_file($homeStub)) {
+    @unlink($homeStub);
+}
+
 $ok = is_file($platform.'/vendor/autoload.php');
 fwrite(STDOUT, sprintf(
     "Woodex OS: PHP packages %s in platform/vendor, %d cached file(s) cleared. Open the site to install or update.\n",

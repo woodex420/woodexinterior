@@ -379,3 +379,54 @@ upload folder, no second list.
 ### 13.4 Rollback
 
 Revert the commit. `BuilderMedia` is additive; the table and the files stay, so nothing is lost.
+
+## 14. Phase 3 — the home page is served by the CMS (2026-10-20)
+
+**Decision.** The owner asked for the home page to be the first cut over, so the builder's pilot page is live
+rather than only visible at `?preview=1`. This is ahead of the group order in `docs/13` §4 (Home is group 8);
+the reason it is safe now is that the CMS copy *is* the v1 file, byte for byte — there is no design difference to
+compare, only a delivery path to switch.
+
+### 14.1 What changed
+
+* `platform/public/index.html` → `platform/resources/legacy/home-v1.html` (`git mv`). The file stays in the repo,
+  outside the web root, so rollback is a move, not a re-export.
+* `platform/public/.htaccess` — the `RewriteRule ^$ index.html [L]` rule is gone; the comment now explains the
+  cutover. `DirectoryIndex index.html index.php` stays, so every other folder still answers with its own file.
+* `tools/deploy/after-composer.php` — deletes a leftover `platform/public/index.html` on deploy, the same way it
+  already deletes the old static `theme.css` stub. Hostinger replaces files but does not delete removed ones
+  (docs/06, D-56), and without this the old file would keep answering `/`.
+
+### 14.2 Verified in the running app
+
+* The page was re-imported from the file first: `website:import-html /` → `canvas_html` **130,672 B, identical to
+  `public/index.html`** (compared in PHP, byte for byte).
+* After the move: `GET /` → **200, 131,429 B**, byte-identical to `GET /?preview=1`; the only markup the CMS adds
+  in the sandbox is the preview server's own beacon (dev instrumentation, not the app).
+* `GET /about/` → **200, 83,451 B**, still the static file (no beacon); `/nope-xyz` → 301 to `/nope-xyz/` → 404.
+* `node tools/sandbox/home-check.mjs` → **HOME CHECK OK** at 1440, 390 and 1280-no-JS: same `<h1>`, same font,
+  11 sections, no horizontal overflow.
+* `sh tools/sandbox/smoke.sh` → **SMOKE OK (68 admin pages)**.
+* `tests/Feature/Website` → **243 passed / 3,888 assertions**; `tests/Unit` 99 passed; Pint 837 files PASS;
+  PHPStan 0 errors.
+* `php artisan woodex:conversion-status` now reports `8 · Home | 1 | 0 | 1 | CMS serves this group` and
+  “163 of 166 published pages are still served by v1 files; 3 by the CMS.”
+* Evidence: `docs/audit/evidence/home-before.png`, `home-after.png` (same page height, 10,017 px).
+
+### 14.3 Guards added
+
+* `tests/Feature/Website/HomeCutoverTest.php` — the root has no static file, the v1 file is kept, other folders
+  still have theirs, and `SiteRouter` returns the stored document for `/` unwrapped.
+* `ConversionParityTest` now expects the home group to report CMS-served.
+
+### 14.4 Rollback
+
+`git mv platform/resources/legacy/home-v1.html platform/public/index.html`, restore the `^$ index.html` rule and
+remove the `$homeStub` block from `after-composer.php`, then deploy. No data changes: the CMS page stays as it is.
+
+### 14.5 Known limits
+
+* 165 published pages are still served as files; the cutover is per group, as approved.
+* `/` is now the builder's source of truth: editing it in the builder changes the live page immediately after
+  Save (the page cache is invalidated per save).
+* The sandbox save is slow (php-wasm, ~68 s for 130 KB); PHP-FPM is milliseconds.

@@ -67,6 +67,12 @@ files therefore needs its own deploy step (or a small `artisan` command run on t
 
 Total: **142**.
 
+> **Progress (2026-10-20).** **Home is the first group cut over** — ahead of the order above, on the owner's
+> instruction, because the Visual Page Builder's pilot page is the home page. At the moment of the switch the CMS
+> copy was byte-identical to `public/index.html` (130,672 B, verified before and after), so the §5 gate was met
+> with the strongest evidence available rather than a render diff. The other 165 pages are untouched and still
+> file-served. See `docs/audit/11_PHASE2_PAGE_BUILDER.md` §14 for the record and the deploy step.
+
 ---
 
 ## 5. The gate: a group is converted when all of this is true
@@ -111,7 +117,11 @@ Until group 8 is done, the files for every group remain in git. Rolling back a g
 deploy — a few minutes. The CMS pages stay as they are, so nothing learned is lost; the group is simply served by
 files again until the problem is understood.
 
-After group 8 (home) has settled, the remaining v1 files are deleted. From that point the CMS is the only source of
+The one caveat is Hostinger's deploy (§3): removing a file from git does not remove it from the server. The
+home cutover therefore also deletes `platform/public/index.html` in `tools/deploy/after-composer.php`; reverting
+the cutover means reverting that block together with the file move, or the deploy will delete the restored file.
+
+After all groups have settled, the remaining v1 files are deleted. From that point the CMS is the only source of
 truth and rollback means fixing forwards — which is why home goes last.
 
 ---
