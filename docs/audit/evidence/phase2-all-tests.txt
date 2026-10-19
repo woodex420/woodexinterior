@@ -1,414 +1,414 @@
 --- BATCH:  tests/ArchTest.php tests/Feature/Accounts/AccountsLedgerTest.php tests/Feature/Accounts/GlSalesPostingTest.php tests/Feature/AdminAccessTest.php tests/Feature/AdminRouteAccessTest.php tests/Feature/AdvanceInvoiceTest.php tests/Feature/AlertRulesTest.php tests/Feature/ApprovalEditSafetyTest.php tests/Feature/AuditLogTest.php tests/Feature/AutomationsDashboardTest.php
 
    PASS  Tests\ArchTest
-  ✓ no debugging statements                                              7.92s  
-  ✓ application code uses strict types                                   6.70s  
-  ✓ domain code does not depend on Livewire or HTTP controllers          7.58s  
+  ✓ no debugging statements                                              7.71s  
+  ✓ application code uses strict types                                   6.60s  
+  ✓ domain code does not depend on Livewire or HTTP controllers          7.00s  
 
    PASS  Tests\Feature\Accounts\AccountsLedgerTest
-  ✓ it seeds a chart where groups organise and leaves accept postings    2.29s  
-  ✓ it seeds open monthly periods that cover today, and re-seeding neve… 0.09s  
-  ✓ it posts a balanced journal entry with paisa-integer lines           0.08s  
-  ✓ it rejects an unbalanced entry                                       0.06s  
-  ✓ it rejects lines that carry both sides or neither side with dataset… 0.06s  
-  ✓ it rejects lines that carry both sides or neither side with dataset… 0.06s  
-  ✓ it rejects postings to groups and inactive accounts                  0.10s  
-  ✓ it refuses to post when no period covers the business date           0.09s  
-  ✓ it blocks posting into a closed period and allows it again after a…  0.10s  
-  ✓ it posts a business source exactly once                              0.10s  
-  ✓ it reverses an entry with mirrored lines and a two-way link          0.10s  
-  ✓ it refuses to reverse an entry twice or to reverse a reversal        0.12s  
-  ✓ it shows the accounts screens to the owner and keeps them away from… 0.84s  
-  ✓ it lets the owner post and reverse a manual entry from the journals… 0.44s  
-  ✓ it lets the owner close and reopen a period from the periods screen  0.22s  
-  ✓ it lets the owner add an account to the chart without inventing bal… 0.66s  
+  ✓ it seeds a chart where groups organise and leaves accept postings    1.98s  
+  ✓ it seeds open monthly periods that cover today, and re-seeding neve… 0.07s  
+  ✓ it posts a balanced journal entry with paisa-integer lines           0.07s  
+  ✓ it rejects an unbalanced entry                                       0.05s  
+  ✓ it rejects lines that carry both sides or neither side with dataset… 0.05s  
+  ✓ it rejects lines that carry both sides or neither side with dataset… 0.05s  
+  ✓ it rejects postings to groups and inactive accounts                  0.06s  
+  ✓ it refuses to post when no period covers the business date           0.05s  
+  ✓ it blocks posting into a closed period and allows it again after a…  0.06s  
+  ✓ it posts a business source exactly once                              0.06s  
+  ✓ it reverses an entry with mirrored lines and a two-way link          0.07s  
+  ✓ it refuses to reverse an entry twice or to reverse a reversal        0.08s  
+  ✓ it shows the accounts screens to the owner and keeps them away from… 0.70s  
+  ✓ it lets the owner post and reverse a manual entry from the journals… 0.31s  
+  ✓ it lets the owner close and reopen a period from the periods screen  0.21s  
+  ✓ it lets the owner add an account to the chart without inventing bal… 0.67s  
 
    PASS  Tests\Feature\Accounts\GlSalesPostingTest
-  ✓ it books an issued invoice: receivable against revenue by business…  1.72s  
-  ✓ it splits sales tax to taxes payable when the quotation carries it   0.95s  
-  ✓ it posts an invoice exactly once — retries return the same entry     0.95s  
-  ✓ it does not book a draft invoice                                     0.64s  
-  ✓ it refuses to book an invoice when the chart lost its receivable ac… 1.07s  
-  ✓ it books a verified receipt: the method account against receivables  1.32s  
-  ✓ it books a receipt with no invoices to settle as client credit (adv… 0.39s  
-  ✓ it splits a part-settled receipt between receivables and client cre… 1.22s  
-  ✓ it is a hard stop when the payment method is unmapped — nothing ver… 1.31s  
-  ✓ it lets the owner remap a method and books the next receipt to the…  1.26s  
+  ✓ it books an issued invoice: receivable against revenue by business…  1.30s  
+  ✓ it splits sales tax to taxes payable when the quotation carries it   0.96s  
+  ✓ it posts an invoice exactly once — retries return the same entry     0.88s  
+  ✓ it does not book a draft invoice                                     0.59s  
+  ✓ it refuses to book an invoice when the chart lost its receivable ac… 1.06s  
+  ✓ it books a verified receipt: the method account against receivables  1.27s  
+  ✓ it books a receipt with no invoices to settle as client credit (adv… 0.41s  
+  ✓ it splits a part-settled receipt between receivables and client cre… 1.42s  
+  ✓ it is a hard stop when the payment method is unmapped — nothing ver… 1.51s  
+  ✓ it lets the owner remap a method and books the next receipt to the…  1.34s  
   ✓ it keeps the method mapping screen away from non-owners              0.14s  
-  ✓ it posts a payment exactly once — retries return the same entry      1.43s  
+  ✓ it posts a payment exactly once — retries return the same entry      1.31s  
 
    PASS  Tests\Feature\AdminAccessTest
   ✓ it redirects guests to the admin login                               0.08s  
   ✓ it signs in an active staff member and blocks deactivated accounts   0.07s  
-  ✓ it sends a failed sign-in back to its form even without a referer o… 0.12s  
-  ✓ it sends signed-in staff to the admin dashboard, never to the publi… 0.08s  
-  ✓ it renders the owner dashboard with the go-live checklist            0.31s  
-  ✓ it applies role permissions to admin screens                         0.37s  
+  ✓ it sends a failed sign-in back to its form even without a referer o… 0.07s  
+  ✓ it sends signed-in staff to the admin dashboard, never to the publi… 0.06s  
+  ✓ it renders the owner dashboard with the go-live checklist            0.25s  
+  ✓ it applies role permissions to admin screens                         0.35s  
   ✓ it forces two-factor setup for required staff roles when enforcemen… 0.21s  
-  ✓ it forces two-factor setup for required staff roles when enforcemen… 0.38s  
-  ✓ it sends noindex headers on admin pages                              0.20s  
+  ✓ it forces two-factor setup for required staff roles when enforcemen… 0.18s  
+  ✓ it sends noindex headers on admin pages                              0.21s  
 
    PASS  Tests\Feature\AdminRouteAccessTest
-  ✓ it gives the support role exactly the screens its permissions allow… 1.06s  
+  ✓ it gives the support role exactly the screens its permissions allow… 1.27s  
   ✓ it sends every admin screen to the login page when nobody is signed… 0.24s  
 
    PASS  Tests\Feature\AdvanceInvoiceTest
-  ✓ it opens the project and raises the advance invoice when the client… 0.88s  
-  ✓ it raises 75% on a design quotation and 100% on a custom one         1.77s  
+  ✓ it opens the project and raises the advance invoice when the client… 1.04s  
+  ✓ it raises 75% on a design quotation and 100% on a custom one         1.90s  
   ✓ it never opens a second project or a second advance invoice          0.90s  
-  ✓ it leaves the advance as a draft when the owner asks for that        0.56s  
-  ✓ it pays into the account of the business line                        1.01s  
-  ✓ it lists the invoices and serves the PDF to the team                 0.99s  
-  ✓ it shows the project and the invoice on the quotation page           1.23s  
-  ✓ it keeps the tax rate of the quotation on the advance                1.02s  
+  ✓ it leaves the advance as a draft when the owner asks for that        0.58s  
+  ✓ it pays into the account of the business line                        1.07s  
+  ✓ it lists the invoices and serves the PDF to the team                 1.04s  
+  ✓ it shows the project and the invoice on the quotation page           1.28s  
+  ✓ it keeps the tax rate of the quotation on the advance                0.98s  
 
    PASS  Tests\Feature\AlertRulesTest
-  ✓ it keeps the catalogue honest: unique keys, and only keys the route… 0.14s  
-  ✓ it routes exactly as before when no rule exists                      0.06s  
-  ✓ it takes an event over: roles and named people, on the chosen chann… 0.06s  
-  ✓ it lets a critical rule reach a muted chat at once                   0.06s  
-  ✓ it builds rules from the screen: add, pause, edit, remove            0.60s  
-  ✓ it keeps the builder to settings managers                            0.16s  
+  ✓ it keeps the catalogue honest: unique keys, and only keys the route… 0.11s  
+  ✓ it routes exactly as before when no rule exists                      0.07s  
+  ✓ it takes an event over: roles and named people, on the chosen chann… 0.07s  
+  ✓ it lets a critical rule reach a muted chat at once                   0.07s  
+  ✓ it builds rules from the screen: add, pause, edit, remove            0.49s  
+  ✓ it keeps the builder to settings managers                            0.11s  
 
    PASS  Tests\Feature\ApprovalEditSafetyTest
-  ✓ it blocks editor and recalculation against the persisted noneditabl… 0.18s  
+  ✓ it blocks editor and recalculation against the persisted noneditabl… 0.17s  
+  ✓ it blocks editor and recalculation against the persisted noneditabl… 0.14s  
+  ✓ it blocks editor and recalculation against the persisted noneditabl… 0.14s  
+  ✓ it blocks editor and recalculation against the persisted noneditabl… 0.14s  
+  ✓ it blocks editor and recalculation against the persisted noneditabl… 0.14s  
+  ✓ it blocks editor and recalculation against the persisted noneditabl… 0.14s  
   ✓ it blocks editor and recalculation against the persisted noneditabl… 0.15s  
-  ✓ it blocks editor and recalculation against the persisted noneditabl… 0.14s  
-  ✓ it blocks editor and recalculation against the persisted noneditabl… 0.14s  
-  ✓ it blocks editor and recalculation against the persisted noneditabl… 0.14s  
-  ✓ it blocks editor and recalculation against the persisted noneditabl… 0.14s  
-  ✓ it blocks editor and recalculation against the persisted noneditabl… 0.14s  
-  ✓ it does not allow stale editor metadata to erase current quote meta… 0.13s  
+  ✓ it does not allow stale editor metadata to erase current quote meta… 0.14s  
   ✓ it refreshes line discounts before validating a stale partial edit   0.13s  
   ✓ it does not create or replace another pending approval through a st… 0.21s  
-  ✓ it cannot decide a stale approval twice with either decision with (… 0.26s  
-  ✓ it cannot decide a stale approval twice with either decision with (… 0.27s  
-  ✓ it refuses to approve a proposal whose original content or recipien… 0.24s  
+  ✓ it cannot decide a stale approval twice with either decision with (… 0.22s  
+  ✓ it cannot decide a stale approval twice with either decision with (… 0.22s  
+  ✓ it refuses to approve a proposal whose original content or recipien… 0.21s  
   ✓ it refuses to approve a proposal whose original content or recipien… 0.23s  
   ✓ it refuses to approve a proposal whose original content or recipien… 0.23s  
-  ✓ it refuses to approve a proposal whose original content or recipien… 0.22s  
-  ✓ it refuses to approve a proposal whose original content or recipien… 0.22s  
-  ✓ it refuses to approve a proposal whose original content or recipien… 0.23s  
-  ✓ it refuses to approve a proposal whose original content or recipien… 0.24s  
-  ✓ it refuses legacy or missing approval bindings until reviewed again  0.24s  
-  ✓ it invalidates an approved send after the recipient changes          0.25s  
-  ✓ it rechecks fresh approval actor activity and permission with (true… 0.21s  
+  ✓ it refuses to approve a proposal whose original content or recipien… 0.20s  
+  ✓ it refuses to approve a proposal whose original content or recipien… 0.20s  
+  ✓ it refuses to approve a proposal whose original content or recipien… 0.20s  
+  ✓ it refuses to approve a proposal whose original content or recipien… 0.26s  
+  ✓ it refuses legacy or missing approval bindings until reviewed again  0.21s  
+  ✓ it invalidates an approved send after the recipient changes          0.24s  
+  ✓ it rechecks fresh approval actor activity and permission with (true… 0.20s  
   ✓ it rechecks fresh approval actor activity and permission with (fals… 0.21s  
-  ✓ it cannot reopen an already sent approval through a stale approved…  0.56s  
-  ✓ it cannot revise acceptances or request changes through stale sent…  0.95s  
-  ✓ it does not downgrade acceptance or lose view counts when recording… 0.88s  
-  ✓ it cannot delete a sent quote through a stale draft even as owner    0.60s  
-  ✓ it allocates the changed revision before requesting its approval an… 0.94s  
-  ✓ it rejects change requests from a form displaying an older sent rev… 0.99s  
+  ✓ it cannot reopen an already sent approval through a stale approved…  0.53s  
+  ✓ it cannot revise acceptances or request changes through stale sent…  0.97s  
+  ✓ it does not downgrade acceptance or lose view counts when recording… 0.86s  
+  ✓ it cannot delete a sent quote through a stale draft even as owner    0.59s  
+  ✓ it allocates the changed revision before requesting its approval an… 0.92s  
+  ✓ it rejects change requests from a form displaying an older sent rev… 0.95s  
 
    PASS  Tests\Feature\AuditLogTest
-  ✓ it lists model changes with who did them and what changed            0.16s  
+  ✓ it lists model changes with who did them and what changed            0.15s  
   ✓ it lists webhook deliveries and integration calls on their tabs      0.09s  
-  ✓ it keeps the audit log to those who may audit                        0.21s  
+  ✓ it keeps the audit log to those who may audit                        0.20s  
 
    PASS  Tests\Feature\AutomationsDashboardTest
   ✓ it treats every automation as enabled until somebody pauses it       0.05s  
-  ✓ it pauses and resumes an automation from the dashboard with attribu… 0.24s  
-  ✓ it keeps the control behind the automation permission                0.16s  
-  ✓ it does not offer the platform jobs for toggling                     0.17s  
+  ✓ it pauses and resumes an automation from the dashboard with attribu… 0.21s  
+  ✓ it keeps the control behind the automation permission                0.12s  
+  ✓ it does not offer the platform jobs for toggling                     0.15s  
   ✓ it shows the scheduler\u{2019}s own run history per automation       0.12s  
   ✓ it actually skips a paused automation in the schedule                0.05s  
-  ✓ it keeps the catalog in step with the gated schedule entries         0.05s  
+  ✓ it keeps the catalog in step with the gated schedule entries         0.04s  
 
   Tests:    95 passed (518 assertions)
-  Duration: 63.95s
+  Duration: 61.60s
 
 --- BATCH:  tests/Feature/BotEngineTest.php tests/Feature/CannedRepliesTest.php tests/Feature/CatalogImagesTest.php tests/Feature/ChangeRequestsBoardTest.php tests/Feature/ClientPortalTest.php tests/Feature/CollaborationTest.php tests/Feature/CompaniesTest.php tests/Feature/ConsentSafetyTest.php tests/Feature/ContactsTest.php tests/Feature/ConversationMediaTest.php
 
    PASS  Tests\Feature\BotEngineTest
-  ✓ it answers keyless: an honest reply, and a human hears about it      2.66s  
-  ✓ it thinks with a provider, feeds it the knowledge, and counts the t… 0.15s  
-  ✓ it stops a reply that breaks the guardrails, and hands the thread o… 0.14s  
-  ✓ it lets a price through when the knowledge carries it                0.14s  
-  ✓ it hands over after the thread has had its share of bot replies      0.13s  
-  ✓ it stays silent during studio hours when it is an evenings-only bot  0.13s  
-  ✓ it keeps the visitor message when the model itself fails             0.15s  
-  ✓ it renders and saves the Bot tab                                     0.57s  
+  ✓ it answers keyless: an honest reply, and a human hears about it      2.51s  
+  ✓ it thinks with a provider, feeds it the knowledge, and counts the t… 0.14s  
+  ✓ it stops a reply that breaks the guardrails, and hands the thread o… 0.13s  
+  ✓ it lets a price through when the knowledge carries it                0.13s  
+  ✓ it hands over after the thread has had its share of bot replies      0.12s  
+  ✓ it stays silent during studio hours when it is an evenings-only bot  0.12s  
+  ✓ it keeps the visitor message when the model itself fails             0.14s  
+  ✓ it renders and saves the Bot tab                                     0.43s  
 
    PASS  Tests\Feature\CannedRepliesTest
-  ✓ it seeds the everyday replies in English and Roman Urdu              0.07s  
+  ✓ it seeds the everyday replies in English and Roman Urdu              0.06s  
   ✓ it matches what was typed after the slash, across title, keywords a… 0.06s  
-  ✓ it fills the variables for the client on the other end, including t… 0.13s  
+  ✓ it fills the variables for the client on the other end, including t… 0.12s  
   ✓ it renders {first_name} safely when the contact has no single-word…  0.07s  
-  ✓ it offers the picker while typing / and fills the composer on pick,… 0.42s  
-  ✓ it manages the replies behind settings.manage, and keeps support ou… 0.37s  
+  ✓ it offers the picker while typing / and fills the composer on pick,… 0.19s  
+  ✓ it manages the replies behind settings.manage, and keeps support ou… 0.35s  
 
    PASS  Tests\Feature\CatalogImagesTest
-  ✓ it attaches a picture to a rate book item                            0.81s  
-  ✓ it rejects anything that is not a small picture                      0.71s  
-  ✓ it copies the picture onto the quotation line and embeds it in the…  1.02s  
-  ✓ it keeps the picture on existing quote lines when the catalogue pic… 0.53s  
-  ✓ it keeps the rate book picture flow behind the catalog permission    0.27s  
+  ✓ it attaches a picture to a rate book item                            0.75s  
+  ✓ it rejects anything that is not a small picture                      0.63s  
+  ✓ it copies the picture onto the quotation line and embeds it in the…  0.97s  
+  ✓ it keeps the picture on existing quote lines when the catalogue pic… 0.50s  
+  ✓ it keeps the rate book picture flow behind the catalog permission    0.38s  
 
    PASS  Tests\Feature\ChangeRequestsBoardTest
-  ✓ it lists telegram ideas on the board and moves them along the flow   0.17s  
-  ✓ it closes a card with a note and tells the requester what happened   0.23s  
+  ✓ it lists telegram ideas on the board and moves them along the flow   0.16s  
+  ✓ it closes a card with a note and tells the requester what happened   0.21s  
   ✓ it sends the outcome to the requester linked on Telegram, phrased f… 0.07s  
-  ✓ it keeps the board to the owner and admins                           0.25s  
-  ✓ it shows on the board what was just sent with /idea from Telegram    0.16s  
+  ✓ it keeps the board to the owner and admins                           0.20s  
+  ✓ it shows on the board what was just sent with /idea from Telegram    0.10s  
 
    PASS  Tests\Feature\ClientPortalTest
-  ✓ it shows the client their project on a signed link, and only what t… 1.69s  
-  ✓ it hides a cancelled project from the client                         1.14s  
-  ✓ it shows a document on the portal only once the team shares it       1.28s  
-  ✓ it starts the handover checklist from Settings and lets the team ti… 1.63s  
-  ✓ it lets the client sign for the space, and not before every line is… 1.08s  
-  ✓ it opens the portal with a code when the link is lost, and never wi… 0.96s  
-  ✓ it asks for a public review a few days after the handover, and only… 1.02s  
-  ✓ it turns a finished job into a draft case study, with the client co… 1.33s  
-  ✓ it emails the client the link to their own page                      1.09s  
-  ✓ it asks for a code only for people who have a project with us        1.00s  
-  ✓ it keeps the review request quiet until the client has signed        0.89s  
+  ✓ it shows the client their project on a signed link, and only what t… 1.16s  
+  ✓ it hides a cancelled project from the client                         0.94s  
+  ✓ it shows a document on the portal only once the team shares it       1.11s  
+  ✓ it starts the handover checklist from Settings and lets the team ti… 1.32s  
+  ✓ it lets the client sign for the space, and not before every line is… 0.98s  
+  ✓ it opens the portal with a code when the link is lost, and never wi… 1.02s  
+  ✓ it asks for a public review a few days after the handover, and only… 1.09s  
+  ✓ it turns a finished job into a draft case study, with the client co… 1.37s  
+  ✓ it emails the client the link to their own page                      1.07s  
+  ✓ it asks for a code only for people who have a project with us        0.94s  
+  ✓ it keeps the review request quiet until the client has signed        1.00s  
 
    PASS  Tests\Feature\CollaborationTest
-  ✓ it notifies teammates mentioned in a note, but not the author        0.46s  
-  ✓ it shows notifications in the bell, opens the deep link and marks e… 0.21s  
-  ✓ it uploads files to a lead privately and lets only people who see t… 0.29s  
-  ✓ it rejects files that are too big or of an unknown type              0.30s  
+  ✓ it notifies teammates mentioned in a note, but not the author        0.45s  
+  ✓ it shows notifications in the bell, opens the deep link and marks e… 0.20s  
+  ✓ it uploads files to a lead privately and lets only people who see t… 0.28s  
+  ✓ it rejects files that are too big or of an unknown type              0.29s  
 
    PASS  Tests\Feature\CompaniesTest
-  ✓ it creates a company with a normalised phone and opens its page      0.44s  
-  ✓ it validates the company form                                        0.20s  
-  ✓ it searches companies by name and phone                              0.16s  
-  ✓ it links people, shows their enquiries and soft deletes the company  0.24s  
-  ✓ it lets sales users see companies but not delete them                0.14s  
+  ✓ it creates a company with a normalised phone and opens its page      0.40s  
+  ✓ it validates the company form                                        0.18s  
+  ✓ it searches companies by name and phone                              0.12s  
+  ✓ it links people, shows their enquiries and soft deletes the company  0.21s  
+  ✓ it lets sales users see companies but not delete them                0.13s  
 
    PASS  Tests\Feature\ConsentSafetyTest
-  ✓ it does not resurrect an opt out when a returning enquiry supplies…  0.10s  
-  ✓ it keeps either side opt out sticky during a contact merge even wit… 0.08s  
-  ✓ it keeps either side opt out sticky during a contact merge even wit… 0.08s  
-  ✓ it refuses ordinary consent restoration and rereads a stale contact… 0.07s  
-  ✓ it does not use a new inbound message or START to undo STOP          0.09s  
-  ✓ it blocks both reply and template before provider calls when a cont… 0.11s  
-  ✓ it blocks both reply and template before provider calls when a cont… 0.11s  
-  ✓ it rereads opted out state even when a conversation and contact wer… 0.14s  
-  ✓ it requires explicit WhatsApp opt in for templates but does not inf… 0.12s  
+  ✓ it does not resurrect an opt out when a returning enquiry supplies…  0.09s  
+  ✓ it keeps either side opt out sticky during a contact merge even wit… 0.07s  
+  ✓ it keeps either side opt out sticky during a contact merge even wit… 0.07s  
+  ✓ it refuses ordinary consent restoration and rereads a stale contact… 0.06s  
+  ✓ it does not use a new inbound message or START to undo STOP          0.08s  
+  ✓ it blocks both reply and template before provider calls when a cont… 0.10s  
+  ✓ it blocks both reply and template before provider calls when a cont… 0.10s  
+  ✓ it rereads opted out state even when a conversation and contact wer… 0.12s  
+  ✓ it requires explicit WhatsApp opt in for templates but does not inf… 0.11s  
+  ✓ it refuses null inactive and unauthorized actors at the message act… 0.05s  
   ✓ it refuses null inactive and unauthorized actors at the message act… 0.06s  
-  ✓ it refuses null inactive and unauthorized actors at the message act… 0.06s  
-  ✓ it refuses null inactive and unauthorized actors at the message act… 0.12s  
-  ✓ it allows an internal note about an opted out client without contac… 0.11s  
+  ✓ it refuses null inactive and unauthorized actors at the message act… 0.10s  
+  ✓ it allows an internal note about an opted out client without contac… 0.10s  
 
    PASS  Tests\Feature\ContactsTest
   ✓ it creates a contact with a normalised phone and opens it            0.21s  
-  ✓ it refuses a duplicate phone in any format and points to the existi… 0.22s  
+  ✓ it refuses a duplicate phone in any format and points to the existi… 0.19s  
   ✓ it shows sales users only the contacts they own or have leads for    0.32s  
-  ✓ it merges a duplicate contact and moves its leads and timeline       0.24s  
-  ✓ it does not let sales users merge contacts                           0.21s  
-  ✓ it opens a new enquiry for an existing client                        0.43s  
+  ✓ it merges a duplicate contact and moves its leads and timeline       0.20s  
+  ✓ it does not let sales users merge contacts                           0.15s  
+  ✓ it opens a new enquiry for an existing client                        0.38s  
 
    PASS  Tests\Feature\ConversationMediaTest
-  ✓ it sends a photograph with a caption and keeps the studio copy       0.15s  
-  ✓ it sends a PDF with its filename, and a voice note without a captio… 0.17s  
-  ✓ it refuses what WhatsApp refuses, and respects the window like text  0.15s  
-  ✓ it marks the message failed when Meta refuses the upload, but keeps… 0.15s  
-  ✓ it never sends media outside the 24-hour window                      0.14s  
-  ✓ it serves a message media file only to people who may read the conv… 0.20s  
-  ✓ it uploads and sends from the composer, with the caption doubling a… 0.26s  
-  ✓ it shows the attach button only on WhatsApp conversations            0.21s  
+  ✓ it sends a photograph with a caption and keeps the studio copy       0.14s  
+  ✓ it sends a PDF with its filename, and a voice note without a captio… 0.13s  
+  ✓ it refuses what WhatsApp refuses, and respects the window like text  0.12s  
+  ✓ it marks the message failed when Meta refuses the upload, but keeps… 0.12s  
+  ✓ it never sends media outside the 24-hour window                      0.11s  
+  ✓ it serves a message media file only to people who may read the conv… 0.18s  
+  ✓ it uploads and sends from the composer, with the caption doubling a… 0.22s  
+  ✓ it shows the attach button only on WhatsApp conversations            0.18s  
 
   Tests:    71 passed (338 assertions)
-  Duration: 29.77s
+  Duration: 27.06s
 
 --- BATCH:  tests/Feature/Conversations/WebChatWidgetTest.php tests/Feature/ConversationsTest.php tests/Feature/Crm/NewLeadAlertFlowTest.php tests/Feature/CrmAutomationTest.php tests/Feature/DatabaseUpdatesTest.php tests/Feature/DocumentLibraryTest.php tests/Feature/EstimateToQuoteTest.php tests/Feature/GlobalSearchTest.php tests/Feature/GoogleOAuthTest.php tests/Feature/ImportV21Test.php
 
    PASS  Tests\Feature\Conversations\WebChatWidgetTest
-  ✓ it keeps the widget invisible while it is switched off               2.71s  
-  ✓ it serves the script and greets a new visitor by name flow           0.15s  
-  ✓ it runs the intake: name, number, service — then the lead exists an… 0.27s  
-  ✓ it accepts an email instead of a number and never asks for the numb… 0.18s  
+  ✓ it keeps the widget invisible while it is switched off               2.44s  
+  ✓ it serves the script and greets a new visitor by name flow           0.14s  
+  ✓ it runs the intake: name, number, service — then the lead exists an… 0.22s  
+  ✓ it accepts an email instead of a number and never asks for the numb… 0.16s  
   ✓ it re-asks for a number that is neither a number nor an email        0.11s  
-  ✓ it lets the team reply from the inbox without a gateway and the wid… 0.38s  
+  ✓ it lets the team reply from the inbox without a gateway and the wid… 0.37s  
   ✓ it starts a fresh thread for an unknown token instead of failing     0.09s  
-  ✓ it stores the visitor message even when the intake is already live   0.23s  
-  ✓ it bounds a message to two thousand characters                       0.28s  
+  ✓ it stores the visitor message even when the intake is already live   0.22s  
+  ✓ it bounds a message to two thousand characters                       0.26s  
   ✓ it ships the loader to the static v1 pages as well                   0.07s  
-  ✓ it drops the cached pages when the switch flips, so the bubble foll… 0.23s  
+  ✓ it drops the cached pages when the switch flips, so the bubble foll… 0.24s  
   ✓ it counts the visitor message as unread for the inbox                0.11s  
-  ✓ it shows web chat threads in the inbox and answers them there witho… 0.42s  
+  ✓ it shows web chat threads in the inbox and answers them there witho… 0.43s  
 
    PASS  Tests\Feature\ConversationsTest
   ✓ it answers Meta's handshake and refuses one with the wrong token     0.07s  
-  ✓ it refuses a webhook that is not signed with the app secret          0.06s  
-  ✓ it turns an inbound message into a contact and a conversation        0.10s  
-  ✓ it matches a second message from the same client to the same conver… 0.13s  
-  ✓ it ignores a replayed message instead of storing it twice            0.09s  
-  ✓ it hears an opt-out keyword and stops marketing consent              0.09s  
-  ✓ it reopens a closed conversation when the client writes again        0.10s  
-  ✓ it sends a reply inside the window and stores what came back from M… 0.19s  
-  ✓ it refuses a free-form reply outside the 24-hour window              0.25s  
-  ✓ it saves a failed send with Meta's error instead of pretending it w… 0.22s  
-  ✓ it keeps an internal note out of the client's hands                  0.19s  
-  ✓ it records delivered and read receipts from Meta, and never moves a… 0.09s  
+  ✓ it refuses a webhook that is not signed with the app secret          0.07s  
+  ✓ it turns an inbound message into a contact and a conversation        0.08s  
+  ✓ it matches a second message from the same client to the same conver… 0.09s  
+  ✓ it ignores a replayed message instead of storing it twice            0.08s  
+  ✓ it hears an opt-out keyword and stops marketing consent              0.08s  
+  ✓ it reopens a closed conversation when the client writes again        0.11s  
+  ✓ it sends a reply inside the window and stores what came back from M… 0.18s  
+  ✓ it refuses a free-form reply outside the 24-hour window              0.17s  
+  ✓ it saves a failed send with Meta's error instead of pretending it w… 0.17s  
+  ✓ it keeps an internal note out of the client's hands                  0.18s  
+  ✓ it records delivered and read receipts from Meta, and never moves a… 0.11s  
   ✓ it downloads inbound media so a photograph outlives Meta's link      0.13s  
-  ✓ it shows the inbox to the team and hides it from a role that may no… 0.24s  
-  ✓ it lets the team close a conversation and reopen it                  0.19s  
+  ✓ it shows the inbox to the team and hides it from a role that may no… 0.21s  
+  ✓ it lets the team close a conversation and reopen it                  0.18s  
 
    PASS  Tests\Feature\Crm\NewLeadAlertFlowTest
-  ✓ it alerts the lead owner and the sales managers about a new enquiry  0.12s  
-  ✓ it alerts the unassigned-lead roles when nobody owns the enquiry     0.11s  
-  ✓ it emails the alert to staff who have no Telegram link               0.10s  
-  ✓ it stays silent when the new-enquiry alert automation is paused      0.10s  
-  ✓ it asks once for a missing number by email and opens a follow-up ta… 0.13s  
+  ✓ it alerts the lead owner and the sales managers about a new enquiry  0.11s  
+  ✓ it alerts the unassigned-lead roles when nobody owns the enquiry     0.10s  
+  ✓ it emails the alert to staff who have no Telegram link               0.09s  
+  ✓ it stays silent when the new-enquiry alert automation is paused      0.09s  
+  ✓ it asks once for a missing number by email and opens a follow-up ta… 0.11s  
   ✓ it never asks when the enquiry has a number or the automation is pa… 0.12s  
-  ✓ it does not ask for a returning enquiry on an existing lead          0.11s  
+  ✓ it does not ask for a returning enquiry on an existing lead          0.10s  
 
    PASS  Tests\Feature\CrmAutomationTest
   ✓ assignment rules (CRM-009) → it routes matching leads round robin a… 0.12s  
-  ✓ assignment rules (CRM-009) → it skips rules that do not match and r… 0.10s  
+  ✓ assignment rules (CRM-009) → it skips rules that do not match and r… 0.09s  
   ✓ assignment rules (CRM-009) → it skips working-hours-only rules whil… 0.08s  
   ✓ it gives each source its own first-response target and skips holida… 0.06s  
-  ✓ it escalates a missed response to the owner role after the escalati… 0.08s  
+  ✓ it escalates a missed response to the owner role after the escalati… 0.07s  
   ✓ it scores leads from the rules in Settings                           0.06s  
   ✓ it creates the next occurrence when a repeating task is completed    0.06s  
   ✓ it sends task and visit reminders once                               0.09s  
 
    PASS  Tests\Feature\DatabaseUpdatesTest
-  ✓ it sees no pending migrations on a migrated database                 0.07s  
+  ✓ it sees no pending migrations on a migrated database                 0.06s  
   ✓ it sends the owner to the update page after a deploy with new migra… 0.12s  
-  ✓ it applies the update with one click and opens the admin again       0.26s  
+  ✓ it applies the update with one click and opens the admin again       0.23s  
   ✓ it shows staff a short notice while the update waits                 0.13s  
   ✓ it lets the owner update before two-factor is set up, without a red… 0.24s  
-  ✓ it runs the real update (migrations, permissions, caches) from the…  0.97s  
-  ✓ it refuses to run two updates at once, and runs again once the firs… 0.89s  
-  ✓ it reports pending migrations on the Health page                     0.20s  
-  ✓ it never undoes owner edits when reference data is seeded again      0.64s  
-  ✓ it still installs over SSH with woodex:install                       0.59s  
+  ✓ it runs the real update (migrations, permissions, caches) from the…  1.04s  
+  ✓ it refuses to run two updates at once, and runs again once the firs… 0.88s  
+  ✓ it reports pending migrations on the Health page                     0.22s  
+  ✓ it never undoes owner edits when reference data is seeded again      0.71s  
+  ✓ it still installs over SSH with woodex:install                       0.65s  
 
    PASS  Tests\Feature\DocumentLibraryTest
-  ✓ it renders searchable sectioned libraries for both brands and restr… 0.40s  
-  ✓ it saves and archives descriptions without updating copied quotes    0.30s  
-  ✓ it rejects oversized descriptions rather than truncating them        0.33s  
-  ✓ it validates description writes in the domain action too             0.15s  
-  ✓ it copies a description as a new unpriced line and preserves existi… 0.35s  
+  ✓ it renders searchable sectioned libraries for both brands and restr… 0.39s  
+  ✓ it saves and archives descriptions without updating copied quotes    0.28s  
+  ✓ it rejects oversized descriptions rather than truncating them        0.30s  
+  ✓ it validates description writes in the domain action too             0.14s  
+  ✓ it copies a description as a new unpriced line and preserves existi… 0.38s  
   ✓ it refuses wrong-brand or archived description copies with ('brand'… 0.11s  
-  ✓ it refuses wrong-brand or archived description copies with ('inacti… 0.11s  
+  ✓ it refuses wrong-brand or archived description copies with ('inacti… 0.10s  
   ✓ it refuses description and design changes on locked quotations with… 0.25s  
   ✓ it refuses description and design changes on locked quotations with… 0.24s  
-  ✓ it refuses description and design changes on locked quotations with… 0.24s  
   ✓ it refuses description and design changes on locked quotations with… 0.25s  
-  ✓ it starts a catalog form from a description without importing a sel… 0.30s  
-  ✓ it protects document design configuration and preserves copied draf… 0.20s  
-  ✓ it updates the design via the Livewire form                          0.21s  
-  ✓ it rejects stale document design writes                              0.16s  
+  ✓ it refuses description and design changes on locked quotations with… 0.25s  
+  ✓ it starts a catalog form from a description without importing a sel… 0.26s  
+  ✓ it protects document design configuration and preserves copied draf… 0.19s  
+  ✓ it updates the design via the Livewire form                          0.20s  
+  ✓ it rejects stale document design writes                              0.15s  
   ✓ it rejects unsafe design colors with ('red')                         0.18s  
   ✓ it rejects unsafe design colors with ('#fff')                        0.18s  
-  ✓ it rejects unsafe design colors with ('#fff;display:none')           0.18s  
+  ✓ it rejects unsafe design colors with ('#fff;display:none')           0.17s  
   ✓ it rejects unsafe design colors with ('<script>')                            0.18s  
-  ✓ it rejects HTML and SVG instead of accepting them as logos with ('l<script></script>… 0.16s  
-  ✓ it rejects HTML and SVG instead of accepting them as logos with ('l</svg>… 0.16s  
+  ✓ it rejects HTML and SVG instead of accepting them as logos with ('l<script></script>… 0.17s  
+  ✓ it rejects HTML and SVG instead of accepting them as logos with ('l</svg>… 0.17s  
   ✓ it binds explicitly applied document design to quotation approval    0.18s  
+  ✓ it keeps furniture and project design families distinct with (App\D… 0.12s  
   ✓ it keeps furniture and project design families distinct with (App\D… 0.13s  
-  ✓ it keeps furniture and project design families distinct with (App\D… 0.13s  
-  ✓ it serves the exact frozen quote PDF by default after sending        0.67s  
+  ✓ it serves the exact frozen quote PDF by default after sending        0.63s  
   ✓ it escapes design text in print views and renders real draft PDFs    0.51s  
-  ✓ it creates and freezes the existing advance invoice flow with match… 1.47s  
-  ✓ it uses in-window preview events rather than new-tab PDF links       0.30s  
+  ✓ it creates and freezes the existing advance invoice flow with match… 1.50s  
+  ✓ it uses in-window preview events rather than new-tab PDF links       0.29s  
   ✓ it embeds a valid local logo into immutable quote design copies      0.51s  
-  ✓ it rejects a stale inactive actor for library writes                 0.11s  
+  ✓ it rejects a stale inactive actor for library writes                 0.10s  
 
    PASS  Tests\Feature\EstimateToQuoteTest
-  ✓ it reads the estimate off an enquiry that came from the website est… 0.10s  
-  ✓ it opens a draft quotation priced from the rate book, not from the…  0.14s  
-  ✓ it prices the finish the client chose                                0.22s  
+  ✓ it reads the estimate off an enquiry that came from the website est… 0.09s  
+  ✓ it opens a draft quotation priced from the rate book, not from the…  0.13s  
+  ✓ it prices the finish the client chose                                0.20s  
   ✓ it is offered only when the enquiry really carries an estimate       0.09s  
   ✓ it starts the quotation from the enquiry page and opens it, in one…  0.25s  
-  ✓ it says so instead of failing when there is nothing to price         0.25s  
+  ✓ it says so instead of failing when there is nothing to price         0.26s  
 
    PASS  Tests\Feature\GlobalSearchTest
-  ✓ it finds leads and contacts by phone in any format and by reference  0.17s  
+  ✓ it finds leads and contacts by phone in any format and by reference  0.18s  
   ✓ it only returns what the user may see                                0.15s  
-  ✓ it shows quick links before typing                                   0.11s  
-  ✓ it is available in the admin header                                  0.23s  
+  ✓ it shows quick links before typing                                   0.31s  
+  ✓ it is available in the admin header                                  0.22s  
 
    PASS  Tests\Feature\GoogleOAuthTest
-  ✓ it shows an honest setup modal without requesting provider credenti… 0.27s  
-  ✓ it keeps Google sign-in hidden and refuses starts until configured…  0.07s  
+  ✓ it shows an honest setup modal without requesting provider credenti… 0.28s  
+  ✓ it keeps Google sign-in hidden and refuses starts until configured…  0.09s  
   ✓ it rejects unsafe callback configuration and only permits loopback…  0.04s  
-  ✓ it requires an active owner and current password before company aut… 0.14s  
-  ✓ it redirects to the fixed Google consent endpoint with state PKCE a… 0.11s  
-  ✓ it consumes denied invalid expired and replayed states without exch… 0.06s  
-  ✓ it consumes denied invalid expired and replayed states without exch… 0.06s  
-  ✓ it consumes denied invalid expired and replayed states without exch… 0.06s  
-  ✓ it stores business tokens encrypted and hidden and keeps audits met… 0.28s  
-  ✓ it rechecks the actor and owner role at the business callback with…  0.07s  
+  ✓ it requires an active owner and current password before company aut… 0.15s  
+  ✓ it redirects to the fixed Google consent endpoint with state PKCE a… 0.14s  
+  ✓ it consumes denied invalid expired and replayed states without exch… 0.08s  
+  ✓ it consumes denied invalid expired and replayed states without exch… 0.07s  
+  ✓ it consumes denied invalid expired and replayed states without exch… 0.07s  
+  ✓ it stores business tokens encrypted and hidden and keeps audits met… 0.31s  
   ✓ it rechecks the actor and owner role at the business callback with…  0.06s  
-  ✓ it rechecks the actor and owner role at the business callback with…  0.06s  
-  ✓ it does not trust unverified identities or token errors and redacts… 0.06s  
-  ✓ it does not trust unverified identities or token errors and redacts… 0.06s  
-  ✓ it never creates users or automatically links by matching email      0.08s  
-  ✓ it links a staff identity only after password confirmation and neve… 0.10s  
+  ✓ it rechecks the actor and owner role at the business callback with…  0.08s  
+  ✓ it rechecks the actor and owner role at the business callback with…  0.09s  
+  ✓ it does not trust unverified identities or token errors and redacts… 0.07s  
+  ✓ it does not trust unverified identities or token errors and redacts… 0.07s  
+  ✓ it never creates users or automatically links by matching email      0.12s  
+  ✓ it links a staff identity only after password confirmation and neve… 0.12s  
   ✓ it does not reassign an existing Google identity to another staff a… 0.07s  
   ✓ it signs in only the active prelinked staff user without changing r… 0.07s  
-  ✓ it denies Google sign-in for disabled or deleted staff with (false)  0.07s  
-  ✓ it denies Google sign-in for disabled or deleted staff with (true)   0.06s  
+  ✓ it denies Google sign-in for disabled or deleted staff with (false)  0.06s  
+  ✓ it denies Google sign-in for disabled or deleted staff with (true)   0.07s  
   ✓ it preserves confirmed owner two-factor challenges after Google aut… 0.09s  
   ✓ it requires password confirmation to unlink staff identity and keep… 0.08s  
-  ✓ it refreshes expiring company credentials and confirms the same Goo… 0.12s  
+  ✓ it refreshes expiring company credentials and confirms the same Goo… 0.13s  
   ✓ it only removes company tokens after confirmed provider revocation…  0.13s  
-  ✓ it only removes company tokens after confirmed provider revocation…  0.12s  
-  ✓ it rejects additional Workspace permissions or missing offline gran… 0.11s  
-  ✓ it rejects additional Workspace permissions or missing offline gran… 0.12s  
-  ✓ it requires an owner for live checks and revocation and never bypas… 0.14s  
+  ✓ it only removes company tokens after confirmed provider revocation…  0.15s  
+  ✓ it rejects additional Workspace permissions or missing offline gran… 0.13s  
+  ✓ it rejects additional Workspace permissions or missing offline gran… 0.17s  
+  ✓ it requires an owner for live checks and revocation and never bypas… 0.16s  
   ✓ it marks failed refreshes as reconnect required without exposing pr… 0.12s  
   ✓ it does not replace a signed-in session through a guest Google call… 0.06s  
-  ✓ it rate limits Google sign-in starts                                 0.08s  
-  ✓ it does not use Google linking to skip required staff two-factor en… 0.06s  
-  ✓ it does not cache OAuth responses or forward callback query strings… 0.06s  
+  ✓ it rate limits Google sign-in starts                                 0.07s  
+  ✓ it does not use Google linking to skip required staff two-factor en… 0.08s  
+  ✓ it does not cache OAuth responses or forward callback query strings… 0.08s  
 
    PASS  Tests\Feature\ImportV21Test
   ✓ it imports users, clients, leads, notes and bookings with the v2.1…  0.21s  
-  ✓ it saves nothing on a dry run                                        0.14s  
-  ✓ it is safe to run twice                                              0.14s  
-  ✓ it runs selected steps from the command and writes the report        0.11s  
+  ✓ it saves nothing on a dry run                                        0.15s  
+  ✓ it is safe to run twice                                              0.15s  
+  ✓ it runs selected steps from the command and writes the report        0.13s  
   ✓ it rejects unknown steps                                             0.06s  
 
   Tests:    131 passed (638 assertions)
-  Duration: 27.67s
+  Duration: 27.56s
 
 --- BATCH:  tests/Feature/InboxQuickWinsTest.php tests/Feature/InstallerTest.php tests/Feature/LeadCsvImportTest.php tests/Feature/LeadShowTest.php tests/Feature/LeadsIndexTest.php tests/Feature/McpBridgeTest.php tests/Feature/NumberingTest.php tests/Feature/OwnerTwoFactorPolicyTest.php tests/Feature/P10LiveChatTest.php tests/Feature/P10SidebarHubsTest.php
 
    PASS  Tests\Feature\InboxQuickWinsTest
-  ✓ it notifies a teammate mentioned in an internal note                 2.50s  
-  ✓ it leaves a plain note alone                                         0.13s  
-  ✓ it arms the first-reply clock, then the shorter next-reply clock     0.14s  
-  ✓ it flags a missed reply once, alerts the assignee, and escalates wh… 0.12s  
+  ✓ it notifies a teammate mentioned in an internal note                 2.42s  
+  ✓ it leaves a plain note alone                                         0.14s  
+  ✓ it arms the first-reply clock, then the shorter next-reply clock     0.16s  
+  ✓ it flags a missed reply once, alerts the assignee, and escalates wh… 0.13s  
   ✓ it alerts the integrations managers the day Meta downgrades the num… 0.11s  
-  ✓ it counts the month, prices it, and alerts once when the budget is…  0.14s  
+  ✓ it counts the month, prices it, and alerts once when the budget is…  0.15s  
 
    WARN  Tests\Feature\InstallerTest
   ✓ it sends every page of a freshly deployed site to the installer      0.08s  
-  ✓ it shows the installer and writes a setup code into the private dat… 0.10s  
+  ✓ it shows the installer and writes a setup code into the private dat… 0.09s  
   ✓ it puts a copy of the setup code in the site folder, where File Man… 0.10s  
   ✓ it accepts this hosting account's local MySQL user instead of the s… 0.08s  
   ✓ it never takes a remote, foreign, anonymous or password-less databa… 0.07s  
-  ✓ it never takes a remote, foreign, anonymous or password-less databa… 0.10s  
-  ✓ it never takes a remote, foreign, anonymous or password-less databa… 0.09s  
-  ✓ it never takes a remote, foreign, anonymous or password-less databa… 0.10s  
   ✓ it never takes a remote, foreign, anonymous or password-less databa… 0.07s  
   ✓ it never takes a remote, foreign, anonymous or password-less databa… 0.07s  
+  ✓ it never takes a remote, foreign, anonymous or password-less databa… 0.07s  
+  ✓ it never takes a remote, foreign, anonymous or password-less databa… 0.07s  
+  ✓ it never takes a remote, foreign, anonymous or password-less databa… 0.06s  
   ✓ it never takes a remote, foreign, anonymous or password-less databa… 0.07s  
   ✓ it treats odd input (arrays instead of text) as empty, without an e… 0.07s  
-  ✓ it stops guessing after 10 failed proofs for 10 minutes              0.14s  
-  ✓ it only offers the database route when the hosting account is known  0.07s  
+  ✓ it stops guessing after 10 failed proofs for 10 minutes              0.20s  
+  ✓ it only offers the database route when the hosting account is known  0.09s  
   ✓ it names only the private file when the site folder is not writable  0.06s  
   ✓ it refuses a wrong setup code and writes nothing                     0.06s  
-  ✓ it validates the form without echoing passwords                      0.07s  
+  ✓ it validates the form without echoing passwords                      0.06s  
   - it explains a database it cannot use → php-wasm (AI sandbox) has no… 0.06s  
-  ✓ it installs in two steps and closes itself                           0.70s  
-  ✓ it keeps an existing owner when it is pointed at an installed datab… 0.61s  
+  ✓ it installs in two steps and closes itself                           0.75s  
+  ✓ it keeps an existing owner when it is pointed at an installed datab… 0.63s  
   ✓ it suggests the cron command for the PHP the site runs               0.05s  
 
    PASS  Tests\Feature\LeadCsvImportTest
   ✓ it defaults to a read-only report without consuming reference numbe… 0.09s  
   ✓ it imports historical contacts and leads through capture with origi… 0.08s  
   ✓ it never infers invoices payments or won deals from historical quot… 0.08s  
-  ✓ it skips matching active or archived contacts without updating any…  0.08s  
-  ✓ it skips matching active or archived contacts without updating any…  0.06s  
+  ✓ it skips matching active or archived contacts without updating any…  0.09s  
+  ✓ it skips matching active or archived contacts without updating any…  0.07s  
   ✓ it skips matching active or archived contacts without updating any…  0.07s  
   ✓ it skips matching active or archived contacts without updating any…  0.07s  
   ✓ it skips matching active or archived contacts without updating any…  0.07s  
@@ -424,55 +424,55 @@
   ✓ it holds untrustworthy rows without guessing with (['01/01/2027'])   0.06s  
   ✓ it holds untrustworthy rows without guessing with (['']) #3          0.06s  
   ✓ it holds untrustworthy rows without guessing with (['']) #4          0.06s  
-  ✓ it rejects malformed sheets before applying otherwise valid rows     0.05s  
+  ✓ it rejects malformed sheets before applying otherwise valid rows     0.06s  
   ✓ it rolls back the batch when its idempotency marker cannot be saved  0.08s  
   ✓ it requires a fresh active owner instead of a cached role or active… 0.06s  
   ✓ it requires a fresh active owner instead of a cached role or active… 0.07s  
-  ✓ it does not expose imported names phones or notes in its reconcilia… 0.07s  
-  ✓ it refuses unsafe historical capture flags at the shared lead entry… 0.05s  
-  ✓ it refuses unsafe historical capture flags at the shared lead entry… 0.05s  
-  ✓ it refuses unsafe historical capture flags at the shared lead entry… 0.05s  
-  ✓ it refuses to enrich an existing contact even when historical captu… 0.06s  
+  ✓ it does not expose imported names phones or notes in its reconcilia… 0.10s  
+  ✓ it refuses unsafe historical capture flags at the shared lead entry… 0.06s  
+  ✓ it refuses unsafe historical capture flags at the shared lead entry… 0.06s  
+  ✓ it refuses unsafe historical capture flags at the shared lead entry… 0.06s  
+  ✓ it refuses to enrich an existing contact even when historical captu… 0.07s  
 
    PASS  Tests\Feature\LeadShowTest
-  ✓ it opens the lead page for its owner and blocks other sales users    0.44s  
-  ✓ it stops the response timer on the first call even without an answe… 0.35s  
-  ✓ it moves a new lead to Contacted once the client is reached          0.41s  
-  ✓ it suggests WhatsApp after three unanswered calls                    0.65s  
-  ✓ it requires a note body for notes                                    0.31s  
-  ✓ it sets the next action with a quick preset                          0.46s  
-  ✓ it books a site visit, moves the lead to Site visit and makes it th… 0.42s  
-  ✓ it rejects a site visit in the past                                  0.33s  
-  ✓ it adds and completes a task from the lead page                      0.37s  
-  ✓ it lets a manager reassign the lead                                  0.39s  
-  ✓ it does not let a sales user act on another person's lead            0.11s  
+  ✓ it opens the lead page for its owner and blocks other sales users    0.47s  
+  ✓ it stops the response timer on the first call even without an answe… 0.39s  
+  ✓ it moves a new lead to Contacted once the client is reached          0.45s  
+  ✓ it suggests WhatsApp after three unanswered calls                    0.69s  
+  ✓ it requires a note body for notes                                    0.36s  
+  ✓ it sets the next action with a quick preset                          0.29s  
+  ✓ it books a site visit, moves the lead to Site visit and makes it th… 0.44s  
+  ✓ it rejects a site visit in the past                                  0.34s  
+  ✓ it adds and completes a task from the lead page                      0.39s  
+  ✓ it lets a manager reassign the lead                                  0.46s  
+  ✓ it does not let a sales user act on another person's lead            0.12s  
 
    PASS  Tests\Feature\LeadsIndexTest
   ✓ it finds a lead by phone typed in local format                       0.19s  
   ✓ it creates a lead from the quick-add form through CaptureLead        0.40s  
-  ✓ it limits sales users to their own leads                             0.16s  
-  ✓ it sorts, pages and remembers a saved view as the default            0.35s  
-  ✓ it exports the filtered leads as CSV for people with the export per… 0.21s  
-  ✓ it bulk assigns, moves and deletes selected leads within permission… 0.49s  
-  ✓ it lands the N shortcut: /leads?new=1 opens the composer straight a… 0.13s  
+  ✓ it limits sales users to their own leads                             0.17s  
+  ✓ it sorts, pages and remembers a saved view as the default            0.39s  
+  ✓ it exports the filtered leads as CSV for people with the export per… 0.23s  
+  ✓ it bulk assigns, moves and deletes selected leads within permission… 0.55s  
+  ✓ it lands the N shortcut: /leads?new=1 opens the composer straight a… 0.14s  
   ✓ it opens the leads list quiet when no shortcut asks for the compose… 0.13s  
 
    PASS  Tests\Feature\McpBridgeTest
-  ✓ it requires an explicit bearer key even for signed-in owners         0.07s  
-  ✓ it issues only hashed scoped keys and audits without storing the ke… 0.12s  
+  ✓ it requires an explicit bearer key even for signed-in owners         0.08s  
+  ✓ it issues only hashed scoped keys and audits without storing the ke… 0.13s  
+  ✓ it rejects revoked expired inactive and deleted-user credentials wi… 0.08s  
+  ✓ it rejects revoked expired inactive and deleted-user credentials wi… 0.05s  
   ✓ it rejects revoked expired inactive and deleted-user credentials wi… 0.06s  
   ✓ it rejects revoked expired inactive and deleted-user credentials wi… 0.05s  
-  ✓ it rejects revoked expired inactive and deleted-user credentials wi… 0.05s  
-  ✓ it rejects revoked expired inactive and deleted-user credentials wi… 0.05s  
   ✓ it requires both the key scope and the current user permission       0.11s  
-  ✓ it limits lead data to permitted records and omits contact and priv… 0.14s  
-  ✓ it paginates bounded lists and rejects invalid limits or mutation m… 0.15s  
-  ✓ it scopes quotes and returns integer monetary units without client…  0.18s  
-  ✓ it does not permit admin key issuance or owner password bypass       0.40s  
-  ✓ it shows a new key once and allows owners to revoke it               0.52s  
+  ✓ it limits lead data to permitted records and omits contact and priv… 0.13s  
+  ✓ it paginates bounded lists and rejects invalid limits or mutation m… 0.14s  
+  ✓ it scopes quotes and returns integer monetary units without client…  0.23s  
+  ✓ it does not permit admin key issuance or owner password bypass       0.43s  
+  ✓ it shows a new key once and allows owners to revoke it               0.54s  
   ✓ it rejects write scopes instead of silently widening a key           0.38s  
-  ✓ it supports search categories and honest roadmap requirement detail… 0.26s  
-  ✓ it rechecks visibility after the issuing owner is demoted            0.13s  
+  ✓ it supports search categories and honest roadmap requirement detail… 0.24s  
+  ✓ it rechecks visibility after the issuing owner is demoted            0.12s  
   ✓ it enforces per-key rate limiting after authentication               0.06s  
   ✓ it refuses plaintext transport in production                         0.05s  
   ✓ it keeps revocation owner-only and idempotent                        0.36s  
@@ -480,169 +480,169 @@
    PASS  Tests\Feature\NumberingTest
   ✓ it allocates sequential Woodex document numbers                      0.07s  
   ✓ it resets yearly sequences when the year changes                     0.05s  
-  ✓ it never resets live counters when the seeder runs again             0.06s  
+  ✓ it never resets live counters when the seeder runs again             0.07s  
   ✓ it fails loudly for an unknown sequence                              0.06s  
 
    PASS  Tests\Feature\OwnerTwoFactorPolicyTest
-  ✓ it lets owners use admin pages before optional setup even with a pe… 0.69s  
-  ✓ it lets owners use admin pages before optional setup even with a pe… 0.79s  
-  ✓ it lets an owner link Telegram without enabling or automatically re… 0.28s  
-  ✓ it requires the owner password before cancelling pending setup or d… 0.38s  
+  ✓ it lets owners use admin pages before optional setup even with a pe… 0.64s  
+  ✓ it lets owners use admin pages before optional setup even with a pe… 0.76s  
+  ✓ it lets an owner link Telegram without enabling or automatically re… 0.26s  
+  ✓ it requires the owner password before cancelling pending setup or d… 0.37s  
   ✓ it requires the owner password before cancelling pending setup or d… 0.11s  
-  ✓ it does not let required staff turn off their confirmed 2FA with ('… 0.09s  
+  ✓ it does not let required staff turn off their confirmed 2FA with ('… 0.08s  
   ✓ it does not let required staff turn off their confirmed 2FA with ('… 0.09s  
   ✓ it still challenges owners at sign-in after they voluntarily enable… 0.27s  
-  ✓ it lets an owner with unconfirmed setup sign in without an authenti… 0.34s  
+  ✓ it lets an owner with unconfirmed setup sign in without an authenti… 0.27s  
 
    PASS  Tests\Feature\P10LiveChatTest
   ✓ it stays out of the header for staff who cannot use the inbox        0.13s  
   ✓ it shows the unread count and the live-visitor dot                   0.13s  
-  ✓ it marks the visitor quiet after two minutes                         0.12s  
+  ✓ it marks the visitor quiet after two minutes                         0.11s  
   ✓ it lists website chats only — WhatsApp never enters the live drawer  0.12s  
   ✓ it never replays history as a toast                                  0.12s  
-  ✓ it toasts a new visitor message once and never opens the drawer by…  0.14s  
+  ✓ it toasts a new visitor message once and never opens the drawer by…  0.15s  
   ✓ it stops toasting once a teammate has read the thread                0.13s  
-  ✓ it opens the drawer on request, picks the newest thread and marks i… 0.15s  
-  ✓ it answers the visitor from the drawer on the same thread            0.19s  
-  ✓ it keeps the sound off by default and out of non-managers hands      0.14s  
-  ✓ it switches the sound on for the whole studio from the drawer        0.19s  
+  ✓ it opens the drawer on request, picks the newest thread and marks i… 0.14s  
+  ✓ it answers the visitor from the drawer on the same thread            0.17s  
+  ✓ it keeps the sound off by default and out of non-managers hands      0.12s  
+  ✓ it switches the sound on for the whole studio from the drawer        0.18s  
   ✓ it rides along on every admin page through the header                0.22s  
 
    PASS  Tests\Feature\P10SidebarHubsTest
-  ✓ it consolidates the sidebar to the confirmed P10.1 map               0.13s  
-  ✓ it renders every hub tab for the owner with dataset "dashboard over… 0.23s  
-  ✓ it renders every hub tab for the owner with dataset "dashboard my d… 0.24s  
-  ✓ it renders every hub tab for the owner with dataset "reports funnel… 0.30s  
-  ✓ it renders every hub tab for the owner with dataset "reports revenu… 0.29s  
-  ✓ it renders every hub tab for the owner with dataset "leads list"     0.22s  
-  ✓ it renders every hub tab for the owner with dataset "leads pipeline… 0.28s  
-  ✓ it renders every hub tab for the owner with dataset "leads tracking… 0.24s  
-  ✓ it renders every hub tab for the owner with dataset "contacts peopl… 0.22s  
-  ✓ it renders every hub tab for the owner with dataset "contacts compa… 0.23s  
-  ✓ it renders every hub tab for the owner with dataset "tasks"          0.20s  
-  ✓ it renders every hub tab for the owner with dataset "visits"         0.24s  
-  ✓ it renders every hub tab for the owner with dataset "quotes all"     0.21s  
-  ✓ it renders every hub tab for the owner with dataset "quote tracking… 0.22s  
-  ✓ it renders every hub tab for the owner with dataset "quote template… 0.29s  
+  ✓ it consolidates the sidebar to the confirmed P10.1 map               0.14s  
+  ✓ it renders every hub tab for the owner with dataset "dashboard over… 0.22s  
+  ✓ it renders every hub tab for the owner with dataset "dashboard my d… 0.23s  
+  ✓ it renders every hub tab for the owner with dataset "reports funnel… 0.29s  
+  ✓ it renders every hub tab for the owner with dataset "reports revenu… 0.26s  
+  ✓ it renders every hub tab for the owner with dataset "leads list"     0.21s  
+  ✓ it renders every hub tab for the owner with dataset "leads pipeline… 0.21s  
+  ✓ it renders every hub tab for the owner with dataset "leads tracking… 0.20s  
+  ✓ it renders every hub tab for the owner with dataset "contacts peopl… 0.19s  
+  ✓ it renders every hub tab for the owner with dataset "contacts compa… 0.19s  
+  ✓ it renders every hub tab for the owner with dataset "tasks"          0.19s  
+  ✓ it renders every hub tab for the owner with dataset "visits"         0.23s  
+  ✓ it renders every hub tab for the owner with dataset "quotes all"     0.22s  
+  ✓ it renders every hub tab for the owner with dataset "quote tracking… 0.21s  
+  ✓ it renders every hub tab for the owner with dataset "quote template… 0.30s  
   ✓ it renders every hub tab for the owner with dataset "invoices all"   0.20s  
-  ✓ it renders every hub tab for the owner with dataset "invoice tracki… 0.20s  
+  ✓ it renders every hub tab for the owner with dataset "invoice tracki… 0.19s  
   ✓ it renders every hub tab for the owner with dataset "payments all"   0.21s  
-  ✓ it renders every hub tab for the owner with dataset "due payments"   0.20s  
-  ✓ it renders every hub tab for the owner with dataset "receivables"    0.21s  
-  ✓ it renders every hub tab for the owner with dataset "documents desc… 0.22s  
-  ✓ it renders every hub tab for the owner with dataset "document desig… 0.22s  
-  ✓ it renders every hub tab for the owner with dataset "rate book"      0.28s  
+  ✓ it renders every hub tab for the owner with dataset "due payments"   0.19s  
+  ✓ it renders every hub tab for the owner with dataset "receivables"    0.20s  
+  ✓ it renders every hub tab for the owner with dataset "documents desc… 0.20s  
+  ✓ it renders every hub tab for the owner with dataset "document desig… 0.19s  
+  ✓ it renders every hub tab for the owner with dataset "rate book"      0.31s  
   ✓ it redirects every merged URL to its tab with dataset "my day"       0.12s  
-  ✓ it redirects every merged URL to its tab with dataset "pipeline"     0.10s  
-  ✓ it redirects every merged URL to its tab with dataset "companies"    0.11s  
-  ✓ it redirects every merged URL to its tab with dataset "site visits"  0.10s  
-  ✓ it redirects every merged URL to its tab with dataset "quote templa… 0.10s  
-  ✓ it redirects every merged URL to its tab with dataset "quote tracki… 0.10s  
-  ✓ it redirects every merged URL to its tab with dataset "invoice trac… 0.10s  
-  ✓ it redirects every merged URL to its tab with dataset "due payments… 0.12s  
+  ✓ it redirects every merged URL to its tab with dataset "pipeline"     0.12s  
+  ✓ it redirects every merged URL to its tab with dataset "companies"    0.12s  
+  ✓ it redirects every merged URL to its tab with dataset "site visits"  0.12s  
+  ✓ it redirects every merged URL to its tab with dataset "quote templa… 0.12s  
+  ✓ it redirects every merged URL to its tab with dataset "quote tracki… 0.13s  
+  ✓ it redirects every merged URL to its tab with dataset "invoice trac… 0.13s  
+  ✓ it redirects every merged URL to its tab with dataset "due payments… 0.13s  
   ✓ it redirects every merged URL to its tab with dataset "receivables"  0.11s  
   ✓ it redirects every merged URL to its tab with dataset "rate book"    0.11s  
   ✓ it redirects every merged URL to its tab with dataset "description…  0.11s  
-  ✓ it redirects every merged URL to its tab with dataset "document des… 0.11s  
-  ✓ it redirects every merged URL to its tab with dataset "funnel"       0.10s  
+  ✓ it redirects every merged URL to its tab with dataset "document des… 0.14s  
+  ✓ it redirects every merged URL to its tab with dataset "funnel"       0.13s  
   ✓ it redirects every merged URL to its tab with dataset "revenue coll… 0.10s  
   ✓ it hides tabs the user cannot open and refuses a directly requested… 0.37s  
-  ✓ it shows live sidebar badges for unread conversations and pending a… 0.27s  
-  ✓ it classifies the lead tracking board without inventing states       0.90s  
-  ✓ it logs a follow-up onto the lead timeline and moves the next actio… 0.39s  
-  ✓ it renders the tracking tab through the hub for the owner            0.26s  
+  ✓ it shows live sidebar badges for unread conversations and pending a… 0.28s  
+  ✓ it classifies the lead tracking board without inventing states       1.00s  
+  ✓ it logs a follow-up onto the lead timeline and moves the next actio… 0.41s  
+  ✓ it renders the tracking tab through the hub for the owner            0.25s  
 
   Tests:    1 skipped, 159 passed (639 assertions)
-  Duration: 31.99s
+  Duration: 32.22s
 
 --- BATCH:  tests/Feature/PaymentIntegrityTest.php tests/Feature/PaymentsTest.php tests/Feature/PipelineBoardTest.php tests/Feature/PrivacyToolsTest.php tests/Feature/ProfileSecurityTest.php tests/Feature/ProjectCostsTest.php tests/Feature/ProjectsTest.php tests/Feature/PublicLeadApiTest.php tests/Feature/QuotationSafetyTest.php tests/Feature/QuoteAcceptanceHintTest.php
 
    PASS  Tests\Feature\PaymentIntegrityTest
-  ✓ it rejects another client invoice through the authorized payment fo… 2.72s  
-  ✓ it never allocates to non-payable or foreign-currency invoice targe… 0.13s  
-  ✓ it never allocates to non-payable or foreign-currency invoice targe… 0.13s  
-  ✓ it never allocates to non-payable or foreign-currency invoice targe… 0.13s  
+  ✓ it rejects another client invoice through the authorized payment fo… 2.70s  
   ✓ it never allocates to non-payable or foreign-currency invoice targe… 0.12s  
   ✓ it never allocates to non-payable or foreign-currency invoice targe… 0.12s  
-  ✓ it honors an explicit allocation map and keeps its unselected remai… 0.64s  
-  ✓ it validates the whole explicit map before retaining any allocation… 0.15s  
+  ✓ it never allocates to non-payable or foreign-currency invoice targe… 0.12s  
+  ✓ it never allocates to non-payable or foreign-currency invoice targe… 0.12s  
+  ✓ it never allocates to non-payable or foreign-currency invoice targe… 0.11s  
+  ✓ it honors an explicit allocation map and keeps its unselected remai… 0.54s  
   ✓ it validates the whole explicit map before retaining any allocation… 0.14s  
-  ✓ it validates the whole explicit map before retaining any allocation… 0.13s  
+  ✓ it validates the whole explicit map before retaining any allocation… 0.11s  
+  ✓ it validates the whole explicit map before retaining any allocation… 0.11s  
+  ✓ it validates the whole explicit map before retaining any allocation… 0.11s  
   ✓ it validates the whole explicit map before retaining any allocation… 0.12s  
   ✓ it validates the whole explicit map before retaining any allocation… 0.12s  
   ✓ it validates the whole explicit map before retaining any allocation… 0.12s  
-  ✓ it validates the whole explicit map before retaining any allocation… 0.12s  
-  ✓ it pays the preferred invoice before older debt and retains only th… 0.48s  
-  ✓ it does not spend automatic excess on ineligible invoice contexts    0.51s  
-  ✓ it rejects an incompatible or inactive receiving account with (true… 0.15s  
-  ✓ it rejects an incompatible or inactive receiving account with (fals… 0.15s  
-  ✓ it rereads a pending proof and never renumbers or redelivers a stal… 0.49s  
-  ✓ it cannot use rejection to undo verified money or verification to r… 0.49s  
+  ✓ it pays the preferred invoice before older debt and retains only th… 0.41s  
+  ✓ it does not spend automatic excess on ineligible invoice contexts    0.44s  
+  ✓ it rejects an incompatible or inactive receiving account with (true… 0.12s  
+  ✓ it rejects an incompatible or inactive receiving account with (fals… 0.12s  
+  ✓ it rereads a pending proof and never renumbers or redelivers a stal… 0.51s  
+  ✓ it cannot use rejection to undo verified money or verification to r… 0.45s  
   ✓ it enforces finance permission and active staff at action boundarie… 0.15s  
-  ✓ it does not allocate an unverified proof or rewrite allocations aft… 0.46s  
-  ✓ it removes a generated receipt and rolls back balances and numberin… 0.43s  
-  ✓ it rolls back a verification rather than confirming money when rece… 0.42s  
-  ✓ it validates fresh invoice state and positive integer amounts befor… 0.10s  
+  ✓ it does not allocate an unverified proof or rewrite allocations aft… 0.42s  
+  ✓ it removes a generated receipt and rolls back balances and numberin… 0.40s  
+  ✓ it rolls back a verification rather than confirming money when rece… 0.40s  
+  ✓ it validates fresh invoice state and positive integer amounts befor… 0.09s  
   ✓ it enforces client and project context on allocation targets with (… 0.12s  
   ✓ it enforces client and project context on allocation targets with (… 0.12s  
-  ✓ it preserves paisa exactly and refuses scientific or overprecise am… 0.85s  
-  ✓ it queues client mail and team alerts only after the money transact… 0.42s  
-  ✓ it queues client mail and team alerts only after the money transact… 0.48s  
+  ✓ it preserves paisa exactly and refuses scientific or overprecise am… 0.68s  
+  ✓ it queues client mail and team alerts only after the money transact… 0.40s  
+  ✓ it queues client mail and team alerts only after the money transact… 0.41s  
 
    PASS  Tests\Feature\PaymentsTest
-  ✓ it records money the studio received, settles the invoice and write… 1.39s  
-  ✓ it spreads a payment over the oldest invoices first and keeps the r… 1.56s  
-  ✓ it takes a payment proof from the client and waits for the accounta… 1.12s  
-  ✓ it confirms a reported payment: settles the invoice, writes the rec… 1.29s  
-  ✓ it sends a payment back to the client with a reason                  0.96s  
-  ✓ it shows the invoice to the client on a signed link, with the bank…  0.98s  
-  ✓ it hides a draft invoice from the client, and the payment form once… 1.59s  
-  ✓ it lists the payments, and only accounts may confirm one             1.56s  
-  ✓ it records a payment from the dashboard screen                       1.40s  
+  ✓ it records money the studio received, settles the invoice and write… 1.25s  
+  ✓ it spreads a payment over the oldest invoices first and keeps the r… 1.47s  
+  ✓ it takes a payment proof from the client and waits for the accounta… 1.01s  
+  ✓ it confirms a reported payment: settles the invoice, writes the rec… 1.18s  
+  ✓ it sends a payment back to the client with a reason                  0.91s  
+  ✓ it shows the invoice to the client on a signed link, with the bank…  0.95s  
+  ✓ it hides a draft invoice from the client, and the payment form once… 1.25s  
+  ✓ it lists the payments, and only accounts may confirm one             1.43s  
+  ✓ it records a payment from the dashboard screen                       1.29s  
 
    PASS  Tests\Feature\PipelineBoardTest
-  ✓ it moves a lead between open stages and records it on the timeline   0.20s  
-  ✓ it asks for a reason before marking a lead as lost                   0.24s  
-  ✓ it refuses Won without an accepted quotation                         0.15s  
-  ✓ it does not let a sales user move someone else's lead                0.14s  
-  ✓ it opens the visit booking modal when a card is dragged to Site vis… 0.16s  
-  ✓ it books the visit from the board and moves the card to Site visit   0.23s  
-  ✓ it moves a lead dragged back from a later stage to Site visit once…  0.27s  
-  ✓ it moves straight to Site visit when a visit is already booked       0.20s  
-  ✓ it warns about a double booking and books only after confirmation    0.28s  
+  ✓ it moves a lead between open stages and records it on the timeline   0.17s  
+  ✓ it asks for a reason before marking a lead as lost                   0.19s  
+  ✓ it refuses Won without an accepted quotation                         0.18s  
+  ✓ it does not let a sales user move someone else's lead                0.20s  
+  ✓ it opens the visit booking modal when a card is dragged to Site vis… 0.18s  
+  ✓ it books the visit from the board and moves the card to Site visit   0.21s  
+  ✓ it moves a lead dragged back from a later stage to Site visit once…  0.20s  
+  ✓ it moves straight to Site visit when a visit is already booked       0.16s  
+  ✓ it warns about a double booking and books only after confirmation    0.25s  
 
    PASS  Tests\Feature\PrivacyToolsTest
   ✓ it exports everything Woodex knows about one person as one JSON dow… 0.14s  
   ✓ it keeps the export behind the leads permission                      0.12s  
-  ✓ it anonymises a person on request: the row stays for the books, the… 0.22s  
-  ✓ it refuses anonymisation without the delete permission               0.20s  
-  ✓ it applies retention: stale lost leads go, quoted and recent ones s… 0.13s  
+  ✓ it anonymises a person on request: the row stays for the books, the… 0.20s  
+  ✓ it refuses anonymisation without the delete permission               0.15s  
+  ✓ it applies retention: stale lost leads go, quoted and recent ones s… 0.11s  
 
    PASS  Tests\Feature\ProfileSecurityTest
-  ✓ it shows a manual authenticator key and confirms a valid six digit…  0.46s  
-  ✓ it does not issue a misleading link code when Telegram configuratio… 0.08s  
-  ✓ it refreshes linking state after actions and polling and invalidate… 0.13s  
-  ✓ it never stores the token from a Telegram transport exception        0.09s  
+  ✓ it shows a manual authenticator key and confirms a valid six digit…  0.42s  
+  ✓ it does not issue a misleading link code when Telegram configuratio… 0.07s  
+  ✓ it refreshes linking state after actions and polling and invalidate… 0.10s  
+  ✓ it never stores the token from a Telegram transport exception        0.08s  
 
    PASS  Tests\Feature\ProjectCostsTest
-  ✓ it shows the costs card with the quoted internal cost, and expenses… 1.15s  
-  ✓ it records an expense through the form and keeps the numbers honest  1.73s  
-  ✓ it keeps the pen to project managers: sales sees the numbers, only…  1.19s  
-  ✓ it removes an expense line when it was recorded wrong                1.09s  
+  ✓ it shows the costs card with the quoted internal cost, and expenses… 0.97s  
+  ✓ it records an expense through the form and keeps the numbers honest  1.38s  
+  ✓ it keeps the pen to project managers: sales sees the numbers, only…  1.12s  
+  ✓ it removes an expense line when it was recorded wrong                1.12s  
 
    PASS  Tests\Feature\ProjectsTest
-  ✓ it opens the project when the client accepts, ready to be worked on  1.02s  
-  ✓ it moves a project along the stages and tells the client in one lin… 1.00s  
-  ✓ it closes the job when it reaches completed, and leaves a note on t… 0.96s  
-  ✓ it keeps a note from the site inside the studio until it is shared   1.16s  
+  ✓ it opens the project when the client accepts, ready to be worked on  1.00s  
+  ✓ it moves a project along the stages and tells the client in one lin… 1.08s  
+  ✓ it closes the job when it reaches completed, and leaves a note on t… 0.99s  
+  ✓ it keeps a note from the site inside the studio until it is shared   1.39s  
   ✓ it posts an update with photographs, lifts the progress and writes…  1.49s  
-  ✓ it marks a milestone reached and raises its invoice once, as a draf… 0.99s  
-  ✓ it raises the milestone invoice from the project screen              1.23s  
-  ✓ it shows the project to the team, and only lets the people who run…  1.45s  
+  ✓ it marks a milestone reached and raises its invoice once, as a draf… 1.09s  
+  ✓ it raises the milestone invoice from the project screen              1.17s  
+  ✓ it shows the project to the team, and only lets the people who run…  1.19s  
   ✓ it hides projects from people who do not work on them                1.13s  
 
    PASS  Tests\Feature\PublicLeadApiTest
-  ✓ it captures a web enquiry as contact + lead with normalised phone a… 0.15s  
+  ✓ it captures a web enquiry as contact + lead with normalised phone a… 0.14s  
   ✓ it joins a repeat enquiry from the same phone to the open lead inst… 0.12s  
   ✓ it silently drops honeypot and too-fast submissions                  0.06s  
   ✓ it validates phone numbers                                           0.05s  
@@ -651,213 +651,213 @@
 
    PASS  Tests\Feature\QuotationSafetyTest
   ✓ it rejects a stale duplicate send without a new version email event… 0.53s  
-  ✓ it rechecks approval against current figures rather than the passed… 0.21s  
-  ✓ it rechecks current validity instead of stale validity               0.18s  
-  ✓ it uses fresh relations when freezing a quotation                    0.52s  
+  ✓ it rechecks approval against current figures rather than the passed… 0.18s  
+  ✓ it rechecks current validity instead of stale validity               0.17s  
+  ✓ it uses fresh relations when freezing a quotation                    0.50s  
   ✓ it rechecks send actor activity and permissions with (true)          0.12s  
-  ✓ it rechecks send actor activity and permissions with (false)         0.19s  
-  ✓ it does not send a newly prepared revision through a stale model     0.52s  
-  ✓ it accepts at most once through stale models                         0.88s  
-  ✓ it rechecks the persisted acceptability of a stale sent quotation w… 0.55s  
+  ✓ it rechecks send actor activity and permissions with (false)         0.18s  
+  ✓ it does not send a newly prepared revision through a stale model     0.50s  
+  ✓ it accepts at most once through stale models                         0.85s  
   ✓ it rechecks the persisted acceptability of a stale sent quotation w… 0.53s  
-  ✓ it rechecks the persisted acceptability of a stale sent quotation w… 0.56s  
+  ✓ it rechecks the persisted acceptability of a stale sent quotation w… 0.52s  
   ✓ it rechecks the persisted acceptability of a stale sent quotation w… 0.53s  
-  ✓ it rechecks the persisted acceptability of a stale sent quotation w… 0.55s  
-  ✓ it rechecks persisted expiry on acceptance                           0.58s  
-  ✓ it binds acceptance forms to the displayed revision and refuses an…  1.57s  
-  ✓ it requires an explicit displayed revision on a public acceptance    0.58s  
-  ✓ it does not open projects or advances from unaccepted quotes         0.56s  
-  ✓ it does not reopen an archived project through a repeated acceptanc… 0.95s  
-  ✓ it returns the same advance and never re-freezes an existing issued… 1.01s  
-  ✓ it fails closed rather than replacing a missing frozen invoice PDF   0.93s  
-  ✓ it raises a milestone once with fresh amounts and always as a draft  0.92s  
-  ✓ it refuses the automatic issue escape hatch for milestone invoices   0.90s  
-  ✓ it rechecks milestone invoicing actor activity and permissions with… 0.95s  
-  ✓ it rechecks milestone invoicing actor activity and permissions with… 0.94s  
-  ✓ it reserves archived milestone invoices for Accounts review instead… 0.97s  
-  ✓ it allocates the next invoice suffix above historical gaps and arch… 0.98s  
-  ✓ it enforces one invoice per milestone at the database boundary incl… 0.96s  
-  ✓ it rolls back sending when PDF storage fails                         0.53s  
-  ✓ it rolls back acceptance project advance and audit if advance PDF s… 0.89s  
-  ✓ it preserves a frozen sent PDF when the next revision fails after P… 0.91s  
+  ✓ it rechecks the persisted acceptability of a stale sent quotation w… 0.53s  
+  ✓ it rechecks the persisted acceptability of a stale sent quotation w… 0.57s  
+  ✓ it rechecks persisted expiry on acceptance                           0.52s  
+  ✓ it binds acceptance forms to the displayed revision and refuses an…  1.30s  
+  ✓ it requires an explicit displayed revision on a public acceptance    0.53s  
+  ✓ it does not open projects or advances from unaccepted quotes         0.53s  
+  ✓ it does not reopen an archived project through a repeated acceptanc… 0.87s  
+  ✓ it returns the same advance and never re-freezes an existing issued… 0.93s  
+  ✓ it fails closed rather than replacing a missing frozen invoice PDF   0.92s  
+  ✓ it raises a milestone once with fresh amounts and always as a draft  1.02s  
+  ✓ it refuses the automatic issue escape hatch for milestone invoices   1.04s  
+  ✓ it rechecks milestone invoicing actor activity and permissions with… 0.91s  
+  ✓ it rechecks milestone invoicing actor activity and permissions with… 0.93s  
+  ✓ it reserves archived milestone invoices for Accounts review instead… 0.90s  
+  ✓ it allocates the next invoice suffix above historical gaps and arch… 0.91s  
+  ✓ it enforces one invoice per milestone at the database boundary incl… 0.89s  
+  ✓ it rolls back sending when PDF storage fails                         0.50s  
+  ✓ it rolls back acceptance project advance and audit if advance PDF s… 0.86s  
+  ✓ it preserves a frozen sent PDF when the next revision fails after P… 0.85s  
   ✓ it marks quotation mail and staff notifications for dispatch after…  0.11s  
-  ✓ it does not admit quotation delivery jobs before the outer transact… 0.91s  
-  ✓ it does not admit quotation delivery jobs before the outer transact… 0.94s  
-  ✓ it refuses to silently deduplicate financial history when adding th… 0.93s  
+  ✓ it does not admit quotation delivery jobs before the outer transact… 0.88s  
+  ✓ it does not admit quotation delivery jobs before the outer transact… 0.93s  
+  ✓ it refuses to silently deduplicate financial history when adding th… 0.91s  
 
    PASS  Tests\Feature\QuoteAcceptanceHintTest
-  ✓ it notices a reply that sounds like acceptance and tells the team,…  0.66s  
-  ✓ it hears yes in the words clients here actually write                0.07s  
-  ✓ it does not hear a yes in a reply that is a change request or a que… 0.07s  
+  ✓ it notices a reply that sounds like acceptance and tells the team,…  0.60s  
+  ✓ it hears yes in the words clients here actually write                0.10s  
+  ✓ it does not hear a yes in a reply that is a change request or a que… 0.08s  
   ✓ it stays quiet when there is no sent quotation, when the reply pred… 0.53s  
-  ✓ it lets the team accept on the strength of the reply, and says who…  1.11s  
-  ✓ it lets the team answer "not a yes", and the banner stops asking     0.69s  
+  ✓ it lets the team accept on the strength of the reply, and says who…  1.02s  
+  ✓ it lets the team answer "not a yes", and the banner stops asking     0.65s  
 
   Tests:    116 passed (580 assertions)
-  Duration: 69.74s
+  Duration: 65.91s
 
 --- BATCH:  tests/Feature/QuoteBuilderTest.php tests/Feature/QuoteFollowUpTest.php tests/Feature/QuotePortalTest.php tests/Feature/QuoteScreensTest.php tests/Feature/QuoteSendingTest.php tests/Feature/QuoteWhatsAppDeliveryTest.php tests/Feature/QuotesTest.php tests/Feature/ReferenceDataTest.php tests/Feature/ReportsKitTest.php tests/Feature/ResumableMigrationsTest.php
 
    PASS  Tests\Feature\QuoteBuilderTest
-  ✓ it renders the builder with sections, lines and the server total     2.85s  
-  ✓ it saves a quantity on blur and recalculates the totals              0.47s  
-  ✓ it keeps an invalid value in the field with a message and does not…  0.37s  
-  ✓ it applies a line discount, then clears it when the type is removed  0.55s  
-  ✓ it adds a line after the current one and asks the browser to focus…  0.34s  
-  ✓ it adds lines from the rate book and sections at the end             0.63s  
-  ✓ it moves lines between sections and reorders sections                0.47s  
-  ✓ it edits discount, other charges, tax, validity and scope from the…  0.94s  
+  ✓ it renders the builder with sections, lines and the server total     2.78s  
+  ✓ it saves a quantity on blur and recalculates the totals              0.46s  
+  ✓ it keeps an invalid value in the field with a message and does not…  0.31s  
+  ✓ it applies a line discount, then clears it when the type is removed  0.51s  
+  ✓ it adds a line after the current one and asks the browser to focus…  0.37s  
+  ✓ it adds lines from the rate book and sections at the end             0.61s  
+  ✓ it moves lines between sections and reorders sections                0.41s  
+  ✓ it edits discount, other charges, tax, validity and scope from the…  0.90s  
   ✓ it switches milestone plans and warns while a custom plan does not…  0.40s  
-  ✓ it duplicates, saves as template and deletes from the builder        0.67s  
+  ✓ it duplicates, saves as template and deletes from the builder        0.66s  
   ✓ it blocks people outside the quote and makes it read-only for viewe… 0.25s  
-  ✓ it shows a sent quotation as read-only, even to the owner            0.33s  
+  ✓ it shows a sent quotation as read-only, even to the owner            0.32s  
 
    PASS  Tests\Feature\QuoteFollowUpTest
-  ✓ it tells the team to call about a quotation nobody answered          0.69s  
-  ✓ it leaves a quotation alone until it has been quiet long enough      0.52s  
-  ✓ it chases again after another quiet period, then stops — three unan… 0.60s  
-  ✓ it does not chase a quotation the client already accepted            0.53s  
-  ✓ it warns once before a quotation lapses                              0.57s  
+  ✓ it tells the team to call about a quotation nobody answered          0.66s  
+  ✓ it leaves a quotation alone until it has been quiet long enough      0.57s  
+  ✓ it chases again after another quiet period, then stops — three unan… 0.63s  
+  ✓ it does not chase a quotation the client already accepted            0.51s  
+  ✓ it warns once before a quotation lapses                              0.56s  
   ✓ it lets a stale quotation lapse, so nobody quotes a price the studi… 0.54s  
-  ✓ it stays silent when the studio switches chasing off                 0.49s  
-  ✓ it runs as a scheduled command and reports what it did               0.52s  
+  ✓ it stays silent when the studio switches chasing off                 0.57s  
+  ✓ it runs as a scheduled command and reports what it did               0.59s  
 
    PASS  Tests\Feature\QuotePortalTest
-  ✓ it opens only with a valid signature                                 0.55s  
-  ✓ it expires 60 days after the validity date                           0.50s  
-  ✓ it counts client views, alerts on the first view and on a hot quote… 0.57s  
-  ✓ it downloads the frozen PDF                                          0.54s  
+  ✓ it opens only with a valid signature                                 0.57s  
+  ✓ it expires 60 days after the validity date                           0.53s  
+  ✓ it counts client views, alerts on the first view and on a hot quote… 0.59s  
+  ✓ it downloads the frozen PDF                                          0.53s  
   ✓ it accepts with a typed name: quote accepted, contact becomes a cli… 0.97s  
-  ✓ it takes change requests back to the team                            0.55s  
-  ✓ it refuses acceptance after the validity date and while a new revis… 0.75s  
-  ✓ it always shows the latest sent revision on the same link            0.91s  
-  ✓ it builds a WhatsApp share message with the link                     0.50s  
+  ✓ it takes change requests back to the team                            0.56s  
+  ✓ it refuses acceptance after the validity date and while a new revis… 0.59s  
+  ✓ it always shows the latest sent revision on the same link            0.95s  
+  ✓ it builds a WhatsApp share message with the link                     0.53s  
 
    PASS  Tests\Feature\QuoteScreensTest
-  ✓ it lists quotations with status chips, search and filters            0.51s  
-  ✓ it keeps quotations away from roles without access                   0.25s  
-  ✓ it starts a quotation from an enquiry with the client and line fill… 0.52s  
-  ✓ it finds a client by name and switches to the furniture series for…  0.35s  
-  ✓ it lets everyone look up rates but only managers change the rate bo… 1.39s  
-  ✓ it shows templates, their lines and lets managers edit the details   0.68s  
-  ✓ it lists quotations on the lead, contact and company pages           0.63s  
-  ✓ it finds quotations in global search and restores deleted drafts     0.31s  
+  ✓ it lists quotations with status chips, search and filters            0.47s  
+  ✓ it keeps quotations away from roles without access                   0.26s  
+  ✓ it starts a quotation from an enquiry with the client and line fill… 0.50s  
+  ✓ it finds a client by name and switches to the furniture series for…  0.33s  
+  ✓ it lets everyone look up rates but only managers change the rate bo… 1.34s  
+  ✓ it shows templates, their lines and lets managers edit the details   0.67s  
+  ✓ it lists quotations on the lead, contact and company pages           0.54s  
+  ✓ it finds quotations in global search and restores deleted drafts     0.47s  
 
    PASS  Tests\Feature\QuoteSendingTest
-  ✓ it measures the discount against the sender's role limit and the mi… 0.21s  
-  ✓ it lists what is missing before a quotation can be sent              0.17s  
-  ✓ it sends: frozen version with snapshot and PDF hash, status, event…  0.53s  
-  ✓ it blocks sending above the limit until a manager approves exactly…  0.68s  
-  ✓ it sends a declined request back to draft with the reason, and with… 0.37s  
-  ✓ it revises a sent quotation into R1, R2 and keeps every sent versio… 1.36s  
+  ✓ it measures the discount against the sender's role limit and the mi… 0.20s  
+  ✓ it lists what is missing before a quotation can be sent              0.16s  
+  ✓ it sends: frozen version with snapshot and PDF hash, status, event…  0.52s  
+  ✓ it blocks sending above the limit until a manager approves exactly…  0.61s  
+  ✓ it sends a declined request back to draft with the reason, and with… 0.32s  
+  ✓ it revises a sent quotation into R1, R2 and keeps every sent versio… 1.25s  
   ✓ it shows staff what changed between revisions                        0.96s  
-  ✓ it runs send, approval and revise from the builder                   1.29s  
-  ✓ it lists pending approvals for managers and lets them decide         0.44s  
-  ✓ it previews a draft PDF and serves the stored PDF of a sent revisio… 0.90s  
+  ✓ it runs send, approval and revise from the builder                   1.32s  
+  ✓ it lists pending approvals for managers and lets them decide         0.39s  
+  ✓ it previews a draft PDF and serves the stored PDF of a sent revisio… 0.91s  
 
    PASS  Tests\Feature\QuoteWhatsAppDeliveryTest
-  ✓ it carries a sent quotation to the client on whatsapp as a link      0.55s  
-  ✓ it shows the client the total and how long the price stands          0.12s  
-  ✓ it uses an approved template once the 24-hour window has closed, be… 0.53s  
-  ✓ it keeps the quotation sent when whatsapp refuses the message, and…  0.55s  
-  ✓ it does not pretend to send when the client has no number or whatsa… 0.56s  
-  ✓ it offers whatsapp in the send dialog only when the client can actu… 0.82s  
+  ✓ it carries a sent quotation to the client on whatsapp as a link      0.54s  
+  ✓ it shows the client the total and how long the price stands          0.11s  
+  ✓ it uses an approved template once the 24-hour window has closed, be… 0.54s  
+  ✓ it keeps the quotation sent when whatsapp refuses the message, and…  0.52s  
+  ✓ it does not pretend to send when the client has no number or whatsa… 0.55s  
+  ✓ it offers whatsapp in the send dialog only when the client can actu… 0.78s  
   ✓ it does not offer whatsapp for a client with no number               0.29s  
-  ✓ it records the delivery against the version that was sent, so a rev… 0.62s  
+  ✓ it records the delivery against the version that was sent, so a rev… 0.57s  
 
    PASS  Tests\Feature\QuotesTest
   ✓ it creates a numbered draft from the Renovation template with every… 0.18s  
   ✓ it numbers furniture quotes in the WF series and starts blank quote… 0.15s  
-  ✓ it uses the design plan and terms for design templates and zeroes b… 0.14s  
-  ✓ it refuses an enquiry that belongs to another client                 0.07s  
-  ✓ it recalculates line, quote discount, other charges, tax and milest… 0.23s  
+  ✓ it uses the design plan and terms for design templates and zeroes b… 0.15s  
+  ✓ it refuses an enquiry that belongs to another client                 0.09s  
+  ✓ it recalculates line, quote discount, other charges, tax and milest… 0.26s  
   ✓ it keeps positions in order when lines and sections move or are del… 0.17s  
-  ✓ it edits milestones as a custom plan and splits the total so it alw… 0.15s  
-  ✓ it copies rate book items into the quote so later rate changes do n… 0.16s  
+  ✓ it edits milestones as a custom plan and splits the total so it alw… 0.16s  
+  ✓ it copies rate book items into the quote so later rate changes do n… 0.15s  
   ✓ it locks quotes that are no longer drafts                            0.16s  
   ✓ it duplicates a quote with a new number and the same content         0.30s  
   ✓ it saves a quote as a new template or updates an existing one        0.13s  
   ✓ it moves an unsent draft to the recycle bin with a timeline entry    0.16s  
-  ✓ it shows sales people only their own quotes and those of their lead… 0.30s  
+  ✓ it shows sales people only their own quotes and those of their lead… 0.25s  
 
    PASS  Tests\Feature\ReferenceDataTest
   ✓ it seeds the Woodex reference data                                   0.07s  
-  ✓ it is idempotent                                                     0.58s  
+  ✓ it is idempotent                                                     0.60s  
   ✓ it ships business and sales settings defaults                        0.05s  
 
    PASS  Tests\Feature\ReportsKitTest
-  ✓ it shows the funnel: leads by source, win rate, and why leads were…  0.34s  
+  ✓ it shows the funnel: leads by source, win rate, and why leads were…  0.33s  
   ✓ it answers revenue and collections per month, by line and by method  0.26s  
-  ✓ it ages receivables worst first: not due, 30, 60 and 90+ buckets     0.17s  
+  ✓ it ages receivables worst first: not due, 30, 60 and 90+ buckets     0.21s  
   ✓ it compares against the equal-length previous period                 0.05s  
-  ✓ it keeps each report behind its permission                           0.71s  
+  ✓ it keeps each report behind its permission                           0.82s  
   ✓ it writes a CSV an accountant can open: UTF-8, plain rupees, the sa… 0.04s  
 
    PASS  Tests\Feature\ResumableMigrationsTest
   ✓ it resumes a migration whose table exists without its migrations ro… 0.07s  
 
   Tests:    78 passed (477 assertions)
-  Duration: 39.27s
+  Duration: 38.94s
 
 --- BATCH:  tests/Feature/Sales/DuePaymentsTest.php tests/Feature/Sales/EstimatesTest.php tests/Feature/Sales/TrackingBoardsTest.php tests/Feature/SequenceEngineTest.php tests/Feature/SettingsAndRulesTest.php tests/Feature/SlaCheckTest.php tests/Feature/SocialPlannerTest.php tests/Feature/System/AgentStubsTest.php tests/Feature/System/MonthlyReportTest.php tests/Feature/SystemHealthTest.php
 
    PASS  Tests\Feature\Sales\DuePaymentsTest
-  ✓ it shows the dues screen with aging buckets and the client exposure  3.58s  
-  ✓ it refuses a reminder when the client never consented to WhatsApp    1.03s  
-  ✓ it refuses a reminder when WhatsApp is not connected                 1.20s  
-  ✓ it sends a consented reminder inside the 24-hour window              0.98s  
-  ✓ it keeps the dues screen behind the invoices permission              0.26s  
+  ✓ it shows the dues screen with aging buckets and the client exposure  3.52s  
+  ✓ it refuses a reminder when the client never consented to WhatsApp    0.96s  
+  ✓ it refuses a reminder when WhatsApp is not connected                 0.95s  
+  ✓ it sends a consented reminder inside the 24-hour window              0.92s  
+  ✓ it keeps the dues screen behind the invoices permission              0.23s  
 
    PASS  Tests\Feature\Sales\EstimatesTest
-  ✓ it prices an estimate from the rate book with an honest essential-t… 0.07s  
+  ✓ it prices an estimate from the rate book with an honest essential-t… 0.08s  
   ✓ it prices rate book lines at today's rates inside the same computat… 0.06s  
   ✓ it refuses a zero quantity and unknown items                         0.06s  
   ✓ it saves an estimate with a stable EST number and a frozen snapshot  0.12s  
   ✓ it refuses edits after conversion                                    0.19s  
-  ✓ it records the review act with who and when                          0.12s  
-  ✓ it converts to a quotation draft, idempotently, linked both ways     0.26s  
-  ✓ it sends furniture estimates to the furniture line                   0.24s  
-  ✓ it refuses to convert without a client                               0.12s  
+  ✓ it records the review act with who and when                          0.13s  
+  ✓ it converts to a quotation draft, idempotently, linked both ways     0.22s  
+  ✓ it sends furniture estimates to the furniture line                   0.22s  
+  ✓ it refuses to convert without a client                               0.13s  
   ✓ it keeps estimates away from roles without the permissions           0.11s  
-  ✓ it shows the estimations screens behind the estimates permission     0.20s  
-  ✓ it builds and converts from the Livewire screen like a person would  0.38s  
+  ✓ it shows the estimations screens behind the estimates permission     0.19s  
+  ✓ it builds and converts from the Livewire screen like a person would  0.35s  
   ✓ it allocates sequential estimate numbers                             0.13s  
 
    PASS  Tests\Feature\Sales\TrackingBoardsTest
-  ✓ it groups quotations the way the auto-chaser would                   0.62s  
-  ✓ it calls a quotation stale after three unanswered chases             0.88s  
-  ✓ it logs a chase from the board onto the quote timeline               0.60s  
-  ✓ it groups invoices by real state and collects from the board in one… 0.61s  
-  ✓ it refuses to collect above the balance from the board               0.20s  
+  ✓ it groups quotations the way the auto-chaser would                   0.58s  
+  ✓ it calls a quotation stale after three unanswered chases             0.56s  
+  ✓ it logs a chase from the board onto the quote timeline               0.58s  
+  ✓ it groups invoices by real state and collects from the board in one… 0.54s  
+  ✓ it refuses to collect above the balance from the board               0.19s  
   ✓ it keeps collecting behind the payments permissions                  0.14s  
-  ✓ it renders a branded client statement PDF with the running truth     0.86s  
-  ✓ it sends a consented WhatsApp reminder from the invoice board        0.22s  
-  ✓ it refuses to remind a client who never consented, straight from th… 0.17s  
-  ✓ it honours the statement period filter                               0.08s  
-  ✓ it returns a plain 404 for a statement of an unknown client          0.12s  
-  ✓ it keeps the statement route behind the invoices permission          0.13s  
-  ✓ it shows the tracking screens in the navigation for the right roles  0.41s  
+  ✓ it renders a branded client statement PDF with the running truth     0.85s  
+  ✓ it sends a consented WhatsApp reminder from the invoice board        0.20s  
+  ✓ it refuses to remind a client who never consented, straight from th… 0.23s  
+  ✓ it honours the statement period filter                               0.09s  
+  ✓ it returns a plain 404 for a statement of an unknown client          0.09s  
+  ✓ it keeps the statement route behind the invoices permission          0.15s  
+  ✓ it shows the tracking screens in the navigation for the right roles  0.33s  
 
    PASS  Tests\Feature\SequenceEngineTest
   ✓ it walks a sequence: wait, send the mapped template, then the task   0.24s  
-  ✓ it a client reply ends the sequence before anything more is sent     0.13s  
-  ✓ it holds automated sends through quiet hours, unless the client wro… 0.21s  
-  ✓ it enforces the daily per-client cap across sequences                0.13s  
-  ✓ it skips the send when no approved template is mapped, and says so   0.13s  
-  ✓ it exits a lead that is won or lost (nurture sequences excepted)     0.23s  
-  ✓ it pause holds the place, resume catches up, cancel stops for good   0.20s  
-  ✓ it renders the sequences screen with the built-ins and their steps   0.18s  
+  ✓ it a client reply ends the sequence before anything more is sent     0.14s  
+  ✓ it holds automated sends through quiet hours, unless the client wro… 0.23s  
+  ✓ it enforces the daily per-client cap across sequences                0.12s  
+  ✓ it skips the send when no approved template is mapped, and says so   0.11s  
+  ✓ it exits a lead that is won or lost (nurture sequences excepted)     0.18s  
+  ✓ it pause holds the place, resume catches up, cancel stops for good   0.18s  
+  ✓ it renders the sequences screen with the built-ins and their steps   0.17s  
 
    PASS  Tests\Feature\SettingsAndRulesTest
-  ✓ it saves holidays from the business tab and rejects bad dates        0.26s  
-  ✓ it saves the final escalation roles                                  0.18s  
-  ✓ it saves response targets per source and scoring rules               0.37s  
-  ✓ it manages assignment rules from the screen                          0.60s  
+  ✓ it saves holidays from the business tab and rejects bad dates        0.25s  
+  ✓ it saves the final escalation roles                                  0.19s  
+  ✓ it saves response targets per source and scoring rules               0.35s  
+  ✓ it manages assignment rules from the screen                          0.63s  
   ✓ it keeps assignment rules away from sales users                      0.11s  
   ✓ it shows site visits on week and month calendars                     0.24s  
 
    PASS  Tests\Feature\SlaCheckTest
-  ✓ it flags an uncontacted lead once and alerts the owner and managers… 0.14s  
+  ✓ it flags an uncontacted lead once and alerts the owner and managers… 0.13s  
   ✓ it ignores closed leads                                              0.07s  
   ✓ it is scheduled every minute                                         0.05s  
 
@@ -865,7 +865,7 @@
   ✓ it composes a draft with photographs from the shared media library,… 0.29s  
   ✓ it walks the review flow: an editor cannot approve their own post    0.22s  
   ✓ it schedules an approved post, and the scheduler waits while no acc… 0.14s  
-  ✓ it keeps the planner to social managers                              0.11s  
+  ✓ it keeps the planner to social managers                              0.12s  
   ✓ it drafts captions with the studio key, and stays silent without on… 0.21s  
 
    PASS  Tests\Feature\System\AgentStubsTest
@@ -874,7 +874,7 @@
   ✓ it keeps the dormant agents out of the schedule until they are swit… 0.06s  
   ✓ it reports real SEO findings and never touches anything              0.07s  
   ✓ it gives the SEO agent a clean bill on a healthy website             0.06s  
-  ✓ it gathers the week's post ideas without naming a client             0.08s  
+  ✓ it gathers the week's post ideas without naming a client             0.07s  
   ✓ it keeps the social agent honest on a quiet week                     0.06s  
   ✓ it routes the agent digests by Telegram, or email when Telegram is…  0.06s  
 
@@ -885,155 +885,155 @@
   ✓ it archives without messaging when send is off                       0.07s  
   ✓ it reaches the owner by Telegram, and by email when Telegram is not… 0.08s  
   ✓ it does not fail when there is no owner to receive it                0.07s  
-  ✓ it refuses a period that does not start on the first of a month      0.07s  
-  ✓ it runs as the scheduled command on the 1st at 09:00, behind the au… 0.14s  
-  ✓ it archives and shows the report on the automations screen, and bui… 0.23s  
+  ✓ it refuses a period that does not start on the first of a month      0.05s  
+  ✓ it runs as the scheduled command on the 1st at 09:00, behind the au… 0.10s  
+  ✓ it archives and shows the report on the automations screen, and bui… 0.26s  
 
    PASS  Tests\Feature\SystemHealthTest
-  ✓ it shows the new health items on the screen: db size, last backup,…  0.09s  
-  ✓ it answers a test-mail press by sending to the admin own address     0.09s  
+  ✓ it shows the new health items on the screen: db size, last backup,…  0.08s  
+  ✓ it answers a test-mail press by sending to the admin own address     0.10s  
   ✓ it warns when no backup exists and no task has ever run              0.07s  
   ✓ it answers /health with the same truth: db size, backup, and the st… 0.13s  
   ✓ it records a finished scheduler task and prunes the old runs         0.05s  
 
   Tests:    75 passed (337 assertions)
-  Duration: 21.13s
+  Duration: 19.96s
 
 --- BATCH:  tests/Feature/SystemScreensTest.php tests/Feature/TasksAndVisitsTest.php tests/Feature/Telegram/CollectStatementTest.php tests/Feature/TelegramActionCommandsTest.php tests/Feature/TelegramCommandCentreTest.php tests/Feature/TelegramConfigurationTest.php tests/Feature/TelegramDiagnosticsTest.php tests/Feature/TelegramDigestTest.php tests/Feature/TelegramSecurityTest.php tests/Feature/TelegramWebhookTest.php
 
    PASS  Tests\Feature\SystemScreensTest
-  ✓ it bins a lead from its page and restores it from the recycle bin    2.87s  
+  ✓ it bins a lead from its page and restores it from the recycle bin    2.67s  
   ✓ it bins a contact together with its enquiries and restores them tog… 0.23s  
-  ✓ it lets only the owner erase a contact's personal data               0.20s  
+  ✓ it lets only the owner erase a contact's personal data               0.19s  
   ✓ it keeps the recycle bin away from sales users                       0.12s  
-  ✓ it shows integration status and the outbound log without secrets     0.44s  
-  ✓ it queues a dry run from the data import screen and requires one be… 0.37s  
+  ✓ it shows integration status and the outbound log without secrets     0.47s  
+  ✓ it queues a dry run from the data import screen and requires one be… 0.35s  
 
    PASS  Tests\Feature\TasksAndVisitsTest
-  ✓ it creates a task linked to a lead by its reference                  0.26s  
-  ✓ it groups open tasks into overdue, today and upcoming, and complete… 0.16s  
+  ✓ it creates a task linked to a lead by its reference                  0.25s  
+  ✓ it groups open tasks into overdue, today and upcoming, and complete… 0.15s  
   ✓ it refuses to complete another person's task                         0.13s  
   ✓ it records a visit outcome with measurements and creates the quotat… 0.26s  
   ✓ it reschedules and marks no-shows on the agenda                      0.26s  
   ✓ it hides other people's visits from sales users                      0.16s  
-  ✓ it builds My Day from uncontacted leads, overdue follow-ups, visits… 0.26s  
+  ✓ it builds My Day from uncontacted leads, overdue follow-ups, visits… 0.31s  
 
    PASS  Tests\Feature\Telegram\CollectStatementTest
   ✓ it lists the money commands in help                                  0.11s  
-  ✓ it walks the owner through a collect: summary first, then confirm b… 1.37s  
-  ✓ it refuses to collect more than the outstanding balance              0.95s  
+  ✓ it walks the owner through a collect: summary first, then confirm b… 1.52s  
+  ✓ it refuses to collect more than the outstanding balance              0.97s  
   ✓ it refuses to collect on an unknown invoice and explains the amount… 0.94s  
-  ✓ it keeps /collect away from roles that cannot record payments        0.14s  
-  ✓ it states what a client owes and what they recently paid             1.28s  
-  ✓ it answers a statement for a name nobody has                         0.13s  
-  ✓ it disambiguates duplicate names instead of guessing a client        0.13s  
-  ✓ it shows the usage when /collect or /statement come empty            0.13s  
+  ✓ it keeps /collect away from roles that cannot record payments        0.13s  
+  ✓ it states what a client owes and what they recently paid             1.60s  
+  ✓ it answers a statement for a name nobody has                         0.17s  
+  ✓ it disambiguates duplicate names instead of guessing a client        0.14s  
+  ✓ it shows the usage when /collect or /statement come empty            0.14s  
 
    PASS  Tests\Feature\TelegramActionCommandsTest
-  ✓ it lists the approvals waiting and decides them from the phone       0.26s  
-  ✓ it declines with a reason, and refuses a decline without one         0.26s  
-  ✓ it keeps the screen rules on the phone: nobody approves their own r… 0.22s  
-  ✓ it assigns a lead to a colleague, and asks when the name matches tw… 0.16s  
-  ✓ it leaves a note on the lead timeline, marked as written from Teleg… 0.14s  
-  ✓ it answers an assign-to-me press on the new-lead alert, with the pr… 0.13s  
-  ✓ it verifies a payment from the alert button, and refuses when it is… 0.50s  
-  ✓ it refuses a button that has expired, instead of acting on a change… 0.13s  
-  ✓ it tells an unlinked chat that a button cannot act                   0.09s  
-  ✓ it keeps assign to a role that may assign                            0.35s  
+  ✓ it lists the approvals waiting and decides them from the phone       0.27s  
+  ✓ it declines with a reason, and refuses a decline without one         0.27s  
+  ✓ it keeps the screen rules on the phone: nobody approves their own r… 0.30s  
+  ✓ it assigns a lead to a colleague, and asks when the name matches tw… 0.17s  
+  ✓ it leaves a note on the lead timeline, marked as written from Teleg… 0.16s  
+  ✓ it answers an assign-to-me press on the new-lead alert, with the pr… 0.14s  
+  ✓ it verifies a payment from the alert button, and refuses when it is… 0.46s  
+  ✓ it refuses a button that has expired, instead of acting on a change… 0.10s  
+  ✓ it tells an unlinked chat that a button cannot act                   0.08s  
+  ✓ it keeps assign to a role that may assign                            0.16s  
 
    PASS  Tests\Feature\TelegramCommandCentreTest
-  ✓ it lists every command in help, generated from the registry so it c… 0.08s  
-  ✓ it answers an unknown command with the help pointer, not silence     0.07s  
-  ✓ it keeps business commands away from a chat that is not linked       0.07s  
-  ✓ it refuses a command the linked role does not hold                   0.19s  
-  ✓ it shows the morning view: visits, overdue leads, tasks, payments,…  0.22s  
-  ✓ it keeps payments and approvals out of /today for a role that canno… 0.16s  
-  ✓ it lists the latest leads and the unassigned slice                   0.21s  
-  ✓ it shows one lead by reference and finds it by phone in any format   0.19s  
-  ✓ it hides a lead the caller may not see, as if it did not exist       0.13s  
-  ✓ it lists quotations with amounts and status                          0.69s  
+  ✓ it lists every command in help, generated from the registry so it c… 0.07s  
+  ✓ it answers an unknown command with the help pointer, not silence     0.06s  
+  ✓ it keeps business commands away from a chat that is not linked       0.06s  
+  ✓ it refuses a command the linked role does not hold                   0.12s  
+  ✓ it shows the morning view: visits, overdue leads, tasks, payments,…  0.12s  
+  ✓ it keeps payments and approvals out of /today for a role that canno… 0.11s  
+  ✓ it lists the latest leads and the unassigned slice                   0.17s  
+  ✓ it shows one lead by reference and finds it by phone in any format   0.15s  
+  ✓ it hides a lead the caller may not see, as if it did not exist       0.17s  
+  ✓ it lists quotations with amounts and status                          0.58s  
   ✓ it lists overdue and upcoming invoices with balances                 0.14s  
-  ✓ it reports the period from the same tables the dashboard reads       0.17s  
-  ✓ it shows system health in one message                                0.12s  
-  ✓ it mutes and unmutes the chat, using the same switch the alerts res… 0.10s  
-  ✓ it refuses a chat that fires commands without pause, and Telegram r… 0.36s  
+  ✓ it reports the period from the same tables the dashboard reads       0.15s  
+  ✓ it shows system health in one message                                0.11s  
+  ✓ it mutes and unmutes the chat, using the same switch the alerts res… 0.08s  
+  ✓ it refuses a chat that fires commands without pause, and Telegram r… 0.29s  
 
    PASS  Tests\Feature\TelegramConfigurationTest
   ✓ it detects saved credentials hidden by stale configuration without…  0.10s  
-  ✓ it shows when a classic env is selected instead of the private env…  0.05s  
+  ✓ it shows when a classic env is selected instead of the private env…  0.06s  
   ✓ it reports malformed env files without exposing parser errors or cr… 0.05s  
   ✓ it reports unreadable files and null-valued settings as missing      0.05s  
-  ✓ it opens secret-free server diagnostics automatically when webhook…  0.23s  
-  ✓ it clears only configuration cache and redirects for a fresh reques… 0.19s  
-  ✓ it reports cache clear failure without echoing exception contents    0.26s  
-  ✓ it keeps env diagnostics and cache maintenance restricted to owners  0.25s  
+  ✓ it opens secret-free server diagnostics automatically when webhook…  0.22s  
+  ✓ it clears only configuration cache and redirects for a fresh reques… 0.17s  
+  ✓ it reports cache clear failure without echoing exception contents    0.22s  
+  ✓ it keeps env diagnostics and cache maintenance restricted to owners  0.24s  
 
    PASS  Tests\Feature\TelegramDiagnosticsTest
-  ✓ it checks bot identity and webhook delivery without exposing secret… 0.11s  
+  ✓ it checks bot identity and webhook delivery without exposing secret… 0.10s  
   ✓ it reports failed bot API authentication and empty webhook registra… 0.05s  
   ✓ it registers a webhook without discarding pending user messages      0.05s  
-  ✓ it shows runtime diagnostics to administrators with no false connec… 0.25s  
-  ✓ it refuses diagnostics for staff without integration management per… 0.15s  
+  ✓ it shows runtime diagnostics to administrators with no false connec… 0.21s  
+  ✓ it refuses diagnostics for staff without integration management per… 0.10s  
 
    PASS  Tests\Feature\TelegramDigestTest
-  ✓ it sends the daily digest to every linked chat                       0.20s  
+  ✓ it sends the daily digest to every linked chat                       0.22s  
   ✓ it keeps each role to the numbers it may see                         0.14s  
   ✓ it summarises the week that just ended on Mondays                    0.18s  
-  ✓ it queues the digest for a muted chat instead of dropping it         0.14s  
+  ✓ it queues the digest for a muted chat instead of dropping it         0.13s  
   ✓ it delivers the backlog when the mute ends                           0.16s  
   ✓ it keeps the inline buttons of a queued alert                        0.09s  
   ✓ it lets a critical notification bypass the mute                      0.06s  
   ✓ it caps the quiet-hours queue at twenty messages per chat            0.12s  
-  ✓ it lists the digests in the automation catalog, on by default        0.07s  
+  ✓ it lists the digests in the automation catalog, on by default        0.10s  
 
    PASS  Tests\Feature\TelegramSecurityTest
   ✓ it requires the official secret header on the stable endpoint with…  0.08s  
   ✓ it requires the official secret header on the stable endpoint with…  0.06s  
   ✓ it allows the stable endpoint only with a configured matching heade… 0.08s  
-  ✓ it requires a header even on the legacy path by default              0.10s  
-  ✓ it restricts explicit temporary legacy mode to the correct path and… 0.10s  
-  ✓ it registers and diagnoses the stable URL without putting secrets i… 0.22s  
+  ✓ it requires a header even on the legacy path by default              0.09s  
+  ✓ it restricts explicit temporary legacy mode to the correct path and… 0.08s  
+  ✓ it registers and diagnoses the stable URL without putting secrets i… 0.33s  
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.09s  
   ✓ it rejects group channel forged bot forwarded and inline identities… 0.08s  
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.09s  
   ✓ it rejects group channel forged bot forwarded and inline identities… 0.06s  
-  ✓ it rejects group channel forged bot forwarded and inline identities… 0.08s  
-  ✓ it rejects group channel forged bot forwarded and inline identities… 0.07s  
-  ✓ it rejects group channel forged bot forwarded and inline identities… 0.07s  
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.10s  
   ✓ it rejects group channel forged bot forwarded and inline identities… 0.07s  
   ✓ it rejects group channel forged bot forwarded and inline identities… 0.07s  
   ✓ it rejects group channel forged bot forwarded and inline identities… 0.06s  
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.06s  
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.06s  
   ✓ it rejects group channel forged bot forwarded and inline identities… 0.07s  
-  ✓ it rejects group channel forged bot forwarded and inline identities… 0.07s  
-  ✓ it rejects group channel forged bot forwarded and inline identities… 0.08s  
-  ✓ it rejects group channel forged bot forwarded and inline identities… 0.07s  
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.06s  
   ✓ it never grants group members the authority of a previously linked…  0.06s  
-  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.07s  
-  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.07s  
   ✓ it rejects inactive unlinked group and deleted staff authority with… 0.06s  
-  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.09s  
-  ✓ it refuses inactive expired rotated and used codes with ('inactive'… 0.07s  
+  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.06s  
+  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.06s  
+  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.06s  
+  ✓ it refuses inactive expired rotated and used codes with ('inactive'… 0.06s  
   ✓ it refuses inactive expired rotated and used codes with ('expired')  0.08s  
-  ✓ it refuses inactive expired rotated and used codes with ('rotated')  0.07s  
+  ✓ it refuses inactive expired rotated and used codes with ('rotated')  0.06s  
   ✓ it refuses inactive expired rotated and used codes with ('used')     0.06s  
   ✓ it consumes one code once and never steals a chat already linked to… 0.09s  
-  ✓ it executes business commands only through the permission-gated com… 0.16s  
-  ✓ it commits a change request with its replay marker and recovers a f… 0.10s  
+  ✓ it executes business commands only through the permission-gated com… 0.15s  
+  ✓ it commits a change request with its replay marker and recovers a f… 0.09s  
   ✓ it keeps committed command effects when a reply transport fails and… 0.08s  
   ✓ it limits link guesses by authenticated sender without blocking a d… 0.10s  
-  ✓ it limits ordinary commands independently from link attempts         0.31s  
-  ✓ it ignores malformed update identifiers before admission with (null… 0.07s  
-  ✓ it ignores malformed update identifiers before admission with ([])   0.06s  
-  ✓ it ignores malformed update identifiers before admission with (true… 0.05s  
-  ✓ it ignores malformed update identifiers before admission with (-1)   0.07s  
+  ✓ it limits ordinary commands independently from link attempts         0.33s  
+  ✓ it ignores malformed update identifiers before admission with (null… 0.05s  
+  ✓ it ignores malformed update identifiers before admission with ([])   0.05s  
+  ✓ it ignores malformed update identifiers before admission with (true… 0.06s  
+  ✓ it ignores malformed update identifiers before admission with (-1)   0.06s  
   ✓ it ignores malformed update identifiers before admission with ('abc… 0.05s  
-  ✓ it ignores malformed update identifiers before admission with (1.25… 0.05s  
-  ✓ it does not treat callback or edited-message updates as approval au… 0.06s  
+  ✓ it ignores malformed update identifiers before admission with (1.25… 0.08s  
+  ✓ it does not treat callback or edited-message updates as approval au… 0.10s  
   ✓ it does not treat callback or edited-message updates as approval au… 0.09s  
-  ✓ it does not treat callback or edited-message updates as approval au… 0.06s  
-  ✓ it rereads staff and notification routing rather than trusting a ca… 0.05s  
-  ✓ it rereads staff and notification routing rather than trusting a ca… 0.05s  
+  ✓ it does not treat callback or edited-message updates as approval au… 0.08s  
   ✓ it rereads staff and notification routing rather than trusting a ca… 0.06s  
   ✓ it rereads staff and notification routing rather than trusting a ca… 0.06s  
-  ✓ it does not let unauthenticated requests exhaust a real sender rate… 0.16s  
+  ✓ it rereads staff and notification routing rather than trusting a ca… 0.05s  
+  ✓ it rereads staff and notification routing rather than trusting a ca… 0.05s  
+  ✓ it does not let unauthenticated requests exhaust a real sender rate… 0.15s  
   ✓ it uses the stable secret-free URL from the console registration pa… 0.05s  
 
    PASS  Tests\Feature\TelegramWebhookTest
@@ -1042,86 +1042,93 @@
   ✓ it processes each update only once                                   0.06s  
   ✓ it turns /idea from a linked user into a change request              0.07s  
   ✓ it replies to plain start without requiring a link code              0.06s  
-  ✓ it escapes command help and staff names for Telegram HTML parse mod… 0.08s  
+  ✓ it escapes command help and staff names for Telegram HTML parse mod… 0.09s  
 
   Tests:    123 passed (665 assertions)
-  Duration: 23.98s
+  Duration: 23.62s
 
---- BATCH:  tests/Feature/ThemeTokensTest.php tests/Feature/UsersAndSettingsTest.php tests/Feature/Website/BuilderHistoryAuditTest.php tests/Feature/Website/CampaignCanvasTest.php tests/Feature/Website/ClickToEditTest.php tests/Feature/Website/CmsPageTest.php tests/Feature/Website/ContentLibraryTest.php tests/Feature/Website/ConversionParityTest.php tests/Feature/Website/HeaderFooterEditorTest.php tests/Feature/Website/HtmlSanitizerTest.php
+--- BATCH:  tests/Feature/ThemeTokensTest.php tests/Feature/UsersAndSettingsTest.php tests/Feature/Website/BuilderHistoryAuditTest.php tests/Feature/Website/CampaignCanvasTest.php tests/Feature/Website/ClickToEditTest.php tests/Feature/Website/CmsPageTest.php tests/Feature/Website/ColumnsBlockTest.php tests/Feature/Website/ContentLibraryTest.php tests/Feature/Website/ConversionParityTest.php tests/Feature/Website/HeaderFooterEditorTest.php
 
    PASS  Tests\Feature\ThemeTokensTest
-  ✓ it expresses the live v1 design as tokens                            2.42s  
+  ✓ it expresses the live v1 design as tokens                            2.47s  
   ✓ it serves the tokens as CSS, with the v1 vocabulary, its aliases an… 0.16s  
-  ✓ it re-skins every page when a token is saved: the hash changes and…  0.08s  
-  ✓ it re-skins the site when a token is saved, and returns to the v1 p… 0.30s  
-  ✓ it keeps the theme builder to those who may manage the theme         0.27s  
-  ✓ it caches the rendered CSS until a save flushes it                   0.07s  
-  ✓ it serves an empty theme until the database update runs, not an err… 0.10s  
+  ✓ it re-skins every page when a token is saved: the hash changes and…  0.09s  
+  ✓ it re-skins the site when a token is saved, and returns to the v1 p… 0.34s  
+  ✓ it keeps the theme builder to those who may manage the theme         0.30s  
+  ✓ it caches the rendered CSS until a save flushes it                   0.11s  
+  ✓ it serves an empty theme until the database update runs, not an err… 0.11s  
 
    PASS  Tests\Feature\UsersAndSettingsTest
-  ✓ it invites a team member who receives a set-password link            0.33s  
+  ✓ it invites a team member who receives a set-password link            0.35s  
   ✓ it only lets owners hand out the owner role                          0.21s  
-  ✓ it never removes the last active owner and nobody can deactivate th… 0.27s  
-  ✓ it deactivates a leaver and changes roles                            0.27s  
-  ✓ it keeps users and settings behind their permissions                 0.34s  
-  ✓ it saves business settings with normalised numbers and working days  0.35s  
+  ✓ it never removes the last active owner and nobody can deactivate th… 0.33s  
+  ✓ it deactivates a leaver and changes roles                            0.28s  
+  ✓ it keeps users and settings behind their permissions                 0.37s  
+  ✓ it saves business settings with normalised numbers and working days  0.27s  
   ✓ it rejects a closing time before opening time                        0.21s  
-  ✓ it saves sales rules: discount limits as percentages, lost reasons…  0.32s  
-  ✓ it rejects budget band keys with spaces                              0.18s  
-  ✓ it saves notification escalation roles                               0.20s  
+  ✓ it saves sales rules: discount limits as percentages, lost reasons…  0.40s  
+  ✓ it rejects budget band keys with spaces                              0.20s  
+  ✓ it saves notification escalation roles                               0.25s  
 
    PASS  Tests\Feature\Website\BuilderHistoryAuditTest
-  ✓ it takes back an added section with undo, and puts it back with red… 0.35s  
-  ✓ it takes back a deletion and keeps the section’s own key             0.22s  
-  ✓ it takes back a reorder                                              0.25s  
-  ✓ it takes back a style choice                                         0.22s  
-  ✓ it drops the redo history as soon as something new happens           0.32s  
+  ✓ it takes back an added section with undo, and puts it back with red… 0.45s  
+  ✓ it takes back a deletion and keeps the section’s own key             0.27s  
+  ✓ it takes back a reorder                                              0.27s  
+  ✓ it takes back a style choice                                         0.25s  
+  ✓ it drops the redo history as soon as something new happens           0.33s  
   ✓ it stops at the start of the history instead of failing              0.22s  
   ✓ it lists the page in layers and filters the list, not the page       0.19s  
-  ✓ it jumps to a section from its layer row                             0.22s  
-  ✓ it passes the audit to the editor and shows what it found            0.15s  
+  ✓ it jumps to a section from its layer row                             0.21s  
+  ✓ it passes the audit to the editor and shows what it found            0.14s  
   ✓ it says a page is clean when it is                                   0.09s  
-  ✓ it flags an SEO title and description that are missing or the wrong… 0.11s  
-  ✓ it flags a focus keyword that never appears                          0.11s  
+  ✓ it flags an SEO title and description that are missing or the wrong… 0.09s  
+  ✓ it flags a focus keyword that never appears                          0.09s  
   ✓ it flags two H1s and an image without alt text in an HTML block      0.09s  
   ✓ it flags an image in a section that has no alt text in the media li… 0.09s  
   ✓ it flags a button that leads nowhere and one with no label           0.09s  
   ✓ it flags a page with no opening section                              0.09s  
-  ✓ it counts a slider as the page’s one H1                              0.09s  
+  ✓ it counts a slider as the page’s one H1                              0.10s  
 
    PASS  Tests\Feature\Website\CampaignCanvasTest
   ✓ it renders hand-placed HTML instead of sections, with no section ch… 0.14s  
   ✓ it strips scripts at the door, and keeps the rest of the studio's h… 0.09s  
-  ✓ it switches to the canvas and back from the editor, saving through…  0.32s  
+  ✓ it switches to the canvas and back from the editor, saving through…  0.31s  
   ✓ it flags canvas pages in the Pages list                              0.15s  
 
    PASS  Tests\Feature\Website\ClickToEditTest
-  ✓ it marks every section with its stable key on the public page        0.12s  
+  ✓ it marks every section with its stable key on the public page        0.11s  
   ✓ it gives a previewing editor the click-to-edit layer, and nobody el… 0.12s  
-  ✓ it jumps from a clicked section to its form, and ignores keys it do… 0.21s  
+  ✓ it jumps from a clicked section to its form, and ignores keys it do… 0.20s  
   ✓ it persists section keys across saves, and mints one for a block th… 0.11s  
 
    PASS  Tests\Feature\Website\CmsPageTest
   ✓ it serves a published page at its slug                               0.07s  
   ✓ it redirects the version without a trailing slash to the canonical…  0.05s  
-  ✓ it renders a page without a hero with its own H1 and the enquiry fo… 0.08s  
-  ✓ it hides drafts and pages scheduled for later from visitors          0.14s  
+  ✓ it renders a page without a hero with its own H1 and the enquiry fo… 0.06s  
+  ✓ it hides drafts and pages scheduled for later from visitors          0.13s  
   ✓ it sends an old URL to its new page with one 301 and counts the hit  0.05s  
   ✓ it skips hidden blocks                                               0.06s  
-  ✓ it adds the questions of a page to the structured data               0.07s  
-  ✓ it shows a helpful 404 page for a URL that belongs to nothing        0.07s  
-  ✓ it lists the published pages in the sitemap and every URL answers 2… 0.09s  
+  ✓ it adds the questions of a page to the structured data               0.06s  
+  ✓ it shows a helpful 404 page for a URL that belongs to nothing        0.06s  
+  ✓ it lists the published pages in the sitemap and every URL answers 2… 0.10s  
   ✓ it keeps page slugs unique and always stores them with a trailing s… 0.05s  
-  ✓ it serves the new copy of a page from the cache after a publish      0.07s  
+  ✓ it serves the new copy of a page from the cache after a publish      0.09s  
   ✓ it marks a page noindex when the editor asks for it                  0.07s  
-  ✓ it does not answer for the app, only for the website                 0.07s  
-  ✓ it stores the page status and type as enums                          0.04s  
+  ✓ it does not answer for the app, only for the website                 0.06s  
+  ✓ it stores the page status and type as enums                          0.06s  
+
+   PASS  Tests\Feature\Website\ColumnsBlockTest
+  ✓ it renders two to four columns side by side, stacking on a phone     0.17s  
+  ✓ it cleans children: clamps to 2–4, drops unknown kinds, strips mark… 0.17s  
+  ✓ it strips markup that was already in the database before it reaches… 0.14s  
+  ✓ it adds a columns section with two children and switches to three,…  0.26s  
+  ✓ it ignores a column count on a section that is not columns           0.22s  
 
    PASS  Tests\Feature\Website\ContentLibraryTest
-  ✓ it manages the three kinds from the dashboard, in the library's ord… 0.31s  
-  ✓ it shows library FAQs and reviews on a page, in the library's order… 0.12s  
-  ✓ it shows library logos with their photos loaded                      0.12s  
-  ✓ it offers the library to the sections in the page editor             0.17s  
+  ✓ it manages the three kinds from the dashboard, in the library's ord… 0.34s  
+  ✓ it shows library FAQs and reviews on a page, in the library's order… 0.13s  
+  ✓ it shows library logos with their photos loaded                      0.13s  
+  ✓ it offers the library to the sections in the page editor             0.16s  
 
    PASS  Tests\Feature\Website\ConversionParityTest
   ✓ it calls two identical renders green                                 0.06s  
@@ -1129,100 +1136,100 @@
   ✓ it reports the conversion state per group from file existence        0.11s  
 
    PASS  Tests\Feature\Website\HeaderFooterEditorTest
-  ✓ it keeps the header button and the footer words editable             0.14s  
+  ✓ it keeps the header button and the footer words editable             0.15s  
   ✓ it shows the social icons that have an address, and only those       0.12s  
-  ✓ it builds the footer columns from the footer menu                    0.11s  
+  ✓ it builds the footer columns from the footer menu                    0.12s  
   ✓ it hides the services column, the NAP column and the cities row at…  0.11s  
-  ✓ it saves the header, social and footer settings from the dashboard   0.26s  
+  ✓ it saves the header, social and footer settings from the dashboard   0.25s  
+
+  Tests:    73 passed (358 assertions)
+  Duration: 15.02s
+
+--- BATCH:  tests/Feature/Website/HtmlSanitizerTest.php tests/Feature/Website/LegacyImportTest.php tests/Feature/Website/LegacySiteBridgeTest.php tests/Feature/Website/LegacyUrlMapTest.php tests/Feature/Website/LegacyUrlParityTest.php tests/Feature/Website/MenusTreeTest.php tests/Feature/Website/PageBuilderLiveTest.php tests/Feature/Website/PageEditorClipboardTest.php tests/Feature/Website/PageEditorConcurrencyTest.php tests/Feature/Website/PageTemplatesTest.php
 
    PASS  Tests\Feature\Website\HtmlSanitizerTest
+  ✓ it removes event handlers however the attribute is quoted with data… 2.34s  
+  ✓ it removes event handlers however the attribute is quoted with data… 0.04s  
+  ✓ it removes event handlers however the attribute is quoted with data… 0.06s  
   ✓ it removes event handlers however the attribute is quoted with data… 0.05s  
-  ✓ it removes event handlers however the attribute is quoted with data… 0.04s  
-  ✓ it removes event handlers however the attribute is quoted with data… 0.04s  
-  ✓ it removes event handlers however the attribute is quoted with data… 0.04s  
-  ✓ it removes event handlers however the attribute is quoted with data… 0.05s  
-  ✓ it removes javascript and data URLs after decoding entities with da… 0.06s  
-  ✓ it removes javascript and data URLs after decoding entities with da… 0.04s  
+  ✓ it removes event handlers however the attribute is quoted with data… 0.06s  
+  ✓ it removes javascript and data URLs after decoding entities with da… 0.07s  
   ✓ it removes javascript and data URLs after decoding entities with da… 0.05s  
-  ✓ it removes javascript and data URLs after decoding entities with da… 0.04s  
-  ✓ it removes javascript and data URLs after decoding entities with da… 0.04s  
+  ✓ it removes javascript and data URLs after decoding entities with da… 0.05s  
+  ✓ it removes javascript and data URLs after decoding entities with da… 0.05s  
+  ✓ it removes javascript and data URLs after decoding entities with da… 0.05s  
   ✓ it removes javascript and data URLs after decoding entities with da… 0.05s  
   ✓ it removes javascript and data URLs after decoding entities with da… 0.04s  
   ✓ it removes srcdoc, forms and style imports                           0.04s  
-  ✓ it keeps the studio's legitimate markup intact                       0.04s  
-  ✓ it adds noopener to links that open a new tab                        0.04s  
-
-  Tests:    83 passed (372 assertions)
-  Duration: 14.11s
-
---- BATCH:  tests/Feature/Website/LegacyImportTest.php tests/Feature/Website/LegacySiteBridgeTest.php tests/Feature/Website/LegacyUrlMapTest.php tests/Feature/Website/LegacyUrlParityTest.php tests/Feature/Website/MenusTreeTest.php tests/Feature/Website/PageBuilderLiveTest.php tests/Feature/Website/PageEditorClipboardTest.php tests/Feature/Website/PageEditorConcurrencyTest.php tests/Feature/Website/PageTemplatesTest.php tests/Feature/Website/RawHtmlAccessTest.php
+  ✓ it keeps the studio's legitimate markup intact                       0.06s  
+  ✓ it adds noopener to links that open a new tab                        0.06s  
 
    PASS  Tests\Feature\Website\LegacyImportTest
-  ✓ it reads the head of an old page                                     2.37s  
+  ✓ it reads the head of an old page                                     0.07s  
   ✓ it turns the sections of an old page into blocks                     0.05s  
   ✓ it imports an old page as a draft with its images and alt text       0.19s  
   ✓ it reports a page whose file is missing instead of creating an empt… 0.06s  
 
    PASS  Tests\Feature\Website\LegacySiteBridgeTest
   ✓ it tells the pages that no captcha challenge is needed               0.08s  
-  ✓ it saves an enquiry from an original page as a lead in the CRM       0.18s  
+  ✓ it saves an enquiry from an original page as a lead in the CRM       0.16s  
   ✓ it saves the enquiry under the source of the form that sent it       0.13s  
   ✓ it answers a whatsapp tap without saving a lead                      0.06s  
   ✓ it leaves online booking switched off until the OS has diaries, so…  0.05s  
-  ✓ it keeps a booking request as a lead, since we cannot promise the s… 0.10s  
-  ✓ it answers a booking request that forgot a phone number              0.05s  
-  ✓ it looks successful to a bot that fills the hidden field, and store… 0.06s  
+  ✓ it keeps a booking request as a lead, since we cannot promise the s… 0.11s  
+  ✓ it answers a booking request that forgot a phone number              0.07s  
+  ✓ it looks successful to a bot that fills the hidden field, and store… 0.05s  
   ✓ it answers in the shape the page shows to the visitor when a field…  0.06s  
   ✓ it accepts an email-only enquiry, since some pages ask for one inst… 0.13s  
   ✓ it keeps the chat widget out of the way until website chat is switc… 0.06s  
-  ✓ it stops a flood of enquiries from one address without stopping the… 0.41s  
+  ✓ it stops a flood of enquiries from one address without stopping the… 0.48s  
 
    PASS  Tests\Feature\Website\LegacyUrlMapTest
   ✓ it holds every URL of the old site as a page                         0.06s  
   ✓ it gives every URL one home: a slug is either a page or a redirect,… 0.04s  
-  ✓ it redirects only to pages that exist in the map                     0.05s  
-  ✓ it keeps the 54 old service URLs as service pages, each with its ow… 0.06s  
-  ✓ it stores every slug with its trailing slash and the page type of t… 0.06s  
-  ✓ it keeps the home page and knows which page has no old file behind…  0.09s  
+  ✓ it redirects only to pages that exist in the map                     0.04s  
+  ✓ it keeps the 54 old service URLs as service pages, each with its ow… 0.04s  
+  ✓ it stores every slug with its trailing slash and the page type of t… 0.05s  
+  ✓ it keeps the home page and knows which page has no old file behind…  0.06s  
 
    PASS  Tests\Feature\Website\LegacyUrlParityTest
-  ✓ it answers every page URL of the old site with a published page      1.57s  
-  ✓ it sends every redirected URL of the old site to a page that answer… 0.43s  
-  ✓ it redirects the version without the trailing slash of an old page…  0.59s  
-  ✓ it serves the home page from the CMS, like every other page          0.13s  
+  ✓ it answers every page URL of the old site with a published page      1.51s  
+  ✓ it sends every redirected URL of the old site to a page that answer… 0.44s  
+  ✓ it redirects the version without the trailing slash of an old page…  0.41s  
+  ✓ it serves the home page from the CMS, like every other page          0.08s  
 
    PASS  Tests\Feature\Website\MenusTreeTest
   ✓ it builds the header menu as a tree with children and grandchildren  0.10s  
-  ✓ it caches the tree and flushes it when the dashboard changes a menu  0.20s  
+  ✓ it caches the tree and flushes it when the dashboard changes a menu  0.19s  
   ✓ it falls back to the built-in links as a flat tree until the menu i… 0.09s  
-  ✓ it adds a link under a parent, and refuses a fourth level            0.22s  
-  ✓ it moves a link only inside its own level                            0.13s  
-  ✓ it flips the mega switch on a top link only                          0.16s  
-  ✓ it renders dropdowns, mega panels and mobile disclosures on the sit… 0.12s  
+  ✓ it adds a link under a parent, and refuses a fourth level            0.23s  
+  ✓ it moves a link only inside its own level                            0.14s  
+  ✓ it flips the mega switch on a top link only                          0.13s  
+  ✓ it renders dropdowns, mega panels and mobile disclosures on the sit… 0.11s  
 
    PASS  Tests\Feature\Website\PageBuilderLiveTest
   ✓ it previews a brand-new page before the first explicit save          0.22s  
-  ✓ it does not create a draft from an empty page, and says why          0.17s  
+  ✓ it does not create a draft from an empty page, and says why          0.15s  
   ✓ it updates the rows on every preview instead of inserting the secti… 0.27s  
   ✓ it accepts a slider as the page opening when publishing              0.09s  
-  ✓ it keeps one opening section per page, hiding — never deleting — th… 0.17s  
-  ✓ it shows the hero an imported page already has instead of "0 slides… 0.20s  
-  ✓ it turns a single hero into a slider when a second slide arrives, k… 0.20s  
-  ✓ it serves a draft preview to a signed-in editor through the real ro… 0.14s  
+  ✓ it keeps one opening section per page, hiding — never deleting — th… 0.16s  
+  ✓ it shows the hero an imported page already has instead of "0 slides… 0.18s  
+  ✓ it turns a single hero into a slider when a second slide arrives, k… 0.22s  
+  ✓ it serves a draft preview to a signed-in editor through the real ro… 0.13s  
   ✓ it lets the admin frame the preview from its own domain, and nobody… 0.11s  
 
    PASS  Tests\Feature\Website\PageEditorClipboardTest
-  ✓ it copies ticked sections and pastes them on another page with fres… 0.35s  
-  ✓ it never pastes a type it does not know                              0.18s  
-  ✓ it deletes every ticked section as one undoable step                 0.32s  
-  ✓ it duplicates the selection after the last section and selects the…  0.22s  
-  ✓ it selects everything on the first press and clears on the second    0.21s  
+  ✓ it copies ticked sections and pastes them on another page with fres… 0.39s  
+  ✓ it never pastes a type it does not know                              0.19s  
+  ✓ it deletes every ticked section as one undoable step                 0.38s  
+  ✓ it duplicates the selection after the last section and selects the…  0.26s  
+  ✓ it selects everything on the first press and clears on the second    0.22s  
 
    PASS  Tests\Feature\Website\PageEditorConcurrencyTest
-  ✓ it refuses a save when the page was saved after the editor opened i… 0.21s  
-  ✓ it keeps the edits on screen when a conflict is reported, then relo… 0.24s  
-  ✓ it saves normally when nobody else touched the page                  0.18s  
-  ✓ it warns in the editor when an exported v1 file answers the URL      0.14s  
+  ✓ it refuses a save when the page was saved after the editor opened i… 0.29s  
+  ✓ it keeps the edits on screen when a conflict is reported, then relo… 0.35s  
+  ✓ it saves normally when nobody else touched the page                  0.21s  
+  ✓ it warns in the editor when an exported v1 file answers the URL      0.17s  
 
    PASS  Tests\Feature\Website\PageTemplatesTest
   ✓ it seeds the studio layouts, each with sections its types really ha… 0.16s  
@@ -1230,74 +1237,74 @@
   ✓ it leaves out a layout the seeder no longer carries                  0.16s  
   ✓ it starts a page from a template, sections and all                   0.22s  
   ✓ it applies a template to the page being edited, without saving it t… 0.23s  
-  ✓ it saves a page layout back as a template for the next page of that… 0.33s  
+  ✓ it saves a page layout back as a template for the next page of that… 0.37s  
+
+  Tests:    72 passed (2801 assertions)
+  Duration: 14.39s
+
+--- BATCH:  tests/Feature/Website/RawHtmlAccessTest.php tests/Feature/Website/SectionLibraryTest.php tests/Feature/Website/SectionStyleTest.php tests/Feature/Website/SeoAgentTest.php tests/Feature/Website/SiteRenderingTest.php tests/Feature/Website/SliderSectionTest.php tests/Feature/Website/SpeedDashboardTest.php tests/Feature/Website/TeamSectionTest.php tests/Feature/Website/ThemePresetsTest.php tests/Feature/Website/WebsiteAdminParityTest.php
 
    PASS  Tests\Feature\Website\RawHtmlAccessTest
-  ✓ it hides the HTML block and the canvas from an editor without the r… 0.18s  
-  ✓ it refuses an HTML block over Livewire when the permission is missi… 0.14s  
-  ✓ it refuses the campaign canvas over Livewire when the permission is… 0.14s  
-  ✓ it refuses to save a page containing an HTML block unless the saver… 0.11s  
-  ✓ it refuses to save a canvas page unless the saver has the permissio… 0.09s  
-  ✓ it lets the owner save an HTML block and stores it cleaned           0.10s  
-
-  Tests:    63 passed (2769 assertions)
-  Duration: 14.32s
-
---- BATCH:  tests/Feature/Website/SectionLibraryTest.php tests/Feature/Website/SectionStyleTest.php tests/Feature/Website/SeoAgentTest.php tests/Feature/Website/SiteRenderingTest.php tests/Feature/Website/SliderSectionTest.php tests/Feature/Website/SpeedDashboardTest.php tests/Feature/Website/TeamSectionTest.php tests/Feature/Website/ThemePresetsTest.php tests/Feature/Website/WebsiteAdminParityTest.php tests/Feature/Website/WebsiteAdminTest.php
+  ✓ it hides the HTML block and the canvas from an editor without the r… 2.61s  
+  ✓ it refuses an HTML block over Livewire when the permission is missi… 0.16s  
+  ✓ it refuses the campaign canvas over Livewire when the permission is… 0.16s  
+  ✓ it refuses to save a page containing an HTML block unless the saver… 0.13s  
+  ✓ it refuses to save a canvas page unless the saver has the permissio… 0.13s  
+  ✓ it lets the owner save an HTML block and stores it cleaned           0.11s  
 
    PASS  Tests\Feature\Website\SectionLibraryTest
-  ✓ it declares every section with a name, a blurb and a library catego… 2.60s  
-  ✓ it shows the library grouped by category, and adding from it works   0.28s  
-  ✓ it saves a configured section to the library and drops it onto any…  0.59s  
-  ✓ it duplicates a section and drags sections into a new order that su… 0.38s  
-  ✓ it previews the draft at three widths in the editor                  0.34s  
-  ✓ it opens a draft through a shareable preview link, and only while i… 0.20s  
+  ✓ it declares every section with a name, a blurb and a library catego… 0.10s  
+  ✓ it shows the library grouped by category, and adding from it works   0.21s  
+  ✓ it saves a configured section to the library and drops it onto any…  0.50s  
+  ✓ it duplicates a section and drags sections into a new order that su… 0.35s  
+  ✓ it previews the draft at three widths in the editor                  0.36s  
+  ✓ it opens a draft through a shareable preview link, and only while i… 0.19s  
   ✓ it keeps the shareable link to a signed token: editors still previe… 0.20s  
 
    PASS  Tests\Feature\Website\SectionStyleTest
-  ✓ it prints the settings as classes on the section wrapper             0.12s  
-  ✓ it keeps a section that has no settings exactly as designed          0.11s  
+  ✓ it prints the settings as classes on the section wrapper             0.13s  
+  ✓ it keeps a section that has no settings exactly as designed          0.14s  
   ✓ it drops a value it does not know instead of printing it             0.10s  
-  ✓ it saves the section settings from the editor and previews them      0.33s  
-  ✓ it keeps the settings through a version restore                      0.27s  
-  ✓ it renders the HTML block, with the scripts taken out                0.12s  
+  ✓ it saves the section settings from the editor and previews them      0.36s  
+  ✓ it keeps the settings through a version restore                      0.31s  
+  ✓ it renders the HTML block, with the scripts taken out                0.31s  
   ✓ it offers the HTML block in the editor with a code box               0.16s  
-  ✓ it cleans an HTML block when it is saved, not only when it renders   0.27s  
-  ✓ it writes per-device spacing as scoped css, with tablet and mobile…  0.09s  
-  ✓ it hides a section on a named device without hiding it everywhere    0.09s  
-  ✓ it clamps spacing and drops values that are not numbers              0.09s  
-  ✓ it puts the section device css in the page head and only when it is… 0.11s  
+  ✓ it cleans an HTML block when it is saved, not only when it renders   0.31s  
+  ✓ it writes per-device spacing as scoped css, with tablet and mobile…  0.10s  
+  ✓ it hides a section on a named device without hiding it everywhere    0.11s  
+  ✓ it clamps spacing and drops values that are not numbers              0.10s  
+  ✓ it puts the section device css in the page head and only when it is… 0.12s  
 
    PASS  Tests\Feature\Website\SeoAgentTest
-  ✓ it audits every page with plain rules, no key asked                  0.16s  
-  ✓ it fixes what a rule can mend: description, slug with a redirect be… 0.18s  
+  ✓ it audits every page with plain rules, no key asked                  0.15s  
+  ✓ it fixes what a rule can mend: description, slug with a redirect be… 0.19s  
   ✓ it carries the F10 website health sweep: broken redirects, dead lin… 0.14s  
   ✓ it proposes with the studio key and lands nothing until the owner c… 0.19s  
   ✓ it stays keyless when the key is empty, whatever the provider says   0.12s  
 
    PASS  Tests\Feature\Website\SiteRenderingTest
-  ✓ it renders every section of the library                              0.26s  
+  ✓ it renders every section of the library                              0.30s  
   ✓ it renders a page that uses every section at once                    0.10s  
   ✓ it shows the menus from the dashboard in the header and the footer   0.07s  
   ✓ it falls back to the built-in links until someone fills the menus i… 0.06s  
-  ✓ it lists the cities we work in the footer so no area page is an orp… 0.07s  
+  ✓ it lists the cities we work in the footer so no area page is an orp… 0.06s  
 
    PASS  Tests\Feature\Website\SliderSectionTest
   ✓ it renders the slider section with controls, lazy photos and one H1  0.07s  
-  ✓ it skips the slider markup entirely when no slide has a photo        0.06s  
+  ✓ it skips the slider markup entirely when no slide has a photo        0.07s  
   ✓ it gives the home page the v26 slider, once, and skips slides witho… 0.07s  
 
    PASS  Tests\Feature\Website\SpeedDashboardTest
   ✓ it weighs every published page keylessly — images, heavy ones, old…  0.16s  
-  ✓ it keeps the key off the browser: saved encrypted, never shown back  0.17s  
+  ✓ it keeps the key off the browser: saved encrypted, never shown back  0.15s  
   ✓ it runs PageSpeed against the page's live URL and keeps the score a… 0.14s  
-  ✓ it refuses to run Google against drafts, and says so plainly         0.13s  
+  ✓ it refuses to run Google against drafts, and says so plainly         0.12s  
 
    PASS  Tests\Feature\Website\TeamSectionTest
   ✓ it manages members from the dashboard, in the studio's order         0.26s  
   ✓ it shows the team on a page — members with photos first, then someo… 0.12s  
   ✓ it renders nothing for an empty team section                         0.11s  
-  ✓ it offers the team to the section in the page editor, and the About… 0.15s  
+  ✓ it offers the team to the section in the page editor, and the About… 0.14s  
 
    PASS  Tests\Feature\Website\ThemePresetsTest
   ✓ it keeps every preset honest: its keys exist, its values fit the to… 0.06s  
@@ -1305,117 +1312,117 @@
   ✓ it refuses preset names that are not on the shelf                    0.12s  
 
    PASS  Tests\Feature\Website\WebsiteAdminParityTest
-  ✓ it lists the old admin's Website section in the sidebar, item for i… 0.12s  
-  ✓ it shows the section library standalone, renames and retires saved…  0.19s  
+  ✓ it lists the old admin's Website section in the sidebar, item for i… 0.13s  
+  ✓ it shows the section library standalone, renames and retires saved…  0.18s  
   ✓ it manages the home page hero slides on their own screen             0.26s  
-  ✓ it creates the hero slider when the home page has none yet           0.19s  
+  ✓ it creates the hero slider when the home page has none yet           0.18s  
   ✓ it shows every page's search listing on the SEO screen, and edits i… 0.22s  
   ✓ it reports the whole site's health, and catches a redirect to nowhe… 0.12s  
   ✓ it keeps the four screens behind the website permission              0.42s  
 
+  Tests:    56 passed (560 assertions)
+  Duration: 12.63s
+
+--- BATCH:  tests/Feature/Website/WebsiteAdminTest.php tests/Feature/Website/WebsiteBundleTest.php tests/Feature/Website/WebsiteContentFixesTest.php tests/Feature/WebsiteHomeTest.php tests/Feature/WhatsAppConnectionTest.php tests/Feature/WhatsAppTemplateManagerTest.php tests/Feature/WhatsAppWebhookRecoveryTest.php tests/Unit/AmountInWordsTest.php tests/Unit/BusinessHoursTest.php tests/Unit/DeployManifestTest.php
+
    PASS  Tests\Feature\Website\WebsiteAdminTest
-  ✓ it lists the pages of the website                                    0.17s  
-  ✓ it keeps the website screens away from users who do not edit the we… 0.10s  
-  ✓ it lets an editor change a page but not publish it                   0.23s  
-  ✓ it creates a page, adds sections and publishes it                    0.40s  
+  ✓ it lists the pages of the website                                    2.63s  
+  ✓ it keeps the website screens away from users who do not edit the we… 0.13s  
+  ✓ it lets an editor change a page but not publish it                   0.31s  
+  ✓ it creates a page, adds sections and publishes it                    0.49s  
   ✓ it holds back a page that is not ready to publish                    0.22s  
-  ✓ it will not publish a page whose images have no alt text             0.74s  
+  ✓ it will not publish a page whose images have no alt text             0.75s  
   ✓ it saves a draft with anything in it, and only publishing is checke… 0.20s  
-  ✓ it edits the sections of a page, reorders them and hides one         0.30s  
-  ✓ it removes a section and keeps the rest                              0.20s  
-  ✓ it restores an earlier version of a page                             0.30s  
+  ✓ it edits the sections of a page, reorders them and hides one         0.31s  
+  ✓ it removes a section and keeps the rest                              0.21s  
+  ✓ it restores an earlier version of a page                             0.27s  
   ✓ it duplicates a page with its sections                               0.14s  
-  ✓ it uploads an image, requires alt text and serves it from the media… 0.25s  
-  ✓ it shows the new alt text on a published page at once                0.19s  
-  ✓ it refuses to delete an image that a page uses                       0.14s  
+  ✓ it uploads an image, requires alt text and serves it from the media… 0.30s  
+  ✓ it shows the new alt text on a published page at once                0.20s  
+  ✓ it refuses to delete an image that a page uses                       0.13s  
   ✓ it imports the redirect map from a CSV and answers each old URL wit… 0.23s  
-  ✓ it exports the redirect map as a CSV                                 0.21s  
-  ✓ it builds the header menu from the dashboard                         0.18s  
-  ✓ it takes the tracking IDs the owner pastes and loads nothing until…  0.24s  
+  ✓ it exports the redirect map as a CSV                                 0.27s  
+  ✓ it builds the header menu from the dashboard                         0.19s  
+  ✓ it takes the tracking IDs the owner pastes and loads nothing until…  0.27s  
   ✓ it leaves the analytics out while tracking is switched off           0.12s  
   ✓ it shows the page check on the list, and says Clear when there is n… 0.15s  
 
-  Tests:    70 passed (635 assertions)
-  Duration: 16.31s
-
---- BATCH:  tests/Feature/Website/WebsiteBundleTest.php tests/Feature/Website/WebsiteContentFixesTest.php tests/Feature/WebsiteHomeTest.php tests/Feature/WhatsAppConnectionTest.php tests/Feature/WhatsAppTemplateManagerTest.php tests/Feature/WhatsAppWebhookRecoveryTest.php tests/Unit/AmountInWordsTest.php tests/Unit/BusinessHoursTest.php tests/Unit/DeployManifestTest.php tests/Unit/EnvFileTest.php
-
    PASS  Tests\Feature\Website\WebsiteBundleTest
-  ✓ it puts right the description of a photograph that was imported wit… 2.41s  
-  ✓ it imports the pages on a database that has no user yet              0.14s  
+  ✓ it puts right the description of a photograph that was imported wit… 0.09s  
+  ✓ it imports the pages on a database that has no user yet              0.13s  
   ✓ it exports the website and imports it back                           0.14s  
 
    PASS  Tests\Feature\Website\WebsiteContentFixesTest
   ✓ it gives every published page a closing, and leaves a page that alr… 0.07s  
   ✓ it points a city page at the areas inside it, using the city name f… 0.06s  
-  ✓ it fills in a discipline link that was written empty on the old sit… 0.06s  
-  ✓ it corrects a promise the old site made about where data is stored   0.06s  
-  ✓ it empties the website and only with --force, and forgets the impor… 0.10s  
+  ✓ it fills in a discipline link that was written empty on the old sit… 0.05s  
+  ✓ it corrects a promise the old site made about where data is stored   0.05s  
+  ✓ it empties the website and only with --force, and forgets the impor… 0.09s  
   ✓ it leaves a page that is still a draft alone                         0.05s  
 
    PASS  Tests\Feature\WebsiteHomeTest
-  ✓ it renders the home page with the studio name, address, phone and e… 0.12s  
-  ✓ it is indexable and carries the SEO and social tags                  0.08s  
+  ✓ it renders the home page with the studio name, address, phone and e… 0.08s  
+  ✓ it is indexable and carries the SEO and social tags                  0.07s  
   ✓ it publishes valid JSON-LD: studio, page, breadcrumb and the questi… 0.08s  
-  ✓ it asks for the enquiry with a form that works without JavaScript    0.20s  
+  ✓ it asks for the enquiry with a form that works without JavaScript    0.17s  
   ✓ it shows experience and trust signals: process, questions and openi… 0.08s  
   ✓ it labels every content image with alt text and lazy-loads the ones… 0.08s  
   ✓ it is a page in the CMS, so editing it in the dashboard changes the… 0.08s  
-  ✓ it falls back to the 404 page when the home page is unpublished      0.08s  
+  ✓ it falls back to the 404 page when the home page is unpublished      0.07s  
 
    PASS  Tests\Feature\WhatsAppConnectionTest
-  ✓ it uses the server .env when nothing is saved in the dashboard       0.06s  
-  ✓ it lets credentials saved in the dashboard win over the .env         0.06s  
+  ✓ it uses the server .env when nothing is saved in the dashboard       0.05s  
+  ✓ it lets credentials saved in the dashboard win over the .env         0.05s  
   ✓ it keeps the .env value for a field the dashboard left empty         0.05s  
   ✓ it never stores a secret in plain text                               0.05s  
-  ✓ it saves what the studio typed and keeps a secret that was left bla… 0.47s  
-  ✓ it never puts a saved secret into a livewire property                0.13s  
-  ✓ it rejects a nonsense phone number id                                0.17s  
+  ✓ it saves what the studio typed and keeps a secret that was left bla… 0.40s  
+  ✓ it never puts a saved secret into a livewire property                0.12s  
+  ✓ it rejects a nonsense phone number id                                0.16s  
   ✓ it proves the connection against meta and remembers the number it f… 0.05s  
   ✓ it sends a real message when the studio gives a number, because val… 0.05s  
   ✓ it reports an unconnected whatsapp instead of pretending             0.05s  
-  ✓ it verifies meta's webhook handshake with the token saved in the da… 0.07s  
-  ✓ it shows whatsapp as configured on the card and connected after a l… 0.38s  
+  ✓ it verifies meta's webhook handshake with the token saved in the da… 0.06s  
+  ✓ it shows whatsapp as configured on the card and connected after a l… 0.37s  
   ✓ it keeps the whatsapp screen for staff who may manage integrations   0.12s  
 
    PASS  Tests\Feature\WhatsAppTemplateManagerTest
-  ✓ it mirrors what meta holds, including a rejection and the reason fo… 0.12s  
-  ✓ it follows meta's paging instead of showing only the first page      0.07s  
-  ✓ it marks a template meta no longer returns as removed, rather than…  0.06s  
+  ✓ it mirrors what meta holds, including a rejection and the reason fo… 0.10s  
+  ✓ it follows meta's paging instead of showing only the first page      0.05s  
+  ✓ it marks a template meta no longer returns as removed, rather than…  0.05s  
   ✓ it reports a missing business account id instead of silently showin… 0.05s  
-  ✓ it maps a moment onto a template and moves the mapping when the stu… 0.20s  
-  ✓ it refuses to map a template meta has not approved                   0.13s  
-  ✓ it sends a new template to meta with an example for every variable   0.06s  
-  ✓ it catches the ordinary mistakes before spending a review at meta    0.08s  
-  ✓ it shows the example boxes the moment a variable is typed            0.18s  
-  ✓ it sends the mapped template when a quotation goes out, not a name…  0.68s  
-  ✓ it falls back to the configured template when nothing is mapped      0.57s  
-  ✓ it ignores a mapped template that meta no longer allows to be sent   0.60s  
+  ✓ it maps a moment onto a template and moves the mapping when the stu… 0.22s  
+  ✓ it refuses to map a template meta has not approved                   0.14s  
+  ✓ it sends a new template to meta with an example for every variable   0.05s  
+  ✓ it catches the ordinary mistakes before spending a review at meta    0.05s  
+  ✓ it shows the example boxes the moment a variable is typed            0.13s  
+  ✓ it sends the mapped template when a quotation goes out, not a name…  0.62s  
+  ✓ it falls back to the configured template when nothing is mapped      0.54s  
+  ✓ it ignores a mapped template that meta no longer allows to be sent   0.51s  
 
    PASS  Tests\Feature\WhatsAppWebhookRecoveryTest
   ✓ it refuses untrusted intake before storing or dispatching anything   0.08s  
   ✓ it persists every entry change message and status before any provid… 0.18s  
-  ✓ it does not merge another configured phone account into this inbox   0.08s  
+  ✓ it does not merge another configured phone account into this inbox   0.07s  
   ✓ it recovers a received row after an intake crash before enqueue      0.08s  
   ✓ it recovers an expired queue lease without duplicating committed bu… 0.09s  
-  ✓ it retries a failed legacy batched event by its exact id rather tha… 0.09s  
+  ✓ it retries a failed legacy batched event by its exact id rather tha… 0.11s  
   ✓ it retains early delivery statuses for recovery when the outbound r… 0.10s  
-  ✓ it bounds poison event retries and requires explicit reviewed redri… 0.11s  
+  ✓ it bounds poison event retries and requires explicit reviewed redri… 0.09s  
   ✓ it does not redrive processed ignored untrusted or non-whatsapp eve… 0.06s  
   ✓ it does not redrive processed ignored untrusted or non-whatsapp eve… 0.06s  
-  ✓ it does not redrive processed ignored untrusted or non-whatsapp eve… 0.06s  
-  ✓ it does not redrive processed ignored untrusted or non-whatsapp eve… 0.06s  
+  ✓ it does not redrive processed ignored untrusted or non-whatsapp eve… 0.05s  
+  ✓ it does not redrive processed ignored untrusted or non-whatsapp eve… 0.05s  
   ✓ it keeps the entire batch durable when enqueue is unavailable and l… 0.07s  
   ✓ it rolls back a domain write when processing fails and stores only…  0.07s  
-  ✓ it does not reopen the service window or replace the latest preview… 0.12s  
-  ✓ it never downgrades a delivered or read message because a failure a… 0.07s  
+  ✓ it does not reopen the service window or replace the latest preview… 0.11s  
+  ✓ it never downgrades a delivered or read message because a failure a… 0.06s  
   ✓ it does not dispatch a job when the admission transaction rolls bac… 0.05s  
-  ✓ it rolls back business writes together with a failed processed mark… 0.10s  
+  ✓ it rolls back business writes together with a failed processed mark… 0.14s  
   ✓ it does not duplicate an inbound message already written by the leg… 0.06s  
-  ✓ it runs the admitted event through the actual database queue withou… 0.09s  
+  ✓ it runs the admitted event through the actual database queue withou… 0.10s  
 
    PASS  Tests\Unit\AmountInWordsTest
-  ✓ it spells quotation totals in crore and lakh with (0, 'Rupees Zero…  0.02s  
+  ✓ it spells quotation totals in crore and lakh with (0, 'Rupees Zero…  0.03s  
   ✓ it spells quotation totals in crore and lakh with (100, 'Rupees One Only')
   ✓ it spells quotation totals in crore and lakh with (1500, 'Rupees Fifteen Only')
   ✓ it spells quotation totals in crore and lakh with (32500000, 'Rupees Three Lakh Twenty Five…d Only')
@@ -1434,8 +1441,13 @@
   ✓ it serves only platform/public from the repository root
   ✓ it ships a complete front-end build because the server has no Node.js
 
+  Tests:    96 passed (439 assertions)
+  Duration: 15.37s
+
+--- BATCH:  tests/Unit/EnvFileTest.php tests/Unit/HtmlTest.php tests/Unit/MoneyTest.php tests/Unit/NumberInputTest.php tests/Unit/PhoneTest.php tests/Unit/QuoteCalculatorTest.php tests/Unit/SiteStateTest.php tests/Unit/V21MapTest.php
+
    PASS  Tests\Unit\EnvFileTest
-  ✓ it stores every value so that phpdotenv reads it back unchanged with dataset "plain"
+  ✓ it stores every value so that phpdotenv reads it back unchanged wit… 0.02s  
   ✓ it stores every value so that phpdotenv reads it back unchanged with dataset "url"
   ✓ it stores every value so that phpdotenv reads it back unchanged with dataset "dollar"
   ✓ it stores every value so that phpdotenv reads it back unchanged with dataset "interpolation"
@@ -1444,25 +1456,20 @@
   ✓ it stores every value so that phpdotenv reads it back unchanged with dataset "backslash"
   ✓ it stores every value so that phpdotenv reads it back unchanged with dataset "hash"
   ✓ it stores every value so that phpdotenv reads it back unchanged with dataset "spaces"
-  ✓ it stores every value so that phpdotenv reads it back unchanged with dataset "everything"
+  ✓ it stores every value so that phpdotenv reads it back unchanged wit… 0.01s  
   ✓ it stores every value so that phpdotenv reads it back unchanged with dataset "base64 key"
   ✓ it stores every value so that phpdotenv reads it back unchanged with dataset "empty"
   ✓ it writes booleans and null the way Laravel reads them
   ✓ it refuses line breaks, which would inject extra settings
-  ✓ it renders sections, writes owner-only files and forgets single keys
-
-  Tests:    91 passed (374 assertions)
-  Duration: 10.65s
-
---- BATCH:  tests/Unit/HtmlTest.php tests/Unit/MoneyTest.php tests/Unit/NumberInputTest.php tests/Unit/PhoneTest.php tests/Unit/QuoteCalculatorTest.php tests/Unit/SiteStateTest.php tests/Unit/V21MapTest.php
+  ✓ it renders sections, writes owner-only files and forgets single key… 0.02s  
 
    PASS  Tests\Unit\HtmlTest
-  ✓ it turns typed text into paragraphs and lists, and back              0.04s  
+  ✓ it turns typed text into paragraphs and lists, and back              0.03s  
   ✓ it escapes typed text
   ✓ it keeps only allowed tags and safe links when sanitising HTML
 
    PASS  Tests\Unit\MoneyTest
-  ✓ it parses rupee strings exactly into paisa                           0.02s  
+  ✓ it parses rupee strings exactly into paisa                           0.01s  
   ✓ it multiplies by fractional BOQ quantities rounding half up
   ✓ it calculates basis-point percentages and rupee rounding
   ✓ it formats international and lakh grouping
@@ -1470,7 +1477,7 @@
   ✓ it writes amounts in words in the South Asian and international systems
 
    PASS  Tests\Unit\NumberInputTest
-  ✓ it parses quantities exactly, with up to three decimals              0.02s  
+  ✓ it parses quantities exactly, with up to three decimals              0.01s  
   ✓ it parses rupee amounts into paisa
   ✓ it parses percentages into basis points and caps them
   ✓ it prints stored values back for editing
@@ -1491,7 +1498,7 @@
   ✓ it formats numbers for display and links
 
    PASS  Tests\Unit\QuoteCalculatorTest
-  ✓ it totals the Renovation "Wood Work" section to the paisa            0.01s  
+  ✓ it totals the Renovation "Wood Work" section to the paisa            0.02s  
   ✓ it applies line discounts, quote discount, other charges, tax and rounding in order
   ✓ it caps fixed discounts at the base amount and computes margin from internal costs
   ✓ it rejects invalid quantities
@@ -1540,8 +1547,8 @@
   ✓ it maps note kinds and booking statuses
   ✓ it finds the city in a free-text location
 
-  Tests:    70 passed (176 assertions)
-  Duration: 0.66s
+  Tests:    85 passed (203 assertions)
+  Duration: 0.69s
 
-FILES=127
-PASSED=1225 SKIPPED=1 FAILED=0
+FILES=128
+PASSED=1230 SKIPPED=1 FAILED=0

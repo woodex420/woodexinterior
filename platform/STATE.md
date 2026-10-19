@@ -2364,11 +2364,17 @@ in `docs/audit/11`.
   (unknown types dropped, fresh keys, cleaned settings); duplicate/delete are one undo step.
 - **Shadow notice (W-01 interim).** `StaticShadow` detects `public/{slug}/index.html`; the editor names
   the file that is really answering the URL. Publishing is not blocked.
+- **Columns (same slice).** `BlockType::Columns` holds 2–4 leaf children (text, photo, quote) inside the
+  section's JSON — no migration, no nesting, no raw HTML. `Columns::clean()` clamps and strips; the
+  renderer uses `md:grid-cols-2|3|4` and stacks on a phone; the editor draws its own 2/3/4 switch and
+  per-child forms. The library gains a `Layout` shelf; `SiteRenderingTest` now renders it with every
+  other block type.
 - **Rollback:** `config/website.php` → `builder.{responsive_styles,section_clipboard,conflict_check,shadow_notice}`,
   each with an env var; off is a server-side no-op.
 
-Gate: **1,225 passed / 1 skipped / 0 failed**, 127 files, 8,518 assertions; Pint 821 files PASS;
-PHPStan 0 errors (556 files); smoke 68 pages; builder-check OK, 15 steps, now including per-device CSS
-and copy/paste in the real browser. Builder-check's layers-search wait was fixed (poll instead of a
+Gate: **1,230 passed / 1 skipped / 0 failed**, 128 files, 8,553 assertions; Pint 823 files PASS;
+PHPStan 0 errors (557 files); smoke 68 pages; builder-check OK, 16 steps, now including per-device CSS,
+copy/paste and the columns grid in the real browser. A global `Carbon::setTestNow()` reset in
+`tests/Pest.php` removes a date leak between files that surfaced in this gate. Builder-check's layers-search wait was fixed (poll instead of a
 fixed 1.2 s). No migrations. Docs: `docs/audit/11_PHASE2_PAGE_BUILDER.md`, evidence in
 `docs/audit/evidence/phase2-*`.

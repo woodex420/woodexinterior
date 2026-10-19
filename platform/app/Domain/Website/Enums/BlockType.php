@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Website\Enums;
 
+use App\Domain\Website\Support\Columns;
+
 /**
  * The section library (docs/09 §4). One type = one Blade component in resources/views/site/sections.
  */
@@ -27,6 +29,9 @@ enum BlockType: string
     case Author = 'author';
     case Map = 'map';
     case Clients = 'clients';
+
+    /** Phase 2: 2–4 leaf children in one section — text, photo or quote, no nesting. */
+    case Columns = 'columns';
 
     /** V2-3 F7: the studio's people — picked from Website → Team, or written on the page. */
     case Team = 'team';
@@ -57,6 +62,7 @@ enum BlockType: string
             self::Author => 'Author',
             self::Map => 'Map + contact',
             self::Clients => 'Client logos',
+            self::Columns => 'Columns',
             self::Team => 'Team',
             self::Html => 'HTML block',
         };
@@ -85,6 +91,7 @@ enum BlockType: string
             self::Author => 'The person behind the studio: photo, bio, credentials.',
             self::Map => 'The studio\'s address on a map, with phone and hours.',
             self::Clients => 'Client logos — the quiet trust signal.',
+            self::Columns => 'Two to four side-by-side blocks — text, a photo or a quote. They stack on a phone.',
             self::Team => 'The studio\'s people, with photos, roles and short bios.',
             self::Html => 'Your own HTML, for a section the library does not cover. Scripts are removed when it is saved.',
         };
@@ -101,6 +108,7 @@ enum BlockType: string
             self::Slider => 'Hero',
             self::Clients, self::Reviews, self::Gallery, self::Related, self::Author, self::Team => 'Proof',
             self::Intro, self::Text, self::Services, self::Process, self::Specs, self::PriceTable, self::Faq, self::Html => 'Content',
+            self::Columns => 'Layout',
             self::Form, self::Map => 'Conversion',
         };
     }
@@ -129,6 +137,7 @@ enum BlockType: string
             self::Author => ['name' => '', 'role' => '', 'bio' => '', 'image_id' => null],
             self::Map => ['heading' => 'Studio', 'embed_url' => ''],
             self::Clients => ['heading' => 'Trusted by', 'logos' => [], 'library_ids' => []],
+            self::Columns => Columns::defaults(),
             self::Team => ['heading' => 'Our team', 'items' => [], 'library_ids' => []],
             self::Html => ['code' => ''],
         };
@@ -264,6 +273,8 @@ enum BlockType: string
             self::Html => [
                 ['key' => 'code', 'label' => 'HTML', 'type' => 'code', 'rows' => 14],
             ],
+            // The editor draws this one itself: a column has its own kind and fields.
+            self::Columns => [],
             self::Team => [
                 ['key' => 'heading', 'label' => 'Heading', 'type' => 'text'],
                 ['key' => 'library_ids', 'label' => 'From the studio\'s team (Website → Team)', 'type' => 'library', 'kind' => 'team'],

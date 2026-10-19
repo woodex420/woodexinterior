@@ -69,20 +69,20 @@ Captured on `arena/8be318a2-woodexinterior` after the changes, against the same 
 
 | File | Produced by | Result |
 |---|---|---|
-| `phase2-all-tests.txt` | `sh /tmp/run_all_tests.sh`, 13 batches of 10 | **127 files, 1,225 passed, 1 skipped, 0 failed, 8,518 assertions** |
+| `phase2-all-tests.txt` | `sh /tmp/run_all_tests.sh`, 13 batches of 10 | **128 files, 1,230 passed, 1 skipped, 0 failed, 8,553 assertions** |
 | `phase2-test-failures.txt` | same | **empty** (0 bytes) |
-| `phase2-pint.txt` | `pint --test` | **PASS, 821 files** |
-| `phase2-phpstan.txt` | `phpstan analyse --memory-limit=1G` | **`[OK] No errors`**, 556 files |
+| `phase2-pint.txt` | `pint --test` | **PASS, 823 files** |
+| `phase2-phpstan.txt` | `phpstan analyse --memory-limit=1G` | **`[OK] No errors`**, 557 files |
 | `phase2-smoke.txt` | `sh tools/sandbox/smoke.sh` | **SMOKE OK (68 pages)** |
-| `phase2-builder-check.txt` | `node tools/sandbox/builder-check.mjs` | **BUILDER CHECK OK**, 15 steps incl. per-device CSS and copy/paste |
+| `phase2-builder-check.txt` | `node tools/sandbox/builder-check.mjs` | **BUILDER CHECK OK**, 16 steps incl. per-device CSS, copy/paste and the columns grid |
 
 SHA-256 at capture:
 
 ```
-b3055f82fce9c57c36ca8529eb890f2dea703ca98261d6a8d73baa669d0e893f  phase2-all-tests.txt
-91ac479142d5537bebbb636faad8d3f87eac49047ceb9b5fd2db3e42ff0fa02b  phase2-builder-check.txt
-cf4314ca1ba01802ee874866096acb842ab222a0bcad0d56be86058e2cee64ee  phase2-phpstan.txt
-26e7d6bad39fa8dcb342bcab06e3be1a03294a2a951cefaddf02a688db838f9f  phase2-pint.txt
+d4a3f26b854397f1fa12e448987926fb961d7cfa41e1f9d41f7e922a0f49562a  phase2-all-tests.txt
+557d933721e4ba0b6c05a73e806ca56984a4be85570d1e7d620ff73963c2dc3b  phase2-builder-check.txt
+f3074ef4875209a311f529206da069f370f139279f291358965d1bc702b3bb99  phase2-phpstan.txt
+ac4dad9c40af9895a5792b8a9aed52eae2ce5c3446f986c63af948fb676fde75  phase2-pint.txt
 99204b8b732aacf41a43ab99e87fce7ddc052bc6765cc0c4491d9a21da959d2c  phase2-smoke.txt
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  phase2-test-failures.txt
 ```

@@ -6,10 +6,11 @@
   drag reordered Hero / Intro + key facts -> Intro + key facts / Hero
   undo and redo restored the section order
   layers listed 7 sections and the search narrowed them to 1
-  click-to-edit jumped to section bp5x3tzoo
+  click-to-edit jumped to section bfzafapxb
   the page check is in the editor (3 item(s))
   the section background reached the preview
   per-device spacing reached the preview (mobile ≤640px)
   one section copied and pasted — section count 7 → 8
-  new page "Builder check 85849" saved itself and previewed at http://127.0.0.1:8080/admin/website/pages/288
+  columns section added and switched 2 → 3 — the grid reached the preview
+  new page "Builder check 13383" saved itself and previewed at http://127.0.0.1:8080/admin/website/pages/288
 BUILDER CHECK OK

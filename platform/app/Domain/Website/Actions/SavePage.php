@@ -12,6 +12,7 @@ use App\Domain\Website\Models\PageVersion;
 use App\Domain\Website\Services\Menus;
 use App\Domain\Website\Services\PageCache;
 use App\Domain\Website\Support\CanvasHtml;
+use App\Domain\Website\Support\Columns;
 use App\Domain\Website\Support\SectionStyle;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -126,6 +127,11 @@ final class SavePage
      */
     private function clean(BlockType $type, array $data): array
     {
+        // The columns section carries its own children: one JSON value, three leaf kinds, 2–4 of them.
+        if ($type === BlockType::Columns) {
+            return Columns::clean($data);
+        }
+
         $clean = [];
 
         foreach ($type->fields() as $key => $default) {

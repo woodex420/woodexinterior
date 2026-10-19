@@ -472,8 +472,14 @@ const clipboard = await page.evaluate(() => {
 if (!clipboard.ok || !clipboard.copy || !clipboard.paste) {
     fail(`multi-select toolbar is incomplete (${JSON.stringify(clipboard)})`);
 } else {
-    await sleep(600);
-    const selected = await page.evaluate(() => document.body.innerText.includes('1 selected'));
+    // Wait for Livewire to apply the tick: a fixed pause was enough until the editor grew heavier.
+    const selected = await (async () => {
+        for (let i = 0; i < 40; i++) {
+            if (await page.evaluate(() => document.body.innerText.includes('1 selected'))) return true;
+            await sleep(200);
+        }
+        return false;
+    })();
 
     await page.evaluate(() => {
         const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Sections');
@@ -504,6 +510,70 @@ if (!clipboard.ok || !clipboard.copy || !clipboard.paste) {
         [...card.querySelectorAll('button')].find((b) => b.textContent.includes('Undo'))?.click();
     });
     await sleep(800);
+}
+
+// ---- 5d. the columns section: add it, switch 2 → 3, see the grid in the preview -------------------
+const addedColumns = await page.evaluate(() => {
+    const button = [...document.querySelectorAll('button')].find(
+        (b) => b.querySelector('span')?.textContent?.replace('+', '').trim() === 'Columns',
+    );
+    if (!button) return false;
+    button.click();
+    return true;
+});
+
+if (!addedColumns) {
+    fail('the section library has no Columns entry');
+} else {
+    const grew = await (async () => {
+        for (let i = 0; i < 40; i++) {
+            const ok = await page.evaluate(() => {
+                const cards = document.querySelectorAll('[id^="blk-"]');
+                const last = cards[cards.length - 1];
+                return !!last && /Columns/.test(last.textContent) && last.querySelectorAll('[aria-label="Number of columns"] button').length === 3;
+            });
+            if (ok) return true;
+            await sleep(300);
+        }
+        return false;
+    })();
+
+    if (!grew) {
+        fail('the columns section did not appear with its 2/3/4 switch');
+    } else {
+        await page.evaluate(() => {
+            const cards = document.querySelectorAll('[id^="blk-"]');
+            const last = cards[cards.length - 1];
+            [...last.querySelectorAll('[aria-label="Number of columns"] button')].find((b) => b.textContent.trim() === '3')?.click();
+        });
+
+        const threeUp = await (async () => {
+            for (let i = 0; i < 50; i++) {
+                const found = await page.evaluate(() => {
+                    const frame = document.querySelector('iframe[title^="Draft preview"]');
+                    return (frame?.contentDocument?.body?.innerHTML ?? '').includes('md:grid-cols-3');
+                });
+                if (found) return true;
+                await sleep(400);
+            }
+            return false;
+        })();
+
+        if (!threeUp) fail('the three-column layout never reached the preview');
+        else step('columns section added and switched 2 → 3 — the grid reached the preview');
+
+        // Undo the count change and the add, leaving the page as the template made it.
+        await page.evaluate(() => {
+            const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Sections');
+            [...card.querySelectorAll('button')].find((b) => b.textContent.includes('Undo'))?.click();
+        });
+        await sleep(700);
+        await page.evaluate(() => {
+            const card = [...document.querySelectorAll('section')].find((el) => el.querySelector('h2')?.textContent?.trim() === 'Sections');
+            [...card.querySelectorAll('button')].find((b) => b.textContent.includes('Undo'))?.click();
+        });
+        await sleep(800);
+    }
 }
 
 // ---- 6. a brand-new page previews before the first explicit Save ---------------------------------

@@ -28,14 +28,15 @@ it('declares every section with a name, a blurb and a library category', functio
     foreach (BlockType::cases() as $type) {
         expect($type->label())->not->toBe('')
             ->and($type->description())->not->toBe('')
-            ->and($type->category())->toBeIn(['Hero', 'Proof', 'Content', 'Conversion']);
+            ->and($type->category())->toBeIn(['Hero', 'Proof', 'Content', 'Conversion', 'Layout']);
     }
 
     // The library's shelf order: hero, proof, content, then the sections that ask for the enquiry.
     expect(BlockType::Hero->category())->toBe('Hero')
         ->and(BlockType::Gallery->category())->toBe('Proof')
         ->and(BlockType::Text->category())->toBe('Content')
-        ->and(BlockType::Form->category())->toBe('Conversion');
+        ->and(BlockType::Form->category())->toBe('Conversion')
+        ->and(BlockType::Columns->category())->toBe('Layout');
 });
 
 it('shows the library grouped by category, and adding from it works', function () {

@@ -110,10 +110,10 @@ no change to public HTML without a publish. **Rollback:** per-capability flags i
 
 **Progress (19 Oct 2026):** the first slice is in `11_PHASE2_PAGE_BUILDER.md` — per-device spacing and
 visibility, conflict-safe saving (fingerprint, no schema change), multi-select/copy/paste, the
-static-file shadow notice, and the four feature flags. Full gate green (1,225 passed / 1 skipped /
-127 files); builder-check now exercises the device CSS and the clipboard in a browser. Still open:
-the `columns` primitive, per-breakpoint typography, the per-element inspector, autosave recovery,
-theme presets and the parity report.
+`columns` primitive (2–4 text/photo/quote children in the section JSON, no nesting), the static-file
+shadow notice, and the four feature flags. Full gate green; builder-check exercises the device CSS,
+the clipboard and the columns grid in a browser. Still open: per-breakpoint typography, the
+per-element inspector, autosave recovery, theme presets and the parity report.
 
 **Reference input:** B-05 is resolved. The v2.1 builder source is available at
 `marketingwoodex-cloud/-marketingwoodex`, branch `arena/8a776c65-marketingwoodex`, SHA `720d817`

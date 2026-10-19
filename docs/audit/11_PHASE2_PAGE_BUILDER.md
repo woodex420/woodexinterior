@@ -13,20 +13,20 @@ per-device values keeps the same classes, content and public behaviour as before
 
 ## 1. Scope, and what this slice actually delivered
 
-`08` §3 lists seven work areas for Phase 2. This slice takes the four that are independent of the
-`columns` primitive. The rest are listed in §6, not silently dropped.
+`08` §3 lists seven work areas for Phase 2. This slice takes five of them — including the `columns`
+primitive — and leaves the rest listed in §9, not silently dropped.
 
 | Roadmap item | Status in this slice | Where |
 |---|---|---|
-| **Breakpoints** — per-breakpoint styles for padding, spacing | **Delivered for section spacing + per-device visibility.** Typography and column widths are not in this slice (see §6) | `SectionStyle::css()`, editor device switcher |
+| **Breakpoints** — per-breakpoint styles for padding, spacing | **Delivered for section spacing + per-device visibility.** Typography and per-breakpoint column widths are not in this slice (see §9) | `SectionStyle::css()`, editor device switcher |
 | **Editing speed** — copy/paste, multi-select | **Delivered.** Tick sections, copy, paste here or on another page; duplicate/delete the selection as one undo step | `PageEditor`, `PageEditorClipboardTest` |
 | **Safety** — conflict detection on save | **Delivered** as an optimistic fingerprint check (no schema change) with an explicit reload path | `PageFingerprint`, `PageEditorConcurrencyTest` |
 | **Visibility** — "served by a static file" badge | **Delivered** as an editor notice naming the exact file; the Phase 3 cutover removes it | `StaticShadow` |
-| **Layout primitives** — `columns` section | **Not started** — needs a new block type, renderer, editor form and sanitisation tests (§6) | — |
+| **Layout primitives** — `columns` section | **Delivered.** 2–4 leaf children (text, photo, quote) in the section's JSON; no nesting, no raw HTML. See §4b | `Columns`, `BlockType::Columns`, `site/sections/columns.blade.php` |
 | **Content** — reusable sections, theme presets | Saved sections already existed; theme presets not in this slice | existing |
 | **Parity** — `tools/website/compare.php` report | **Not run** — blocked until a group is ready for cutover (Phase 3) | — |
 
-Everything below is reversible per capability through `config/website.php` (§5).
+Everything below is reversible per capability through `config/website.php` (§6).
 
 ## 2. Per-device section styles
 
@@ -108,6 +108,38 @@ the owner's explicit approval. Recorded as R-01 below; not presented as solved.
   Ctrl+Z restores them.
 * The clipboard is per session, not per user account, and is capped only by the 25-step undo stack.
 
+## 4b. Columns primitive
+
+`BlockType::Columns` (`columns`) stores its children **inside the section's own JSON**, not in extra
+rows:
+
+```json
+{"blocks": [
+  {"kind": "text",  "heading": "…", "body": "…"},
+  {"kind": "image", "image_id": 12, "caption": "…"},
+  {"kind": "quote", "quote": "…", "cite": "…"}
+]}
+```
+
+* **Why JSON:** the page keeps one `PageBlock` per section, so versions, undo, copy/paste, the
+  fingerprint and the section settings all keep working with **no migration**. A nested row model
+  (`parent_id`) would have been a schema change and a rewrite of every action.
+* **2–4 children, enforced on save and on render** by `Columns::clean()` (which also pads a short list
+  to two, so a hand-edited JSON cannot break the grid).
+* **Three leaf kinds only** — text, photo, quote. Columns cannot contain columns, and raw HTML cannot
+  hide inside one: `strip_tags()` runs on every text value, `image_id` is coerced to an integer or
+  null, and the renderer escapes what it prints. This is the deliberate limit that keeps the primitive
+  a layout tool rather than a second HTML editor.
+* **Renderer** (`site/sections/columns.blade.php`): `md:grid-cols-2|3|4`, one column on a phone;
+  photos use the same `Media` map and lazy/width/height rules as the other sections; a missing photo
+  falls back to its caption instead of an empty box.
+* **Editor:** the section card draws its own 2/3/4 switch (`setColumnCount`) and one small form per
+  child whose fields follow the chosen kind. Changing the count is one undo step; the preview follows
+  the edit like every other section.
+* **Test coverage:** `ColumnsBlockTest` (render, cleaning/clamping, stored-markup strip, add/switch/undo,
+  non-columns guard) and a sample in `SiteRenderingTest`, which renders **every** block type on one
+  page — the guard that a new section cannot ship without a renderer.
+
 ## 5. Static-file shadow notice (W-01 interim)
 
 `StaticShadow::covers()` checks whether `public/{slug}/index.html` (or `public/index.html` for `/`)
@@ -135,8 +167,11 @@ Off is a server-side no-op, not only a hidden button.
 | `SectionStyleTest` | +4 | scoped per-device CSS; tablet/mobile inheritance; hiding on one device only; integer clamping and key sanitising; `<style>` present only when set |
 | `PageEditorConcurrencyTest` | 4 | save refused after another save; edits kept and reload path; normal save unaffected; shadow notice naming `services/index.html` |
 | `PageEditorClipboardTest` | 5 | copy on one page + paste on another with fresh keys; unknown type dropped; multi-delete is one undo step; duplicate selection; select-all toggle |
+| `ColumnsBlockTest` | 5 | 3-up grid renders; cleaning clamps 2–4, drops unknown kinds and extra fields; stored markup never reaches a visitor; add/switch/undo; the count switch ignores other sections |
 
-**13 new tests** in total; the full suite grew from 125 to 127 files without weakening an existing test.
+**18 new tests** in total; the full suite grew from 125 to 128 files without weakening an existing test.
+Two existing tests were updated **deliberately** for the new section: `SectionLibraryTest` now allows
+the fifth `Layout` shelf, and `SiteRenderingTest` gained a columns sample (it renders every block type).
 
 The one existing assertion that needed updating is `SectionStyle::clean()`'s array shape (it now has a
 `responsive` key). No behavioural assertion was weakened.
@@ -145,9 +180,8 @@ The one existing assertion that needed updating is `SectionStyle::clean()`'s arr
 
 | Item | Why it is not here | Next step |
 |---|---|---|
-| `columns` block (2–4 children) | New block type + renderer + nested editor + sanitisation; a half-built nesting model is worse than none | Design the JSON shape and the render contract first, then implement with tests |
 | Per-breakpoint typography and column widths | There is no typography setting to make responsive yet; adding one that Tailwind child classes override would be a fake control | Decide whether typography is section-level or element-level (needs the inspector) |
-| Per-element inspector | The editor is section-granular today; an inspector needs a target model | Scope after `columns` |
+| Per-element inspector | The editor is section-granular today; an inspector needs a target model | Scope after typography |
 | Autosave recovery after a crash | Live preview saves drafts already; "recover unsaved" needs a local buffer design | Separate slice |
 | Theme presets previewed live | Theme screen exists; presets need a token model | After typography |
 | `tools/website/compare.php` report | Needs a group ready for Phase 3 cutover | Phase 3 |
@@ -156,24 +190,27 @@ The one existing assertion that needed updating is `SectionStyle::clean()`'s arr
 
 | Check | Result | Raw |
 |---|---|---|
-| Pest, 127 files, 13 batches | **1,225 passed · 1 skipped · 0 failed · 8,518 assertions** | `evidence/phase2-all-tests.txt` |
+| Pest, 128 files, 13 batches | **1,230 passed · 1 skipped · 0 failed · 8,553 assertions** | `evidence/phase2-all-tests.txt` |
 | Batch failures | none — failure log empty | `evidence/phase2-test-failures.txt` |
-| Pint (`--test`) | **PASS — 821 files** | `evidence/phase2-pint.txt` |
-| PHPStan / Larastan | **0 errors — 556 files** | `evidence/phase2-phpstan.txt` |
+| Pint (`--test`) | **PASS — 823 files** | `evidence/phase2-pint.txt` |
+| PHPStan / Larastan | **0 errors — 557 files** | `evidence/phase2-phpstan.txt` |
 | Smoke | **SMOKE OK (68 pages)**, all 200 | `evidence/phase2-smoke.txt` |
-| Builder browser check | **BUILDER CHECK OK** — 15 steps, now including *per-device spacing reached the preview (mobile ≤640px)* and *one section copied and pasted (7 → 8)* | `evidence/phase2-builder-check.txt` |
+| Builder browser check | **BUILDER CHECK OK** — 16 steps, now including *per-device spacing reached the preview (mobile ≤640px)*, *one section copied and pasted (7 → 8)* and *columns section added and switched 2 → 3* | `evidence/phase2-builder-check.txt` |
 
 The Phase 1 numbers were 1,212 passed / 1 skipped / 125 files / 8,475 assertions. The difference is the
-13 new tests, not a change to the old ones.
+18 new tests, not a change to the old ones.
 
-**One builder-check failure was found and fixed during this work:** the layers-search assertion used a
-fixed 1.2 s wait, and the heavier editor (device controls, selection toolbar) made the wasm round-trip
-exceed it, so a working filter was reported as broken. The check now polls for the list to change
-(30 × 200 ms) instead of assuming one round-trip; it passed 7 → 1 on three consecutive runs.
+**Two builder-check failures were found and fixed during this work, both the same mistake:** the
+layers-search and the selection-toolbar assertions used fixed waits (1.2 s and 0.6 s), and the heavier
+editor (device controls, selection toolbar, columns) made the wasm round-trip exceed them, so working
+features were reported as broken. Both now poll for the outcome (30–40 × 200 ms) instead of assuming one
+round-trip. After the second fix the check passed twice consecutively, including 7 → 1 search narrowing,
+copy/paste and the columns grid.
 
 ## 10. Deployment notes
 
-* No migration. `php artisan optimize:clear` after deploy if config is cached (`builder.*` is new).
+* No migration. `php artisan optimize:clear` after deploy if config is cached (`builder.*` is new);
+  columns are stored in `page_blocks.settings`/`data` JSON, so an old row needs nothing.
 * Blade change: `layouts/site.blade.php` now prints `@stack('head')` — it had none, so `@push('head')`
   from `site/page.blade.php` was the only consumer and is the reason the hook was added. On a page
   with no device styles it prints nothing.

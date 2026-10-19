@@ -45,6 +45,12 @@ function sectionSample(BlockType $type, int $imageId, int $pageId): array
         // The HTML block (19 Oct): the one section whose content is markup. The sample is ordinary
         // inline HTML so the page proves it renders — the sanitising is SectionStyleTest's job.
         BlockType::Html => ['marker' => 'Made by hand', 'data' => ['code' => '<div class="own-markup"><h2>Made by hand</h2><p>A section written in HTML.</p></div>']],
+        // Columns (Phase 2): three children, including a photo, all in the section's own JSON.
+        BlockType::Columns => ['marker' => 'Two ways to begin', 'data' => ['blocks' => [
+            ['kind' => 'text', 'heading' => 'Two ways to begin', 'body' => 'A full interior, or one room at a time.'],
+            ['kind' => 'image', 'image_id' => $imageId, 'caption' => 'A finished room'],
+            ['kind' => 'quote', 'quote' => 'They listened before they drew.', 'cite' => 'A client'],
+        ]]],
     };
 }
 

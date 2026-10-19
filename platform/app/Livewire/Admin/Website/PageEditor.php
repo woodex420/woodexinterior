@@ -17,6 +17,7 @@ use App\Domain\Website\Models\SavedSection;
 use App\Domain\Website\Services\PageAudit;
 use App\Domain\Website\Services\PageCache;
 use App\Domain\Website\Services\PageValidator;
+use App\Domain\Website\Support\Columns;
 use App\Domain\Website\Support\PageFingerprint;
 use App\Domain\Website\Support\PreviewLink;
 use App\Domain\Website\Support\SectionStyle;
@@ -531,6 +532,33 @@ class PageEditor extends Component
         $this->selectedKeys = [];
         $this->markPreviewStale();
         $this->toast($count.' '.($count === 1 ? 'section' : 'sections').' deleted — undo puts them back.');
+    }
+
+    /**
+     * The columns section's 2–4 switch (Phase 2). Removing a column drops its content from the editor
+     * state; one undo brings it back. Adding pads with an empty text column.
+     */
+    public function setColumnCount(int $index, int $count): void
+    {
+        if (! isset($this->blocks[$index]) || (string) $this->blocks[$index]['type'] !== BlockType::Columns->value) {
+            return;
+        }
+
+        $count = max(Columns::MIN, min(Columns::MAX, $count));
+        $children = Columns::clean((array) ($this->blocks[$index]['data'] ?? []))['blocks'];
+
+        if (count($children) === $count) {
+            return;
+        }
+
+        $this->remember();
+
+        while (count($children) < $count) {
+            $children[] = Columns::blank('text');
+        }
+
+        $this->blocks[$index]['data'] = ['blocks' => array_slice($children, 0, $count)];
+        $this->markPreviewStale();
     }
 
     public function duplicateBlock(int $index): void

@@ -56,7 +56,10 @@ it('sends the daily digest to every linked chat', function () {
     $lead = Lead::factory()->create(['owner_id' => $this->owner->id]);
     app(ScheduleSiteVisit::class)->handle($lead, now()->addHours(3), 60, 'DHA Phase 5', $this->owner, $this->owner);
     Task::query()->create(['title' => 'Send the walnut sample', 'type' => 'todo', 'priority' => 'normal', 'status' => 'open', 'due_at' => now()->addHours(2), 'assignee_id' => $this->owner->id, 'created_by' => $this->owner->id]);
-    Lead::factory()->create(['created_at' => now()->subDay()->setTime(10, 0), 'owner_id' => $this->owner->id, 'next_action_at' => now()->addHours(1), 'next_action_type' => 'call']);
+    // created_at is forced after the insert: this row is exactly what the digest's "yesterday" window
+    // counts, so it must not depend on how the factory happens to apply timestamps.
+    $yesterdayLead = Lead::factory()->create(['owner_id' => $this->owner->id, 'next_action_at' => now()->addHours(1), 'next_action_type' => 'call']);
+    $yesterdayLead->forceFill(['created_at' => now()->subDay()->setTime(10, 0)])->saveQuietly();
 
     $invoice = Invoice::query()->create([
         'number' => 'INV-T-0001', 'kind' => 'manual', 'status' => InvoiceStatus::Issued, 'contact_id' => $this->contact->id,

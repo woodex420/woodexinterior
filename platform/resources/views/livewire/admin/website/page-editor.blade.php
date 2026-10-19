@@ -470,6 +470,73 @@
                             </div>
 
                             <div class="space-y-3 p-4">
+                                @if ($blockType === BlockType::Columns)
+                                    @php $children = \App\Domain\Website\Support\Columns::clean((array) ($block['data'] ?? []))['blocks']; @endphp
+                                    <div class="rounded-lg border border-gray-100 p-3 dark:border-gray-800">
+                                        <div class="flex flex-wrap items-center justify-between gap-2">
+                                            <div>
+                                                <p class="text-theme-xs font-medium tracking-wide text-gray-500 uppercase">Columns</p>
+                                                <p class="mt-1 text-theme-xs text-gray-400">Two to four blocks. They sit side by side on a desktop and stack on a phone.</p>
+                                            </div>
+                                            <div class="flex items-center gap-1" role="group" aria-label="Number of columns">
+                                                @for ($columnCount = \App\Domain\Website\Support\Columns::MIN; $columnCount <= \App\Domain\Website\Support\Columns::MAX; $columnCount++)
+                                                    <button type="button" wire:click="setColumnCount({{ $index }}, {{ $columnCount }})"
+                                                            @class(['wx-seg-btn', 'bg-navy-700 text-white' => count($children) === $columnCount])
+                                                            aria-pressed="{{ count($children) === $columnCount ? 'true' : 'false' }}">{{ $columnCount }}</button>
+                                                @endfor
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                            @foreach ($children as $column => $child)
+                                                <div wire:key="column-{{ $index }}-{{ $column }}" class="space-y-2 rounded-lg border border-gray-100 bg-white p-3 dark:border-gray-800 dark:bg-gray-900">
+                                                    <label class="block">
+                                                        <span class="wx-label">Content</span>
+                                                        <select wire:model.live="blocks.{{ $index }}.data.blocks.{{ $column }}.kind" class="wx-input">
+                                                            @foreach (\App\Domain\Website\Support\Columns::KIND_LABELS as $kind => $kindLabel)
+                                                                <option value="{{ $kind }}">{{ $kindLabel }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </label>
+
+                                                    @if (($child['kind'] ?? 'text') === 'image')
+                                                        <label class="block">
+                                                            <span class="wx-label">Photo</span>
+                                                            <select wire:model.live="blocks.{{ $index }}.data.blocks.{{ $column }}.image_id" class="wx-input">
+                                                                <option value="">No photo</option>
+                                                                @foreach ($media as $image)
+                                                                    <option value="{{ $image->id }}">{{ $image->title ?: basename($image->path) }}</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </label>
+                                                        <label class="block">
+                                                            <span class="wx-label">Caption</span>
+                                                            <input type="text" wire:model.live.debounce.700ms="blocks.{{ $index }}.data.blocks.{{ $column }}.caption" class="wx-input">
+                                                        </label>
+                                                    @elseif (($child['kind'] ?? 'text') === 'quote')
+                                                        <label class="block">
+                                                            <span class="wx-label">Quote</span>
+                                                            <textarea rows="3" wire:model.live.debounce.700ms="blocks.{{ $index }}.data.blocks.{{ $column }}.quote" class="wx-input"></textarea>
+                                                        </label>
+                                                        <label class="block">
+                                                            <span class="wx-label">Attributed to</span>
+                                                            <input type="text" wire:model.live.debounce.700ms="blocks.{{ $index }}.data.blocks.{{ $column }}.cite" class="wx-input">
+                                                        </label>
+                                                    @else
+                                                        <label class="block">
+                                                            <span class="wx-label">Heading</span>
+                                                            <input type="text" wire:model.live.debounce.700ms="blocks.{{ $index }}.data.blocks.{{ $column }}.heading" class="wx-input">
+                                                        </label>
+                                                        <label class="block">
+                                                            <span class="wx-label">Text</span>
+                                                            <textarea rows="4" wire:model.live.debounce.700ms="blocks.{{ $index }}.data.blocks.{{ $column }}.body" class="wx-input"></textarea>
+                                                        </label>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @else
                                 @foreach ($blockType->schema() as $field)
                                     @php $path = 'blocks.'.$index.'.data.'.$field['key']; @endphp
                                     @switch($field['type'])
@@ -563,6 +630,7 @@
                                             @break
                                     @endswitch
                                 @endforeach
+                                @endif
                             </div>
                         </div>
                     @empty

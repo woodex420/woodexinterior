@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /*
@@ -10,3 +11,12 @@ use Tests\TestCase;
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
+
+/*
+| A test that pins the clock must not move the next one: `travelTo` is process-wide, and a handful of
+| files used it without travelling back. Clearing the test clock after every test keeps file order
+| from deciding whether a date-sensitive digest test passes (found by the Phase 2 gate, 19 Oct).
+*/
+afterEach(function (): void {
+    Carbon::setTestNow();
+});
