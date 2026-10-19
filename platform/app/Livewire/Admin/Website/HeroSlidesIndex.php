@@ -6,7 +6,6 @@ namespace App\Livewire\Admin\Website;
 
 use App\Domain\Website\Actions\SavePage;
 use App\Domain\Website\Enums\BlockType;
-use App\Domain\Website\Enums\PageStatus;
 use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
@@ -41,6 +40,13 @@ class HeroSlidesIndex extends Component
 
     public string $status = '';
 
+    /**
+     * True while the screen is showing the page's single Hero section instead of a slider: the
+     * old importer and every template except "Home — v26" open with a Hero, and the old admin
+     * called both of them the hero. Editing one slide writes that Hero back in place.
+     */
+    public bool $fromHero = false;
+
     /** A slide's blank shape — the Slider block's own fields (BlockType::Slider::schema()). */
     private const NEW_SLIDE = [
         'image_id' => null,
@@ -66,7 +72,22 @@ class HeroSlidesIndex extends Component
         $this->homeTitle = $home->title;
         $this->homePublished = $home->isPublished();
         $this->status = $home->status->value;
-        $this->slides = $this->sliderBlock($home)?->data['slides'] ?? [];
+
+        $slider = $this->sliderBlock($home);
+
+        if ($slider !== null) {
+            $this->slides = array_values((array) ($slider->data['slides'] ?? []));
+
+            return;
+        }
+
+        $hero = $this->heroBlock($home);
+
+        if ($hero !== null) {
+            // The page already has a hero; show it as the one slide it is instead of "0 slides".
+            $this->fromHero = true;
+            $this->slides = [$this->slideFromHero($hero->data)];
+        }
     }
 
     public function addSlide(): void
@@ -93,8 +114,12 @@ class HeroSlidesIndex extends Component
     }
 
     /**
-     * Save the slides onto the home page's Slider block — draft or published. The same SavePage the
-     * builder uses, so the snapshot, the versions and the cache all behave identically.
+     * Save the slides onto the home page — draft or published. The same SavePage the builder uses,
+     * so the snapshot, the versions and the cache all behave identically.
+     *
+     * A page whose opening is a single Hero section is edited in place: one slide writes that Hero
+     * back, key figures and all. A second slide turns it into the slider this screen is named for —
+     * the old Hero stays on the page, hidden, so nothing it held is lost.
      */
     public function save(bool $publish = false): void
     {
@@ -105,20 +130,50 @@ class HeroSlidesIndex extends Component
         }
 
         $home = $this->home() ?? abort(404, 'The home page is missing.');
-        $block = $this->sliderBlock($home);
 
-        // The slides replace the block's data (a Slider block holds nothing but slides).
-        // blocks arrive already ordered by position (the relation's own order)
-        $blocks = $home->blocks->values()->map(fn (PageBlock $pageBlock): array => [
-            'id' => $pageBlock->id,
-            'key' => 'b'.$pageBlock->id,
-            'type' => $pageBlock->type->value,
-            'visible' => $pageBlock->visible,
-            'data' => $pageBlock->id === $block?->id ? ['slides' => $this->slides] : $pageBlock->data,
-        ])->all();
+        $this->slides = array_values(array_map(
+            static fn (mixed $slide): array => array_merge(self::NEW_SLIDE, is_array($slide) ? $slide : []),
+            $this->slides,
+        ));
 
-        // No slider yet: the hero becomes the page's first section, where a hero belongs.
-        if ($block === null) {
+        if ($this->slides === []) {
+            $this->toast('Add a slide first — a hero with no slides shows the page title instead.', 'error');
+
+            return;
+        }
+
+        $slider = $this->sliderBlock($home);
+        $hero = $this->heroBlock($home);
+        $single = $slider === null && $hero !== null && count($this->slides) === 1;
+
+        // Blocks arrive already ordered by position (the relation's own order).
+        $blocks = $home->blocks->values()->map(function (PageBlock $pageBlock) use ($slider, $hero, $single): array {
+            $data = $pageBlock->data;
+
+            if ($slider !== null && $pageBlock->id === $slider->id) {
+                $data = ['slides' => $this->slides];
+            } elseif ($single && $pageBlock->id === $hero?->id) {
+                $data = $this->heroDataFromSlide($pageBlock->data, $this->slides[0]);
+            }
+
+            return [
+                'id' => $pageBlock->id,
+                'key' => $pageBlock->block_key ?? 'b'.$pageBlock->id,
+                'type' => $pageBlock->type->value,
+                'visible' => $pageBlock->visible,
+                'data' => $data,
+            ];
+        })->all();
+
+        if ($slider === null && ! $single) {
+            // A slider (or the first of several slides) becomes the opening section, where a hero
+            // belongs; a Hero it replaces keeps its content but stops showing.
+            if ($hero !== null) {
+                $blocks = array_map(static fn (array $block): array => $block['id'] === $hero->id
+                    ? [...$block, 'visible' => false]
+                    : $block, $blocks);
+            }
+
             array_unshift($blocks, [
                 'id' => null,
                 'key' => 'b'.bin2hex(random_bytes(4)),
@@ -145,11 +200,69 @@ class HeroSlidesIndex extends Component
 
         $this->homePublished = $saved->isPublished();
         $this->status = $saved->status->value;
-        $this->slides = $this->sliderBlock($saved)?->data['slides'] ?? $this->slides;
 
-        $this->toast($publish
-            ? 'The hero slides are live on '.$saved->path()
-            : 'Hero slides saved as a draft — publish when the home page is ready.');
+        $savedSlider = $this->sliderBlock($saved);
+
+        if ($savedSlider !== null) {
+            $this->fromHero = false;
+            $this->slides = array_values((array) ($savedSlider->data['slides'] ?? $this->slides));
+        } elseif (($savedHero = $this->heroBlock($saved)) !== null) {
+            $this->fromHero = true;
+            $this->slides = [$this->slideFromHero($savedHero->data)];
+        }
+
+        if ($publish) {
+            $this->toast($single
+                ? 'The hero is live on '.$saved->path()
+                : 'The hero slides are live on '.$saved->path());
+        } else {
+            $this->toast($single
+                ? 'Hero saved as a draft — publish when the home page is ready.'
+                : 'Hero slides saved as a draft — publish when the home page is ready.');
+        }
+    }
+
+    /**
+     * The Hero section in the editor's own shape — so the screen shows the page's real opening
+     * (image, words, buttons) instead of "0 slides" on every imported page.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function slideFromHero(array $data): array
+    {
+        return array_merge(self::NEW_SLIDE, [
+            'image_id' => $data['image_id'] ?? null,
+            'kicker' => (string) ($data['eyebrow'] ?? ''),
+            'heading' => (string) ($data['heading'] ?? ''),
+            'text' => (string) ($data['text'] ?? ''),
+            'primary_label' => (string) ($data['primary_label'] ?? ''),
+            'primary_url' => (string) ($data['primary_url'] ?? ''),
+            'secondary_label' => (string) ($data['secondary_label'] ?? ''),
+            'secondary_url' => (string) ($data['secondary_url'] ?? ''),
+        ]);
+    }
+
+    /**
+     * One slide written back onto a Hero section: the fields a hero and a slide share. The hero's
+     * key figures are untouched because they are not part of a slide.
+     *
+     * @param  array<string, mixed>  $hero
+     * @param  array<string, mixed>  $slide
+     * @return array<string, mixed>
+     */
+    private function heroDataFromSlide(array $hero, array $slide): array
+    {
+        return array_merge($hero, [
+            'eyebrow' => (string) ($slide['kicker'] ?? ''),
+            'heading' => (string) ($slide['heading'] ?? ''),
+            'text' => (string) ($slide['text'] ?? ''),
+            'image_id' => $slide['image_id'] ?? null,
+            'primary_label' => (string) ($slide['primary_label'] ?? ''),
+            'primary_url' => (string) ($slide['primary_url'] ?? ''),
+            'secondary_label' => (string) ($slide['secondary_label'] ?? ''),
+            'secondary_url' => (string) ($slide['secondary_url'] ?? ''),
+        ]);
     }
 
     public function render(): View
@@ -176,5 +289,11 @@ class HeroSlidesIndex extends Component
     private function sliderBlock(Page $page): ?PageBlock
     {
         return $page->blocks->first(fn (PageBlock $block): bool => $block->type === BlockType::Slider);
+    }
+
+    /** The page's single Hero section — the opening every imported page and most templates use. */
+    private function heroBlock(Page $page): ?PageBlock
+    {
+        return $page->blocks->first(fn (PageBlock $block): bool => $block->type === BlockType::Hero && $block->visible);
     }
 }

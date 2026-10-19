@@ -66,9 +66,12 @@ final class PageValidator
             $issues[] = 'Add at least two sections: a page with one section reads as unfinished.';
         }
 
-        if (! collect($blocks)->contains(fn (array $block): bool => ($block['type'] ?? '') === BlockType::Hero->value)
-            && ! collect($blocks)->contains(fn (array $block): bool => in_array($block['type'] ?? '', [BlockType::Intro->value, BlockType::Text->value], true))) {
-            $issues[] = 'Add a hero or an intro section: the page needs an opening someone can read.';
+        // A slider opens just as well as a hero (the v26 home is built that way), so the gate asks
+        // for an opening section, not for one particular kind of it.
+        $openings = [BlockType::Hero->value, BlockType::Slider->value, BlockType::Intro->value, BlockType::Text->value];
+
+        if (! collect($blocks)->contains(fn (array $block): bool => in_array($block['type'] ?? '', $openings, true))) {
+            $issues[] = 'Add a hero, a slider or an intro section: the page needs an opening someone can read.';
         }
 
         foreach (self::missingAltText($blocks) as $missing) {

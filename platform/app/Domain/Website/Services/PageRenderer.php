@@ -8,7 +8,6 @@ use App\Domain\Website\Enums\BlockType;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\PageBlock;
-use App\Domain\Website\Services\ContentLibrary;
 use App\Settings\BusinessSettings;
 use App\Support\Phone;
 use Illuminate\Support\Collection;
@@ -54,8 +53,10 @@ final class PageRenderer
             'faqs' => $faqs,
             'canonical' => $page->canonical(),
             'ogImage' => $ogImage?->url() ?? Page::urlFor('/img/og-home.jpg'),
-            'title' => (string) ($seo['title'] ?? $page->title),
-            'description' => $description,
+            // A page whose SEO fields were never filled in still has a title and a description:
+            // the page's own. (`??` alone would keep the empty string SavePage stores.)
+            'title' => (string) (($seo['title'] ?? null) ?: $page->title),
+            'description' => (string) ($description ?: $page->excerpt),
             'schemaType' => $page->schema_type ?? $page->type->schemaType(),
             'robots' => $seo['robots'] ?? null, // null: the head prints its default "index, follow"
             'modified' => ($page->updated_at ?? now())->toDateString(),

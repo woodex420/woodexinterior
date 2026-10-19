@@ -105,9 +105,10 @@ it('duplicates a section and drags sections into a new order that survives a sav
         ->assertCount('blocks', 4)
         ->assertSet('blocks.2.id', null);
 
-    // Drag: the gallery goes first — wire:sort hands over the block keys in their new order.
+    // Drag: the gallery is dropped at the top — Livewire 4 reports the dragged section's key and
+    // the position it landed on, and the list re-orders itself around it.
     $keys = collect($test->get('blocks'))->pluck('key')->all(); // hero, text, copy, gallery
-    $test->call('sortBlocks', [$keys[3], $keys[0], $keys[1], $keys[2]])
+    $test->call('sortBlocks', $keys[3], 0)
         ->assertSet('blocks.0.type', BlockType::Gallery->value)
         ->assertSet('blocks.3.type', BlockType::Text->value)
         ->set('title', 'Builder, reordered')
@@ -120,15 +121,19 @@ it('duplicates a section and drags sections into a new order that survives a sav
 it('previews the draft at three widths in the editor', function () {
     $page = Page::factory()->withSlug('/builder/')->create(['title' => 'Builder']);
 
+    // The frame is always there now, desktop by default — choosing a device changes its width,
+    // it never switches the preview off.
     Livewire::actingAs($this->editor)
         ->test(PageEditor::class, ['page' => $page])
-        ->assertDontSee('Draft preview')
+        ->assertSet('previewDevice', 'desktop')
+        ->assertSee('Draft preview (desktop)')
         ->call('setPreviewDevice', 'mobile')
         ->assertSee('Draft preview (mobile)')
-        ->call('setPreviewDevice', 'desktop')
-        ->assertSee('Draft preview (desktop)')
+        ->call('setPreviewDevice', 'tablet')
+        ->assertSee('Draft preview (tablet)')
         ->call('setPreviewDevice', 'nonsense')
-        ->assertDontSee('Draft preview');
+        ->assertSet('previewDevice', 'tablet')
+        ->assertSee('Draft preview (tablet)');
 });
 
 it('opens a draft through a shareable preview link, and only while it is valid', function () {

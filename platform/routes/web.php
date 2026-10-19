@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Website\Services\SiteRouter;
 use App\Domain\Website\Support\ThemeCss;
 use App\Http\Controllers\Api\Public\ChatWidgetController;
 use App\Http\Controllers\Auth\GoogleOAuthController;
@@ -12,7 +13,9 @@ use App\Http\Controllers\Site\WebsiteMediaController;
 use App\Http\Controllers\Webhooks\TelegramWebhookController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
 use App\Http\Middleware\VerifyTelegramWebhook;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /*
 |--------------------------------------------------------------------------
@@ -143,6 +146,7 @@ Route::prefix('portal')->name('portal')->group(function (): void {
 | There is no home page route: the home page is a page in the CMS like any other (slug "/"), rendered by the
 | SiteRouter on the 404 handler with everything else (docs/09 §3). The owner edits it in Website -> Pages, and
 | what the studio sees in the page editor is what visitors get — no second, hidden template to keep in step.
+| The fallback route at the end of this file is where that render happens.
 */
 
 /*
@@ -157,3 +161,35 @@ Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap
 // The web chat widget's script (P8.5): one <script> tag on the site layout covers the home page and
 // every CMS page. It 404s (and the layout never links it) while the widget is off in Website Settings.
 Route::get('/chat/widget.js', [ChatWidgetController::class, 'script'])->name('chat.widget');
+
+/*
+| A URL no route owns is a page from the CMS or one of the 301s of the old website (docs/09 §3).
+|
+| The fallback route runs inside the web middleware group — session, cookies and auth included. It
+| used to hang off the 404 handler, which runs before any route middleware: a signed-in editor's
+| ?preview=1 request arrived with no user, so the page builder's draft preview answered 404 and its
+| click-to-edit layer never loaded. The fallback only matches when nothing else does, so it cannot
+| shadow Livewire, Fortify or the installer.
+*/
+Route::fallback(function (Request $request) {
+    $response = app(SiteRouter::class)->respond($request);
+
+    if ($response !== null) {
+        return $response;
+    }
+
+    // The original website still answers most addresses with a real index.html (public/.htaccess). A
+    // ?preview=1 request is sent straight to the app so the builder previews the draft, not the frozen
+    // file — but a preview link without permission, or to an address the CMS does not own, must land on
+    // the page the visitor would see rather than a 404. Dropping the query does exactly that.
+    if ($request->has('preview')) {
+        $path = '/'.ltrim($request->path(), '/');
+        $path = $path === '/' ? '/' : rtrim($path, '/').'/';
+
+        // A Symfony response, not redirect()->to(): the URL generator trims the trailing slash,
+        // which is the canonical form of every public page.
+        return new RedirectResponse($path, 302);
+    }
+
+    abort(404);
+});

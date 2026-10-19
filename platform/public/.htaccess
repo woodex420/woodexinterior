@@ -51,6 +51,12 @@ DirectoryIndex index.html index.php
     RewriteCond %{REQUEST_URI} ^/(.+)/$
     RewriteRule ^ /%1 [L,R=301]
 
+    # The page builder's draft preview is always the app's, even for an address the original website still
+    # answers with a file: /?preview=1 and /about/?preview=1 must show the CMS draft the editor is working on.
+    # Without permission the app redirects to the same path without the query, so the static page answers.
+    RewriteCond %{QUERY_STRING} (^|&)preview=1(&|$)
+    RewriteRule ^ index.php [L]
+
     # The original home page is a real file in this folder now, and the site root answers with it (docs/11 §2).
     # Written out rather than left to DirectoryIndex alone, so the address a visitor types cannot depend on the
     # order the server happens to prefer. Remove this line when the CMS serves `/` again.

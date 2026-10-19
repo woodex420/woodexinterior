@@ -19,6 +19,7 @@ use App\Domain\Website\Services\PageValidator;
 use App\Domain\Website\Support\PreviewLink;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -85,8 +86,20 @@ class PageEditor extends Component
 
     public string $templateName = '';
 
-    /** '', desktop, tablet or mobile — the width of the inline preview frame. */
-    public string $previewDevice = '';
+    /** desktop, tablet or mobile — the width of the inline preview frame. */
+    public string $previewDevice = 'desktop';
+
+    /** Live preview (19 Oct): the editor saves the draft as you type and reloads the frame. */
+    public bool $previewLive = true;
+
+    /** Bumped on every refresh so the iframe reloads instead of showing a stale copy. */
+    public int $previewNonce = 0;
+
+    /** True while a change waits for the debounce — the frame is showing an older draft. */
+    public bool $previewStale = false;
+
+    /** Why the preview cannot show yet (an unsaved page without a title, a taken URL, …). */
+    public string $previewNotice = '';
 
     public string $shareUrl = '';
 
@@ -100,6 +113,49 @@ class PageEditor extends Component
         abort_unless($this->user()->can('website.edit'), 403);
 
         $this->reload($page);
+    }
+
+    /**
+     * Any change to the page marks the preview stale. The browser debounces the refresh, so a burst
+     * of typing costs one draft save, not one per keystroke (Livewire 4 `updated` hook).
+     */
+    public function updated(string $property): void
+    {
+        if (in_array($property, ['previewLive', 'previewDevice', 'previewNonce', 'previewStale', 'previewNotice', 'shareUrl', 'activeBlock'], true)) {
+            return;
+        }
+
+        $this->markPreviewStale();
+    }
+
+    /** The frame is showing an older draft; the debounce in the blade asks for a refresh shortly. */
+    public function markPreviewStale(): void
+    {
+        $this->previewStale = true;
+
+        if ($this->previewLive) {
+            $this->dispatch('preview-stale');
+        }
+    }
+
+    /**
+     * Live preview (19 Oct): save the draft quietly, then reload the frame. A page that does not
+     * exist yet is created here — so the builder previews before the first explicit Save, the way
+     * the old admin did.
+     */
+    public function refreshPreview(): void
+    {
+        if (! $this->previewLive) {
+            $this->previewStale = false;
+
+            return;
+        }
+
+        if ($this->persistDraft()) {
+            $this->previewNonce++;
+        }
+
+        $this->previewStale = false;
     }
 
     public function updatedTitle(string $value): void
@@ -130,12 +186,14 @@ class PageEditor extends Component
         ];
 
         $this->newBlockType = '';
+        $this->markPreviewStale();
     }
 
     public function removeBlock(int $index): void
     {
         unset($this->blocks[$index]);
         $this->blocks = array_values($this->blocks);
+        $this->markPreviewStale();
     }
 
     public function moveBlock(int $index, int $direction): void
@@ -148,27 +206,35 @@ class PageEditor extends Component
 
         [$this->blocks[$index], $this->blocks[$to]] = [$this->blocks[$to], $this->blocks[$index]];
         $this->blocks = array_values($this->blocks);
+        $this->markPreviewStale();
     }
 
     public function toggleBlock(int $index): void
     {
         $this->blocks[$index]['visible'] = ! (bool) ($this->blocks[$index]['visible'] ?? true);
+        $this->markPreviewStale();
     }
 
     /**
-     * Drag-to-reorder (docs/12 §5.3): Livewire's wire:sort hands over the block keys in their new order.
-     *
-     * @param  list<string>  $orderedKeys
+     * Drag-to-reorder (docs/12 §5.3, Livewire 4 API): the dragged section reports its own key and the
+     * position it was dropped at — the list is re-ordered around it. Keys come from the markup
+     * (`wire:sort:item`), so a section that no longer exists is ignored instead of guessed at.
      */
-    public function sortBlocks(array $orderedKeys): void
+    public function sortBlocks(string $key, int $position): void
     {
-        $byKey = collect($this->blocks)->keyBy(fn (array $block): string => (string) $block['key']);
+        $blocks = collect($this->blocks)->values();
 
-        $this->blocks = collect($orderedKeys)
-            ->filter(fn (string $key): bool => $byKey->has($key))
-            ->map(fn (string $key): array => (array) $byKey->get($key))
-            ->values()
-            ->all();
+        $from = $blocks->search(fn (array $block): bool => (string) $block['key'] === $key);
+
+        if ($from === false) {
+            return;
+        }
+
+        $moved = $blocks->pull($from);
+        $blocks->splice(max(0, min($position, $blocks->count())), 0, [$moved]);
+
+        $this->blocks = $blocks->values()->all();
+        $this->markPreviewStale();
     }
 
     /**
@@ -185,6 +251,7 @@ class PageEditor extends Component
         $copy['key'] = $this->newKey();
 
         array_splice($this->blocks, $index + 1, 0, [$copy]);
+        $this->markPreviewStale();
     }
 
     /**
@@ -238,6 +305,8 @@ class PageEditor extends Component
             'visible' => true,
             'data' => $saved->data,
         ];
+
+        $this->markPreviewStale();
     }
 
     public function deleteSavedSection(int $savedId): void
@@ -256,6 +325,7 @@ class PageEditor extends Component
 
         $this->blocks = $template->toBlocks();
         $this->activeBlock = '';
+        $this->markPreviewStale();
         $this->toast('“'.$template->name.'” applied — press Save draft to keep it.');
     }
 
@@ -291,11 +361,14 @@ class PageEditor extends Component
     }
 
     /**
-     * The inline preview width (docs/12 §5.3): desktop, tablet or mobile.
+     * The inline preview width (docs/12 §5.3): desktop, tablet or mobile. The frame is always there —
+     * choosing a device changes its width, it does not switch it off.
      */
     public function setPreviewDevice(string $device): void
     {
-        $this->previewDevice = in_array($device, ['desktop', 'tablet', 'mobile'], true) ? $device : '';
+        if (in_array($device, ['desktop', 'tablet', 'mobile'], true)) {
+            $this->previewDevice = $device;
+        }
     }
 
     /**
@@ -325,12 +398,14 @@ class PageEditor extends Component
     public function addItem(int $index, string $key): void
     {
         $this->blocks[$index]['data'][$key][] = $this->emptyItem($index, $key);
+        $this->markPreviewStale();
     }
 
     public function removeItem(int $index, string $key, int $position): void
     {
         unset($this->blocks[$index]['data'][$key][$position]);
         $this->blocks[$index]['data'][$key] = array_values($this->blocks[$index]['data'][$key]);
+        $this->markPreviewStale();
     }
 
     /**
@@ -382,11 +457,20 @@ class PageEditor extends Component
     public function save(bool $publish = false): void
     {
         $page = $this->page();
-        $input = $this->input();
 
         if ($publish) {
             abort_unless($this->user()->can('website.publish'), 403);
+        }
 
+        $this->validate();
+
+        // One opening section per page: the first hero wins, the rest keep their content but stop
+        // showing. Done before the publish gate so the gate sees the page a visitor would see.
+        $hiddenHeroes = $this->hideExtraHeroes();
+
+        $input = $this->input();
+
+        if ($publish) {
             $issues = PageValidator::issues($input, $page);
 
             if ($issues !== []) {
@@ -397,14 +481,126 @@ class PageEditor extends Component
             }
         }
 
-        $this->validate();
         $this->issues = [];
 
         $saved = (new SavePage)($page, $input, $this->blocks, $publish, $this->user());
 
+        if ($hiddenHeroes > 0) {
+            $this->toast('One opening section per page: '.$hiddenHeroes.' other hero '.
+                ($hiddenHeroes === 1 ? 'is' : 'are').' kept below but hidden — its content is still there.');
+        }
+
         $this->toast($publish ? '“'.$saved->title.'” is live at '.$saved->path() : 'Draft saved.');
 
         $this->redirectRoute('admin.website.pages.edit', $saved, navigate: true);
+    }
+
+    /**
+     * Save the draft without the explicit-save ceremony: what the live preview does behind the
+     * editor. A page that has never been saved is created here, so the preview exists before the
+     * first Save draft. Returns false (and explains why) when the page is not saveable yet.
+     */
+    private function persistDraft(): bool
+    {
+        if (trim($this->title) === '' || trim($this->slug) === '') {
+            $this->previewNotice = 'Give the page a title and a URL — the preview appears the moment it can be saved.';
+
+            return false;
+        }
+
+        $validator = Validator::make(
+            ['title' => $this->title, 'slug' => $this->slug],
+            [
+                'title' => ['required', 'string', 'max:190'],
+                'slug' => ['required', 'string', 'max:190', 'regex:#^/[a-z0-9][a-z0-9\-/]*$#', 'unique:pages,slug'.($this->pageId !== null ? ','.$this->pageId : '')],
+            ],
+            $this->messages(),
+        );
+
+        if ($validator->fails()) {
+            $this->previewNotice = (string) $validator->errors()->first();
+
+            return false;
+        }
+
+        $wasNew = $this->pageId === null;
+
+        $saved = (new SavePage)($this->page(), $this->input(), $this->blocks, false, $this->user());
+
+        $this->pageId = $saved->id;
+        // The rows are the truth now: take back their ids and keys so the next save updates them
+        // instead of inserting a second copy of every section.
+        $this->reload($saved);
+        $this->previewNotice = '';
+
+        if ($wasNew) {
+            // The address bar follows the page that now exists: a reload lands on the editor, not
+            // on a blank "new page" with an orphaned draft behind it.
+            $this->dispatch('page-created', url: route('admin.website.pages.edit', $saved));
+        }
+
+        return true;
+    }
+
+    /**
+     * A page opens once. When two visible heroes are saved, the first one with content stays and
+     * the others are hidden (never deleted) — the section is still in the editor, one tick away.
+     */
+    private function hideExtraHeroes(): int
+    {
+        $heroTypes = [BlockType::Hero->value, BlockType::Slider->value];
+        $visible = [];
+
+        foreach ($this->blocks as $index => $block) {
+            if (in_array((string) $block['type'], $heroTypes, true) && ($block['visible'] ?? true)) {
+                $visible[$index] = $block;
+            }
+        }
+
+        if (count($visible) < 2) {
+            return 0;
+        }
+
+        $keeper = null;
+
+        foreach ($visible as $index => $block) {
+            if ($this->heroHasContent($block)) {
+                $keeper = $index;
+
+                break;
+            }
+        }
+
+        $keeper ??= array_key_first($visible);
+        $hidden = 0;
+
+        foreach (array_keys($visible) as $index) {
+            if ($index === $keeper) {
+                continue;
+            }
+
+            $this->blocks[$index]['visible'] = false;
+            $hidden++;
+        }
+
+        return $hidden;
+    }
+
+    /** @param array<string, mixed> $block */
+    private function heroHasContent(array $block): bool
+    {
+        if ((string) $block['type'] === BlockType::Slider->value) {
+            foreach ((array) ($block['data']['slides'] ?? []) as $slide) {
+                if (is_array($slide) && (($slide['image_id'] ?? null) !== null || trim((string) ($slide['heading'] ?? '')) !== '')) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return trim((string) ($block['data']['heading'] ?? '')) !== ''
+            || ($block['data']['image_id'] ?? null) !== null;
     }
 
     public function unpublish(): void

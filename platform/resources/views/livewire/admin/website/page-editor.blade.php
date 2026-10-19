@@ -7,12 +7,15 @@
     $saved = $page !== null;
 @endphp
 
-<div x-on:scroll-to-block.window="
+<div x-data="{ previewTimer: null }"
+     x-on:scroll-to-block.window="
         const card = document.getElementById('blk-' + $event.detail.key);
         if (card) {
             card.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-    ">
+    "
+     x-on:preview-stale.window="clearTimeout(previewTimer); previewTimer = setTimeout(() => $wire.refreshPreview(), 900)"
+     x-on:page-created.window="history.replaceState({}, '', $event.detail.url)">
     <x-admin.page-header :title="$saved ? $title : 'New page'"
                          :description="$saved ? 'Edit the page, then publish it. Everything on this page is editable: the text, the sections, the photos and what search engines read.' : 'A page of the public website. Give it a title and a URL, add sections, then publish.'"
                          :breadcrumbs="['Website' => null, 'Pages' => route('admin.website.pages'), ($saved ? $title : 'New page') => null]">
@@ -38,17 +41,95 @@
         </div>
     @endif
 
+    <x-admin.card title="Preview" description="The page as a visitor sees it. It follows your edits — the draft saves itself and the frame reloads, the way the old admin's builder did. Click any section in it to jump to that section's form.">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+                @foreach (['desktop' => 'Desktop', 'tablet' => 'Tablet', 'mobile' => 'Mobile'] as $device => $label)
+                    <button type="button" wire:click="setPreviewDevice('{{ $device }}')"
+                            @class(['wx-seg-btn' => true, 'border-brand-500 bg-brand-50 text-brand-700 dark:border-brand-500 dark:bg-white/5 dark:text-brand-300' => $previewDevice === $device])>{{ $label }}</button>
+                @endforeach
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <label class="flex items-center gap-1.5 text-theme-xs text-gray-500 dark:text-gray-400">
+                    <input type="checkbox" wire:model.live="previewLive" class="rounded border-gray-300"> Preview as I type
+                </label>
+                @if ($saved)
+                    <a href="{{ $page->path() }}?preview=1" target="_blank" rel="noopener" class="wx-seg-btn">Open ↗</a>
+                @endif
+            </div>
+        </div>
+
+        @if ($saved)
+            @php
+                $frame = match ($previewDevice) {
+                    'tablet' => ['w' => 820, 'scale' => 0.62],
+                    'mobile' => ['w' => 390, 'scale' => 0.9],
+                    default => ['w' => 1280, 'scale' => 0.52],
+                };
+                $frameH = (int) ceil(520 / $frame['scale']);
+            @endphp
+            <div class="relative flex justify-center overflow-hidden rounded-xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-950"
+                 style="height: 520px" wire:loading.class="opacity-60">
+                <iframe wire:key="preview-frame-{{ $previewNonce }}"
+                        src="{{ $page->path() }}?preview=1&v={{ $previewNonce }}"
+                        title="Draft preview ({{ $previewDevice }})"
+                        class="origin-top border-0 bg-white shadow-sm"
+                        style="width: {{ $frame['w'] }}px; height: {{ $frameH }}px; transform: scale({{ $frame['scale'] }});"
+                        sandbox="allow-same-origin allow-scripts"></iframe>
+                <p class="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-navy-900/80 px-3 py-1 text-[11px] whitespace-nowrap text-white">
+                    {{ $previewStale ? 'Updating the preview…' : 'Draft preview — click a section to edit it' }}
+                </p>
+            </div>
+        @else
+            <div class="rounded-xl border border-dashed border-gray-300 px-4 py-10 text-center dark:border-gray-700">
+                <p class="text-theme-sm font-medium text-gray-700 dark:text-gray-200">The preview writes itself</p>
+                <p class="mx-auto mt-1 max-w-md text-theme-sm text-gray-500 dark:text-gray-400">{{ $previewNotice !== '' ? $previewNotice : 'Start with a title and a URL. The page saves itself as a draft and appears here — before you ever press Save.' }}</p>
+            </div>
+        @endif
+
+        @if ($saved)
+            <div class="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+                @if ($shareUrl === '')
+                    <button type="button" wire:click="makeShareLink" class="text-theme-sm text-brand-600 hover:underline">Make a shareable preview link (valid 24 h)</button>
+                @else
+                    <p class="wx-label">Shareable for 24 hours — no login needed:</p>
+                    <div class="flex items-center gap-2" x-data>
+                        <input type="text" readonly value="{{ $shareUrl }}" x-ref="link" class="wx-input text-theme-xs" onfocus="this.select()">
+                        <button type="button" class="wx-seg-btn shrink-0" @click="navigator.clipboard.writeText($refs.link.value)">Copy</button>
+                    </div>
+                @endif
+            </div>
+        @endif
+
+        <script>
+            // Click-to-edit (V2-3): the preview's editor tools postMessage the clicked section's
+            // key; we hand it to this component, which scrolls to its form. The key is checked
+            // against the open page server-side, so a message from another frame edits nothing.
+            if (window.__wxClickToEdit === undefined) {
+                window.__wxClickToEdit = true; // one listener, however often Livewire redraws
+                window.addEventListener('message', function (event) {
+                    var data = event.data;
+                    if (!data || data.type !== 'wx-edit-section' || typeof data.key !== 'string') {
+                        return;
+                    }
+
+                    @this.call('editSectionFromPreview', data.key);
+                });
+            }
+        </script>
+    </x-admin.card>
+
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="space-y-6 xl:col-span-2">
             <x-admin.card title="Page">
                 <div class="space-y-4">
                     <x-admin.field label="Title" for="title" hint="Shown as the heading and in search results.">
-                        <input id="title" type="text" wire:model.blur="title" class="wx-input" placeholder="Interior Design in Lahore">
+                        <input id="title" type="text" wire:model.live.debounce.700ms="title" class="wx-input" placeholder="Interior Design in Lahore">
                     </x-admin.field>
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <x-admin.field label="URL" for="slug" hint="Always with a slash at both ends. Changing it breaks links: add a redirect under Website → Redirects.">
-                            <input id="slug" type="text" wire:model.blur="slug" class="wx-input" placeholder="/interior-design/">
+                            <input id="slug" type="text" wire:model.live.debounce.700ms="slug" class="wx-input" placeholder="/interior-design/">
                         </x-admin.field>
                         <x-admin.field label="Type" for="type">
                             <select id="type" wire:model.live="type" class="wx-input">
@@ -60,12 +141,12 @@
                     </div>
 
                     <x-admin.field label="Summary" for="excerpt" hint="One or two sentences. Search engines and the links to this page use it.">
-                        <textarea id="excerpt" rows="2" wire:model.blur="excerpt" class="wx-input" placeholder="Design, drawings and site supervision for homes and workplaces."></textarea>
+                        <textarea id="excerpt" rows="2" wire:model.live.debounce.700ms="excerpt" class="wx-input" placeholder="Design, drawings and site supervision for homes and workplaces."></textarea>
                     </x-admin.field>
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <x-admin.field label="Sort order" for="sort" hint="Lower numbers come first in menus.">
-                            <input id="sort" type="number" min="0" max="9999" wire:model.blur="sort" class="wx-input">
+                            <input id="sort" type="number" min="0" max="9999" wire:model.live.debounce.700ms="sort" class="wx-input">
                         </x-admin.field>
                         <x-admin.field label="Status" for="status">
                             <input id="status" type="text" value="{{ \App\Domain\Website\Enums\PageStatus::from($status)->label() }}" class="wx-input" disabled>
@@ -133,10 +214,10 @@
 
             @if (! $isCanvas)
             <x-admin.card title="Sections" description="Drag the handle to reorder. One section per card, in the order visitors read them. A section you untick keeps its content but stops showing.">
-                <div class="space-y-4" wire:sort="sortBlocks" wire:sort.options="{ handle: '.section-handle', animation: 150 }">
+                <div class="space-y-4" wire:sort="sortBlocks">
                     @forelse ($blocks as $index => $block)
                         @php $blockType = BlockType::from($block['type']); @endphp
-                        <div wire:key="blk-{{ $block['key'] }}" id="blk-{{ $block['key'] }}" @class([
+                        <div wire:key="blk-{{ $block['key'] }}" id="blk-{{ $block['key'] }}" wire:sort:item="{{ $block['key'] }}" @class([
                             'rounded-xl border transition',
                             'border-gray-200 dark:border-gray-800' => $block['visible'] ?? true,
                             'border-dashed border-gray-300 opacity-70' => ! ($block['visible'] ?? true),
@@ -144,13 +225,13 @@
                         ])>
                             <header class="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-2.5 dark:border-gray-800">
                                 <div class="flex min-w-0 items-center gap-2">
-                                    <span class="section-handle cursor-grab select-none text-gray-300 hover:text-gray-500 active:cursor-grabbing" title="Drag to reorder" aria-hidden="true">⠿</span>
+                                    <span wire:sort:handle class="section-handle cursor-grab select-none text-gray-300 hover:text-gray-500 active:cursor-grabbing" title="Drag to reorder" aria-hidden="true">⠿</span>
                                     <span class="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $blockType->label() }}</span>
                                     <label class="flex shrink-0 items-center gap-1.5 text-theme-xs text-gray-500">
                                         <input type="checkbox" wire:click="toggleBlock({{ $index }})" @checked($block['visible'] ?? true) class="rounded border-gray-300"> visible
                                     </label>
                                 </div>
-                                <div class="flex shrink-0 items-center gap-1">
+                                <div class="flex shrink-0 items-center gap-1" wire:sort:ignore>
                                     <button type="button" wire:click="moveBlock({{ $index }}, -1)" class="wx-mini-btn" aria-label="Move up" @if ($index === 0) disabled @endif>↑</button>
                                     <button type="button" wire:click="moveBlock({{ $index }}, 1)" class="wx-mini-btn" aria-label="Move down" @if ($index === count($blocks) - 1) disabled @endif>↓</button>
                                     <button type="button" wire:click="duplicateBlock({{ $index }})" class="wx-mini-btn" title="Duplicate this section" aria-label="Duplicate section">⧉</button>
@@ -165,12 +246,12 @@
                                     @switch($field['type'])
                                         @case('text')
                                             <x-admin.field :label="$field['label']">
-                                                <input type="text" wire:model.blur="{{ $path }}" class="wx-input">
+                                                <input type="text" wire:model.live.debounce.700ms="{{ $path }}" class="wx-input">
                                             </x-admin.field>
                                             @break
                                         @case('textarea')
                                             <x-admin.field :label="$field['label']">
-                                                <textarea rows="{{ $field['rows'] ?? 3 }}" wire:model.blur="{{ $path }}" class="wx-input"></textarea>
+                                                <textarea rows="{{ $field['rows'] ?? 3 }}" wire:model.live.debounce.700ms="{{ $path }}" class="wx-input"></textarea>
                                             </x-admin.field>
                                             @break
                                         @case('bool')
@@ -195,7 +276,7 @@
                                                 $libHint = 'Hold Ctrl (Cmd on Mac) to pick more than one. Managed in Website → Content — the page shows them in the library order.';
                                             @endphp
                                             <x-admin.field :label="$libLabel" :hint="$libHint">
-                                                <select multiple size="4" wire:model.blur="{{ $path }}" class="wx-input" @if ($libraryEntries === []) disabled @endif>
+                                                <select multiple size="4" wire:model.live.debounce.700ms="{{ $path }}" class="wx-input" @if ($libraryEntries === []) disabled @endif>
                                                     @foreach ($libraryEntries as $libraryEntry)
                                                         <option value="{{ $libraryEntry->id }}">{{ $libraryEntry->label() }}</option>
                                                     @endforeach
@@ -207,7 +288,7 @@
                                             @break
                                         @case('pages')
                                             <x-admin.field :label="$field['label']" hint="Hold Ctrl (Cmd on Mac) to pick more than one.">
-                                                <select multiple size="4" wire:model.blur="{{ $path }}" class="wx-input">
+                                                <select multiple size="4" wire:model.live.debounce.700ms="{{ $path }}" class="wx-input">
                                                     @foreach ($pages as $option)
                                                         <option value="{{ $option->id }}">{{ $option->title }} · {{ $option->slug }}</option>
                                                     @endforeach
@@ -225,7 +306,7 @@
                                                                     <div @class(['md:col-span-2' => ($sub['type'] ?? 'text') === 'textarea'])>
                                                                         <label class="wx-label">{{ $sub['label'] }}</label>
                                                                         @if (($sub['type'] ?? 'text') === 'textarea')
-                                                                            <textarea rows="{{ $sub['rows'] ?? 2 }}" wire:model.blur="{{ $path }}.{{ $position }}.{{ $sub['key'] }}" class="wx-input"></textarea>
+                                                                            <textarea rows="{{ $sub['rows'] ?? 2 }}" wire:model.live.debounce.700ms="{{ $path }}.{{ $position }}.{{ $sub['key'] }}" class="wx-input"></textarea>
                                                                         @elseif (($sub['type'] ?? 'text') === 'image')
                                                                             <select wire:model.live="{{ $path }}.{{ $position }}.{{ $sub['key'] }}" class="wx-input">
                                                                                 <option value="">No image</option>
@@ -234,7 +315,7 @@
                                                                                 @endforeach
                                                                             </select>
                                                                         @else
-                                                                            <input type="text" wire:model.blur="{{ $path }}.{{ $position }}.{{ $sub['key'] }}" class="wx-input">
+                                                                            <input type="text" wire:model.live.debounce.700ms="{{ $path }}.{{ $position }}.{{ $sub['key'] }}" class="wx-input">
                                                                         @endif
                                                                     </div>
                                                                 @endforeach
@@ -281,84 +362,26 @@
                 </div>
             </x-admin.card>
 
-            @if ($saved)
-                <x-admin.card title="Preview" description="How the page looks — saved changes only; press Save draft first. Click any section in the preview to jump to its form.">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button type="button" wire:click="setPreviewDevice('{{ $previewDevice === 'desktop' ? '' : 'desktop' }}')"
-                                @class(['wx-mini-btn' => true, 'border-brand-500 text-brand-700 dark:text-brand-300' => $previewDevice === 'desktop'])>Desktop</button>
-                        <button type="button" wire:click="setPreviewDevice('{{ $previewDevice === 'tablet' ? '' : 'tablet' }}')"
-                                @class(['wx-mini-btn' => true, 'border-brand-500 text-brand-700 dark:text-brand-300' => $previewDevice === 'tablet'])>Tablet</button>
-                        <button type="button" wire:click="setPreviewDevice('{{ $previewDevice === 'mobile' ? '' : 'mobile' }}')"
-                                @class(['wx-mini-btn' => true, 'border-brand-500 text-brand-700 dark:text-brand-300' => $previewDevice === 'mobile'])>Mobile</button>
-                        <a href="{{ $page->path() }}?preview=1" target="_blank" rel="noopener" class="wx-mini-btn">Open ↗</a>
-                    </div>
-
-                    @if ($previewDevice !== '')
-                        @php
-                            $frame = match ($previewDevice) {
-                                'tablet' => ['w' => 820, 'scale' => 0.42],
-                                'mobile' => ['w' => 390, 'scale' => 0.92],
-                                default => ['w' => 1280, 'scale' => 0.28],
-                            };
-                            $frameH = (int) ceil(420 / $frame['scale']);
-                        @endphp
-                        <div class="mt-3 h-[420px] overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950" wire:loading.class="opacity-50">
-                            <iframe src="{{ $page->path() }}?preview=1" title="Draft preview ({{ $previewDevice }})"
-                                    class="origin-top-left border-0 bg-white"
-                                    style="width: {{ $frame['w'] }}px; height: {{ $frameH }}px; transform: scale({{ $frame['scale'] }});"
-                                    sandbox="allow-same-origin allow-scripts"></iframe>
-
-                            <script>
-                                // Click-to-edit (V2-3): the preview's editor tools postMessage the clicked
-                                // section's key; we hand it to this component, which scrolls to its form.
-                                if (window.__wxClickToEdit === undefined) {
-                                    window.__wxClickToEdit = true; // one listener, however often Livewire redraws
-                                    window.addEventListener('message', function (event) {
-                                        if (event.origin !== window.location.origin || ! event.data || event.data.type !== 'wx-edit-section') {
-                                            return;
-                                        }
-
-                                        @this.call('editSectionFromPreview', event.data.key);
-                                    });
-                                }
-                            </script>
-                        </div>
-                    @endif
-
-                    <div class="mt-4 border-t border-gray-100 pt-4 dark:border-gray-800">
-                        @if ($shareUrl === '')
-                            <button type="button" wire:click="makeShareLink" class="text-theme-sm text-brand-600 hover:underline">Make a shareable preview link (valid 24 h)</button>
-                        @else
-                            <p class="wx-label">Shareable for 24 hours — no login needed:</p>
-                            <div class="flex items-center gap-2" x-data>
-                                <input type="text" readonly value="{{ $shareUrl }}" x-ref="link" class="wx-input text-theme-xs" onfocus="this.select()">
-                                <button type="button" class="wx-mini-btn shrink-0" @click="navigator.clipboard.writeText($refs.link.value)">Copy</button>
-                            </div>
-                        @endif
-                    </div>
-                </x-admin.card>
-            @endif
-
             <x-admin.card title="Search engine">
                 <div class="space-y-4">
                     <x-admin.field label="SEO title" for="seoTitle" hint="{{ strlen($seoTitle) }}/60 · how it appears as the blue link in Google.">
-                        <input id="seoTitle" type="text" wire:model.blur="seoTitle" class="wx-input" placeholder="Interior Design in Lahore | Woodex Interior">
+                        <input id="seoTitle" type="text" wire:model.live.debounce.700ms="seoTitle" class="wx-input" placeholder="Interior Design in Lahore | Woodex Interior">
                     </x-admin.field>
                     <x-admin.field label="Meta description" for="seoDescription" hint="{{ strlen($seoDescription) }} characters · aim for 120–165.">
-                        <textarea id="seoDescription" rows="3" wire:model.blur="seoDescription" class="wx-input"></textarea>
+                        <textarea id="seoDescription" rows="3" wire:model.live.debounce.700ms="seoDescription" class="wx-input"></textarea>
                     </x-admin.field>
                     <x-admin.field label="Focus keyword" for="focusKeyword" hint="The search this page should answer.">
-                        <input id="focusKeyword" type="text" wire:model.blur="focusKeyword" class="wx-input" placeholder="interior design Lahore">
+                        <input id="focusKeyword" type="text" wire:model.live.debounce.700ms="focusKeyword" class="wx-input" placeholder="interior design Lahore">
                     </x-admin.field>
                     <x-admin.field label="Robots" for="seoRobots" hint="Leave empty to let search engines index the page.">
-                        <select id="seoRobots" wire:model.blur="seoRobots" class="wx-input">
+                        <select id="seoRobots" wire:model.live.debounce.700ms="seoRobots" class="wx-input">
                             <option value="">Index this page (default)</option>
                             <option value="noindex">noindex — keep it out of search results</option>
                             <option value="noindex, nofollow">noindex, nofollow</option>
                         </select>
                     </x-admin.field>
                     <x-admin.field label="Social image" for="ogImageId" hint="Shown when the page is shared (1200 × 630).">
-                        <select id="ogImageId" wire:model.blur="ogImageId" class="wx-input">
+                        <select id="ogImageId" wire:model.live.debounce.700ms="ogImageId" class="wx-input">
                             <option value="">Default studio image</option>
                             @foreach ($media as $image)
                                 <option value="{{ $image->id }}">{{ $image->title ?: basename($image->path) }}</option>

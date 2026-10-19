@@ -124,7 +124,10 @@ final class SiteRouter
         }
         event.preventDefault();
         event.stopPropagation();
-        window.parent.postMessage({ type: 'wx-edit-section', key: section.getAttribute('data-wx-key') }, window.location.origin);
+        // The admin may live on its own domain in production, so the parent's origin is not this
+        // document's origin: post to the embedder. The payload is a section key, and the editor
+        // checks it against the open page before doing anything with it.
+        window.parent.postMessage({ type: 'wx-edit-section', key: section.getAttribute('data-wx-key') }, '*');
     }, true);
 })();
 </script>

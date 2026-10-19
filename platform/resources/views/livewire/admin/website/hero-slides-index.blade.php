@@ -1,5 +1,5 @@
 <div>
-    <x-admin.page-header title="Hero slides" description="The home page's opening slider — the first thing every visitor sees. Each slide is a photograph, a few words and buttons; they rotate on their own. This edits the home page's real hero section: the page builder shows the same slides."
+    <x-admin.page-header title="Hero slides" :description="$fromHero ? 'The home page\'s opening hero — the first thing every visitor sees. It is a single hero today; edit its photograph, words and buttons here, or add a second slide to make it rotate. The page builder shows exactly the same thing.' : 'The home page\'s opening slider — the first thing every visitor sees. Each slide is a photograph, a few words and buttons; they rotate on their own. This edits the home page\'s real hero section: the page builder shows the same slides.'"
                          :breadcrumbs="['Website' => null, 'Hero slides' => null]">
         <x-slot:actions>
             <x-admin.button variant="secondary" icon="external" href="{{ route('admin.website.pages.edit', $homeId) }}">Open the full builder</x-admin.button>
@@ -20,6 +20,16 @@
 
     @if ($homeId !== 0)
     <x-admin.card title="The slides" description="Top to bottom is the rotation order. The first slide shows while the rest load — keep the strongest photograph there.">
+        @if ($fromHero)
+            <div class="mb-4 rounded-xl border border-brand-200 bg-brand-50/60 px-4 py-3 text-theme-sm text-gray-700 dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-gray-200" role="status">
+                <p class="font-medium">The home page opens with a single hero — shown here as its one slide.</p>
+                <p class="mt-1 text-theme-xs text-gray-600 dark:text-gray-300">
+                    Save writes it back to the page's hero, key figures untouched.
+                    Add a second slide to turn it into the rotating slider: the old hero section then stays on the page, hidden, so nothing it held is lost.
+                </p>
+            </div>
+        @endif
+
         @if (count($slides) === 0)
             <x-admin.empty icon="image" title="No hero slider yet" description="Add the first slide and press Save — the hero slider is created on the home page as its opening section." />
         @endif
@@ -81,9 +91,9 @@
         <div class="mt-4 flex flex-wrap items-center gap-2">
             <x-admin.button variant="secondary" icon="plus" wire:click="addSlide">Add a slide</x-admin.button>
             <div class="ms-auto flex items-center gap-2">
-                <x-admin.button variant="secondary" wire:click="save(false)" :disabled="count($slides) === 0">Save draft</x-admin.button>
+                <x-admin.button variant="secondary" wire:click="save(false)" :disabled="count($slides) === 0">{{ $fromHero ? "Save hero" : "Save draft" }}</x-admin.button>
                 @can('website.publish')
-                    <x-admin.button icon="check" wire:click="save(true)" :disabled="count($slides) === 0">Publish to the home page</x-admin.button>
+                    <x-admin.button icon="check" wire:click="save(true)" :disabled="count($slides) === 0">{{ $fromHero ? "Publish the hero" : "Publish to the home page" }}</x-admin.button>
                 @endcan
             </div>
         </div>

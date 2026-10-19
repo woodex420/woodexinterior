@@ -356,7 +356,12 @@ async function servePhp(req, res) {
 const server = http.createServer(async (req, res) => {
     track(req, res);
     try {
-        const urlPath = new URL(req.url, 'http://local').pathname;
+        const url = new URL(req.url, 'http://local');
+        const urlPath = url.pathname;
+        // The page builder previews drafts through the app. The original website's pages are real files in
+        // public/ (see directoryIndex below), so without this the editor's ?preview=1 would show the frozen
+        // file — for the home page too, which .htaccess writes out as index.html.
+        const editingPreview = url.searchParams.get('preview') === '1';
         if (urlPath === '/__preview-beacon') {
             req.resume();
             const line = `${new Date().toISOString()} BEACON ${req.url} ${summary(req.headers)}`;
@@ -365,7 +370,7 @@ const server = http.createServer(async (req, res) => {
             res.writeHead(204, { 'Cache-Control': 'no-store' });
             return res.end();
         }
-        const file = (req.method === 'GET' || req.method === 'HEAD')
+        const file = (req.method === 'GET' || req.method === 'HEAD') && !editingPreview
             ? (staticFile(urlPath) ?? directoryIndex(urlPath))
             : null;
         if (file) return serveStatic(req, res, file);

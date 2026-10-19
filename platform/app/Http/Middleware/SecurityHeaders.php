@@ -24,6 +24,28 @@ final class SecurityHeaders
             $response->headers->set('X-Frame-Options', $frameOptions);
         }
 
+        // The page builder's live preview frames a public page inside the admin. In production the
+        // admin sits on its own domain (admin.woodex.com.pk) while the site is woodex.com.pk, so
+        // SAMEORIGIN would blank the preview exactly where the owner uses it. A staff editor's
+        // ?preview=1 response may be framed by the admin and nothing else; visitors get the header
+        // as before, and the preview response is never cached (SiteRouter).
+        $previewing = $request->boolean('preview')
+            && $request->user() !== null
+            && $request->user()->can('website.edit');
+
+        if ($previewing) {
+            $response->headers->remove('X-Frame-Options');
+
+            $ancestors = ["'self'"];
+            $adminDomain = (string) config('woodex.admin.domain');
+
+            if ($adminDomain !== '') {
+                $ancestors[] = $request->getScheme().'://'.$adminDomain;
+            }
+
+            $response->headers->set('Content-Security-Policy', 'frame-ancestors '.implode(' ', $ancestors));
+        }
+
         // OAuth callbacks carry short-lived authorization codes in the query string. Never forward them as Referer.
         $response->headers->set('Referrer-Policy', $request->routeIs('google.*') ? 'no-referrer' : 'strict-origin-when-cross-origin');
         if ($request->routeIs('google.*')) {
