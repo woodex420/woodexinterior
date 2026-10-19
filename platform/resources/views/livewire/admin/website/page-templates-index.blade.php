@@ -15,12 +15,14 @@
             <input type="search" wire:model.live.debounce.300ms="search" class="wx-input pl-9"
                    placeholder="Search a layout by name or description…" aria-label="Search templates">
         </div>
-        <select wire:model.live="type" class="wx-input sm:w-56" aria-label="Filter by page type">
-            <option value="">All page types</option>
-            @foreach ($types as $option)
-                <option value="{{ $option->value }}">{{ $option->label() }}</option>
-            @endforeach
-        </select>
+        <div class="shrink-0 sm:w-56">
+            <select wire:model.live="type" class="wx-input" aria-label="Filter by page type">
+                <option value="">All page types</option>
+                @foreach ($types as $option)
+                    <option value="{{ $option->value }}">{{ $option->label() }}</option>
+                @endforeach
+            </select>
+        </div>
         <span class="shrink-0 whitespace-nowrap text-theme-sm text-gray-500">{{ $templates->count() }} of {{ $total }}</span>
     </div>
 

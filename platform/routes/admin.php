@@ -50,6 +50,7 @@ use App\Livewire\Admin\System\RecycleBin;
 use App\Livewire\Admin\System\SettingsPage;
 use App\Livewire\Admin\System\UsersIndex;
 use App\Livewire\Admin\System\WhatsAppTemplates;
+use App\Livewire\Admin\Website\BlogIndex;
 use App\Livewire\Admin\Website\ContentLibraryIndex;
 use App\Livewire\Admin\Website\HeroSlidesIndex;
 use App\Livewire\Admin\Website\MediaLibrary;
@@ -133,6 +134,7 @@ Route::livewire('/marketing/social', SocialPlannerIndex::class)->name('marketing
 
 Route::livewire('/website/pages', PagesIndex::class)->name('website.pages')->middleware('can:website.edit');
 Route::livewire('/website/templates', PageTemplatesIndex::class)->name('website.templates')->middleware('can:website.edit');
+Route::livewire('/website/blog', BlogIndex::class)->name('website.blog')->middleware('can:website.edit');
 Route::livewire('/website/pages/new', PageEditor::class)->name('website.pages.create')->middleware('can:website.edit');
 Route::livewire('/website/pages/{page}', PageEditor::class)->name('website.pages.edit')->middleware('can:website.edit');
 

@@ -35,7 +35,8 @@ Committed with this document.
 | “Built from sections” error | **Fixed** | The API still refuses block pages by design; the UI no longer routes them there |
 | “Fix live website error” | **Needs evidence** | `/`, `/about/?preview=1`, `/3d-visualization/?preview=1`, `/1-kanal-house-design/?preview=1` all return 200 in the sandbox. The message quoted is the builder's, not the public site's. A URL/screenshot of the failing page is required. Defensive fix planned: an `html` page with empty `canvas_html` must fall back to the block renderer or 404, never a blank document |
 | “Update missing frontend v1” | **Partial** | The Website menu already has all 15 items the owner listed (Verified in `AdminNavigation`). What is missing is the v2.1 **Content** group below |
-| Content: Blog ★, Portfolio ★, Service pages ★, City pages ★ | **Missing** as dedicated screens | Pages exist by type (`PageType`), posts do not. `ContentEntry` covers only FAQ / testimonial / logo |
+| Content: Portfolio ★, Service pages ★, City pages ★ | **Missing** as dedicated screens | The pages exist by type (`PageType`); what is missing is a screen per type with its own fields. `ContentEntry` covers only FAQ / testimonial / logo |
+| Content: Blog ★ | **Done (2026-10-20)** | A post **is** a page of type `insight` — same block editor, SEO, publish rules, sitemap. Website → **Blog** lists the 48 existing posts, creates a draft at `/insights/<slug>/` with a hero and a text section, duplicates, and unpublishes. Evidence `docs/audit/evidence/blog.png`, `blog-new-post.png` |
 | Content: Page templates ★ | **Done (2026-10-20)** | Website → **Page templates**: 50 layouts with type filters and search; create a draft page from any layout, rename/describe it, choose the default per page type, duplicate, retire. `CreatePageFromTemplate` is shared with the pages index. Evidence `docs/audit/evidence/page-templates.png` |
 | Content: Forms ★ | **Partial** | Forms render through the website bridge (`/api/forms.php` → lead), but there is no form manager or submissions screen |
 | Content: Estimator ★ | **Partial** | Public estimator + `EstimatorRate` + `EstimationsIndex` exist; no content/config screen and no master template (see Sales) |
@@ -111,7 +112,8 @@ page can render blank.
 ### P1 — Content parity with v2.1 (5–7 sessions)
 
 1. **Page templates**: gallery, preview, “create from template”, edit/duplicate (finish the stashed picker).
-2. **Blog / Insights**: `Post` model (title, slug, cover, body, SEO, author, publish), list + editor, public
+2. **Blog / Insights**: a post is a page of type `insight` — no second content model. `BlogIndex` lists,
+   creates, duplicates and unpublishes them; writing happens in the block editor. Public
    `/insights/{slug}/` route behind the existing cutover switch.
 3. **Portfolio**: case studies linked to `Project`, gallery, public page.
 4. **Service pages / City pages**: filtered page managers with the right `PageType`, bulk SEO fields.
