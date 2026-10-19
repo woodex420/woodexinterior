@@ -37,11 +37,26 @@ class ThemeTokensSeeder extends Seeder
             ['group' => 'colour', 'key' => '--light-gray', 'value' => '#E2E2E2', 'label' => 'Light grey border', 'type' => 'color'],
             ['group' => 'colour', 'key' => '--shadow', 'value' => '0 18px 50px rgba(12,22,40,.10)', 'label' => 'Shadow', 'type' => 'text'],
 
+            // Extra accents the v2.1 theme panel exposes.
+            ['group' => 'colour', 'key' => '--wx-beige', 'value' => '#FCF2E8', 'label' => 'Beige wash', 'type' => 'color'],
+            ['group' => 'colour', 'key' => '--wx-c1', 'value' => '#D4AF6A', 'label' => 'Accent 1', 'type' => 'color'],
+            ['group' => 'colour', 'key' => '--wx-c2', 'value' => '#1F3A5F', 'label' => 'Accent 2', 'type' => 'color'],
+            ['group' => 'colour', 'key' => '--wx-c3', 'value' => '#6B7A5A', 'label' => 'Accent 3', 'type' => 'color'],
+            ['group' => 'colour', 'key' => '--wx-c4', 'value' => '#B85C38', 'label' => 'Accent 4', 'type' => 'color'],
+
             // Typography — the site's one family, headings and body alike.
             ['group' => 'typography', 'key' => '--wx-font', 'value' => '"Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif', 'label' => 'Site font', 'type' => 'font'],
+            ['group' => 'typography', 'key' => '--wx-font-head', 'value' => '"Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif', 'label' => 'Heading font', 'type' => 'font'],
+            ['group' => 'typography', 'key' => '--wx-base-size', 'value' => '16px', 'label' => 'Base text size', 'type' => 'text'],
+            ['group' => 'typography', 'key' => '--wx-h1', 'value' => '72px', 'label' => 'H1 size', 'type' => 'text'],
+            ['group' => 'typography', 'key' => '--wx-h2', 'value' => '48px', 'label' => 'H2 size', 'type' => 'text'],
+            ['group' => 'typography', 'key' => '--wx-h3', 'value' => '22px', 'label' => 'H3 size', 'type' => 'text'],
 
-            // Shape
+            // Shape and layout — the v2.1 theme panel's own scale.
             ['group' => 'shape', 'key' => '--r-lg', 'value' => '16px', 'label' => 'Corner radius', 'type' => 'text'],
+            ['group' => 'shape', 'key' => '--wx-section', 'value' => '112px', 'label' => 'Section spacing', 'type' => 'text'],
+            ['group' => 'shape', 'key' => '--wx-container', 'value' => '1240px', 'label' => 'Content width', 'type' => 'text'],
+            ['group' => 'shape', 'key' => '--wx-btn-radius', 'value' => '999px', 'label' => 'Button roundness', 'type' => 'text'],
         ];
     }
 

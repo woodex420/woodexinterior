@@ -992,7 +992,7 @@
   function readTheme() { var v = {}; tIn().forEach(function (i) { v[i.dataset.var] = i.value + (i.dataset.unit || ""); }); return v; }
   function applyTheme() {
     if (!S.doc) return; var el = S.doc.getElementById("wx-theme-live"); if (!el) return; var v = readTheme(), css = ":root{";
-    Object.keys(v).forEach(function (k) { css += k + ":" + (/font/.test(k) ? FONTS[v[k]] : v[k]) + ";"; });
+    Object.keys(v).forEach(function (k) { css += k + ":" + (/font/.test(k) ? (FONTS[v[k]] || v[k]) : v[k]) /* OS PORT: family or key */ + ";"; });
     el.textContent = css + "--navy:var(--wx-navy);--navy-2:var(--wx-navy);--ink:var(--wx-ink);--muted:var(--wx-muted)}html{font-size:var(--wx-base-size)}body,button,input,select,textarea{font-family:var(--wx-font)!important}main h1,main h2,main h3{font-family:var(--wx-font-head)}";
   }
   tIn().forEach(function (i) { i.addEventListener("input", function () { showOut(i); applyTheme(); }); });

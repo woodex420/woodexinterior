@@ -25,7 +25,10 @@ use Illuminate\Validation\ValidationException;
  */
 final class BuilderApi
 {
-    public function __construct(private readonly SaveHtmlPage $save) {}
+    public function __construct(
+        private readonly SaveHtmlPage $save,
+        private readonly ThemeBridge $theme,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $in
@@ -44,10 +47,11 @@ final class BuilderApi
             'page_new' => $this->pageNew($in, $user),
             'media' => ['ok' => true, 'media' => []],
             'media_usage' => ['ok' => true, 'used' => []],
-            'theme_get' => ['ok' => true, 'vars' => []],
+            'theme_get' => ['ok' => true, 'vars' => $this->theme->vars()],
+            'theme' => $this->saveTheme($in, $user),
             'logout' => ['ok' => true],
             'login', 'setup', 'password' => ['ok' => false, 'error' => 'Sign in through Woodex OS — the builder has no password of its own.'],
-            'theme', 'upload', 'media_delete', 'blocks_save', 'blocks_delete', 'blocks_import',
+            'upload', 'media_delete', 'blocks_save', 'blocks_delete', 'blocks_import',
             'blocks_usage', 'blocks_sync', 'import_url', 'fetch_page', 'appr_apply' => $this->later($action),
             'blocks_list' => ['ok' => true, 'blocks' => []],
             default => ['ok' => false, 'error' => 'Unknown builder action: '.$action],
@@ -241,11 +245,28 @@ final class BuilderApi
         return Str::headline(trim($fallbackSlug, '/') ?: 'Home');
     }
 
+    /**
+     * The Theme tab saves the whole panel at once. The site theme is an owner decision, so it needs
+     * `theme.manage` — the same permission the standalone Theme Builder requires.
+     *
+     * @param  array<string, mixed>  $in
+     * @return array<string, mixed>
+     */
+    private function saveTheme(array $in, ?User $user): array
+    {
+        if (! $user?->can('theme.manage')) {
+            return ['ok' => false, 'error' => 'Only the owner can change the site theme.'];
+        }
+
+        $this->theme->save((array) ($in['vars'] ?? []));
+
+        return ['ok' => true];
+    }
+
     /** @return array<string, mixed> */
     private function later(string $action): array
     {
         $slice = match ($action) {
-            'theme' => 'the theme slice',
             'upload', 'media_delete' => 'the media slice',
             'import_url', 'fetch_page' => 'a later slice',
             'appr_apply' => 'a later slice',

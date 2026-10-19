@@ -36,13 +36,16 @@ beforeEach(function () {
 });
 
 it('expresses the live v1 design as tokens', function () {
-    expect(ThemeToken::query()->count())->toBe(15)
+    // 15 tokens carry the v1 design; 13 more are the builder theme panel's controls (T1).
+    expect(ThemeToken::query()->count())->toBe(28)
         ->and(ThemeToken::query()->where('key', '--navy')->value('value'))->toBe('#0C1628')
         ->and(ThemeToken::query()->where('key', '--wood')->value('value'))->toBe('#B8956A')
         ->and(ThemeToken::query()->where('key', '--surface')->value('value'))->toBe('#F4EFE7')
         ->and(ThemeToken::query()->where('key', '--wx-font')->value('value'))->toContain('Plus Jakarta Sans')
-        ->and(ThemeToken::query()->where('group', 'typography')->count())->toBe(1)
-        ->and(ThemeToken::query()->where('group', 'shape')->count())->toBe(1);
+        ->and(ThemeToken::query()->where('group', 'typography')->pluck('key')->all())
+        ->toContain('--wx-font', '--wx-font-head', '--wx-base-size', '--wx-h1', '--wx-h2', '--wx-h3')
+        ->and(ThemeToken::query()->where('group', 'shape')->pluck('key')->all())
+        ->toContain('--r-lg', '--wx-section', '--wx-container', '--wx-btn-radius');
 });
 
 it('serves the tokens as CSS, with the v1 vocabulary, its aliases and the v2 vocabulary derived', function () {

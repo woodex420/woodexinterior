@@ -137,6 +137,15 @@ class ThemeBuilder extends Component
 
     private function loadTokens(): void
     {
+        // A token added after this install was seeded (the v2.1 panel's type scale, for example)
+        // appears here on the next visit instead of waiting for a manual db:seed.
+        foreach (ThemeTokensSeeder::tokens() as $index => $token) {
+            ThemeToken::query()->firstOrCreate(
+                ['key' => $token['key']],
+                $token + ['sort' => 500 + $index],
+            );
+        }
+
         $this->tokens = ThemeToken::query()
             ->orderBy('sort')
             ->orderBy('id')

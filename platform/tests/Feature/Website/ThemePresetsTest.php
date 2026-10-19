@@ -66,7 +66,7 @@ it('applies a preset and re-skins every page, then back to v1 undoes it', functi
         ->assertDispatched('toast', message: 'Back to the v1 palette.');
 
     expect(ThemeToken::query()->where('key', '--navy')->value('value'))->toBe($before)
-        ->and(ThemeToken::query()->where('key', '--r-lg')->value('value'))->toBe(ThemeTokensSeeder::tokens()[14]['value']);
+        ->and(ThemeToken::query()->where('key', '--r-lg')->value('value'))->toBe(collect(ThemeTokensSeeder::tokens())->firstWhere('key', '--r-lg')['value']);
 });
 
 it('refuses preset names that are not on the shelf', function () {

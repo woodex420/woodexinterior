@@ -277,3 +277,61 @@ wrapped in the Blade layout. `PageCache` still applies, keyed on `updated_at`.
 Delete the two `website/builder` routes and the builder view; the pages stay `template='html'` and
 keep rendering through `SiteRouter`, so unpublishing the builder screen never takes the site down.
 Reverting the migration to `TEXT` is possible only while no page exceeds 64 KB.
+
+## 12. Theme panel — the builder and the OS share one theme (2026-10-20)
+
+**Scope (T1 of the theme slice).** The builder's Theme tab edits `theme_tokens`; `ThemeCss` compiles
+those tokens to `/assets/theme.css` (v1 pages) and `/theme/{hash}.css` (v2 pages). There is no second
+theme store and no second stylesheet.
+
+### 12.1 What changed
+
+* `ThemeTokensSeeder` — 13 tokens the v2.1 panel controls but the store never had: `--wx-beige`,
+  `--wx-c1…--wx-c4`, `--wx-font-head`, `--wx-base-size`, `--wx-h1/-h2/-h3`, `--wx-section`,
+  `--wx-container`, `--wx-btn-radius`. 28 tokens total (15 carry the v1 design).
+* `ThemeCss` — the v1 aliases (`--navy-2`, `--ink`, …) are now emitted **only when the key is
+  absent**, so a real token can never be shadowed by an alias.
+* `ThemeBuilder` (OS Theme screen) — seeds any seeder token missing from an older installation on
+  mount, so the panel and the builder always expose the same controls.
+* `App\Domain\Website\Builder\ThemeBridge` — the only translation layer between the panel's `--wx-*`
+  keys and the stored tokens (`--navy`, `--r-lg`, …). Validates colours (`#hex`/`rgb()`), lengths
+  (`px|rem|em|%`) and fonts; writes through `ThemeToken`; flushes `woodex:theme-css`.
+* `BuilderApi` — `theme_get` returns the live tokens, `theme` saves them for `theme.manage` holders.
+  Both were `later()` stubs before.
+
+### 12.2 Defect found and fixed while testing
+
+The v2.1 panel does not speak CSS font stacks: it stores `dm`, `system`, `serif` or
+`g:Family:400;600`. Saving the panel unchanged therefore wrote `--wx-font: dm`, which is invalid CSS,
+and the preview showed a blank font field. `ThemeBridge` now translates both ways — the panel always
+receives a v2.1 font code, the store always receives a complete CSS stack
+(`"Poppins", system-ui, …`), and a pasted stack is kept verbatim. Font values also reject `;`, `<`,
+`>`, `{`, `}` so a theme save cannot inject CSS.
+
+### 12.3 Verified in the running app
+
+* `GET /assets/theme.css` → `200 text/css; charset=utf-8`, `cache-control: max-age=60, public`,
+  body starts `--navy: #0C1628; --wx-navy: #0C1628; …`; `GET /theme/{hash}.css` → `200`, and an old
+  hash is revalidated (`max-age=0, must-revalidate`).
+* Browser run (Chromium): panel opens with the stored values (Plus Jakarta Sans, base 16, H1 72,
+  H2 48, H3 22); picking Poppins re-renders the canvas immediately; **Save** → toast
+  “Theme saved for the whole website ✓”; `/assets/theme.css` then carries
+  `--wx-font: "Poppins", system-ui, …` and `--navy: #7A1F1F`; the palette and font were restored
+  afterwards and the CSS returned to `#0C1628` / `"Plus Jakarta Sans"`.
+* `tests/Feature/Website/ThemeBridgeTest.php` — **10 passed / 58 assertions**; `Feature/Website` —
+  **235 passed / 3,859 assertions**; `ThemeTokensTest` + `ThemePresetsTest` — 10 passed. Pint 834
+  files PASS, PHPStan 0 errors.
+* Screenshot: `docs/audit/evidence/phase2-theme-panel.png`.
+
+### 12.4 Known limits
+
+* Owner Custom CSS (T3) is not built: the builder's custom-CSS box saves nothing yet.
+* The builder panel has the v2.1 *Reset* button but no preset shelf; presets live on the OS Theme
+  screen (`ThemePresets`).
+* The theme preview inside the builder is injected into the canvas iframe only; a visitor's page
+  picks the saved values up from `/assets/theme.css` on the next request.
+
+### 12.5 Rollback
+
+`git revert` the theme commit. Tokens are rows, not schema: the seeder additions and the bridge can
+be removed without touching `pages` or the builder's HTML storage.

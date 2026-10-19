@@ -99,12 +99,21 @@ final class ThemeCss
 
         return Cache::remember(self::CACHE_KEY, now()->addDay(), function (): string {
             $lines = [];
+            $tokens = ThemeToken::query()->orderBy('sort')->orderBy('id')->get();
+            $present = [];
 
-            foreach (ThemeToken::query()->orderBy('sort')->orderBy('id')->get() as $token) {
+            foreach ($tokens as $token) {
                 $lines[] = '  '.$token->key.': '.$token->value.';';
+                $present[$token->key] = true;
+            }
 
+            // An alias fills a gap, never overwrites a real token: once the Theme Builder owns a
+            // key (a separate heading font, for example), its own value must win.
+            foreach ($tokens as $token) {
                 foreach (self::ALIASES[$token->key] ?? [] as $alias) {
-                    $lines[] = '  '.$alias.': '.$token->value.';';
+                    if (! isset($present[$alias])) {
+                        $lines[] = '  '.$alias.': '.$token->value.';';
+                    }
                 }
             }
 
