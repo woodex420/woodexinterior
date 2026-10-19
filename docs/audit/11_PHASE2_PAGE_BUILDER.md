@@ -6,7 +6,8 @@
 column and then **reverted to a content fingerprint** precisely because the standing rule is "no schema
 changes without explicit approval"; the migration was deleted before it reached a commit.
 **Public HTML:** unchanged unless a page's editor explicitly sets a device value. A page with no
-per-device values renders byte-for-byte as before (asserted by the existing `SectionStyleTest` cases).
+per-device values keeps the same classes, content and public behaviour as before (asserted by the existing
+`SectionStyleTest` cases, including the no-settings case).
 
 ---
 
