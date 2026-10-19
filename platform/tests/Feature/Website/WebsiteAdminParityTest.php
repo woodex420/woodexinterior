@@ -41,7 +41,7 @@ it('lists the old admin\'s Website section in the sidebar, item for item', funct
     $labels = collect($groups['Website']['items'])->pluck('label')->all();
 
     expect($labels)->toBe([
-        'All pages', 'Page builder', 'Section library', 'Header & footer', 'Hero slides', 'Redirects',
+        'All pages', 'Page builder', 'Page templates', 'Section library', 'Header & footer', 'Hero slides', 'Redirects',
         'Media', 'Content library', 'Team', 'SEO', 'SEO agent', 'Speed', 'Site health', 'Theme', 'Website Settings',
     ]);
 });

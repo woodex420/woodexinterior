@@ -78,6 +78,7 @@ final class AdminNavigation
                 // one flat group so everything the owner starred is visible at once.
                 self::item('All pages', 'layout', 'admin.website.pages', 'website.edit'),
                 self::item('Page builder', 'panel', 'admin.website.builder', 'website.edit'),
+                self::item('Page templates', 'layers', 'admin.website.templates', 'website.edit'),
                 self::item('Section library', 'layers', 'admin.website.sections', 'website.edit'),
                 self::item('Header & footer', 'menu', 'admin.website.menus', 'website.edit'),
                 self::item('Hero slides', 'image', 'admin.website.heroes', 'website.edit'),

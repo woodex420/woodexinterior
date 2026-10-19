@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Website;
 
+use App\Domain\Website\Actions\CreatePageFromTemplate;
 use App\Domain\Website\Enums\PageStatus;
 use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\Page;
@@ -14,7 +15,6 @@ use App\Domain\Website\Services\PageCache;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -60,30 +60,9 @@ class PagesIndex extends Component
     {
         $template = PageTemplate::query()->findOrFail($templateId);
 
-        $base = Str::slug($template->name);
-        $slug = '/'.$base.'/';
+        $page = app(CreatePageFromTemplate::class)->handle($template, $this->user());
 
-        for ($i = 2; Page::query()->where('slug', $slug)->exists(); $i++) {
-            $slug = '/'.$base.'-'.$i.'/';
-        }
-
-        $page = Page::query()->create([
-            'type' => $template->page_type,
-            'slug' => $slug,
-            'title' => $template->name,
-            'status' => PageStatus::Draft,
-        ]);
-
-        foreach ($template->toBlocks() as $position => $block) {
-            $page->blocks()->create([
-                'type' => $block['type'],
-                'block_key' => $block['key'],
-                'data' => $block['data'],
-                'visible' => true,
-                'position' => $position,
-            ]);
-        }
-
+        $this->toast("“{$page->title}” created as a draft — add the words, then publish.");
         $this->redirectRoute('admin.website.pages.edit', $page, navigate: true);
     }
 

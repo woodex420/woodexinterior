@@ -36,7 +36,7 @@ Committed with this document.
 | “Fix live website error” | **Needs evidence** | `/`, `/about/?preview=1`, `/3d-visualization/?preview=1`, `/1-kanal-house-design/?preview=1` all return 200 in the sandbox. The message quoted is the builder's, not the public site's. A URL/screenshot of the failing page is required. Defensive fix planned: an `html` page with empty `canvas_html` must fall back to the block renderer or 404, never a blank document |
 | “Update missing frontend v1” | **Partial** | The Website menu already has all 15 items the owner listed (Verified in `AdminNavigation`). What is missing is the v2.1 **Content** group below |
 | Content: Blog ★, Portfolio ★, Service pages ★, City pages ★ | **Missing** as dedicated screens | Pages exist by type (`PageType`), posts do not. `ContentEntry` covers only FAQ / testimonial / logo |
-| Content: Page templates ★ | **Missing UI** | `PageTemplate` model exists, no gallery/CRUD. A starter picker is stashed (`stash@{0}`) and can be finished |
+| Content: Page templates ★ | **Done (2026-10-20)** | Website → **Page templates**: 50 layouts with type filters and search; create a draft page from any layout, rename/describe it, choose the default per page type, duplicate, retire. `CreatePageFromTemplate` is shared with the pages index. Evidence `docs/audit/evidence/page-templates.png` |
 | Content: Forms ★ | **Partial** | Forms render through the website bridge (`/api/forms.php` → lead), but there is no form manager or submissions screen |
 | Content: Estimator ★ | **Partial** | Public estimator + `EstimatorRate` + `EstimationsIndex` exist; no content/config screen and no master template (see Sales) |
 | Content: FAQs ★, Testimonials ★, Client logos ★ | **Exists** | `ContentEntry` + Content library screen |

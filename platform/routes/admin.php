@@ -56,6 +56,7 @@ use App\Livewire\Admin\Website\MediaLibrary;
 use App\Livewire\Admin\Website\MenusIndex;
 use App\Livewire\Admin\Website\PageEditor;
 use App\Livewire\Admin\Website\PagesIndex;
+use App\Livewire\Admin\Website\PageTemplatesIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
 use App\Livewire\Admin\Website\SectionLibraryIndex;
 use App\Livewire\Admin\Website\SeoAgentIndex;
@@ -131,6 +132,7 @@ Route::get('/media/{media}/{conversion?}', MediaController::class)->name('media.
 Route::livewire('/marketing/social', SocialPlannerIndex::class)->name('marketing.social')->middleware('can:social.manage');
 
 Route::livewire('/website/pages', PagesIndex::class)->name('website.pages')->middleware('can:website.edit');
+Route::livewire('/website/templates', PageTemplatesIndex::class)->name('website.templates')->middleware('can:website.edit');
 Route::livewire('/website/pages/new', PageEditor::class)->name('website.pages.create')->middleware('can:website.edit');
 Route::livewire('/website/pages/{page}', PageEditor::class)->name('website.pages.edit')->middleware('can:website.edit');
 
