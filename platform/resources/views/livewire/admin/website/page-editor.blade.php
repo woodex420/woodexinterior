@@ -510,9 +510,9 @@
                     <div class="flex items-center justify-between gap-2">
                         <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">Page check</p>
                         @if ($audit === [])
-                            <span class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs text-success-700 dark:bg-success-500/10 dark:text-success-400">Everything checks out</span>
+                            <span class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs text-success-700 dark:bg-success-500/10 dark:text-success-500">Everything checks out</span>
                         @else
-                            <span class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs text-warning-700 dark:bg-warning-500/10 dark:text-warning-400">{{ count($audit) }} to look at</span>
+                            <span class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs text-warning-700 dark:bg-warning-500/10 dark:text-warning-500">{{ count($audit) }} to look at</span>
                         @endif
                     </div>
                     @if ($audit !== [])
@@ -521,8 +521,8 @@
                                 <li class="flex items-start gap-2 text-theme-sm">
                                     <span @class([
                                         'mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold',
-                                        'bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-400' => $finding['level'] === 'bad',
-                                        'bg-warning-50 text-warning-600 dark:bg-warning-500/10 dark:text-warning-400' => $finding['level'] !== 'bad',
+                                        'bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-500' => $finding['level'] === 'bad',
+                                        'bg-warning-50 text-warning-600 dark:bg-warning-500/10 dark:text-warning-500' => $finding['level'] !== 'bad',
                                     ]) aria-hidden="true">{{ $finding['level'] === 'bad' ? '!' : '·' }}</span>
                                     <span class="text-gray-600 dark:text-gray-300"><span class="font-medium text-gray-500">{{ $finding['area'] }}:</span> {{ $finding['message'] }}</span>
                                 </li>
