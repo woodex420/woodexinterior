@@ -167,3 +167,16 @@ All P-items are Settings values (or a one-time setup step), so changing them lat
 - The first local batch separates description masters, BOQ templates, catalog prices and brand design profiles. Designs (including logo bytes/hash) are copied into quote metadata and sent snapshots. Updating a design master affects new copies only; existing editable quotes require explicit adoption through `QuoteEditor`. Applied design content participates in approval fingerprints; old pending approvals must be reviewed/re-requested if their binding no longer matches.
 - Quote-derived invoice PDFs inherit frozen quote design values; changing a print heading never creates an invoice/ledger entry. Manual invoices, estimate conversion, furniture line pictures and the balanced ledger remain staged work. Current batch is preview-only, not a production release.
 - Native PHP/MySQL/Docker installation could not be completed in the restricted sandbox. An isolated Docker QA harness is prepared but **not executed**. PHP-WASM/SQLite regressions are not native MySQL race acceptance. Broad homepage-form smoke also remains an explicit gate; do not erase it with unrelated public website changes.
+
+
+## Phase 1 audit decisions — 19 October 2026
+
+Owner approved the Phase 0 audit (`docs/audit/`) and the phase order: Phase 1 truth & safety → Phase 2 Page Builder → Phase 3 static-to-CMS cutover → Phase 4 modules → Phase 5 polish → Phase 6 QA gate → Phase 7 reversible deploy.
+
+| # | Decision | Outcome |
+|---|---|---|
+| **A-01** | Free HTML (the HTML block and the campaign canvas) until its sanitiser is proven | **Owner-only.** Enforced by the `website.raw_html` permission on the server; the editor hides the controls for everyone else. |
+| **A-02** | Free canvas / plugin registry (master prompt) | **Declined.** The section model stays; no GrapesJS-style canvas. Recorded so it is not reopened by accident. |
+| **A-03** | Static → CMS cutover | **After the builder is complete**, group by group, with the compare tool and a per-group rollback. |
+| **A-04** | v2.1 pro builder reference | Supplied and verified: `marketingwoodex-cloud/-marketingwoodex@720d817`, branch `arena/8a776c65-marketingwoodex` (`frontend-v1/builder/*`). See `docs/audit/09`. |
+| **A-05** | `P4b` phase label | **Convention:** `P4b` is the client-portal + handover slice that ran alongside P4. The portal shipped; the handover screens did not, so the badges are stale. Renaming the two sidebar items is Phase 5 work (audit finding N-01/N-03). |

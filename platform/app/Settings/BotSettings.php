@@ -41,7 +41,7 @@ class BotSettings extends Settings
     /** BOT-010: keep the bot for outside studio hours only — during the day the team answers. */
     public bool $outside_hours_only = false;
 
-/** @var list<string> BOT-006: who hears about a hand-off. */
+    /** @var list<string> BOT-006: who hears about a hand-off. */
     public array $handoff_roles = ['owner', 'sales_manager'];
 
     public static function group(): string

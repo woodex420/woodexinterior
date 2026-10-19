@@ -1,0 +1,70 @@
+login: 302 http://127.0.0.1:8080/admin
+200 /admin
+200 /admin/accounts/chart
+200 /admin/accounts/journals
+200 /admin/accounts/methods
+200 /admin/accounts/periods
+200 /admin/approvals
+200 /admin/automation
+200 /admin/automation/sequences
+200 /admin/companies -> /admin/contacts?tab=companies
+200 /admin/contacts
+200 /admin/data-import
+200 /admin/description-library -> /admin/sales/documents?tab=descriptions
+200 /admin/document-design -> /admin/sales/documents?tab=design
+200 /admin/estimations
+200 /admin/estimations/new
+200 /admin/google/callback -> /admin
+200 /admin/inbox
+200 /admin/integrations
+200 /admin/integrations/whatsapp-templates
+200 /admin/invoices
+200 /admin/leads
+200 /admin/marketing/social
+200 /admin/my-day -> /admin?tab=my-day
+200 /admin/notifications
+200 /admin/payments
+200 /admin/pipeline -> /admin/leads?tab=pipeline
+200 /admin/profile/security
+200 /admin/projects
+200 /admin/projects/board
+200 /admin/quote-templates -> /admin/quotes?tab=templates
+200 /admin/quotes
+200 /admin/quotes/new
+200 /admin/rate-book -> /admin/sales/documents?tab=rate-book
+200 /admin/receivables -> /admin/payments?tab=receivables
+200 /admin/recycle-bin
+200 /admin/reports
+200 /admin/reports/revenue-collections -> /admin/reports?tab=revenue
+200 /admin/reports/sales-funnel -> /admin/reports?tab=funnel
+200 /admin/sales/documents
+200 /admin/sales/dues -> /admin/payments?tab=dues
+200 /admin/sales/tracking/invoices -> /admin/invoices?tab=tracking
+200 /admin/sales/tracking/quotes -> /admin/quotes?tab=tracking
+200 /admin/settings
+200 /admin/settings/canned-replies
+200 /admin/settings/lead-assignment
+200 /admin/site-visits -> /admin/tasks?tab=visits
+200 /admin/system/alert-rules
+200 /admin/system/audit
+200 /admin/system/change-requests
+200 /admin/system/health
+200 /admin/system/updates
+200 /admin/tasks
+200 /admin/users
+200 /admin/website/content
+200 /admin/website/health
+200 /admin/website/heroes
+200 /admin/website/media
+200 /admin/website/menus
+200 /admin/website/pages
+200 /admin/website/pages/new
+200 /admin/website/redirects
+200 /admin/website/sections
+200 /admin/website/seo
+200 /admin/website/seo-overview
+200 /admin/website/settings
+200 /admin/website/speed
+200 /admin/website/team
+200 /admin/website/theme
+SMOKE OK (68 pages)

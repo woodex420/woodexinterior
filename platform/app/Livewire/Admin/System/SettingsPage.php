@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\System;
 
+use App\Domain\Bot\Actions\SyncBotKnowledge;
+use App\Domain\Bot\Models\BotKnowledge;
 use App\Integrations\WhatsApp\Actions\TestWhatsAppConnection;
 use App\Integrations\WhatsApp\WhatsAppCredentials;
 use App\Livewire\Admin\Crm\ContactsIndex;
 use App\Livewire\Concerns\InteractsWithAdmin;
+use App\Settings\BotSettings;
 use App\Settings\BusinessSettings;
 use App\Settings\IntegrationSettings;
 use App\Settings\NotificationSettings;
@@ -118,7 +121,7 @@ class SettingsPage extends Component
             'design_terms' => $sales->design_terms,
         ];
 
-        $bot = app(\App\Settings\BotSettings::class);
+        $bot = app(BotSettings::class);
         $this->bot = [
             'enabled' => (bool) $bot->enabled,
             'provider' => (string) $bot->provider,
@@ -510,7 +513,7 @@ class SettingsPage extends Component
             'bot.api_key' => ['nullable', 'string', 'max:512'],
         ]);
 
-        $settings = app(\App\Settings\BotSettings::class);
+        $settings = app(BotSettings::class);
         $settings->enabled = (bool) ($data['bot']['enabled'] ?? false);
         $settings->provider = (string) ($data['bot']['provider'] ?? 'none');
         $settings->model = trim((string) ($data['bot']['model'] ?? ''));
@@ -534,7 +537,7 @@ class SettingsPage extends Component
     {
         abort_unless($this->user()->can('settings.manage'), 403);
 
-        $result = app(\App\Domain\Bot\Actions\SyncBotKnowledge::class)->handle();
+        $result = app(SyncBotKnowledge::class)->handle();
 
         $this->toast('Knowledge synced: '.$result['entries'].' entr'.($result['entries'] === 1 ? 'y' : 'ies').' from '.$result['pages'].' published page(s).');
     }
@@ -548,7 +551,7 @@ class SettingsPage extends Component
             'botKnowledgeBody' => ['required', 'string', 'max:6000'],
         ]);
 
-        \App\Domain\Bot\Models\BotKnowledge::create([
+        BotKnowledge::create([
             'title' => trim((string) $data['botKnowledgeTitle']),
             'content' => trim((string) $data['botKnowledgeBody']),
             'source' => 'manual',
@@ -564,7 +567,7 @@ class SettingsPage extends Component
     {
         abort_unless($this->user()->can('settings.manage'), 403);
 
-        \App\Domain\Bot\Models\BotKnowledge::query()->whereKey($id)->where('source', 'manual')->delete();
+        BotKnowledge::query()->whereKey($id)->where('source', 'manual')->delete();
         $this->toast('Entry removed.');
     }
 }

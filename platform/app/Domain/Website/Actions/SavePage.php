@@ -14,6 +14,7 @@ use App\Domain\Website\Services\PageCache;
 use App\Domain\Website\Support\CanvasHtml;
 use App\Domain\Website\Support\SectionStyle;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -29,6 +30,19 @@ final class SavePage
      */
     public function __invoke(Page $page, array $input, array $blocks, bool $publish, ?User $user): Page
     {
+        // Free HTML (the HTML block and the campaign canvas) is the only staff input that reaches a
+        // visitor as markup. It is owner-only: the permission is the guard, the editor's hidden
+        // button is only the courtesy (Phase 1, finding S-03).
+        if (! $user?->can('website.raw_html')) {
+            $htmlBlock = collect($blocks)->contains(
+                static fn (array $block): bool => (string) ($block['type'] ?? '') === BlockType::Html->value,
+            );
+
+            if ($htmlBlock || ($input['template'] ?? null) === 'canvas') {
+                throw new AuthorizationException('Only the owner can save pages with free HTML.');
+            }
+        }
+
         DB::transaction(function () use ($page, $input, $blocks, $publish, $user): void {
             $page->fill([
                 'type' => $input['type'],

@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Admin\ClientDataExportController;
 use App\Http\Controllers\Admin\ClientStatementController;
+use App\Http\Controllers\Admin\ContactDataExportController;
 use App\Http\Controllers\Admin\ConversationMediaController;
 use App\Http\Controllers\Admin\InvoicePdfController;
 use App\Http\Controllers\Admin\MediaController;
@@ -27,6 +27,7 @@ use App\Livewire\Admin\Hubs\PaymentsHub;
 use App\Livewire\Admin\Hubs\QuotationsHub;
 use App\Livewire\Admin\Hubs\ReportsHub;
 use App\Livewire\Admin\Hubs\TasksHub;
+use App\Livewire\Admin\Marketing\SocialPlannerIndex;
 use App\Livewire\Admin\NotificationsPage;
 use App\Livewire\Admin\Profile\Security;
 use App\Livewire\Admin\Projects\ProjectBoard;
@@ -37,6 +38,7 @@ use App\Livewire\Admin\Sales\EstimateBuilder;
 use App\Livewire\Admin\Sales\EstimationsIndex;
 use App\Livewire\Admin\Sales\QuoteBuilder;
 use App\Livewire\Admin\Sales\QuoteCreate;
+use App\Livewire\Admin\System\AlertRulesIndex;
 use App\Livewire\Admin\System\AuditLog;
 use App\Livewire\Admin\System\AutomationsIndex;
 use App\Livewire\Admin\System\ChangeRequests;
@@ -44,24 +46,22 @@ use App\Livewire\Admin\System\DataImport;
 use App\Livewire\Admin\System\Health;
 use App\Livewire\Admin\System\Integrations;
 use App\Livewire\Admin\System\RecycleBin;
-use App\Livewire\Admin\System\AlertRulesIndex;
 use App\Livewire\Admin\System\SettingsPage;
 use App\Livewire\Admin\System\UsersIndex;
 use App\Livewire\Admin\System\WhatsAppTemplates;
-use App\Livewire\Admin\Website\MediaLibrary;
 use App\Livewire\Admin\Website\ContentLibraryIndex;
+use App\Livewire\Admin\Website\HeroSlidesIndex;
+use App\Livewire\Admin\Website\MediaLibrary;
 use App\Livewire\Admin\Website\MenusIndex;
 use App\Livewire\Admin\Website\PageEditor;
-use App\Livewire\Admin\Marketing\SocialPlannerIndex;
 use App\Livewire\Admin\Website\PagesIndex;
-use App\Livewire\Admin\Website\TeamMembersIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
+use App\Livewire\Admin\Website\SectionLibraryIndex;
 use App\Livewire\Admin\Website\SeoAgentIndex;
 use App\Livewire\Admin\Website\SeoOverviewIndex;
-use App\Livewire\Admin\Website\SectionLibraryIndex;
-use App\Livewire\Admin\Website\HeroSlidesIndex;
 use App\Livewire\Admin\Website\SiteHealthIndex;
 use App\Livewire\Admin\Website\SpeedIndex;
+use App\Livewire\Admin\Website\TeamMembersIndex;
 use App\Livewire\Admin\Website\ThemeBuilder;
 use App\Livewire\Admin\Website\WebsiteSettings;
 use Illuminate\Support\Facades\Route;
@@ -72,52 +72,52 @@ use Illuminate\Support\Facades\Route;
 */
 
 // P10.1 workflow hubs (docs/27): one page per workflow, tabs inside; old URLs redirect to the tab.
-Route::livewire('/', DashboardHub::class)->name('dashboard');
-Route::livewire('/notifications', NotificationsPage::class)->name('notifications');
-Route::get('/my-day', fn () => redirect()->route('admin.dashboard', ['tab' => 'my-day'], 301))->name('my-day');
+Route::livewire('/', DashboardHub::class)->name('dashboard')->middleware('can:dashboard.view');
+Route::livewire('/notifications', NotificationsPage::class)->name('notifications')->middleware('can:dashboard.view');
+Route::get('/my-day', fn () => redirect()->route('admin.dashboard', ['tab' => 'my-day'], 301))->name('my-day')->middleware('can:dashboard.view');
 
 // CRM (P1): Leads (list · pipeline · tracking), Contacts (people · companies), Tasks & Visits
-Route::livewire('/leads', LeadsHub::class)->name('leads.index');
-Route::livewire('/leads/{lead}', LeadShow::class)->name('leads.show');
-Route::get('/pipeline', fn () => redirect()->route('admin.leads.index', ['tab' => 'pipeline'], 301))->name('pipeline');
-Route::livewire('/contacts', ContactsHub::class)->name('contacts.index');
-Route::livewire('/contacts/{contact}', ContactShow::class)->name('contacts.show');
-Route::livewire('/companies/{company}', CompanyShow::class)->name('companies.show');
-Route::get('/companies', fn () => redirect()->route('admin.contacts.index', ['tab' => 'companies'], 301))->name('companies.index');
-Route::livewire('/tasks', TasksHub::class)->name('tasks.index');
-Route::get('/site-visits', fn () => redirect()->route('admin.tasks.index', ['tab' => 'visits'], 301))->name('visits.index');
+Route::livewire('/leads', LeadsHub::class)->name('leads.index')->middleware('can:leads.view');
+Route::livewire('/leads/{lead}', LeadShow::class)->name('leads.show')->middleware('can:leads.view');
+Route::get('/pipeline', fn () => redirect()->route('admin.leads.index', ['tab' => 'pipeline'], 301))->name('pipeline')->middleware('can:leads.view');
+Route::livewire('/contacts', ContactsHub::class)->name('contacts.index')->middleware('can:contacts.view');
+Route::livewire('/contacts/{contact}', ContactShow::class)->name('contacts.show')->middleware('can:contacts.view');
+Route::livewire('/companies/{company}', CompanyShow::class)->name('companies.show')->middleware('can:contacts.view');
+Route::get('/companies', fn () => redirect()->route('admin.contacts.index', ['tab' => 'companies'], 301))->name('companies.index')->middleware('can:contacts.view');
+Route::livewire('/tasks', TasksHub::class)->name('tasks.index')->middleware('can:leads.view');
+Route::get('/site-visits', fn () => redirect()->route('admin.tasks.index', ['tab' => 'visits'], 301))->name('visits.index')->middleware('can:leads.view');
 
 // Sales (P2): Estimations → Quotations (all · tracking · templates) → Invoices (all · tracking) → Payments (all · dues · receivables) → Documents
 Route::livewire('/quotes', QuotationsHub::class)->name('quotes.index')->middleware('can:quotes.view');
 Route::livewire('/quotes/new', QuoteCreate::class)->name('quotes.create')->middleware('can:quotes.manage');
-Route::livewire('/quotes/{quote}', QuoteBuilder::class)->name('quotes.show')->whereNumber('quote');
-Route::get('/quotes/{quote}/pdf', QuotePdfController::class)->name('quotes.pdf')->whereNumber('quote');
+Route::livewire('/quotes/{quote}', QuoteBuilder::class)->name('quotes.show')->middleware('can:quotes.view')->whereNumber('quote');
+Route::get('/quotes/{quote}/pdf', QuotePdfController::class)->name('quotes.pdf')->middleware('can:quotes.view')->whereNumber('quote');
 Route::livewire('/invoices', InvoicesHub::class)->name('invoices.index')->middleware('can:invoices.view');
-Route::get('/invoices/{invoice}/pdf', InvoicePdfController::class)->name('invoices.pdf')->whereNumber('invoice');
+Route::get('/invoices/{invoice}/pdf', InvoicePdfController::class)->name('invoices.pdf')->middleware('can:invoices.view')->whereNumber('invoice');
 Route::livewire('/payments', PaymentsHub::class)->name('payments.index')->middleware('can:invoices.view');
 Route::livewire('/estimations', EstimationsIndex::class)->name('estimations.index')->middleware('can:estimates.view');
 Route::livewire('/estimations/new', EstimateBuilder::class)->name('estimations.create')->middleware('can:estimates.view');
 Route::livewire('/estimations/{estimate}', EstimateBuilder::class)->name('estimations.show')->middleware('can:estimates.view')->whereNumber('estimate');
-Route::get('/sales/dues', fn () => redirect()->route('admin.payments.index', ['tab' => 'dues'], 301))->name('sales.dues');
-Route::get('/sales/tracking/quotes', fn () => redirect()->route('admin.quotes.index', ['tab' => 'tracking'], 301))->name('sales.tracking.quotes');
-Route::get('/sales/tracking/invoices', fn () => redirect()->route('admin.invoices.index', ['tab' => 'tracking'], 301))->name('sales.tracking.invoices');
+Route::get('/sales/dues', fn () => redirect()->route('admin.payments.index', ['tab' => 'dues'], 301))->name('sales.dues')->middleware('can:invoices.view');
+Route::get('/sales/tracking/quotes', fn () => redirect()->route('admin.quotes.index', ['tab' => 'tracking'], 301))->name('sales.tracking.quotes')->middleware('can:quotes.view');
+Route::get('/sales/tracking/invoices', fn () => redirect()->route('admin.invoices.index', ['tab' => 'tracking'], 301))->name('sales.tracking.invoices')->middleware('can:invoices.view');
 Route::get('/clients/{contact}/statement.pdf', ClientStatementController::class)->name('contacts.statement')->middleware('can:invoices.view')->whereNumber('contact');
-Route::get('/contacts/{contact}/data.json', \App\Http\Controllers\Admin\ContactDataExportController::class)->name('contacts.data')->middleware('can:leads.view')->whereNumber('contact');
+Route::get('/contacts/{contact}/data.json', ContactDataExportController::class)->name('contacts.data')->middleware('can:leads.view')->whereNumber('contact');
 Route::livewire('/accounts/chart', ChartOfAccounts::class)->name('accounts.chart')->middleware('can:accounts.view');
 Route::livewire('/accounts/journals', JournalsIndex::class)->name('accounts.journals')->middleware('can:accounts.view');
 Route::livewire('/accounts/periods', PeriodsIndex::class)->name('accounts.periods')->middleware('can:accounts.view');
 Route::livewire('/accounts/methods', MethodAccounts::class)->name('accounts.methods')->middleware('can:accounts.view');
 Route::livewire('/approvals', Approvals::class)->name('approvals')->middleware('can:quotes.approve');
 Route::livewire('/sales/documents', DocumentsHub::class)->name('sales.documents')->middleware('can:quotes.view');
-Route::get('/quote-templates', fn () => redirect()->route('admin.quotes.index', ['tab' => 'templates'], 301))->name('quote-templates');
-Route::get('/rate-book', fn () => redirect()->route('admin.sales.documents', ['tab' => 'rate-book'], 301))->name('rate-book');
-Route::get('/description-library', fn () => redirect()->route('admin.sales.documents', ['tab' => 'descriptions'], 301))->name('description-library');
-Route::get('/document-design', fn () => redirect()->route('admin.sales.documents', ['tab' => 'design'], 301))->name('document-design');
+Route::get('/quote-templates', fn () => redirect()->route('admin.quotes.index', ['tab' => 'templates'], 301))->name('quote-templates')->middleware('can:quotes.view');
+Route::get('/rate-book', fn () => redirect()->route('admin.sales.documents', ['tab' => 'rate-book'], 301))->name('rate-book')->middleware('can:quotes.view');
+Route::get('/description-library', fn () => redirect()->route('admin.sales.documents', ['tab' => 'descriptions'], 301))->name('description-library')->middleware('can:quotes.view');
+Route::get('/document-design', fn () => redirect()->route('admin.sales.documents', ['tab' => 'design'], 301))->name('document-design')->middleware('can:quotes.view');
 
 // Projects (P4, PRJ-001…PRJ-005)
 Route::livewire('/projects', ProjectsIndex::class)->name('projects.index')->middleware('can:projects.view');
 Route::livewire('/projects/board', ProjectBoard::class)->name('projects.board')->middleware('can:projects.view');
-Route::livewire('/projects/{project}', ProjectShow::class)->name('projects.show')->whereNumber('project');
+Route::livewire('/projects/{project}', ProjectShow::class)->name('projects.show')->middleware('can:projects.view')->whereNumber('project');
 
 // Conversations (P4, CNV-001/CNV-002, WAP-001…WAP-004): one inbox for WhatsApp and the website chat widget.
 Route::livewire('/inbox', Inbox::class)->name('inbox')->middleware('can:inbox.view');
@@ -151,9 +151,9 @@ Route::livewire('/profile/security', Security::class)->name('profile.security');
 
 // Reports (P3): the group folded into Overview — one page, two views (P10.1)
 Route::livewire('/reports', ReportsHub::class)->name('reports.index')->middleware('can:reports.view');
-Route::get('/reports/sales-funnel', fn () => redirect()->route('admin.reports.index', ['tab' => 'funnel'], 301))->name('reports.funnel');
-Route::get('/reports/revenue-collections', fn () => redirect()->route('admin.reports.index', ['tab' => 'revenue'], 301))->name('reports.revenue');
-Route::get('/receivables', fn () => redirect()->route('admin.payments.index', ['tab' => 'receivables'], 301))->name('reports.receivables');
+Route::get('/reports/sales-funnel', fn () => redirect()->route('admin.reports.index', ['tab' => 'funnel'], 301))->name('reports.funnel')->middleware('can:reports.view');
+Route::get('/reports/revenue-collections', fn () => redirect()->route('admin.reports.index', ['tab' => 'revenue'], 301))->name('reports.revenue')->middleware('can:reports.view');
+Route::get('/receivables', fn () => redirect()->route('admin.payments.index', ['tab' => 'receivables'], 301))->name('reports.receivables')->middleware('can:invoices.view');
 
 // System
 Route::livewire('/settings', SettingsPage::class)->name('settings')->middleware('can:settings.manage');

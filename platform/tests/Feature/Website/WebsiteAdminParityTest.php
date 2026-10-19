@@ -1,9 +1,13 @@
 <?php
 
 use App\Domain\Website\Enums\BlockType;
-use App\Domain\Website\Enums\PageType;
+use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\Redirect;
 use App\Domain\Website\Models\SavedSection;
+use App\Livewire\Admin\Website\HeroSlidesIndex;
+use App\Livewire\Admin\Website\SectionLibraryIndex;
+use App\Livewire\Admin\Website\SeoOverviewIndex;
+use App\Livewire\Admin\Website\SiteHealthIndex;
 use App\Models\User;
 use App\Support\AdminNavigation;
 use Livewire\Livewire;
@@ -51,7 +55,7 @@ it('shows the section library standalone, renames and retires saved sections', f
     ]);
 
     Livewire::actingAs($this->editor)
-        ->test(\App\Livewire\Admin\Website\SectionLibraryIndex::class)
+        ->test(SectionLibraryIndex::class)
         ->assertSee('Lahore gallery, tuned')
         ->assertSee(BlockType::Gallery->label())
         ->call('rename', 1)
@@ -62,7 +66,7 @@ it('shows the section library standalone, renames and retires saved sections', f
     expect(SavedSection::query()->first()->name)->toBe('Lahore gallery, final');
 
     Livewire::actingAs($this->editor)
-        ->test(\App\Livewire\Admin\Website\SectionLibraryIndex::class)
+        ->test(SectionLibraryIndex::class)
         ->call('delete', 1);
 
     expect(SavedSection::query()->count())->toBe(0);
@@ -82,7 +86,7 @@ it('manages the home page hero slides on their own screen', function () {
     ]);
 
     $component = Livewire::actingAs($this->editor)
-        ->test(\App\Livewire\Admin\Website\HeroSlidesIndex::class)
+        ->test(HeroSlidesIndex::class)
         ->assertSet('homeId', $home->id)
         ->assertSee('Slide 1')
         ->assertSee('Slide 2')
@@ -101,7 +105,7 @@ it('manages the home page hero slides on their own screen', function () {
     $plainEditor->givePermissionTo(['website.edit']);
 
     Livewire::actingAs($plainEditor)
-        ->test(\App\Livewire\Admin\Website\HeroSlidesIndex::class)
+        ->test(HeroSlidesIndex::class)
         ->call('save', true)
         ->assertStatus(403);
 });
@@ -110,7 +114,7 @@ it('creates the hero slider when the home page has none yet', function () {
     $home = $this->publishHomePage();
 
     Livewire::actingAs($this->editor)
-        ->test(\App\Livewire\Admin\Website\HeroSlidesIndex::class)
+        ->test(HeroSlidesIndex::class)
         ->assertSee('No hero slider yet')
         ->call('addSlide')
         ->set('slides.0.heading', 'Spaces shaped by purpose')
@@ -125,7 +129,7 @@ it('shows every page\'s search listing on the SEO screen, and edits it in place'
     $this->publishHomePage(['title' => 'Woodex Interior — design & build', 'description' => 'Interior design in Lahore.']);
 
     Livewire::actingAs($this->editor)
-        ->test(\App\Livewire\Admin\Website\SeoOverviewIndex::class)
+        ->test(SeoOverviewIndex::class)
         ->assertSee('Woodex Interior — design & build')
         ->call('setFilter', 'draft')
         ->call('setFilter', 'all')
@@ -134,7 +138,7 @@ it('shows every page\'s search listing on the SEO screen, and edits it in place'
         ->set('editDescription', 'Interior design, fit-out and architecture in Lahore since 2016.')
         ->call('saveEdit');
 
-    $seo = \App\Domain\Website\Models\Page::query()->where('slug', '/')->first()->seo;
+    $seo = Page::query()->where('slug', '/')->first()->seo;
     expect($seo['title'])->toBe('Woodex Interior — Lahore studio')
         ->and($seo['description'])->toBe('Interior design, fit-out and architecture in Lahore since 2016.');
 });
@@ -144,7 +148,7 @@ it('reports the whole site\'s health, and catches a redirect to nowhere', functi
     Redirect::query()->create(['from_path' => '/old-page/', 'to_path' => '/does-not-exist/', 'code' => 301, 'note' => null]);
 
     Livewire::actingAs($this->editor)
-        ->test(\App\Livewire\Admin\Website\SiteHealthIndex::class)
+        ->test(SiteHealthIndex::class)
         ->assertSee('Internal links that lead nowhere')
         ->assertSee('Redirects pointing at no page')
         ->assertSee('/old-page/ → /does-not-exist/')

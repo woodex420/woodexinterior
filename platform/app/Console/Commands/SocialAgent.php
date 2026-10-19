@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Domain\System\Actions\CollectSocialPostIdeas;
-use App\Domain\System\Notifications\AgentReportNotification;
 use App\Domain\System\Alerts\AlertRouter;
+use App\Domain\System\Notifications\AgentReportNotification;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * P8.5 dormant social agent: a weekly digest of what is worth posting about, for the owner alone.

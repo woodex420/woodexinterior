@@ -13,7 +13,6 @@ use App\Settings\NotificationSettings;
 use App\Settings\SalesSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * CNV-007: flag WhatsApp conversations whose reply target has passed and alert the assignee

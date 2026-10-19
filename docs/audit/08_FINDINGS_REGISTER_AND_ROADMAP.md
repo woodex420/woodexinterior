@@ -29,7 +29,7 @@ implemented.**
 | **Q-02** | CI exists only as templates; nothing runs on push | Verified — no `.github/` | 1 |
 | **W-01** | 80 public URLs have two sources; CMS publishing does not change them | **Verified** — byte-identical `/about/`, static-wins rule | 2 (decision now) |
 | **B-04** | Production deploy and database cannot be verified from the sandbox | **Blocked** — live site unreachable, no credentials | 7 |
-| **B-05** | v2.1 pro builder source absent from every supplied repository | **Blocked** — repo/branch search | 2 (needs input) |
+| ~~**B-05**~~ | **Resolved** — v2.1 pro source verified in `marketingwoodex-cloud/-marketingwoodex` at `720d817` | GitHub tree API | — |
 | **S-04** | Backups have no off-site destination; restore never rehearsed | Verified — config + docs | 1 |
 
 ### 2.2 Quality and risk (P2)
@@ -108,9 +108,10 @@ pass on the new one. **Rollback:** revert the phase branch; no schema changes.
 **Exit criteria:** builder-check plus new tests for each capability; every builder action reversible;
 no change to public HTML without a publish. **Rollback:** per-capability flags in `config/website.php`.
 
-**Blocked input:** the v2.1 pro source (B-05). Without it I will implement the capability matrix in
-`03` §4 from the written brief, not from a pixel reference. If the owner has the ZIP, supply it before
-this phase starts.
+**Reference input:** B-05 is resolved. The v2.1 builder source is available at
+`marketingwoodex-cloud/-marketingwoodex`, branch `arena/8a776c65-marketingwoodex`, SHA `720d817`
+(`frontend-v1/builder/*`, `api/builder.php`). Phase 2 compares behaviour against that source; it is a
+reference, not code to merge (different stack, no licence file — see `09`).
 
 ### Phase 3 — Public cutover, group by group *(~1 week, owner-ordered)*
 
@@ -170,7 +171,7 @@ If the owner disagrees, these become explicit scope additions with cost.
 | **D2** | Static→CMS cutover order (W-01) | `docs/13` order / owner's own order / keep static forever | Convert group by group after the builder is solid (Phase 3) |
 | **D3** | The HTML block before S-03 is fixed | Restrict to owner / disable / accept risk | Restrict to owner in Phase 1, fix properly |
 | **D4** | Free canvas and plugin registry | Build / decline | Decline, record in `docs/decisions` |
-| **D5** | v2.1 pro builder source (B-05) | Provide ZIP/branch / proceed from brief | Provide it before Phase 2 |
+| ~~**D5**~~ | v2.1 source | **Answered** — owner supplied the repository; verified | Use as reference |
 | **D6** | Production access for verification (B-04) | Read-only shell/DB / owner runs checklist / staging deploy | Read-only staging + owner-run checklist |
 | **D7** | Nav label for duplicate "Alert Rules" (N-01) | Rename Automation / rename System / leave | "Lead alert rules" (Automation) and "System alerts" (System) |
 | **D8** | Off-site backups (S-04) | S3 / SFTP / host snapshot | S3-compatible bucket + monthly restore drill |

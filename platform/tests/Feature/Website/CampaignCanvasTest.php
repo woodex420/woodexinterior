@@ -20,7 +20,7 @@ uses(InteractsWithPublicWebsite::class);
 
 beforeEach(function () {
     $this->editor = User::factory()->create();
-    $this->editor->givePermissionTo('website.edit');
+    $this->editor->givePermissionTo(['website.edit', 'website.raw_html']);
 });
 
 it('renders hand-placed HTML instead of sections, with no section chrome', function () {

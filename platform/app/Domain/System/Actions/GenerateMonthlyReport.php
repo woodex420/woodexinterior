@@ -9,16 +9,15 @@ use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Models\Message;
 use App\Domain\Sales\Enums\InvoiceStatus;
 use App\Domain\Sales\Models\Invoice;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\System\Models\MonthlyReport;
 use App\Domain\System\Notifications\MonthlyReportNotification;
-use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use App\Support\Reports\ReportRange;
 use App\Support\Reports\RevenueCollectionsReport;
 use App\Support\Reports\SalesFunnelReport;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * The monthly CRM report (P8.5): on the 1st at 09:00 the owner gets the month that just ended in

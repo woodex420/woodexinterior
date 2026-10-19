@@ -1,14 +1,14 @@
 # Woodex OS — Project Status & Quick Start
 
-**Updated:** 19 Oct 2026 · **Status: the old-admin Website parity is closed (docs/14 §5a, STATE §69) — the four screens the v2.1 pro reference had and Woodex OS lacked (Section library, Hero slides, SEO overview, Site health) are live, and every starred old-admin item sits in the sidebar under its old name (All pages, Page builder, Header & footer, Redirects, Content library, Theme). The studio's January 2025 lead sheet is imported (21 leads through the historical-import path). Audit + QA baseline from 18 Oct stands: gate green, DB clean, preview healthy.**
+**Updated:** 19 Oct 2026 (Phase 1) · **Status: Phase 0 audit accepted and Phase 1 (truth & safety) closed — stored-XSS path removed, free HTML owner-only, route access matrix green, CI active, Pint/PHPStan clean. The old-admin Website parity is closed (docs/14 §5a, STATE §69) — the four screens the v2.1 pro reference had and Woodex OS lacked (Section library, Hero slides, SEO overview, Site health) are live, and every starred old-admin item sits in the sidebar under its old name (All pages, Page builder, Header & footer, Redirects, Content library, Theme). The studio's January 2025 lead sheet is imported (21 leads through the historical-import path). Audit + QA baseline from 18 Oct stands: gate green, DB clean, preview healthy.**
 
 One line: CRM + quotations + invoicing + payments + inbox + Telegram + website CMS + double-entry ledger core are live and gated; invoices and receipts now post to the general ledger automatically, dues have a screen with consent-gated reminders, and money can be collected from the phone. Remaining: two-brand documents/estimation, tracking boards, automation agents, MySQL migration, handover.
 
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · Preline · SQLite (sandbox) → MySQL (production, planned) |
-| Tests | **1145 passing** · 118 files (sharded gate) · Pint clean · Larastan 0 |
-| Quality | Pint **607 files clean** · Larastan **0 errors** · CI workflow ready in `docs/ci/` |
+| Tests | **1,212 passing** · 125 files (batched gate) · Pint clean · Larastan 0 |
+| Quality | Pint **817 files clean** · Larastan **0 errors** · **CI active** (`.github/workflows/`) · PHPStan and Pint block the build |
 | Progress log | [`platform/STATE.md`](platform/STATE.md) (chronological) · plan [`docs/27-P10-MASTER-PLAN.md`](docs/27-P10-MASTER-PLAN.md) |
 | Sandbox preview | port 8080 · login `owner@woodex.test` / `Woodex-Preview-2026` (demo data seeded) |
 
@@ -47,7 +47,7 @@ One line: CRM + quotations + invoicing + payments + inbox + Telegram + website C
 - Telegram secret-header + consent hardening, payment/receipt integrity, WhatsApp batching/recovery, quotation idempotency + stale send/accept guards, owner-only 2FA enrolment.
 
 ### Tooling & quality
-- Sharded test gate (per-file wasm PHP, memory-safe), Pint, Larastan — all green at `bc587df`.
+- Test gate (batched wasm PHP, memory-safe), Pint, Larastan — all green on 19 Oct 2026 (Phase 1, see `docs/audit/10_PHASE1_CLOSURE.md`).
 - CI: `docs/ci/platform-ci.yml` (tests + style + build) and `docs/ci/deploy-hostinger.yml` — ready to activate on GitHub.
 - Sandbox rig: PHP-8.4-wasm tooling snapshotted in `~/tools/` (outside the repo) with a full rebuild README.
 

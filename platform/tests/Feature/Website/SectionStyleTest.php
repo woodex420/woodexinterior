@@ -23,7 +23,7 @@ uses(InteractsWithPublicWebsite::class);
 
 beforeEach(function () {
     $this->editor = User::factory()->create();
-    $this->editor->givePermissionTo(['website.edit', 'website.publish']);
+    $this->editor->givePermissionTo(['website.edit', 'website.publish', 'website.raw_html']);
 });
 
 it('prints the settings as classes on the section wrapper', function () {

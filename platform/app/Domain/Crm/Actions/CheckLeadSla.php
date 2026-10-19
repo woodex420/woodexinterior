@@ -14,7 +14,6 @@ use App\Settings\NotificationSettings;
 use App\Settings\SalesSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * First-response SLA (CRM-010): flag open leads nobody has contacted by their due time and alert the

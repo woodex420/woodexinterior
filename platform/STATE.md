@@ -2321,3 +2321,25 @@ mount defensively if the thing might not exist; `x-admin.modal` wants a boolean 
 `submit=`, not a `:show`; `x-admin.badge` takes `color=` not `tone=`; `PageCache` lives under
 `Domain\Website\Services`, not `Support`; the trait `use InteractsWithAdmin;` inside the class body
 is separate from the import — the method-missing error appears only when an action runs.
+
+
+## 19 Oct 2026 — Phase 0 audit accepted; Phase 1 truth & safety closed
+
+The platform audit (`docs/audit/`, nine documents + raw evidence) was accepted with the phase order
+audit → safety → builder → cutover → modules → polish → QA → deploy. Phase 1 landed:
+
+- **S-03 fixed.** `CanvasHtml` is now a DOM allow-list, not a regex. Unquoted `onerror`, entity-encoded
+  `javascript:`, backtick URLs, `srcdoc`, SVG handlers, forms and `@import` are all neutralised; the
+  studio's legitimate section/table/img/iframe/style markup is preserved. Free HTML is owner-only
+  through the new `website.raw_html` permission, checked in `SavePage` (server) and hidden in the editor.
+- **S-01 partially closed.** 26 admin routes gained route-level permissions; `AdminRouteAccessTest`
+  probes all 66 parameterless admin GETs as the support role (7×200, 4×301, 55×403) and signed-out
+  (all → login).
+- **Q-02/Q-03/Q-05/Q-04/Q-08 closed.** CI workflows are in `.github/workflows/`; Pint passes 817 files;
+  PHPStan 0 errors; status numbers corrected; builder check ignores aborted beacon requests.
+- **B-05 resolved.** The v2.1 reference is `marketingwoodex-cloud/-marketingwoodex@720d817`, branch
+  `arena/8a776c65-marketingwoodex` — `frontend-v1/builder/*`, including `templates-v26.js` and the
+  per-breakpoint style model. See `docs/audit/09`.
+
+Tests: **1,212 passed / 1 skipped / 0 failed** across 125 files (8,475 assertions). No migrations.
+`composer.lock` remains open until the first CI run resolves and prints it.

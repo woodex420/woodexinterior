@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Website;
 
-use App\Domain\Website\Enums\BlockType;
 use App\Domain\Website\Models\SavedSection;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;

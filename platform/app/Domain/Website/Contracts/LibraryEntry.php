@@ -17,6 +17,10 @@ interface LibraryEntry
     /** What the entry is called in lists. */
     public function label(): string;
 
-    /** The entry as its section renders it. */
+    /**
+     * The entry as its section renders it.
+     *
+     * @return array<string, mixed>
+     */
     public function toRow(): array;
 }

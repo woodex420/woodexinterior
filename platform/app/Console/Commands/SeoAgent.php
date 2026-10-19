@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Domain\System\Notifications\AgentReportNotification;
 use App\Domain\System\Alerts\AlertRouter;
+use App\Domain\System\Notifications\AgentReportNotification;
 use App\Domain\Website\Actions\CheckSeoHealth;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * P8.5 dormant SEO agent: a weekly, read-only look at the website's search basics, sent to the

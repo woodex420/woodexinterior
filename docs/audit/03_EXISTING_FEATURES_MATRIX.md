@@ -135,6 +135,10 @@ typed model covers the **marketing/business/CMS/form** families at section granu
 
 ## 5. Quality, security and delivery findings (Phase 0)
 
+> **Status after Phase 1 (19 Oct):** S-03, Q-02, Q-03, Q-04, Q-05 and Q-08 are **closed**; S-01 is
+> **partially closed** (66 parameterless screens matrixed, parameterized routes still policy-tested);
+> Q-01 (`composer.lock`) remains open pending the first CI run. See `10_PHASE1_CLOSURE.md`.
+
 | ID | Priority | Area | Finding | Evidence | Recommended action |
 |---|---|---|---|---|---|
 | Q-01 | **P1** | Supply chain | No `composer.lock` in root or `platform/` | `git ls-files \| grep composer.lock` → none | Commit a lockfile; CI installs with `--locked` |
@@ -151,7 +155,7 @@ typed model covers the **marketing/business/CMS/form** families at section granu
 | I-01 | **P2** | Integrations | Provider "connection flow is not implemented in this release" on the Integrations screen | Blade line 73 | Label it UI-only in the matrix; no fake success |
 | N-01/N-02/N-03 | P2 | Navigation | Duplicate Alert Rules; undefined P4b; portal shown as planned though built | §02 | Owner decision + one small nav fix |
 | B-04 | **P1** | Release evidence | Production deployment and database unverifiable from the sandbox | curl SSL failure; no credentials | Owner supplies a read-only check or runs the release checklist on the host |
-| B-05 | **P1** | Reference | v2.1 pro source missing | branch/repo search | Owner supplies the branch or ZIP |
+| B-05 | — | Reference | **Resolved** — v2.1 pro source found at `marketingwoodex-cloud/-marketingwoodex@720d817` (branch `arena/8a776c65-marketingwoodex`) | GitHub tree API: `frontend-v1/builder/templates-v26.js`, `builder.js`, `api/builder.php` | Use as Phase 2 reference (`09`) |
 
 ---
 

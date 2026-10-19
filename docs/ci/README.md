@@ -1,8 +1,11 @@
-# GitHub Actions workflows (ready to activate)
+# GitHub Actions workflows
 
-These two workflows are complete. They live here because the Arena GitHub connection that pushed this branch
-does not have permission to write files inside `.github/workflows/`. GitHub requires the special "workflows"
-permission for that.
+**Activated in Phase 1 (19 Oct 2026):** the same files now live in `.github/workflows/` and run on push.
+The copies in this folder are the source of truth for review; if you edit one, copy it to `.github/workflows/`
+in the same commit.
+
+Until Phase 1 they were dormant because the Arena GitHub connection that pushed this branch may lack the
+special "workflows" permission GitHub requires for files inside `.github/workflows/`.
 
 | File | What it does |
 |---|---|

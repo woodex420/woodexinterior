@@ -9,6 +9,7 @@ use App\Domain\Website\Models\Page;
 use App\Domain\Website\Services\Menus;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -161,7 +162,7 @@ class MenusIndex extends Component
      * Where the "add a link" form can place a new link: the top level, any top link (dropdown), and any
      * second-level link (the columns of a mega panel).
      *
-     * @param  \Illuminate\Support\Collection<int, NavigationItem>  $items
+     * @param  Collection<int, NavigationItem>  $items
      * @return list<array{id: string, label: string}>
      */
     private function parentOptions($items): array

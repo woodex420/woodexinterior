@@ -36,7 +36,10 @@ const step = (message) => console.log(`  ${message}`);
 const fail = (message) => { problems.push(message); console.log(`  FAIL ${message}`); };
 
 page.on('requestfailed', (r) => {
-    if (r.url().startsWith(BASE)) problems.push(`request failed: ${r.url()} (${r.failure()?.errorText})`);
+    if (! r.url().startsWith(BASE)) return;
+    // The preview reloads while a beacon is in flight; the cancelled sendBeacon is not a page failure.
+    if (r.url().includes('/__preview-beacon') && r.failure()?.errorText === 'net::ERR_ABORTED') return;
+    problems.push(`request failed: ${r.url()} (${r.failure()?.errorText})`);
 });
 page.on('response', (r) => { if (r.status() >= 400 && r.url().startsWith(BASE)) problems.push(`HTTP ${r.status()}: ${r.url()}`); });
 page.on('console', (m) => { if (m.type() === 'error') problems.push(`console error: ${m.text()}`); });

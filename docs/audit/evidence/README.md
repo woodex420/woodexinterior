@@ -44,6 +44,17 @@ The complete-suite and browser-check artifacts were added after the first copy; 
 `06_QA_EVIDENCE_AND_RELEASE_GATE.md` §2 and §5. The suite file lists 122 files because it includes
 `tests/ArchTest.php` in addition to the 121 under `Feature`/`Unit`.
 
+## Phase 1 evidence (19 Oct, after the fixes)
+
+| File | Produced by | Result |
+|---|---|---|
+| `phase1-all-tests.txt` + `phase1-all-tests-lines.txt` | batched Pest, 125 files | **1,212 passed, 1 skipped, 0 failed**, 8,475 assertions |
+| `phase1-fail.txt` | same | empty |
+| `phase1-pint.txt` | `pint --test` | **PASS, 817 files** |
+| `phase1-phpstan.txt` | `phpstan analyse` | **`[OK] No errors`** |
+| `phase1-smoke.txt` | `smoke.sh` | **SMOKE OK (68 pages)** |
+| `phase1-builder-check.txt` | `builder-check.mjs` | **BUILDER CHECK OK** |
+
 Notes on what these files do **not** cover:
 
 - No production data or production server was touched. The database is the sandbox sqlite copy.

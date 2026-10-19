@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Conversations\Actions;
 
+use App\Domain\Bot\Actions\ReplyWithBot;
 use App\Domain\Conversations\Enums\MessageDirection;
 use App\Domain\Conversations\Enums\MessageStatus;
 use App\Domain\Conversations\Enums\MessageType;
@@ -73,7 +74,7 @@ final class ReceiveWebChatMessage
             // Live thread: the assistant may answer (BOT-002) — if it is on, and only inside its
             // rails; anything it declines becomes a hand-off the team hears about.
             try {
-                app(\App\Domain\Bot\Actions\ReplyWithBot::class)->handle($conversation->refresh());
+                app(ReplyWithBot::class)->handle($conversation->refresh());
             } catch (Throwable $botFailure) {
                 report($botFailure); // the visitor's message is stored; a failed bot never loses it
             }

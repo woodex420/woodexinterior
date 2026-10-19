@@ -10,7 +10,6 @@ use App\Domain\Projects\Notifications\ProjectNotification;
 use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 /**

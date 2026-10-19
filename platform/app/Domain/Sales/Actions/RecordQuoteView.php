@@ -12,11 +12,10 @@ use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteEvent;
 use App\Domain\Sales\Models\QuoteVersion;
 use App\Domain\Sales\Notifications\QuoteNotification;
-use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Sales\Services\QuoteLinks;
 use App\Domain\Sales\Services\QuoteWriteLock;
+use App\Domain\System\Alerts\AlertRouter;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 /**

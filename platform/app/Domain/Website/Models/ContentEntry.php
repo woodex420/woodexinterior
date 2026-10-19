@@ -69,6 +69,7 @@ class ContentEntry extends Model implements LibraryEntry
      *
      * @return array<string, mixed>
      */
+    /** @return array<string, mixed> */
     public function toRow(): array
     {
         $data = (array) $this->data;

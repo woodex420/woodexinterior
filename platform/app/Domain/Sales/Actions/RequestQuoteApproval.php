@@ -8,16 +8,15 @@ use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Notifications\QuoteNotification;
-use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Sales\Services\QuoteApprovalRules;
 use App\Domain\Sales\Services\QuoteLinks;
 use App\Domain\Sales\Services\QuoteWriteLock;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\System\Enums\ApprovalStatus;
 use App\Domain\System\Models\Approval;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * Sends a quotation for approval (QUO-007): the quote waits (locked) until an owner or sales manager decides.

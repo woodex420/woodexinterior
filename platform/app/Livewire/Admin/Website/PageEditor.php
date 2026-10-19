@@ -269,6 +269,10 @@ class PageEditor extends Component
     {
         $block = BlockType::from($type);
 
+        if ($block === BlockType::Html) {
+            abort_unless($this->canUseRawHtml(), 403);
+        }
+
         $this->remember();
 
         $this->blocks[] = [
@@ -552,6 +556,8 @@ class PageEditor extends Component
      */
     public function toggleCanvas(): void
     {
+        abort_unless($this->canUseRawHtml(), 403);
+
         $this->isCanvas = ! $this->isCanvas;
 
         if ($this->isCanvas && trim($this->canvasHtml) === '') {
@@ -740,6 +746,24 @@ class PageEditor extends Component
         $this->toast('The page is back to the version of '.$version->created_at?->format('d M Y, H:i').'.');
     }
 
+    /** Free HTML is the owner's tool until the sanitiser has been exercised in production (S-03). */
+    private function canUseRawHtml(): bool
+    {
+        return $this->user()->can('website.raw_html');
+    }
+
+    /**
+     * The section library without the HTML block for anyone who may not write markup.
+     *
+     * @return list<BlockType>
+     */
+    private function availableBlockTypes(): array
+    {
+        return $this->canUseRawHtml()
+            ? BlockType::cases()
+            : array_values(array_filter(BlockType::cases(), static fn (BlockType $type): bool => $type !== BlockType::Html));
+    }
+
     public function render(): View
     {
         $media = Media::query()->orderByDesc('id')->get(['id', 'title', 'alt', 'path']);
@@ -747,10 +771,11 @@ class PageEditor extends Component
         return view('livewire.admin.website.page-editor', [
             'page' => $this->pageId !== null ? Page::query()->with(['versions.user'])->find($this->pageId) : null,
             'types' => collect(PageType::cases())->mapWithKeys(fn (PageType $type): array => [$type->value => $type->label()])->all(),
-            'blockTypes' => collect(BlockType::cases())->mapWithKeys(fn (BlockType $type): array => [$type->value => $type->label()])->all(),
-            'library' => collect(BlockType::cases())
+            'blockTypes' => collect($this->availableBlockTypes())->mapWithKeys(fn (BlockType $type): array => [$type->value => $type->label()])->all(),
+            'library' => collect($this->availableBlockTypes())
                 ->map(fn (BlockType $type): array => ['value' => $type->value, 'label' => $type->label(), 'description' => $type->description(), 'category' => $type->category()])
                 ->groupBy('category'),
+            'canUseRawHtml' => $this->canUseRawHtml(),
             'savedSections' => SavedSection::query()->with('creator')->orderBy('name')->get(),
             'templates' => PageTemplate::query()->orderBy('page_type')->orderByDesc('is_default')->orderBy('name')->get(),
             'pages' => Page::query()->orderBy('title')->get(['id', 'title', 'slug']),

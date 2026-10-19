@@ -188,7 +188,9 @@
 
             @if (! $isCanvas)
                 <x-admin.card title="Campaign canvas" description="For landing pages only (D-107): switch this page to hand-placed HTML, free of the theme's sections. Clearly marked in the Pages list; switch back any time — the sections wait underneath.">
-                    <button type="button" wire:click="toggleCanvas" class="wx-mini-btn">Switch to the campaign canvas</button>
+                    @if ($canUseRawHtml)
+                        <button type="button" wire:click="toggleCanvas" class="wx-mini-btn">Switch to the campaign canvas</button>
+                    @endif
                 </x-admin.card>
             @endif
 

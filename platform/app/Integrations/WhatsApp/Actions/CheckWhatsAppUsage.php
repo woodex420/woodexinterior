@@ -7,11 +7,10 @@ namespace App\Integrations\WhatsApp\Actions;
 use App\Domain\Conversations\Enums\MessageDirection;
 use App\Domain\Conversations\Enums\MessageStatus;
 use App\Domain\Conversations\Models\Message;
-use App\Domain\System\Notifications\WhatsAppUsageNotification;
 use App\Domain\System\Alerts\AlertRouter;
+use App\Domain\System\Notifications\WhatsAppUsageNotification;
 use App\Models\User;
 use App\Settings\IntegrationSettings;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * WAP-008: the WhatsApp cost meter.

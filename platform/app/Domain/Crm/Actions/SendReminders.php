@@ -9,8 +9,8 @@ use App\Domain\Crm\Enums\VisitStatus;
 use App\Domain\Crm\Models\SiteVisit;
 use App\Domain\Crm\Models\Task;
 use App\Domain\Crm\Notifications\TaskReminderNotification;
-use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Crm\Notifications\VisitReminderNotification;
+use App\Domain\System\Alerts\AlertRouter;
 use Illuminate\Database\Eloquent\Collection;
 
 /**

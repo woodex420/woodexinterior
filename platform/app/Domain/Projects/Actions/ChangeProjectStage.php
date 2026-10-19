@@ -15,7 +15,6 @@ use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use App\Settings\SalesSettings;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * Moving a project along its stages (PRJ-002): planning → design → procurement → execution → finishing →

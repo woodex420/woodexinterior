@@ -9,9 +9,8 @@ use App\Domain\Conversations\Models\Message;
 use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Notifications\QuoteNotification;
-use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Sales\Services\QuoteLinks;
-use Illuminate\Support\Facades\Notification;
+use App\Domain\System\Alerts\AlertRouter;
 
 /**
  * "The client may have accepted" (D-112).

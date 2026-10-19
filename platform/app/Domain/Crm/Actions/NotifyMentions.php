@@ -9,7 +9,6 @@ use App\Domain\Crm\Notifications\MentionedNotification;
 use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 /**

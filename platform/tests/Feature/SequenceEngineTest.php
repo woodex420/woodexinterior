@@ -19,6 +19,7 @@ use App\Domain\System\Enums\WhatsAppTemplateStatus;
 use App\Domain\System\Models\WhatsAppTemplate;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Integrations\WhatsApp\Fakes\FakeWhatsAppGateway;
+use App\Livewire\Admin\Automation\SequencesIndex;
 use App\Settings\SalesSettings;
 use Illuminate\Support\Facades\Artisan;
 
@@ -248,7 +249,7 @@ it('pause holds the place, resume catches up, cancel stops for good', function (
 
 it('renders the sequences screen with the built-ins and their steps', function () {
     Livewire::actingAs($this->owner)
-        ->test(\App\Livewire\Admin\Automation\SequencesIndex::class)
+        ->test(SequencesIndex::class)
         ->assertOk()
         ->assertSee('Pick a sequence')
         ->assertSee('Lead not reached')

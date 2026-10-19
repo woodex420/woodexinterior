@@ -27,7 +27,7 @@ class RolesAndPermissionsSeeder extends Seeder
         'projects.view', 'projects.manage',
         'inbox.view', 'inbox.reply',
         'automation.manage',
-        'website.edit', 'website.publish', 'theme.manage',
+        'website.edit', 'website.publish', 'website.raw_html', 'theme.manage',
         'social.manage',
         'reports.view', 'reports.finance',
         'settings.manage', 'users.manage', 'integrations.manage',
@@ -46,7 +46,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $roles = [
             'owner' => $all,
-            'admin' => array_values(array_diff($all, ['quotes.approve', 'invoices.void', 'accounts.manage'])),
+            'admin' => array_values(array_diff($all, ['quotes.approve', 'invoices.void', 'accounts.manage', 'website.raw_html'])),
             'sales_manager' => [
                 'dashboard.view',
                 'leads.view', 'leads.view_all', 'leads.create', 'leads.update', 'leads.assign', 'leads.export',

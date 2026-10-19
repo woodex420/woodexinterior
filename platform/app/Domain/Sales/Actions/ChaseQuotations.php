@@ -8,12 +8,11 @@ use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteEvent;
 use App\Domain\Sales\Notifications\QuoteNotification;
-use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Sales\Services\QuoteLinks;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Settings\SalesSettings;
 use Carbon\CarbonInterface;
 use DateTimeInterface;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * Quotations do not answer themselves (AUT, quotation step 3).

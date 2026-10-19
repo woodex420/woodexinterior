@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\System\Actions;
 
+use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\System\Enums\ChangeRequestStatus;
 use App\Domain\System\Models\ChangeRequest;
 use App\Domain\System\Notifications\ChangeRequestUpdatedNotification;
-use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 

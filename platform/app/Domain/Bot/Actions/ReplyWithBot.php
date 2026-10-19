@@ -19,13 +19,12 @@ use App\Domain\Conversations\Enums\MessageStatus;
 use App\Domain\Conversations\Enums\MessageType;
 use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Models\Message;
-use App\Domain\System\Notifications\BotHandoffNotification;
 use App\Domain\System\Alerts\AlertRouter;
+use App\Domain\System\Notifications\BotHandoffNotification;
 use App\Models\User;
 use App\Settings\BotSettings;
 use App\Settings\BusinessSettings;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * The assistant's one move (BOT-002/006/007/008/010): a visitor message came in on a live

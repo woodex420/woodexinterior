@@ -8,7 +8,6 @@ use App\Domain\Website\Models\Page;
 use App\Domain\Website\Services\PageCache;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -25,6 +24,7 @@ use Livewire\Component;
 class SeoOverviewIndex extends Component
 {
     use InteractsWithAdmin;
+
     /** Filter: all / published / drafts. */
     public string $filter = 'published';
 

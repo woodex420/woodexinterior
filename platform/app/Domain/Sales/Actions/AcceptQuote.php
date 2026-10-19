@@ -12,12 +12,11 @@ use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Notifications\QuoteNotification;
-use App\Domain\System\Alerts\AlertRouter;
 use App\Domain\Sales\Services\QuoteLinks;
+use App\Domain\System\Alerts\AlertRouter;
 use App\Models\User;
 use App\Support\Phone;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * The client accepts on the quotation page (QUO-009/011): typed name + confirmation. The quote is accepted, the

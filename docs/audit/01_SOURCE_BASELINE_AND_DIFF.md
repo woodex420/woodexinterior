@@ -180,7 +180,7 @@ stale, not the code (see finding Q-04).
 
 | Gap | Evidence | Impact | Status |
 |---|---|---|---|
-| **Frontend V1 source** (admin v2.1 pro: `frontend-v1/builder/*`, `templates-v26.js`, `api/builder.php`) | Branch `arena/8a776c65-marketingwoodex` is absent from `git ls-remote`. No accessible repo (`woodexinterior`, `woodex`, `woodex-2030`, `Woodex-theme-V1`, `woodex-vibe-frontend`, `agent.woodex`, `espocrm`) contains `templates-v26`, `frontend-v1/`, `builder.js` or `builder.php` in its tree (`gh api …/git/trees/HEAD?recursive=1`) | The "master frontend reference" can only be compared by its **rendered output** (79 exported page folders in `platform/public`), not its editor source. **No claim about v2.1 pro internals can be verified.** | **Blocked** |
+| **Frontend V1 source** (admin v2.1 pro: `frontend-v1/builder/*`, `templates-v26.js`, `api/builder.php`) | **Resolved after owner input (19 Oct, 20:05):** repository `marketingwoodex-cloud/-marketingwoodex`, branch `arena/8a776c65-marketingwoodex`, SHA `720d817cbce9d01c3a52278c2c9045c6cd7d2564`. Contains `frontend-v1/builder/templates-v26.js` (47,340 B), `builder.js` (166,844 B), `builder.css` (26,469 B), `api/builder.php` (36,130 B), `_templates/page-templates-v26.json` (47,800 B) | The earlier search covered the `woodex420` org only; this repo is in `marketingwoodex-cloud`. See `09_REFERENCE_SOURCE_VERIFICATION.md` | **Verified** |
 | **Production deployment** `woodex.com.pk` / `admin` | `curl https://woodex.com.pk/` → `SSL_ERROR_SYSCALL` (sandbox egress allowlist) | Cannot prove that the deployed commit, database or assets match this checkout | **Blocked** |
 | **Production database** | No credentials, by design | Cannot verify data integrity, row counts, indexes or backups in production | **Blocked** |
 | **GitHub Actions** | No `.github/workflows` in the repository; workflows exist only as templates in `docs/ci/` | CI is **not running**; the green suite above is a local run, not a pipeline | Verified |
@@ -201,6 +201,6 @@ repository (recorded for the owner; not modified).
   screen answers 200 on the seeded sandbox.
 - **Two quality gates are not green as documented**: repo-wide Pint (33 files) and CI (inactive).
 - **Dependency resolution is not reproducible** without `composer.lock`.
-- **Production parity and the v2.1 pro reference source are unverifiable from this environment.**
+- **Production parity is unverifiable from this environment.** The v2.1 pro reference source was supplied and verified after the first pass — see `09`.
   Any statement in later phases about "the old admin did X" must cite the exported frontend, the
   owner's screenshots, or a recovered branch — never memory.

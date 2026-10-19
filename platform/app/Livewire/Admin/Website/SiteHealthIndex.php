@@ -117,7 +117,11 @@ class SiteHealthIndex extends Component
         return $issues === 0 ? 'everything checks out' : $issues.' site-wide finding(s)';
     }
 
-    /** Pages carrying a missing-alt finding (the audit counts the images per page). */
+    /**
+     * Pages carrying a missing-alt finding (the audit counts the images per page).
+     *
+     * @param  array{pages: list<array{id: int, title: string, slug: string, draft: bool, issues: list<array{code: string, message: string, fix: ?string}>}>, site: list<array<string, mixed>>, counts: array<string, int>}  $audit
+     */
     private function pagesWithoutAlt(array $audit): int
     {
         return collect($audit['pages'])

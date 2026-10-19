@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Integrations\WhatsApp\Actions;
 
-use App\Domain\System\Notifications\WhatsAppQualityNotification;
 use App\Domain\System\Alerts\AlertRouter;
+use App\Domain\System\Notifications\WhatsAppQualityNotification;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Models\User;
 use App\Settings\IntegrationSettings;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * WAP-010: watch Meta's quality rating for the studio's number.
