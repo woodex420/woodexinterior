@@ -40,6 +40,14 @@ function builder(User $user, array $payload): TestResponse
     return test()->actingAs($user)->postJson(route('admin.website.builder.api'), $payload);
 }
 
+it('sends a block page to its section editor instead of opening the builder', function () {
+    $block = Page::factory()->create(['slug' => '/blocks-only/', 'title' => 'Blocks only']);
+
+    $this->actingAs($this->editor)
+        ->get(route('admin.website.builder', $block))
+        ->assertRedirect(route('admin.website.pages.edit', $block));
+});
+
 it('requires the website.edit permission', function () {
     $stranger = User::factory()->create();
 

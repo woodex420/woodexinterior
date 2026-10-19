@@ -15,6 +15,15 @@ use Illuminate\Support\Facades\Route;
 final class AdminNavigation
 {
     /**
+     * Routes that answer with a full HTML document of their own (the Visual Page Builder). Livewire's
+     * `wire:navigate` swaps only the body, so navigating there from the sidebar would drop the builder's
+     * stylesheet and script — these links must do a normal page load.
+     *
+     * @var list<string>
+     */
+    public const array FULL_DOCUMENT = ['admin.website.builder'];
+
+    /**
      * @return list<array{title: string, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}>
      */
     public static function groups(): array

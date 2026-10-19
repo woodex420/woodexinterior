@@ -143,6 +143,8 @@
                                 <div class="flex items-center justify-end gap-2">
                                     @if ($page->template === 'html')
                                         <a href="{{ route('admin.website.builder', $page) }}" class="font-medium text-theme-sm text-brand-600 hover:underline">Page builder</a>
+                                    @else
+                                        <a href="{{ route('admin.website.pages.edit', $page) }}" wire:navigate class="font-medium text-theme-sm text-brand-600 hover:underline">Edit sections</a>
                                     @endif
                                     @if ($page->status->value === PageStatus::Published->value)
                                         <a href="{{ $page->canonical() }}" target="_blank" rel="noopener" class="text-theme-sm text-brand-600 hover:underline">View</a>

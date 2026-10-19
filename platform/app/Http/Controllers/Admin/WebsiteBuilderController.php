@@ -12,6 +12,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -24,9 +25,15 @@ use Illuminate\Validation\ValidationException;
  */
 final class WebsiteBuilderController
 {
-    public function show(?Page $page = null): View
+    public function show(?Page $page = null): View|RedirectResponse
     {
         $page ??= Page::query()->where('slug', '/')->firstOrFail();
+
+        // A block page belongs in the section editor: the builder stores whole HTML documents and would
+        // flatten it, so sending the owner there with an error message is not a path.
+        if ($page->template !== 'html') {
+            return redirect()->route('admin.website.pages.edit', $page);
+        }
 
         return view('admin.website.builder', [
             'page' => $page,

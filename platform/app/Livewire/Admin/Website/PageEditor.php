@@ -159,7 +159,8 @@ class PageEditor extends Component
         // An HTML page is a whole document edited in the Visual Page Builder. Saving it here would
         // write blocks and null the document, so the editor hands it over instead of showing forms.
         if ($page?->template === 'html') {
-            $this->redirectRoute('admin.website.builder', ['page' => $page], navigate: true);
+            // The builder is a full document, not a Livewire page: a normal navigation, or its CSS and JS never load.
+            $this->redirectRoute('admin.website.builder', ['page' => $page], navigate: false);
 
             return;
         }

@@ -48,7 +48,8 @@
                         <li>
                             @if ($item['route'])
                                 @php($active = request()->routeIs($item['route']) || request()->routeIs(\Illuminate\Support\Str::beforeLast($item['route'], '.index').'.*'))
-                                <a href="{{ route($item['route']) }}" wire:navigate
+                                <a href="{{ route($item['route']) }}"
+                                   @unless (in_array($item['route'], \App\Support\AdminNavigation::FULL_DOCUMENT, true)) wire:navigate @endunless
                                    @class(['menu-item group relative', 'menu-item-active' => $active, 'menu-item-inactive' => ! $active])
                                    :class="!$store.sidebar.expanded && !$store.sidebar.mobileOpen ? 'xl:justify-center' : ''"
                                    @if ($active) aria-current="page" @endif
