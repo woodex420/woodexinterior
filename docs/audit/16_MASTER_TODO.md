@@ -130,7 +130,10 @@ page can render blank.
 
 ### P3 — Leads, pipeline, alerting (5–7 sessions)
 
-1. **Lead drawer**: open from the list without leaving it; edit status/owner/stage/tags inline.
+1. **Lead drawer** — *done 2026-10-20*: clicking a client name opens the lead over the list; stage and owner
+   save in place (the Won rule still applies). Evidence: `docs/audit/evidence/lead-drawer.png`.
+   Known issue found while testing: the hub renders its own page header **and** the tab component renders
+   one, so "Leads" appears twice above the tab bar. Pre-existing on every hub screen; fix next pass.
 2. **Multiple pipelines**: `pipelines` table + stage FK (schema change — needs approval), board switcher,
    “New pipeline”, per-pipeline stages.
 3. **Assignment rules**: drag-to-reorder, edit, workload caps, test panel.

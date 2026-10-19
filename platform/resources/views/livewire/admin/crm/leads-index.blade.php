@@ -137,7 +137,7 @@
                             </td>
                             @if (in_array('contact', $columns, true))
                                 <td class="px-5 py-3">
-                                    <a href="{{ route('admin.leads.show', $lead) }}" wire:navigate class="block font-medium text-gray-800 hover:underline dark:text-white/90">{{ $lead->contact->name }}</a>
+                                    <button type="button" wire:click="openLeadDrawer({{ $lead->id }})" class="block text-left font-medium text-gray-800 hover:text-brand-600 hover:underline dark:text-white/90">{{ $lead->contact->name }}</button>
                                     <span class="mt-0.5 flex items-center gap-2 text-theme-xs text-gray-500">
                                         {{ \App\Support\Phone::display($lead->contact->phone) ?: $lead->contact->email }}
                                         @if ($wa = \App\Support\Phone::whatsappUrl($lead->contact->whatsappNumber()))
@@ -275,5 +275,98 @@
                 </div>
             </form>
         </div>
+    @endif
+    @php
+        $drawerLead = $drawerId === null ? null : \App\Domain\Crm\Models\Lead::query()
+            ->with(['contact', 'company', 'stage', 'owner'])
+            ->find($drawerId);
+    @endphp
+
+    @if ($drawerLead)
+        <div class="fixed inset-0 z-40 bg-navy-900/25" wire:click="closeLeadDrawer" aria-hidden="true"></div>
+        <aside x-on:keydown.escape.window="$wire.closeLeadDrawer()" role="dialog" aria-modal="true" aria-labelledby="lead-drawer-title"
+               class="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900">
+            <header class="flex items-start justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-gray-800">
+                <div class="min-w-0">
+                    <p class="text-theme-xs font-medium uppercase tracking-wide text-gray-400">{{ $drawerLead->ref }} · {{ $drawerLead->source->label() }}</p>
+                    <h2 id="lead-drawer-title" class="truncate text-lg font-semibold text-navy-800 dark:text-white">{{ $drawerLead->contact->name }}</h2>
+                    <p class="mt-0.5 text-theme-sm text-gray-500">
+                        {{ $drawerLead->business_line->label() }}@if ($drawerLead->service) · {{ \Illuminate\Support\Str::headline($drawerLead->service) }}@endif
+                    </p>
+                </div>
+                <button type="button" wire:click="closeLeadDrawer" class="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/10" aria-label="Close">
+                    <x-icon name="x" class="size-4" />
+                </button>
+            </header>
+
+            <div class="flex-1 space-y-5 overflow-y-auto px-5 py-4">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-theme-sm">
+                    @if ($phone = \App\Support\Phone::display($drawerLead->contact->phone))
+                        <a href="tel:{{ $drawerLead->contact->phone }}" class="inline-flex items-center gap-1.5 text-navy-700 hover:text-brand-600 dark:text-gray-300">
+                            <x-icon name="phone" class="size-4" />{{ $phone }}
+                        </a>
+                    @endif
+                    @if ($wa = \App\Support\Phone::whatsappUrl($drawerLead->contact->whatsappNumber()))
+                        <a href="{{ $wa }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-success-600 hover:text-success-700">
+                            <x-icon name="whatsapp" class="size-4" />WhatsApp
+                        </a>
+                    @endif
+                    @if ($drawerLead->contact->email)
+                        <a href="mailto:{{ $drawerLead->contact->email }}" class="text-gray-600 hover:text-brand-600 dark:text-gray-400">{{ $drawerLead->contact->email }}</a>
+                    @endif
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="wx-label" for="drawer-stage">Stage</label>
+                        <select id="drawer-stage" wire:model="drawerStage" wire:change="updateDrawerStage" wire:loading.attr="disabled" wire:target="updateDrawerStage" class="wx-input">
+                            @foreach ($stages as $stage)
+                                <option value="{{ $stage->id }}">{{ $stage->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="wx-label" for="drawer-owner">Owner</label>
+                        <select id="drawer-owner" wire:model="drawerOwner" wire:change="updateDrawerOwner" wire:loading.attr="disabled" wire:target="updateDrawerOwner" class="wx-input">
+                            @foreach ($staff as $member)
+                                <option value="{{ $member->id }}">{{ $member->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <dl class="grid gap-3 rounded-xl border border-gray-100 p-4 text-theme-sm dark:border-gray-800">
+                    <div class="flex items-center justify-between gap-3">
+                        <dt class="text-gray-500">Company</dt>
+                        <dd class="truncate text-right font-medium text-gray-800 dark:text-gray-200">{{ $drawerLead->company?->name ?? '—' }}</dd>
+                    </div>
+                    <div class="flex items-center justify-between gap-3">
+                        <dt class="text-gray-500">Expected value</dt>
+                        <dd class="text-right font-medium text-gray-800 dark:text-gray-200">
+                            {{ $drawerLead->expected_value_minor !== null ? 'PKR '.number_format($drawerLead->expected_value_minor / 100) : '—' }}
+                        </dd>
+                    </div>
+                    <div class="flex items-center justify-between gap-3">
+                        <dt class="text-gray-500">Next action</dt>
+                        <dd class="text-right font-medium text-gray-800 dark:text-gray-200">
+                            @if ($drawerLead->next_action_at)
+                                {{ $drawerLead->next_action_type?->label() ?? 'Follow up' }} · {{ $drawerLead->next_action_at->diffForHumans() }}
+                            @else
+                                —
+                            @endif
+                        </dd>
+                    </div>
+                    <div class="flex items-center justify-between gap-3">
+                        <dt class="text-gray-500">Created</dt>
+                        <dd class="text-right font-medium text-gray-800 dark:text-gray-200">{{ $drawerLead->created_at?->timezone('Asia/Karachi')->format('j M Y, g:i a') }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <footer class="flex items-center justify-between gap-3 border-t border-gray-100 px-5 py-4 dark:border-gray-800">
+                <a href="{{ route('admin.leads.show', $drawerLead) }}" class="text-theme-sm font-medium text-brand-600 hover:underline dark:text-brand-400">Open full page →</a>
+                <x-admin.button variant="secondary" size="sm" wire:click="closeLeadDrawer">Close</x-admin.button>
+            </footer>
+        </aside>
     @endif
 </div>

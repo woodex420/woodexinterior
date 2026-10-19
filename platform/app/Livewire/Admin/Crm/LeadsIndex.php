@@ -24,6 +24,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -172,6 +173,75 @@ class LeadsIndex extends Component
 
         $this->selected = [];
         $this->toast("{$moved} ".str('lead')->plural($moved)." moved to {$stage->name}.");
+    }
+
+    // ---------------------------------------------------------------------------------------------------
+    // Client drawer (owner request, 2026-10-20): clicking a name opens the lead on the right of the list,
+    // and stage/owner changes save in place. The full page stays one click away for notes and history.
+    // ---------------------------------------------------------------------------------------------------
+
+    public ?int $drawerId = null;
+
+    public ?int $drawerStage = null;
+
+    public ?int $drawerOwner = null;
+
+    public function openLeadDrawer(int $lead): void
+    {
+        $found = Lead::query()->findOrFail($lead);
+        $this->authorize('view', $found);
+
+        $this->drawerId = $found->id;
+        $this->drawerStage = $found->stage_id;
+        $this->drawerOwner = $found->owner_id;
+    }
+
+    public function closeLeadDrawer(): void
+    {
+        $this->drawerId = null;
+        $this->drawerStage = null;
+        $this->drawerOwner = null;
+    }
+
+    public function updateDrawerStage(): void
+    {
+        $lead = Lead::query()->findOrFail($this->drawerId);
+        $this->authorize('update', $lead);
+
+        $stage = PipelineStage::query()->findOrFail((int) $this->drawerStage);
+
+        try {
+            app(MoveLeadToStage::class)->handle(
+                $lead,
+                $stage,
+                $this->user(),
+                null,
+                $this->user()->hasRole('owner'),
+            );
+        } catch (ValidationException $exception) {
+            $this->drawerStage = $lead->stage_id;
+            $this->toastValidation($exception);
+
+            return;
+        }
+
+        $this->drawerStage = $lead->refresh()->stage_id;
+        $this->toast("{$lead->ref} moved to {$stage->name}.");
+    }
+
+    public function updateDrawerOwner(): void
+    {
+        $lead = Lead::query()->findOrFail($this->drawerId);
+        $this->authorize('assign', Lead::class);
+
+        $owner = User::query()->where('is_active', true)->findOrFail((int) $this->drawerOwner);
+
+        if ($lead->owner_id !== $owner->id) {
+            app(AssignLead::class)->handle($lead, $owner, $this->user(), 'Reassigned from the lead drawer');
+        }
+
+        $this->drawerOwner = $lead->refresh()->owner_id;
+        $this->toast("{$lead->ref} assigned to {$owner->name}.");
     }
 
     public function bulkDelete(): void
