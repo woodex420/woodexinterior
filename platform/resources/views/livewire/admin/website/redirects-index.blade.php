@@ -1,6 +1,6 @@
 <div>
-    <x-admin.page-header title="SEO & Redirects" description="Every URL of the previous website that no longer exists sends its visitors to the closest new page with one 301. A URL that answers 404 loses the ranking it earned over years."
-                         :breadcrumbs="['Website' => null, 'SEO & Redirects' => null]">
+    <x-admin.page-header title="Redirects" description="Every URL of the previous website that no longer exists sends its visitors to the closest new page with one 301. A URL that answers 404 loses the ranking it earned over years."
+                         :breadcrumbs="['Website' => null, 'Redirects' => null]">
         <x-slot:actions>
             <x-admin.button variant="secondary" icon="download" wire:click="exportCsv">Export CSV</x-admin.button>
         </x-slot:actions>

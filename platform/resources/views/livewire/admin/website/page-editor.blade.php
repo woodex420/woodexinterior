@@ -47,7 +47,7 @@
                     </x-admin.field>
 
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <x-admin.field label="URL" for="slug" hint="Always with a slash at both ends. Changing it breaks links: add a redirect under Website → SEO & Redirects.">
+                        <x-admin.field label="URL" for="slug" hint="Always with a slash at both ends. Changing it breaks links: add a redirect under Website → Redirects.">
                             <input id="slug" type="text" wire:model.blur="slug" class="wx-input" placeholder="/interior-design/">
                         </x-admin.field>
                         <x-admin.field label="Type" for="type">

@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * link that answers 404 loses the ranking it earned over years.
  */
 #[Layout('layouts::admin')]
-#[Title('SEO & Redirects')]
+#[Title('Redirects')]
 class RedirectsIndex extends Component
 {
     use InteractsWithAdmin;

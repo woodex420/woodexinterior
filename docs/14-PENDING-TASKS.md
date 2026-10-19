@@ -127,6 +127,15 @@ Still missing from the old system — the wave continues after F2/F3:
 
 Order after F2/F3: F5 → F6 → F8 (+F10 folded in) → F7 → F9 → F11.
 
+**Update, 19 Oct — the menu parity is closed.** The old admin's own screens that were still missing
+are built, and every item the owner starred now sits in the sidebar under its old name:
+**Section library** (`/admin/website/sections`, saved sections renamed/retired standalone), **Hero
+slides** (`/admin/website/heroes`, the home page's slider on its own screen), **SEO**
+(`/admin/website/seo-overview`, every page's search listing with in-place fixes), **Site health**
+(`/admin/website/health`, the whole-site findings). Renamed to the old vocabulary: All pages,
+Header & footer, Redirects, Content library, Theme; **Page builder** opens the builder on a new
+page. One flat Website group, the owner's starred order (WebsiteAdminParityTest).
+
 ## 5 · Later phases, untouched (listed so nothing is lost)
 
 **P7 Social** (Meta connect, Messenger/IG in the inbox, Lead Ads → CRM, composer and scheduler, LinkedIn) ·

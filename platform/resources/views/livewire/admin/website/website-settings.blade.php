@@ -48,7 +48,7 @@
                     </x-admin.field>
 
                     <p class="text-theme-xs text-gray-500">
-                        The footer's link columns come from <a href="{{ route('admin.website.menus') }}" class="text-brand-600 hover:underline">Website → Menus → Footer</a>:
+                        The footer's link columns come from <a href="{{ route('admin.website.menus') }}" class="text-brand-600 hover:underline">Website → Header &amp; footer → Footer</a>:
                         a top link with children under it becomes one column — the link is the column's title, its children are the links inside it.
                     </p>
                 </div>

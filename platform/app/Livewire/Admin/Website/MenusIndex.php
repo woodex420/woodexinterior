@@ -22,7 +22,7 @@ use Livewire\Component;
  * dropdown into the wide numbered panel the v26 design shows.
  */
 #[Layout('layouts::admin')]
-#[Title('Menus')]
+#[Title('Header & footer')]
 class MenusIndex extends Component
 {
     use InteractsWithAdmin;

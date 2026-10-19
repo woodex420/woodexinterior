@@ -2264,3 +2264,60 @@ database audit, the planned checks per area, pending tasks + workflow routes + U
 five-system overview). Remaining owner-gated items unchanged (Meta/LinkedIn, SYS-009b backups +
 drills, Turnstile keys, WEB-007b slots, CNV-006 provider, model key/budget, conversion groups,
 final v2.1 sync).
+
+## 69. The old-admin Website parity — four screens, old names, the January sheet (19 Oct 2026)
+
+The owner's ask, in their words: the old woodex admin v2.1 pro's Website section still wasn't
+in Woodex OS — Integrations, page builder, Pages & builder (All pages · Page builder · Section
+library · Header & footer · Hero slides · Redirects), Content (Media · SEO · SEO agent · Speed ·
+Site health · Theme). Analysis first, questions second (the owner chose: flat sidebar with the old
+names, Page builder opens a new page, Hero slides manage the home slider, import the attached CSV),
+then the build.
+
+**Four new screens** (all behind `website.edit`, all Livewire like their siblings):
+- **Section library** (`/admin/website/sections`): the saved sections standalone — rename, retire,
+  the type's label and blurb. The page builder keeps save/insert; this is the librarian.
+- **Hero slides** (`/admin/website/heroes`): the home page's Slider block on its own screen — photo,
+  kicker, heading, text, display word, buttons per slide; add/remove/reorder; save draft or publish
+  through the same SavePage the builder uses (snapshot, versions, cache, menus flush). Creates the
+  slider as the home page's first section when none exists; honest empty state when there is no
+  home page. Publishing needs `website.publish`; moves to Won-style stages go through
+  MoveLeadToStage's own rules (owner override only for historical fact).
+- **SEO** (`/admin/website/seo-overview`): every page's search listing in one table — meta title
+  and description with length verdicts (title ~65, description ~165), the source of each
+  (set / from the page title / from the excerpt / missing), robots rule, published/draft filters,
+  and the two listing fields editable in place (writes the same `seo` array the editor writes,
+  invalidates the page cache). The SEO agent keeps its own route and screen.
+- **Site health** (`/admin/website/health`): the whole-site findings from the same SeoAudit —
+  broken internal links, redirects to nowhere, orphan pages, pages with images missing alt text,
+  robots/sitemap routes live — each with a one-line hint and a link to the screen that fixes it.
+
+**Old names restored** (labels only, routes untouched): Pages → **All pages**, Menus → **Header &
+footer** (screen title too), SEO & Redirects → **Redirects**, Content → **Content library**,
+Theme Builder → **Theme**; plus new items **Page builder** (→ the builder with a new page) and the
+four above. One flat Website group, fifteen items, the owner's starred old-admin order.
+
+**Tests:** WebsiteAdminParityTest (7): the sidebar's Website labels item-for-item, each screen's
+behaviour (rename/delete, slide add/move/remove/save incl. the publish permission gate and the
+no-home empty state, listing edit, health findings with a planted broken redirect), and all four
+routes 403 without `website.edit`. P10SidebarHubsTest's live count 43 → 48. Website suite + hubs:
+**179 passed (2290 assertions)**. Smoke: **68 pages** (was 64). Browser probe: sidebar complete,
+six screens titled right, zero console errors.
+
+**The January 2025 lead sheet** ("Jan 2025 - Lead Mamagment (2).csv", 26 rows): imported through
+CaptureLead's historical path (`source=import`, `historicalAt` = the sheet's date — no
+notifications, no SLA, no assignment). The sheet's own quirks, handled: the header's "Lead Source,
+Status" columns are swapped versus its data rows (col 7 is the status, col 8 is
+Furniture/Project/Interior — read what the rows hold); undated rows filed at the sheet's month end
+with that said in the record; Won rows and existing clients → stage Won with the sheet's date
+(owner override — the historical fact needs no accepted quotation); Hold → On hold; messy phones
+through Phone::normalize (one unrecognisable number skipped); companies firstOrCreate and linked.
+**21 imported (12 furniture, 7 interior, 2 project; 8 new, 2 on hold, 11 won), 5 skipped with
+reasons** (2 duplicate people the system rightly refuses to double-import, 1 unrecognisable phone,
+2 rows with neither phone nor email). Verified on /admin/leads in the browser.
+
+Gotchas: `Route::livewire` pages 404 (not 500) when a component's `mount()` hits `firstOrFail` —
+mount defensively if the thing might not exist; `x-admin.modal` wants a boolean property name +
+`submit=`, not a `:show`; `x-admin.badge` takes `color=` not `tone=`; `PageCache` lives under
+`Domain\Website\Services`, not `Support`; the trait `use InteractsWithAdmin;` inside the class body
+is separate from the import — the method-missing error appears only when an action runs.

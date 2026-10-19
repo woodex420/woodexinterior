@@ -40,7 +40,7 @@ class SiteSettings extends Settings
     /*
      * V2-3 (docs/14): the structured header/footer editor. The layout is fixed and professional —
      * the owner edits the words, the links and the switches here; the columns themselves live in
-     * Website → Menus (footer), where a top link with children is one footer column.
+     * Website → Header & footer (footer), where a top link with children is one footer column.
      */
 
     /** The header button's text. Empty keeps "Start your project". */

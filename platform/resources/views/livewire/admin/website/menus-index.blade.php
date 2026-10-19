@@ -1,6 +1,6 @@
 <div x-on:focus-label.window="$el.querySelector('#label')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); document.getElementById('label')?.focus()">
-    <x-admin.page-header title="Menus" description="The links in the header and the footer of every page. A link can sit under another link: a top link with children opens a dropdown, and its mega switch widens it into the numbered panel. Add a service here and it appears on the whole website at once."
-                         :breadcrumbs="['Website' => null, 'Menus' => null]" />
+    <x-admin.page-header title="Header & footer" description="The links in the header and the footer of every page. A link can sit under another link: a top link with children opens a dropdown, and its mega switch widens it into the numbered panel. Add a service here and it appears on the whole website at once."
+                         :breadcrumbs="['Website' => null, 'Header & footer' => null]" />
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <x-admin.card title="Add a link">
