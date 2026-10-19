@@ -81,6 +81,14 @@ final class SiteRouter
      */
     private function render(Page $page, bool $cacheable, bool $editorTools = false): Response
     {
+        // An HTML page (Visual Page Builder) is a whole document: head, inline CSS and all. It is
+        // served as-is — wrapping it in the Blade layout would nest a second <html> in the page.
+        if ($page->template === 'html' && trim((string) $page->canvas_html) !== '') {
+            $document = PageCache::html($page, fn (): string => (string) $page->canvas_html, $cacheable);
+
+            return new Response($document, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+        }
+
         $html = PageCache::html(
             $page,
             fn (): string => (string) view('site.page', $this->renderer->viewData($page))->render(),

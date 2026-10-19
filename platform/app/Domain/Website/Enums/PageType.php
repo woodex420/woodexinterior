@@ -22,6 +22,8 @@ enum PageType: string
     case Estimator = 'estimator';
     case Booking = 'booking';
     case Legal = 'legal';
+    /** A free-form page built in the Visual Page Builder (HTML page mode). */
+    case Page = 'page';
 
     public function label(): string
     {
@@ -38,6 +40,7 @@ enum PageType: string
             self::Estimator => 'Estimator',
             self::Booking => 'Booking',
             self::Legal => 'Legal',
+            self::Page => 'Page',
         };
     }
 

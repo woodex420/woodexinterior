@@ -156,6 +156,14 @@ class PageEditor extends Component
     {
         abort_unless($this->user()->can('website.edit'), 403);
 
+        // An HTML page is a whole document edited in the Visual Page Builder. Saving it here would
+        // write blocks and null the document, so the editor hands it over instead of showing forms.
+        if ($page?->template === 'html') {
+            $this->redirectRoute('admin.website.builder', ['page' => $page], navigate: true);
+
+            return;
+        }
+
         $this->reload($page);
     }
 

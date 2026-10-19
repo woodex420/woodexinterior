@@ -5,6 +5,8 @@
     <x-admin.page-header title="Pages" description="Every page of the public website. Content lives in the database, so a page is changed here rather than in code."
                          :breadcrumbs="['Website' => null, 'Pages' => null]">
         <x-slot:actions>
+            {{-- The visual builder is a full document of its own: a normal link, not wire:navigate. --}}
+            <x-admin.button icon="panel" :href="route('admin.website.builder')">Page builder</x-admin.button>
             <x-admin.button icon="plus" :href="route('admin.website.pages.create')" wire:navigate>New page</x-admin.button>
         </x-slot:actions>
     </x-admin.page-header>
@@ -113,6 +115,9 @@
                                 @if ($page->template === 'canvas')
                                     <x-admin.badge color="warning">canvas</x-admin.badge>
                                 @endif
+                                @if ($page->template === 'html')
+                                    <x-admin.badge color="info">page builder</x-admin.badge>
+                                @endif
                                 @if ($status === PageStatus::Published && $page->published_at?->isFuture())
                                     <span class="block text-theme-xs text-gray-500">from {{ $page->published_at->format('d M Y') }}</span>
                                 @endif
@@ -136,6 +141,9 @@
                             <td class="hidden px-5 py-3 text-gray-500 lg:table-cell">{{ $page->updated_at?->diffForHumans() }}</td>
                             <td class="px-5 py-3">
                                 <div class="flex items-center justify-end gap-2">
+                                    @if ($page->template === 'html')
+                                        <a href="{{ route('admin.website.builder', $page) }}" class="font-medium text-theme-sm text-brand-600 hover:underline">Page builder</a>
+                                    @endif
                                     @if ($page->status->value === PageStatus::Published->value)
                                         <a href="{{ $page->canonical() }}" target="_blank" rel="noopener" class="text-theme-sm text-brand-600 hover:underline">View</a>
                                         @can('website.publish')

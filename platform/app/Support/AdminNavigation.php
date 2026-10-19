@@ -68,7 +68,7 @@ final class AdminNavigation
                 // The old admin v2.1 pro's starred Website section, item for item (docs/14 §5a),
                 // one flat group so everything the owner starred is visible at once.
                 self::item('All pages', 'layout', 'admin.website.pages', 'website.edit'),
-                self::item('Page builder', 'panel', 'admin.website.pages.create', 'website.edit'),
+                self::item('Page builder', 'panel', 'admin.website.builder', 'website.edit'),
                 self::item('Section library', 'layers', 'admin.website.sections', 'website.edit'),
                 self::item('Header & footer', 'menu', 'admin.website.menus', 'website.edit'),
                 self::item('Hero slides', 'image', 'admin.website.heroes', 'website.edit'),

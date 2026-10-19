@@ -218,3 +218,62 @@ copy/paste and the columns grid.
 * Roll back a single capability by setting its flag to `false`; roll back the whole slice by checking
   out the previous commit — no data migration to undo (saved `responsive` values are ignored when the
   flag is off, and remain in the JSON if it is switched back on).
+
+---
+
+# 11. Visual Page Builder — slice 1 (2026-10-20)
+
+The v2.1 Pro visual builder now runs **inside Woodex OS**, against the CMS instead of the file
+system. This is the first slice: open, edit, save, history. Media, theme and the saved-section
+library deliberately answer “arrives with the next slice” rather than pretending.
+
+## 11.1 What was imported and what was replaced
+
+| v2.1 Pro | In Woodex OS |
+|---|---|
+| `builder/index.html` + `builder.css` + `builder.js` + `ui-kit` + 50 v26 templates + 50 blocks + CodeMirror/Lucide | reused unchanged in `public/builder/` (licences included) |
+| `api/builder.php` (files on disk, its own password) | replaced by `WebsiteBuilderController` + `BuilderApi` (Laravel session, `website.edit` policy, CSRF) |
+| page = `index.html` file | page = `pages.canvas_html` (`template = 'html'`), addressed as `about/index.html` |
+| `mtime` conflict check | `pages.updated_at` timestamp, 409 + explicit force, same message |
+| 30 file backups per page | `page_versions` rows, newest 30 kept, restore snapshots the current state first |
+| `code_guard` (owner-only new scripts) | `HtmlGuard` — same rule, same site-wide allowance |
+| login screen with a shared password | removed; OS login only, no second credential |
+
+Only five edits were made to `builder.js`; each is marked `OS PORT`: API URL from
+`window.WX_BUILDER_BOOT`, CSRF header, boot page, preview URL, and no admin-token renewal.
+
+## 11.2 Storage
+
+`pages.canvas_html` was `TEXT` (64 KB). The v1 home page is 130,672 bytes, so migration
+`2026_10_20_120000_widen_canvas_html_on_pages` widens the column to `LONGTEXT` — one column, no new
+tables, no data rewritten. **Approved by the owner before it was written.**
+
+An HTML page is served as a whole document by `SiteRouter` (head, inline CSS and all); it is never
+wrapped in the Blade layout. `PageCache` still applies, keyed on `updated_at`.
+
+## 11.3 Verified in the running app
+
+* `website:import-html /` stored `platform/public/index.html` byte for byte: page #144,
+  `template=html`, `published`, `strlen(canvas_html) = 130,672`.
+* Builder screen at `/admin/website/builder/144`: canvas mounted with the real home page
+  (12 `<section>`s, `<h1>` “Spaces shaped by purpose and identity”), page selector `index.html`.
+* Clicked the heading, typed a new one, clicked Save → toast “Saved & live ✓ (backup kept)”;
+  read-back through the API returned the new text (130,580 bytes) and a new `mtime`.
+* Automated: `tests/Feature/Website/VisualBuilderTest.php` — **12 passed / 42 assertions**.
+  Whole website suite — **225 passed / 3,801 assertions**. Pint 832 files PASS, PHPStan 0 errors.
+
+## 11.4 Known limits of this slice (by design)
+
+* Only `template = 'html'` pages open; block pages keep the block editor. Opening a block page in
+  the builder would flatten its sections, so `load`/`save` refuse it and `PageEditor` redirects an
+  HTML page to the builder.
+* Media library, theme panel, saved sections and approvals still return a named error.
+* A new page starts from a small v1-styled skeleton; copying an existing page works.
+* `public/assets/theme.css` and `public/api/forms.php` are still absent — the imported v1 pages link
+  both, which is the theme slice and the form endpoint respectively.
+
+## 11.5 Rollback
+
+Delete the two `website/builder` routes and the builder view; the pages stay `template='html'` and
+keep rendering through `SiteRouter`, so unpublishing the builder screen never takes the site down.
+Reverting the migration to `TEXT` is possible only while no page exceeds 64 KB.
