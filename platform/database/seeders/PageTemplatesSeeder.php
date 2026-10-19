@@ -18,7 +18,7 @@ class PageTemplatesSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (self::templates() as $template) {
+        foreach (self::all() as $template) {
             PageTemplate::query()->updateOrCreate(
                 ['name' => $template['name']],
                 [
@@ -29,10 +29,47 @@ class PageTemplatesSeeder extends Seeder
                 ],
             );
         }
+
+        // A template the seeder no longer carries is gone: the generated set is named after the page
+        // it came from, and an older naming would otherwise leave a duplicate of every layout behind.
+        PageTemplate::query()->whereNull('created_by')->whereNotIn('name', array_column(self::all(), 'name'))->delete();
     }
 
     /**
-     * @return list<array{name: string, page_type: PageType, description: string, is_default: bool, sections: list<array{type: string, data: array<string, mixed>}>}>
+     * The eight hand-written layouts plus the fifty the frontend supplied (19 Oct). The generated
+     * ones carry their own page type and never claim `is_default`, so a page type still opens with
+     * the layout the studio chose for it.
+     *
+     * @return list<array{name: string, page_type: PageType, description: string, is_default: bool, sections: list<array{type: string, data: array<string, mixed>, settings?: array<string, string>}>}>
+     */
+    public static function all(): array
+    {
+        $hand = self::templates();
+        $derived = require database_path('seeders/data/frontend-templates.php');
+
+        // The generated names are the pages' own titles; say where each layout came from, so a name
+        // repeated in two page types (a city page and its service twin) can still be told apart.
+        $derived = array_map(function (array $template): array {
+            $template['name'] = $template['name'].' — layout of '.$template['source'];
+
+            return $template;
+        }, $derived);
+
+        foreach ($derived as $template) {
+            $hand[] = [
+                'name' => $template['name'],
+                'page_type' => PageType::from($template['page_type']),
+                'description' => $template['description'],
+                'is_default' => false,
+                'sections' => $template['sections'],
+            ];
+        }
+
+        return $hand;
+    }
+
+    /**
+     * @return list<array{name: string, page_type: PageType, description: string, is_default: bool, sections: list<array{type: string, data: array<string, mixed>, settings?: array<string, string>}>}>
      */
     public static function templates(): array
     {

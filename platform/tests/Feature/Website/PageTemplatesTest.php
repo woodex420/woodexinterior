@@ -57,6 +57,57 @@ it('seeds the studio layouts, each with sections its types really have', functio
     expect($templates->contains(fn (PageTemplate $t) => $t->name === 'Home — v26'))->toBeTrue();
 });
 
+it('carries the studio’s own pages as templates, fifty in all', function () {
+    (new PageTemplatesSeeder)->run();
+
+    $templates = PageTemplate::query()->get();
+
+    // Fifty was the v2.1 pro library's size; these are the studio's approved layouts instead.
+    // Seven of the eight hand-written layouts are the default for their page type.
+    expect($templates)->toHaveCount(50)
+        ->and($templates->where('is_default', true))->toHaveCount(7);
+
+    $derived = $templates->filter(fn (PageTemplate $template) => str_contains($template->name, '— layout of'));
+
+    expect($derived)->toHaveCount(42);
+
+    foreach ($derived as $template) {
+        // Every section is one the builder can draw, and the background it remembers is a real preset.
+        foreach ($template->sections as $section) {
+            expect(BlockType::tryFrom((string) $section['type']))->not->toBeNull();
+
+            if (isset($section['settings']['background'])) {
+                expect(['white', 'light', 'beige', 'navy'])->toContain($section['settings']['background']);
+            }
+        }
+
+        // A layout of an approved page: it opens with a hero and gives the visitor a way to ask for
+        // the work, which is the shape every page of the frontend has.
+        $sections = $template->sections;
+
+        expect($sections[0]['type'])->toBe(BlockType::Hero->value)
+            ->and(in_array(BlockType::Form->value, array_column($sections, 'type'), true))->toBeTrue();
+    }
+});
+
+it('leaves out a layout the seeder no longer carries', function () {
+    (new PageTemplatesSeeder)->run();
+
+    // An older naming of the same layout, as a previous run would have left it.
+    PageTemplate::query()->create([
+        'name' => 'Interior Design in Lahore',
+        'page_type' => PageType::City->value,
+        'description' => 'Old',
+        'is_default' => false,
+        'sections' => [['type' => 'hero', 'data' => []]],
+    ]);
+
+    (new PageTemplatesSeeder)->run();
+
+    expect(PageTemplate::query()->where('name', 'Interior Design in Lahore')->exists())->toBeFalse()
+        ->and(PageTemplate::query()->count())->toBe(50);
+});
+
 it('starts a page from a template, sections and all', function () {
     (new PageTemplatesSeeder)->run();
     $template = PageTemplate::query()->where('name', 'Service page — short')->first();

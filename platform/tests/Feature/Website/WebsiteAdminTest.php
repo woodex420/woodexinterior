@@ -389,3 +389,40 @@ it('leaves the analytics out while tracking is switched off', function () {
     $this->publishHomePage();
     $this->siteGet('/')->assertOk()->assertDontSee('G-ABC1234567');
 });
+
+it('shows the page check on the list, and says Clear when there is nothing to fix', function () {
+    // A page with its SEO fields filled and a hero that has everything: nothing for the check to say.
+    $clean = Page::factory()->published()->withSlug('/clean-page/')->create([
+        'title' => 'Kitchen design in Lahore',
+        'seo' => [
+            'title' => 'Kitchen design in Lahore | Woodex Interior',
+            'description' => 'Kitchens planned around how a family actually cooks: measured, drawn and built by one studio team, with the same people from the first sketch to handover.',
+            'focus_keyword' => 'kitchen design lahore',
+        ],
+    ]);
+    PageBlock::factory()->for($clean)->asType(BlockType::Hero, [
+        'heading' => 'Kitchen design in Lahore',
+        'image_id' => null,
+        'primary_label' => 'Start a project',
+        'primary_url' => '/contact/',
+        'secondary_label' => '',
+        'secondary_url' => '',
+    ])->create(['position' => 0, 'block_key' => 'bcleanhero']);
+    PageBlock::factory()->for($clean)->asType(BlockType::Form)->create(['position' => 1, 'block_key' => 'bcleanform']);
+
+    // A page with a hero, no description at all: the check should point at it.
+    $needsWork = Page::factory()->published()->withSlug('/needs-work/')->create([
+        'title' => 'Needs work',
+        'seo' => [],
+    ]);
+    PageBlock::factory()->for($needsWork)->asType(BlockType::Hero)->create(['position' => 0, 'block_key' => 'bworkhero']);
+    PageBlock::factory()->for($needsWork)->asType(BlockType::Form)->create(['position' => 1, 'block_key' => 'bworkform']);
+
+    $this->actingAs($this->editor);
+
+    Livewire::test(PagesIndex::class)
+        ->assertSee('Clear')
+        ->assertSee('item')
+        // The row carries the first thing to fix, so the list explains itself without a click.
+        ->assertSee('No SEO title');
+});

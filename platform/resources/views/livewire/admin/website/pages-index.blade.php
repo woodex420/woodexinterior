@@ -10,16 +10,31 @@
     </x-admin.page-header>
 
     {{-- V2-3 F5: start a page from a template — the layout's sections land on a fresh draft. --}}
-    <div x-data="{ open: false }" class="mb-4">
+    {{-- 50 layouts now (19 Oct): the eight the studio wrote by hand plus the ones its own pages
+         supply, so the picker filters by page type instead of asking someone to scroll. --}}
+    <div x-data="{ open: false, type: '' }" class="mb-4">
         <button type="button" @click="open = !open" :aria-expanded="open.toString()"
-                class="wx-mini-btn text-theme-sm" aria-controls="template-picker">
-            {{ count($templates) }} page templates — start from one ▾
+                class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3 py-2 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                aria-controls="template-picker">
+            {{ count($templates) }} page templates — start from one
+            <x-icon name="chevron-down" class="size-3.5" />
         </button>
 
         <div id="template-picker" x-cloak x-show="open" @click.outside="open = false"
-             class="mt-2 grid grid-cols-1 gap-3 rounded-2xl border border-gray-200 bg-white p-4 md:grid-cols-2 xl:grid-cols-3 dark:border-gray-800 dark:bg-gray-900">
+             class="mt-2 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+            <div class="mb-3 flex flex-wrap items-center gap-1.5">
+                <button type="button" @click="type = ''" :class="type === '' ? 'bg-navy-900 text-white dark:bg-white dark:text-navy-900' : 'bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-300'"
+                        class="rounded-full px-2.5 py-1 text-theme-xs font-medium">All {{ count($templates) }}</button>
+                @foreach ($templates->groupBy(fn ($template) => $template->page_type->value) as $value => $group)
+                    <button type="button" @click="type = '{{ $value }}'" :class="type === '{{ $value }}' ? 'bg-navy-900 text-white dark:bg-white dark:text-navy-900' : 'bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-300'"
+                            class="rounded-full px-2.5 py-1 text-theme-xs font-medium">{{ $group->first()->page_type->label() }} {{ count($group) }}</button>
+                @endforeach
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             @foreach ($templates as $template)
-                <div class="rounded-xl border border-gray-200 p-3 dark:border-gray-800">
+                <div class="rounded-xl border border-gray-200 p-3 dark:border-gray-800"
+                     x-show="type === '' || type === '{{ $template->page_type->value }}'">
                     <div class="flex items-start justify-between gap-2">
                         <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $template->name }}</p>
                         @if ($template->is_default)
@@ -38,6 +53,7 @@
                             class="mt-3 text-theme-sm font-medium text-brand-600 hover:underline">Start this page →</button>
                 </div>
             @endforeach
+            </div>
         </div>
     </div>
 
@@ -75,6 +91,7 @@
                         <th class="px-5 py-3 font-medium">Page</th>
                         <th class="hidden px-5 py-3 font-medium md:table-cell">Type</th>
                         <th class="px-5 py-3 font-medium">Status</th>
+                        <th class="px-5 py-3 font-medium">Check</th>
                         <th class="hidden px-5 py-3 font-medium lg:table-cell">Sections</th>
                         <th class="hidden px-5 py-3 font-medium lg:table-cell">Changed</th>
                         <th class="px-5 py-3"><span class="sr-only">Actions</span></th>
@@ -100,6 +117,21 @@
                                     <span class="block text-theme-xs text-gray-500">from {{ $page->published_at->format('d M Y') }}</span>
                                 @endif
                             </td>
+                            <td class="px-5 py-3">
+                                @php $check = $checks[$page->id] ?? null; @endphp
+                                @if ($check === null || $check['count'] === 0)
+                                    <span class="inline-flex items-center gap-1 text-theme-xs text-success-600 dark:text-success-500" title="Nothing to fix">
+                                        <x-icon name="check-circle" class="size-3.5" /> Clear
+                                    </span>
+                                @else
+                                    <a href="{{ route('admin.website.pages.edit', $page) }}#page-check" wire:navigate
+                                       class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-theme-xs font-medium hover:underline {{ $check['bad'] > 0 ? 'bg-error-50 text-error-700 dark:bg-error-500/10 dark:text-error-500' : 'bg-warning-50 text-warning-700 dark:bg-warning-500/10 dark:text-warning-500' }}"
+                                       title="{{ $check['first'] }}">
+                                        <x-icon name="alert" class="size-3" />
+                                        {{ $check['count'] }} {{ \Illuminate\Support\Str::plural('item', $check['count']) }}
+                                    </a>
+                                @endif
+                            </td>
                             <td class="hidden px-5 py-3 text-gray-600 lg:table-cell dark:text-gray-400">{{ $page->blocks_count }}</td>
                             <td class="hidden px-5 py-3 text-gray-500 lg:table-cell">{{ $page->updated_at?->diffForHumans() }}</td>
                             <td class="px-5 py-3">
@@ -121,7 +153,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">
+                            <td colspan="7">
                                 <x-admin.empty title="No pages yet" description="Create the first page, or import the 143 URLs of the previous website with the importer." />
                             </td>
                         </tr>

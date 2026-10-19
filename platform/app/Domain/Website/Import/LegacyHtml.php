@@ -66,10 +66,32 @@ final class LegacyHtml
     {
         $blocks = [];
 
+        foreach ($this->sectionsWithBlocks() as $section) {
+            foreach ($section['blocks'] as $block) {
+                $blocks[] = $block;
+            }
+        }
+
+        return $blocks;
+    }
+
+    /**
+     * The same blocks, kept per top-level section (19 Oct, page templates): a template remembers the
+     * page's rhythm — a soft section, then a dark one — as well as its order. `classes` is the raw
+     * class attribute, so the caller can read the old site's own `…-soft` / `…-dark` markers.
+     *
+     * @return list<array{classes: string, blocks: list<array{type: BlockType, data: array<string, mixed>}>}>
+     */
+    public function sectionsWithBlocks(): array
+    {
+        $sections = [];
+
         foreach ($this->sections() as $section) {
             if ($this->isSharedSection($section)) {
                 continue;
             }
+
+            $blocks = [];
 
             foreach ($this->groups($section) as $group) {
                 $block = $this->hero($group)
@@ -87,9 +109,13 @@ final class LegacyHtml
                     $blocks[] = $block;
                 }
             }
+
+            if ($blocks !== []) {
+                $sections[] = ['classes' => (string) $section->getAttribute('class'), 'blocks' => $blocks];
+            }
         }
 
-        return $blocks;
+        return $sections;
     }
 
     /**

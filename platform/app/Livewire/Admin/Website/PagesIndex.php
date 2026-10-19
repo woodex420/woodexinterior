@@ -9,6 +9,7 @@ use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\PageTemplate;
 use App\Domain\Website\Services\Menus;
+use App\Domain\Website\Services\PageAudit;
 use App\Domain\Website\Services\PageCache;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
@@ -133,7 +134,39 @@ class PagesIndex extends Component
             ->orderBy('sort')
             ->orderBy('title')
             ->withCount('blocks')
+            ->with('blocks')
             ->get();
+
+        // The page check, on the list (19 Oct): a published page can look fine and still be missing
+        // its description or an image's alt text. The count is the editor's own PageAudit, read-only.
+        $imageAlt = DB::table('website_media')->pluck('alt', 'id')
+            ->map(fn ($alt): string => (string) $alt)
+            ->all();
+
+        $checks = $pages->mapWithKeys(function (Page $page) use ($imageAlt): array {
+            $findings = PageAudit::findings(
+                $page->title,
+                (string) ($page->seo['title'] ?? ''),
+                (string) ($page->seo['description'] ?? ''),
+                (string) ($page->seo['focus_keyword'] ?? ''),
+                $page->blocks->map(fn ($block): array => [
+                    'type' => $block->type->value,
+                    'visible' => (bool) $block->visible,
+                    'data' => (array) $block->data,
+                ])->all(),
+                $imageAlt,
+            );
+
+            // Suggestions (a missing focus keyword) do not count here: the list is for pages that
+            // need work, not for every page in the site.
+            $issues = array_values(array_filter($findings, fn (array $finding): bool => $finding['level'] !== PageAudit::INFO));
+
+            return [$page->id => [
+                'count' => count($issues),
+                'bad' => count(array_filter($issues, fn (array $finding): bool => $finding['level'] === PageAudit::BAD)),
+                'first' => $issues[0]['message'] ?? '',
+            ]];
+        })->all();
 
         // How many of the 143 URLs of the previous website are live or redirected (docs/09 §3).
         $counts = [
@@ -146,6 +179,7 @@ class PagesIndex extends Component
         return view('livewire.admin.website.pages-index', [
             'templates' => PageTemplate::query()->orderBy('page_type')->orderByDesc('is_default')->orderBy('name')->get(),
             'pages' => $pages,
+            'checks' => $checks,
             'counts' => $counts,
             'types' => collect(PageType::cases())->mapWithKeys(fn (PageType $type): array => [$type->value => $type->label()])->all(),
             'statuses' => collect(PageStatus::cases())->mapWithKeys(fn (PageStatus $status): array => [$status->value => $status->label()])->all(),

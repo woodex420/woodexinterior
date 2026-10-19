@@ -109,6 +109,21 @@ if (!templateToggle) { console.log('FAIL no template picker on the pages screen'
 await templateToggle.click();
 await sleep(400);
 
+// The library is fifty layouts now (19 Oct): the picker says so, and its type chips narrow it.
+const library = await page.evaluate(() => {
+    const picker = document.getElementById('template-picker');
+    if (!picker) return null;
+
+    const cards = [...picker.querySelectorAll('[x-show^="type"]')];
+    const chip = [...picker.querySelectorAll('button[type="button"]')].find((el) => el.textContent.trim() === 'Service 32');
+
+    return { label: document.querySelector('button[aria-controls="template-picker"]')?.textContent.trim(), cards: cards.length, hasChip: !!chip };
+});
+if (!library || library.cards !== 50) fail(`the template picker lists ${library?.cards ?? 0} layouts, not 50`);
+else if (!/50 page templates/.test(library.label ?? '')) fail('the template button does not say how many layouts there are');
+else if (!library.hasChip) fail('the template picker has no page-type chips');
+else step(`the template picker holds ${library.cards} layouts with type chips`);
+
 const started = await page.evaluate(() => {
     const button = [...document.querySelectorAll('#template-picker button')]
         .find((el) => el.textContent.includes('Start this page'));

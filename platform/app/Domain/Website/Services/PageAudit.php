@@ -22,10 +22,13 @@ final class PageAudit
 
     public const string WARN = 'warn';
 
+    /** A suggestion, not an issue: it never counts against the page in the Pages list. */
+    public const string INFO = 'info';
+
     /**
      * @param  list<array<string, mixed>>  $blocks  the editor's blocks (id, key, type, visible, data, settings)
      * @param  array<int, string>  $imageAlt  media id => its alt text (empty string when it has none)
-     * @return list<array{level: string, area: string, message: string}>
+     * @return list<array{level: string, area: string, message: string}> level is bad, warn or info
      */
     public static function findings(
         string $title,
@@ -66,7 +69,9 @@ final class PageAudit
         $keyword = trim($focusKeyword);
 
         if ($keyword === '') {
-            $add(self::WARN, 'Search', 'No focus keyword: name the search this page should answer, so its use can be checked.');
+            // Every imported page lacked one, so it is a suggestion rather than an issue: the list
+            // should show the pages that need real work, not all 143.
+            $add(self::INFO, 'Search', 'No focus keyword yet: name the search this page should answer, so its use can be checked.');
         } else {
             $headings = implode(' ', self::headings($blocks));
             $haystack = Str::lower($seoTitle.' '.$description.' '.$headings);

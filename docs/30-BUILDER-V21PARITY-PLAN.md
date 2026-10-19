@@ -95,6 +95,8 @@ validation unless the builder writes blocks back.
 | Layers: the page as a list, search, jump to a section, move, hide | the Layers card in the editor |
 | Undo / redo for structure and style (buttons + Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z) | `PageEditor::undo/redo/remember`, 25 snapshots |
 | HTML block with a code box and sanitising | `BlockType::Html`, `site/sections/html.blade.php`, `CanvasHtml` |
+| Page check before publishing (SEO, H1s, alt text, links, opening section) | `PageAudit`, the Search engine card — and a count on every row of the Pages list |
+| Fifty page templates: the eight hand-written ones plus the layouts of the studio's own approved pages | `woodex:frontend-templates`, `database/seeders/data/frontend-templates.php`, `PageTemplatesSeeder`, the filtered picker |
 | Real-browser proof the settings reach the preview | `tools/sandbox/builder-check.mjs` (step 5) |
 
 ## 7. Still open
@@ -104,6 +106,6 @@ validation unless the builder writes blocks back.
 2. The exported `platform/public/<slug>/index.html` files still answer visitors by design; a CMS page
    of the same slug is only reachable through the builder preview. Migrating page by page is a
    separate decision, and the owner has said the frontend is final.
-3. The 50 v26 sections are not page templates yet: `PageTemplate` seeds a handful by hand. Importing
-   all fifty is the next parity item, and it needs the owner's word on which ones count as a whole
-   page rather than a lone section.
+3. The v2.1 pro library's own `templates-v26.js` lived on a branch that no longer exists, so the
+   fifty templates here are the studio's approved pages instead (see §6). If the original file turns
+   up, importing it is a separate decision — the two sets would otherwise duplicate each other.

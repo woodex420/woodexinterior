@@ -505,14 +505,22 @@
                 </div>
             </x-admin.card>
 
-            <x-admin.card title="Search engine" description="What search engines read, and the check the builder runs on it.">
+            <x-admin.card title="Search engine" description="What search engines read, and the check the builder runs on it." id="page-check">
                 <div class="mb-5 rounded-xl border border-gray-200 bg-gray-50/70 p-3 dark:border-gray-800 dark:bg-white/[0.02]">
                     <div class="flex items-center justify-between gap-2">
                         <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">Page check</p>
-                        @if ($audit === [])
-                            <span class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs text-success-700 dark:bg-success-500/10 dark:text-success-500">Everything checks out</span>
+                        @php
+                            // Suggestions are listed but never counted: the badge answers "is there
+                            // anything to fix?", not "is there anything to think about?".
+                            $issues = count(array_filter($audit, fn (array $finding): bool => $finding['level'] !== \App\Domain\Website\Services\PageAudit::INFO));
+                            $bad = count(array_filter($audit, fn (array $finding): bool => $finding['level'] === \App\Domain\Website\Services\PageAudit::BAD));
+                        @endphp
+                        @if ($issues === 0)
+                            <span class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs text-success-700 dark:bg-success-500/10 dark:text-success-500">No problems found</span>
+                        @elseif ($bad > 0)
+                            <span class="rounded-full bg-error-50 px-2 py-0.5 text-theme-xs text-error-700 dark:bg-error-500/10 dark:text-error-500">{{ $issues }} to fix</span>
                         @else
-                            <span class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs text-warning-700 dark:bg-warning-500/10 dark:text-warning-500">{{ count($audit) }} to look at</span>
+                            <span class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs text-warning-700 dark:bg-warning-500/10 dark:text-warning-500">{{ $issues }} to look at</span>
                         @endif
                     </div>
                     @if ($audit !== [])
@@ -522,7 +530,8 @@
                                     <span @class([
                                         'mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold',
                                         'bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-500' => $finding['level'] === 'bad',
-                                        'bg-warning-50 text-warning-600 dark:bg-warning-500/10 dark:text-warning-500' => $finding['level'] !== 'bad',
+                                        'bg-warning-50 text-warning-600 dark:bg-warning-500/10 dark:text-warning-500' => $finding['level'] === 'warn',
+                                        'bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400' => $finding['level'] === 'info',
                                     ]) aria-hidden="true">{{ $finding['level'] === 'bad' ? '!' : '·' }}</span>
                                     <span class="text-gray-600 dark:text-gray-300"><span class="font-medium text-gray-500">{{ $finding['area'] }}:</span> {{ $finding['message'] }}</span>
                                 </li>
