@@ -9,6 +9,7 @@ use App\Domain\Website\Models\Redirect;
 use App\Domain\Website\Services\PageCache;
 use App\Models\User;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\File;
 use Tests\Concerns\InteractsWithPublicWebsite;
 
 uses(InteractsWithPublicWebsite::class);
@@ -139,26 +140,35 @@ it('shows a helpful 404 page for a URL that belongs to nothing', function () {
     $this->get('/no-such-page')->assertRedirect($this->siteUrl('/no-such-page/'))->assertStatus(301);
 });
 
-it('lists the published pages in the sitemap and every URL answers 200', function () {
-    $this->publishHomePage();
-    Page::factory()->published()->withSlug('/interior-design/')->create(['title' => 'Interior Design']);
-    Page::factory()->withSlug('/still-draft/')->create(['title' => 'Draft']);
+it('lists the files the website serves, plus a CMS page that has no file of its own', function () {
+    // Since OS 1 the site is the files, so the sitemap is built from the files: built from the rows it listed 57
+    // of 143 pages and was blind to the service, city, area and project pages (20 Oct).
+    $site = sys_get_temp_dir().'/woodex-sitemap-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($site.'/about');
+    File::ensureDirectoryExists($site.'/draft-only');
+    File::put($site.'/index.html', '<html><head><title>Home</title></head><body></body></html>');
+    File::put($site.'/about/index.html', '<html><head><title>About</title></head><body></body></html>');
+    File::put($site.'/draft-only/index.html', '<html><head><meta name="robots" content="noindex"></head><body></body></html>');
+    $this->app->usePublicPath($site);
 
-    $sitemap = $this->get('/sitemap.xml')->assertOk()->getContent();
-    $xml = simplexml_load_string($sitemap);
+    Page::factory()->published()->withSlug('/cms-only/')->create(['title' => 'CMS only']);
+    Page::factory()->withSlug('/still-draft/')->create(['title' => 'Draft']);
+    Page::factory()->published()->withSlug('/about/')->create(['title' => 'A row shadowed by its file']);
+
+    $xml = simplexml_load_string($this->get('/sitemap.xml')->assertOk()->getContent());
 
     $urls = [];
     foreach ($xml->url as $url) {
         $urls[] = (string) $url->loc;
     }
 
-    expect($urls)->toContain(Page::urlFor('/'))->toContain($this->siteUrl('/interior-design/'))->not->toContain($this->siteUrl('/still-draft/'));
+    expect($urls)->toBe([
+        Page::urlFor('/'),
+        Page::urlFor('/about/'),
+        Page::urlFor('/cms-only/'),
+    ]);
 
-    foreach ($urls as $loc) {
-        $path = parse_url($loc, PHP_URL_PATH) ?: '/';
-
-        $this->siteGet($path)->assertOk();
-    }
+    File::deleteDirectory($site);
 });
 
 it('keeps page slugs unique and always stores them with a trailing slash', function () {

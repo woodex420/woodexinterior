@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Site;
 
-use App\Domain\Website\Enums\PageType;
+use App\Domain\Website\Builder\BuilderFile;
 use App\Domain\Website\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -12,16 +12,32 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * sitemap.xml and robots.txt for the public website (docs/09 §11.1). Everything listed answers 200 — a sitemap
- * that points at a 404 or a redirect is worse for search than a short sitemap — and the list is rebuilt from the
- * CMS, so a page appears the moment it is published.
+ * that points at a 404 or a redirect is worse for search than a short sitemap.
+ *
+ * Since Woodex OS 1 the site is the v1 files under public/, so the sitemap is built from **the files**, not from
+ * the CMS rows. Built from the rows it listed 57 of the 143 pages and was blind to the 86 service, city, area and
+ * project pages that carry the site's search traffic (20 Oct). A row that has no file is still listed: `SiteRouter`
+ * answers it, so it is a real URL.
  */
 final class SitemapController
 {
+    /** Bumped when the document changes shape, so a cached sitemap from an older build is never served. */
+    private const string VERSION = 'files-1';
+
     public function sitemap(): Response
     {
-        // Keyed on the newest page: a publish changes the key, so the sitemap is never stale.
-        $version = Page::query()->max('updated_at') ?? 'none';
-        $xml = Cache::remember('website.sitemap.'.md5((string) $version), now()->addDay(), fn (): string => $this->build());
+        $pages = BuilderFile::pages();
+
+        // Keyed on what actually changed: the newest file, the number of pages, the newest row. A publish or a
+        // builder save changes the key, so the sitemap is never stale.
+        $version = implode('|', [
+            self::VERSION,
+            (string) collect($pages)->max('mtime'),
+            count($pages),
+            (string) (Page::query()->max('updated_at') ?? 'none'),
+        ]);
+
+        $xml = Cache::remember('website.sitemap.'.md5($version), now()->addDay(), fn (): string => $this->build($pages));
 
         return response($xml, 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
     }
@@ -54,54 +70,103 @@ final class SitemapController
         return response(implode("\n", $lines)."\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
     }
 
-    private function build(): string
+    /**
+     * @param  list<array{path: string, url: string, title: string, mtime: int, size: int}>  $pages
+     */
+    private function build(array $pages): string
     {
+        $entries = [];
+
+        foreach ($pages as $page) {
+            $html = (string) @file_get_contents(public_path($page['path']));
+
+            if (self::noindex($html)) {
+                continue;
+            }
+
+            // `BuilderFile` works in paths (`/about/`); a sitemap needs the absolute URL.
+            $entries[self::absolute($page['url'])] = $this->entry(
+                self::absolute($page['url']),
+                gmdate('Y-m-d', $page['mtime']),
+                $page['url'],
+                $page['url'] === '/',
+            );
+        }
+
+        // A CMS page with a file is that file's copy and is already listed; one without a file is still a URL —
+        // SiteRouter renders it — so it belongs in the sitemap until it becomes a file too.
+        Page::query()->published()->get(['slug', 'type', 'updated_at', 'seo'])
+            ->filter(fn (Page $page): bool => ! str_contains((string) ($page->seo['robots'] ?? ''), 'noindex'))
+            ->filter(fn (Page $page): bool => ! is_file(public_path(ltrim($page->path(), '/').'index.html')))
+            ->each(function (Page $page) use (&$entries): void {
+                $entries[self::absolute((string) $page->path())] = $this->entry(
+                    self::absolute((string) $page->path()),
+                    $page->updated_at?->toDateString() ?? $this->lastModified(),
+                    (string) $page->path(),
+                    $page->path() === '/',
+                );
+            });
+
+        // The home page first, then alphabetical — stable output, so a diff is a real change.
+        uksort($entries, static fn (string $a, string $b): int => [$entries[$a]['home'] ? 0 : 1, $a] <=> [$entries[$b]['home'] ? 0 : 1, $b]);
+
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n"
             .'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
 
-        $xml .= $this->url(Page::urlFor('/'), '1.0', 'weekly', $this->lastModified());
-
-        Page::query()->published()
-            ->where('slug', '!=', '/')
-            ->orderBy('slug')
-            ->get(['slug', 'type', 'updated_at', 'seo'])
-            ->filter(fn (Page $page): bool => ($page->seo['robots'] ?? '') === '' || ! str_contains((string) $page->seo['robots'], 'noindex'))
-            ->each(function (Page $page) use (&$xml): void {
-                $xml .= $this->url(
-                    $page->canonical(),
-                    $this->priority($page->type),
-                    in_array($page->type, [PageType::Insight, PageType::Project], true) ? 'monthly' : 'weekly',
-                    $page->updated_at?->toDateString() ?? $this->lastModified(),
-                );
-            });
+        foreach ($entries as $entry) {
+            $xml .= '  <url>'
+                .'<loc>'.e($entry['loc']).'</loc>'
+                .'<lastmod>'.$entry['lastmod'].'</lastmod>'
+                .'<changefreq>'.$entry['changefreq'].'</changefreq>'
+                .'<priority>'.$entry['priority'].'</priority>'
+                .'</url>'."\n";
+        }
 
         return $xml.'</urlset>'."\n";
     }
 
-    private function url(string $loc, string $priority, string $changefreq, string $lastmod): string
+    /**
+     * One URL's line: the home page leads, a section page outranks an article, and the long-form pages
+     * (/insights/…, /projects/…) change less often than the service and city pages around them.
+     *
+     * The `home` flag rides along so the ordering does not depend on what `url('/')` looks like in the
+     * environment the sitemap is built in (a console with no host returns `/`).
+     *
+     * @return array{loc: string, lastmod: string, changefreq: string, priority: string, home: bool}
+     */
+    private function entry(string $loc, string $lastmod, string $path, bool $home): array
     {
-        return '  <url>'
-            .'<loc>'.e($loc).'</loc>'
-            .'<lastmod>'.$lastmod.'</lastmod>'
-            .'<changefreq>'.$changefreq.'</changefreq>'
-            .'<priority>'.$priority.'</priority>'
-            .'</url>'."\n";
+        $depth = max(0, substr_count(trim($path, '/'), '/'));
+
+        return [
+            'loc' => $loc,
+            'lastmod' => $lastmod,
+            'changefreq' => str_starts_with($path, '/insights/') || str_starts_with($path, '/projects/') ? 'monthly' : 'weekly',
+            'priority' => $home ? '1.0' : ($depth === 0 ? '0.8' : ($depth === 1 ? '0.6' : '0.5')),
+            'home' => $home,
+        ];
     }
 
-    private function priority(PageType $type): string
+    /**
+     * The absolute URL of a path. A sitemap is read by crawlers, so it must never hand out a bare `/about/`:
+     * `url()` answers with the request's host, and falls back to the configured site address in a context that
+     * has no host (a console command, the sandbox's PHP runtime).
+     */
+    private static function absolute(string $path): string
     {
-        return match ($type) {
-            PageType::Service => '0.9',
-            PageType::City, PageType::About, PageType::Contact, PageType::Estimator, PageType::Booking, PageType::Legal => '0.8',
-            PageType::Area => '0.7',
-            PageType::Home, PageType::Insight, PageType::Project => '0.6',
-            default => '0.5',
-        };
+        $base = rtrim((string) (url('/') === '/' ? config('app.url') : url('/')), '/');
+
+        return $base.'/'.ltrim($path, '/');
     }
 
-    /** Last content change of the pages that are not in the CMS yet (the home page). */
+    /** A page says it itself: `<meta name="robots" content="noindex">` in the file it is. */
+    private static function noindex(string $html): bool
+    {
+        return (bool) preg_match('~<meta[^>]+name=["\']robots["\'][^>]+content=["\'][^"\']*noindex~i', $html);
+    }
+
     private function lastModified(): string
     {
-        return '2026-10-16';
+        return now()->toDateString();
     }
 }
