@@ -1278,3 +1278,21 @@ not duplicate a known image, second run adds nothing).
 
 Gates: `tests/Feature/DatabaseUpdatesTest.php` + `tests/Feature/Website` **205 passed (1848)**; full suite
 **1206 passed, 1 skipped (6568)**; Pint clean (842 files); PHPStan no errors.
+
+### Step 15 — the Content screens checked against the files (21 Oct 2026, audit only)
+
+Same question as steps 10 and 13, asked of the Content band. Full evidence in
+**`docs/audit/20_CONTENT_SCREENS_VS_FILES.md`**.
+
+- **Blog and Portfolio change nothing a visitor can see.** Their `cms_*` actions and `page_new` write `pages` and
+  `page_blocks` rows; `StudioContent` has no file write at all. A published row created exactly as the screen
+  creates one appeared in `/sitemap.xml` and answered **404** (removed after the check).
+- **Content library is empty and unread**: `content_entries` holds 0 rows, the only reader is `StudioApi`, and the
+  route still answers though the nav dropped it on 20 Oct. The logos now live in Media (step 14).
+- **Forms is honest** — it reads `leads`, writes nothing. **Estimator is wired** — it writes
+  `assets/js/estimator-rates.js`, which `/estimator/` loads.
+- **The sitemap can advertise a 404**: `SitemapController` still lists published rows without files, under a
+  comment that says `SiteRouter` answers them. Since step 8 it does not.
+
+Waiting on the owner: retire Blog, Portfolio and Content library, and make the sitemap list files only — or rewire
+the two editors to write page files.
