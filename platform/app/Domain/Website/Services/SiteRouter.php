@@ -42,8 +42,9 @@ final class SiteRouter
             return null;
         }
 
-        // The home page is a CMS page like any other (slug "/"), so it is served from here too. Keeping it out of
-        // routes/web.php means there is one place where public pages come from, and the owner can edit it.
+        // The home page is public/index.html since Woodex OS 1, and the web server answers it before this code
+        // runs. The CMS row with slug "/" is what remains of the Phase 3 cutover; it is no longer the page.
+        // Reaching here for "/" means there is no file (a fresh install mid-deploy), and the row still answers.
 
         $slug = Page::normalizeSlug($path);
 

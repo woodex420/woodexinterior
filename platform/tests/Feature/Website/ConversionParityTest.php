@@ -109,6 +109,6 @@ it('reports the conversion state per group from file existence', function () {
 
     $homeRow = collect(explode("\n", $real))->first(fn (string $line): bool => str_contains($line, '8 · Home'));
     expect($homeRow)->not->toBeNull()
-        // The home page is cut over (Phase 3, docs/11 §14): the CMS serves it and the v1 file is gone.
-        ->and(preg_match('/\|\s*1\s*\|\s*0\s*\|\s*1\s*\|\s*CMS serves this group\s*\|/', (string) $homeRow))->toBe(1);
+        // Woodex OS 1 (§16.19 step 4): the home page is a file now, so the report counts it as file-served.
+        ->and(preg_match('/\|\s*1\s*\|\s*1\s*\|\s*0\s*\|\s*files still serve\s*\|/', (string) $homeRow))->toBe(1);
 });

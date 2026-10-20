@@ -9,14 +9,19 @@ use App\Domain\Website\Services\SiteRouter;
 use Illuminate\Http\Request;
 
 /*
-| Phase 3, home page: `/` is served by the CMS. The v1 document is kept at resources/legacy/home-v1.html
-| (outside the web root) so the cutover is reversible without git, and every other folder still answers
-| with its own static index.html until its group is cut over.
+| The home page. Woodex OS 1 (docs/audit/16.19 step 4) made `/` a page file like every other address: the
+| CMS-rendered home was exported to public/index.html, which the web server answers before Laravel. The CMS
+| row still answers a request that reaches the app — the fallback for a deploy where the file is missing —
+| and this file keeps both halves honest.
 */
 
-it('serves the site root from the CMS, not from a static file', function () {
-    expect(public_path('index.html'))->not->toBeFile()
-        ->and(resource_path('legacy/home-v1.html'))->toBeFile();
+it('serves the site root from a page file', function () {
+    expect(public_path('index.html'))->toBeFile();
+
+    $html = (string) file_get_contents(public_path('index.html'));
+
+    expect(str_starts_with(ltrim($html), '<!DOCTYPE html>'))->toBeTrue()
+        ->and(stripos($html, '</html>'))->not->toBeFalse();
 });
 
 it('still keeps the other page groups on their static files', function () {

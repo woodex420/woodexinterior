@@ -853,7 +853,8 @@ shipped v1 pages are untouched (`git status` clean for `platform/public/**/index
   application's public and storage paths for a scratch site, so no shipped page is written by the suite.
 - `pest tests/Feature/Website tests/Feature/P10SidebarHubsTest.php` → **371 passed (4,355 assertions)** before
   the retire; **302 passed (4,125 assertions)** in `tests/Feature/Website` after it, plus 57 in
-  `WebsiteAdminParityTest` + `P10SidebarHubsTest`.
+  `WebsiteAdminParityTest` + `P10SidebarHubsTest`; **347 passed (4,257 assertions)** with `HomeFileTest` and
+  `RetireShadowPagesTest` added.
 - `pint --test` → **PASS 855 files**; `phpstan analyse` → **[OK] No errors** (after the retire).
 
 ### Step 3 — the four screens are retired
@@ -875,9 +876,36 @@ the website is a lie. So they are gone, not hidden:
 Editing a service page, a city page, an FAQ or a testimonial now means opening the page's file in the page
 builder (§16.19 step 2) — the one editor the owner kept.
 
+### Step 4 — the home page is a file (owner answer: yes)
+
+`/` was the last address the builder could not open. It is now `platform/public/index.html`, exported from
+the page the CMS was serving, so a visitor sees exactly the design that was already live — nothing was
+restyled, and the export is what the owner approved.
+
+- The export was taken from the running site, not from `woodex/index.html` (that is the older v1 source):
+  same title, same hero, same H1 ("Spaces shaped by purpose and identity"), same sections.
+- Two things were removed that belong to the server, not the page: the sandbox's `__preview-beacon` script
+  and its `<noscript>` pixel. `HomeFileTest` asserts neither can come back, along with the absence of Blade
+  source (`<?php`, `__contextArgs`), `localhost` and `127.0.0.1`.
+- **A real bug surfaced while exporting**: the JSON-LD block on every Blade-rendered page contained compiled
+  Blade garbage — `"<?php $__contextArgs = []…"` — because `@context` inside the `json_encode([...])` was
+  parsed as a Blade directive. It is fixed at the source (`site/partials/head.blade.php` now writes
+  `'@'.'context'`), and the exported home carries valid `"@context": "https://schema.org"`.
+- `platform/public/.htaccess` already had `DirectoryIndex index.html index.php`, so the file answers `/`
+  before Laravel on the Hostinger Apache deploy; the comment that said the root was CMS-served is corrected.
+- The builder lists it first as `/` (`index.html`) and edits it like any other page.
+
+**Consequence to decide next:** the CMS home row and the **Hero slides** screen still exist, but they no
+longer drive `/` — the file does. That is the same "a screen that cannot reach the site" problem the four
+retired screens had. The recommendation is to retire Hero slides and the home row (backup first) so there is
+one home, not two; the alternative is to keep the row as a draft staging area, which nobody has asked for.
+
 ### What is still open
 
-- **Home**: decide whether `/` becomes a file (see above).
+- **Hero slides + the home CMS row** (see step 4): retire, or keep as staging?
+- **Assets on the home file are Vite-hashed** (`/build/assets/site-DO3AKjvv.css`). The built files are in the
+  repository, so they ship with the deploy; a rebuild mints new hashes, and the static home would then point
+  at files that no longer exist. If that becomes a chore, copy the two assets to stable paths and relink.
 - **Dead endpoints**: `StudioApi` still answers the retired screens' actions (`cms_faq*`, `cms_testimonial*`,
   `cms_city*`, `pages`, `cms_page_new/duplicate`) even though no screen calls them. Removing them needs care —
   `admin-templates.js` still uses `cms_page_kinds` and `admin-fields.js` uses `bapi_load` — so it is its own

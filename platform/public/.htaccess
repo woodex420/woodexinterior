@@ -57,9 +57,9 @@ DirectoryIndex index.html index.php
     RewriteCond %{QUERY_STRING} (^|&)preview=1(&|$)
     RewriteRule ^ index.php [L]
 
-    # The site root is served by the CMS since the Phase 3 cutover of the home page (docs/11 §14): the
-    # original v1 file lives at resources/legacy/home-v1.html, outside the web root. Other folders still
-    # answer with their own index.html through DirectoryIndex below — one page group is cut over at a time.
+    # The site root is a page file like every other address since Woodex OS 1 (docs/audit/16.19): the home
+    # page is public/index.html, answered by DirectoryIndex below before the front controller is asked, and
+    # edited in the page builder like the rest of the site.
 
     # robots.txt is answered by the app, per domain (D-95): Hostinger's Git deploy can leave a deleted static
     # file behind on the server, and a stale "Disallow: /" is a whole website kept out of Google in silence.

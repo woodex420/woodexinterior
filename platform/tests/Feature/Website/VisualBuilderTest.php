@@ -74,6 +74,17 @@ it('opens the builder on the first page of the site, or the one asked for', func
         ->assertSee('data-boot-page="service/roofing/index.html"', false);
 });
 
+it('lists the home file first, and calls it /', function () {
+    File::put($this->site.'/public/index.html', '<!DOCTYPE html><html><head><title>Home</title></head><body><h1>Home</h1></body></html>');
+
+    $pages = builderApi($this->editor, ['action' => 'pages'])->assertOk()->json('pages');
+
+    expect($pages[0]['path'])->toBe('index.html')
+        ->and($pages[0]['url'])->toBe('/')
+        ->and($pages[0]['title'])->toBe('Home')
+        ->and(array_column($pages, 'path'))->toContain('about/index.html');
+});
+
 it('lists the site files, not database pages', function () {
     Page::factory()->create(['slug' => '/about/', 'title' => 'A database copy']);
 
