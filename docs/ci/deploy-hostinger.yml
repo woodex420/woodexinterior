@@ -78,6 +78,7 @@ jobs:
           set -euo pipefail
           cd "$1"
           php artisan migrate --force
+          php artisan woodex:import-site-media
           php artisan optimize
           php artisan woodex:heartbeat
           REMOTE

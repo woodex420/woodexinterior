@@ -40,10 +40,16 @@
                     <x-admin.field label="Name (for the picker)">
                         <input type="text" wire:model.blur="titles.{{ $image->id }}" class="wx-input">
                     </x-admin.field>
-                    <p class="text-theme-xs text-gray-500">{{ $image->width }}×{{ $image->height }} · {{ basename($image->path) }}</p>
+                    <p class="text-theme-xs text-gray-500">{{ $image->width }}×{{ $image->height }} · {{ basename($image->path) }}
+                        @if ($image->disk === 'site') <span class="rounded bg-gray-100 px-1.5 py-0.5 dark:bg-white/10">theme file</span> @endif
+                    </p>
                     <div class="flex items-center justify-between gap-2">
                         <x-admin.button size="sm" variant="secondary" wire:click="updateMeta({{ $image->id }})">Save</x-admin.button>
-                        <button type="button" wire:click="delete({{ $image->id }})" wire:confirm="Delete this image? It is also removed from the server." class="text-theme-sm text-error-600 hover:underline">Delete</button>
+                        @if ($image->disk !== 'site')
+                            <button type="button" wire:click="delete({{ $image->id }})" wire:confirm="Delete this image? It is also removed from the server." class="text-theme-sm text-error-600 hover:underline">Delete</button>
+                        @else
+                            <span class="text-theme-xs text-gray-500">Shipped with the design</span>
+                        @endif
                     </div>
                 </div>
             </div>

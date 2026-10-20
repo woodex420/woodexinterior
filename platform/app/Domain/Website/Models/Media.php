@@ -51,6 +51,12 @@ class Media extends Model
      */
     public function url(): string
     {
+        // A theme file (`disk` = site) is served by the web server from public/: the row points at the file the
+        // pages already load, so there is nothing to stream through the app.
+        if ($this->disk === 'site') {
+            return '/'.ltrim($this->path, '/');
+        }
+
         return route('website.media.file', [
             'media' => $this->id,
             'name' => basename($this->path),

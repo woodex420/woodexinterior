@@ -1252,3 +1252,29 @@ test (replaces the alt on two pages, including a tag that had none, leaves a dif
 variant row) and a delete test (refuses the used image, deletes the unused one).
 
 Gates: `tests/Feature` + `tests/Unit` **1204 passed, 1 skipped (6555)**; Pint clean (840 files); PHPStan no errors.
+
+### Step 14 — every image the pages use is now in the Media library (21 Oct 2026)
+
+After step 13 the screen could edit alts, but it only knew **62 of the 95 images the pages show**: the theme's own
+files (`/assets/img/clients/…`, `/assets/img/svc-…`) had no row, so the page's "every photograph on the public
+website" was not true and those 33 could not be found or edited at all. The owner chose to bring them in.
+
+- **`woodex:import-site-media`** scans the page files for `<img>` tags that load `/assets/img/…`, groups the
+  variants by stem, takes the alt the page already carries, and creates one row per image:
+  `disk = site`, `path = assets/img/…`, dimensions from the file, folder `site/img` or `site/clients`.
+  It adds only what is missing — a second run reports `0 added, 95 already there`.
+- **`Media::url()`** answers a `site` row with its public path (`/assets/img/clients/attock.webp`), so the grid
+  shows the real file; nothing is copied into storage and the pages keep loading the file they already load.
+- **The rows are managed, not deleted**: a theme image shows a "theme file" tag and "Shipped with the design"
+  instead of Delete, because the file belongs to the design and the pages would break without it.
+- **It runs with the deploy**: `woodex:update` (the owner's one-click path and the SSH command) now calls it, and
+  the GitHub Actions deploy runs it after `migrate`. Idempotent, so repeated deploys cost one scan of 142 files.
+
+Verified in the sandbox: the import added **33 rows (62 + 33 = 95 images, 0 missing alt)**, and the Media screen
+answered 200 with 138 rows, the new ones first and tagged "theme file". Editing a theme image in the browser
+answered *"Saved. The alt text now appears on 1 page."* and that page's file carried the new wording (restored
+afterwards). Tests: `SiteMediaImportTest` (adds 33-style rows, matches variants by stem, files the folder, does
+not duplicate a known image, second run adds nothing).
+
+Gates: `tests/Feature/DatabaseUpdatesTest.php` + `tests/Feature/Website` **205 passed (1848)**; full suite
+**1206 passed, 1 skipped (6568)**; Pint clean (842 files); PHPStan no errors.

@@ -98,6 +98,11 @@ class DatabaseUpdates
         Artisan::call('db:seed', ['--class' => ChartOfAccountsSeeder::class, '--force' => true]);
         $output[] = 'Permissions, number sequences and the chart of accounts checked.';
 
+        // The media library learns about the theme's own images (`/assets/img/...`) the pages show. It adds only
+        // what is missing, so every update may run it.
+        Artisan::call('woodex:import-site-media');
+        $output[] = trim(Artisan::output());
+
         $this->clearCaches();
         $output[] = 'Caches cleared.';
 

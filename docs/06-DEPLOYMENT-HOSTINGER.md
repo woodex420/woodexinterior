@@ -299,7 +299,7 @@ php artisan backup:run --only-db            # safety copy before migrating
 php artisan down --secret="<random>"        # optional; maintenance with bypass URL
 git fetch --tags && git checkout <new-tag>
 COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader --no-interaction
-php artisan woodex:update                   # migrations, permissions, number sequences, cache clear
+php artisan woodex:update                   # migrations, permissions, number sequences, theme images, cache clear
 php artisan optimize
 php artisan up
 ```
