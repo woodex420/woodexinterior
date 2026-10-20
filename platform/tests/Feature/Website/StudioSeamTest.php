@@ -28,7 +28,7 @@ it('opens a ported screen inside the OS session', function () {
 });
 
 it('does not open a screen that is not switched on', function () {
-    $this->get('/admin/website/studio/blog')->assertNotFound();
+    $this->get('/admin/website/studio/media')->assertNotFound();
 });
 
 it('keeps people without website.edit out of the screen and the api', function () {
@@ -51,7 +51,7 @@ it('answers status and me from the OS session, never from a token header', funct
 });
 
 it('says so when an action has not been ported, instead of pretending', function () {
-    $this->postJson(route('admin.website.studio.api'), ['action' => 'cms_save'])
+    $this->postJson(route('admin.website.studio.api'), ['action' => 'media_list'])
         ->assertOk()
         ->assertJsonPath('ok', false)
         ->assertJsonPath('error', fn (string $error): bool => str_contains($error, 'not ported yet'));

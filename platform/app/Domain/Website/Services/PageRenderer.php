@@ -62,7 +62,10 @@ final class PageRenderer
             'modified' => ($page->updated_at ?? now())->toDateString(),
             // A slider only counts as the hero while it has at least one photo to show — an empty
             // slider must leave the page its own title (V2-3).
+            // An article written in the content editor (the ported v2.1 screen) carries its own title,
+            // kicker and standfirst, so the layout must not print them a second time above it.
             'hasHero' => $blocks->contains(fn (PageBlock $block): bool => $block->type === BlockType::Hero
+                || is_array($block->data['studio'] ?? null)
                 || ($block->type === BlockType::Slider && collect((array) ($block->data['slides'] ?? []))
                     ->contains(fn (array $slide): bool => ($slide['image_id'] ?? null) !== null))),
         ];

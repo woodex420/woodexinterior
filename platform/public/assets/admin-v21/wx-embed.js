@@ -13,6 +13,11 @@
   "use strict";
 
   var C = window.WX_STUDIO || {};
+
+  // Marks the environment for the copied modules (like the flag read in admin-content.js publish()): the OS
+  // renders pages from their blocks, so there is no static HTML to build or write on publish.
+  C.staticPublish = false;
+  window.WX_STUDIO = C;
   var screen = C.screen || "dashboard";
 
   /* Their router reads location.hash on boot. Put the screen there without adding a history entry. */
@@ -45,6 +50,20 @@
       source.forEach(function (value, key) { headers[key] = value; });
     } else {
       Object.keys(source).forEach(function (key) { headers[key] = source[key]; });
+    }
+
+    // The builder endpoint and the admin endpoint share one server route here, so the action is tagged:
+    // `load` on /api/builder.php becomes `bapi_load`, while `load` on /api/admin.php stays `load`.
+    var wasBuilder = false;
+    if (typeof init.body === "string") {
+      try {
+        var body = JSON.parse(init.body);
+        wasBuilder = (input === BAPI) || !!body.__builder || typeof body.html === "string";
+        if (body && typeof body.action === "string" && (input === BAPI)) {
+          body.action = "bapi_" + body.action;
+          init.body = JSON.stringify(body);
+        }
+      } catch (e) { /* not JSON: leave it alone, the server will say so */ }
     }
 
     // Laravel's CSRF check, on the session's own token — not theirs.

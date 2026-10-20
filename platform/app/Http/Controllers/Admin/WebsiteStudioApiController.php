@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 /**
@@ -34,6 +35,10 @@ final class WebsiteStudioApiController
 
         try {
             $result = (new StudioApi($user))->call($action, $request->except('action'));
+        } catch (HttpExceptionInterface $exception) {
+            // A permission check inside an action is an HTTP answer, not a message on the screen.
+            // (This must come before RuntimeException: Symfony's HttpException extends it.)
+            throw $exception;
         } catch (RuntimeException $exception) {
             return response()->json(['ok' => false, 'error' => $exception->getMessage()]);
         } catch (Throwable $exception) {

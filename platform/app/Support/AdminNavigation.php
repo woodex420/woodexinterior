@@ -21,7 +21,7 @@ final class AdminNavigation
      *
      * @var list<string>
      */
-    public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.logos'];
+    public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.logos', 'admin.website.blog', 'admin.website.portfolio'];
 
     /**
      * @return list<array{title: string, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}>

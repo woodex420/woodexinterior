@@ -606,6 +606,20 @@
 
       function publish(btn) {
         collect(); if (!check()) return;
+        /* Woodex OS (wx-embed.js): pages are rendered by the server from their blocks, so there is no static
+           HTML to build or write. The save below already stored everything; publish only flips the status.
+           The v2.1 behaviour is untouched when the flag is absent (the standalone admin). */
+        if (window.WX_STUDIO && window.WX_STUDIO.staticPublish === false) {
+          busy(btn, true);
+          save({}).then(function (ok) {
+            if (!ok) throw 0;
+            return api("cms_published", { id: it.id, type: type });
+          }).then(function (r) {
+            if (!r.ok) throw new Error(r.error);
+            Object.assign(it, r.item); toast("Published: /" + t.folder + "/" + it.slug + "/"); draw();
+          }).catch(function (e) { if (e) toast(e.message || String(e), true); }).then(function () { busy(btn, false); });
+          return;
+        }
         if (it.rel && it.imported && !it.republished && !confirm("This rebuilds the live page from the form fields. Did you check Preview?")) return;
         busy(btn, true);
         save({}).then(function (ok) {

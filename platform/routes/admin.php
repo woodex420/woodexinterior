@@ -52,7 +52,6 @@ use App\Livewire\Admin\System\RecycleBin;
 use App\Livewire\Admin\System\SettingsPage;
 use App\Livewire\Admin\System\UsersIndex;
 use App\Livewire\Admin\System\WhatsAppTemplates;
-use App\Livewire\Admin\Website\BlogIndex;
 use App\Livewire\Admin\Website\ContentLibraryIndex;
 use App\Livewire\Admin\Website\HeroSlidesIndex;
 use App\Livewire\Admin\Website\MediaLibrary;
@@ -60,7 +59,6 @@ use App\Livewire\Admin\Website\MenusIndex;
 use App\Livewire\Admin\Website\PageEditor;
 use App\Livewire\Admin\Website\PagesIndex;
 use App\Livewire\Admin\Website\PageTemplatesIndex;
-use App\Livewire\Admin\Website\PortfolioIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
 use App\Livewire\Admin\Website\SectionLibraryIndex;
 use App\Livewire\Admin\Website\SeoAgentIndex;
@@ -137,7 +135,6 @@ Route::livewire('/marketing/social', SocialPlannerIndex::class)->name('marketing
 
 Route::livewire('/website/pages', PagesIndex::class)->name('website.pages')->middleware('can:website.edit');
 Route::livewire('/website/templates', PageTemplatesIndex::class)->name('website.templates')->middleware('can:website.edit');
-Route::livewire('/website/blog', BlogIndex::class)->name('website.blog')->middleware('can:website.edit');
 
 /*
  * The ported v2.1 admin screens (docs/audit/16.8). Full document: they bring their own stylesheet and
@@ -151,10 +148,12 @@ Route::post('/website/studio/api', WebsiteStudioApiController::class)
 Route::post('/website/studio/builder-api', WebsiteStudioApiController::class)
     ->name('website.studio.builder-api')->middleware('can:website.edit');
 
-// A screen the OS navigation can link to by name, instead of a route with a parameter.
-Route::get('/website/logos', [WebsiteStudioController::class, 'show'])
-    ->defaults('screen', 'logos')->name('website.logos')->middleware('can:website.edit');
-Route::livewire('/website/portfolio', PortfolioIndex::class)->name('website.portfolio')->middleware('can:website.edit');
+// The screens the OS navigation links to by name, instead of a route with a parameter.
+foreach (['logos' => 'website.logos', 'blog' => 'website.blog', 'portfolio' => 'website.portfolio'] as $screen => $name) {
+    Route::get('/website/'.$screen, [WebsiteStudioController::class, 'show'])
+        ->defaults('screen', $screen)->name($name)->middleware('can:website.edit');
+}
+
 Route::livewire('/website/pages/new', PageEditor::class)->name('website.pages.create')->middleware('can:website.edit');
 Route::livewire('/website/pages/{page}', PageEditor::class)->name('website.pages.edit')->middleware('can:website.edit');
 

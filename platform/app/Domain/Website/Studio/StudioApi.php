@@ -10,8 +10,10 @@ use App\Domain\Website\Models\ContentEntry;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\PageBlock;
+use App\Domain\Website\Models\PageVersion;
 use App\Domain\Website\Services\ContentLibrary;
 use App\Domain\Website\Services\PageCache;
+use App\Domain\Website\Services\PageRenderer;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +41,18 @@ final class StudioApi
         'logos_get' => 'logosGet',
         'logos_save' => 'logosSave',
         'media_upload' => 'mediaUpload',
+        // The article and study editor (docs/audit/16.8): the list, the form, save, the Live switch,
+        // delete and publish. `bapi_*` are the builder's three: preview shell, and the HTML snapshot.
+        'cms_list' => 'cmsList',
+        'cms_get' => 'cmsGet',
+        'cms_save' => 'cmsSave',
+        'cms_status' => 'cmsStatus',
+        'cms_delete' => 'cmsDelete',
+        'cms_published' => 'cmsPublished',
+        'bapi_load' => 'builderLoad',
+        'bapi_save' => 'builderSave',
+        'bapi_page_new' => 'builderSave',
+        'bapi_media' => 'builderMedia',
     ];
 
     public function __construct(private readonly User $user) {}
@@ -81,6 +95,160 @@ final class StudioApi
     }
 
     /** The admin's shell asks whether anyone is signed in before it draws anything. The OS session decides. */
+    /** @param array<string, mixed> $payload */
+    private function content(array $payload): StudioContent
+    {
+        return new StudioContent($this->user);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function cmsList(array $payload): array
+    {
+        return $this->content($payload)->listing((string) ($payload['type'] ?? 'post'), (string) ($payload['q'] ?? ''));
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function cmsGet(array $payload): array
+    {
+        return $this->content($payload)->get((int) ($payload['id'] ?? 0), $this->typeOf($payload));
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function cmsSave(array $payload): array
+    {
+        return $this->content($payload)->save($payload);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function cmsStatus(array $payload): array
+    {
+        return $this->content($payload)->setStatus((int) ($payload['id'] ?? 0), (string) ($payload['status'] ?? 'draft'), $this->typeOf($payload));
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function cmsDelete(array $payload): array
+    {
+        return $this->content($payload)->delete((int) ($payload['id'] ?? 0), $this->typeOf($payload));
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function cmsPublished(array $payload): array
+    {
+        return $this->content($payload)->publish((int) ($payload['id'] ?? 0), $this->typeOf($payload));
+    }
+
+    /**
+     * The builder's `load`: the page as the site renders it, used by the editor's preview. A slug that is
+     * not live yet gets the same shell from the index page, so the preview still looks like the site.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function builderLoad(array $payload): array
+    {
+        $path = trim((string) ($payload['path'] ?? ''), '/');
+        $slug = '/'.preg_replace('#/index\.html$#', '/', $path);
+
+        $page = Page::query()->where('slug', $slug)->first()
+            ?? Page::query()->where('slug', '/'.preg_replace('#/index\.html$#', '/', $path))->first()
+            ?? Page::query()->where('slug', '/insights/')->first()
+            ?? Page::query()->where('slug', '/')->first();
+
+        if ($page === null) {
+            throw new RuntimeException('No page can be used as the preview shell yet.');
+        }
+
+        /** @var view-string $view */
+        $view = 'site.page';
+
+        return [
+            'html' => view($view, app(PageRenderer::class)->viewData($page))->render(),
+            'mtime' => $page->updated_at?->getTimestamp() ?? time(),
+            'path' => $path,
+        ];
+    }
+
+    /**
+     * The builder's `save` / `page_new`: the built HTML is kept as a page version — the rollback the static
+     * file used to give. The site itself is rendered by the OS, so nothing is written to a public folder.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function builderSave(array $payload): array
+    {
+        $path = trim((string) ($payload['path'] ?? $payload['folder'].'/'.$payload['slug'].'/index.html'), '/');
+        $html = (string) ($payload['html'] ?? '');
+
+        $page = Page::query()->where('slug', '/'.preg_replace('#/index\.html$#', '/', $path))->first();
+
+        if ($page === null) {
+            throw new RuntimeException('Publish the page from the editor instead — the site renders it from its blocks.');
+        }
+
+        PageVersion::query()->create([
+            'page_id' => $page->id,
+            'user_id' => $this->user->id,
+            'data' => ['html' => $html, 'path' => $path],
+        ]);
+
+        return ['path' => $path, 'mtime' => time()];
+    }
+
+    /**
+     * The builder's `media`: the image picker's grid. The library's own images only — a picker that offered
+     * a picture the page cannot render would be a trap.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function builderMedia(array $payload): array
+    {
+        // A row whose file is gone (an interrupted import, a deleted upload) must not be offered: the page
+        // would render a broken image and nobody would know why.
+        return ['media' => Media::query()->orderByDesc('id')->limit(500)->get()
+            ->filter(fn (Media $media): bool => Storage::disk($media->disk)->exists($media->path))
+            ->map(fn (Media $media): string => $media->url())
+            ->values()
+            ->all()];
+    }
+
+    /**
+     * The content type of a row: the payload's own, or read from the page when the screen only sends an id.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function typeOf(array $payload): string
+    {
+        $type = (string) ($payload['type'] ?? '');
+
+        if ($type !== '') {
+            return $type;
+        }
+
+        $page = Page::query()->find((int) ($payload['id'] ?? 0));
+
+        return $page?->type === PageType::Project ? 'study' : 'post';
+    }
+
     /**
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>

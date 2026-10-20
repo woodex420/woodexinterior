@@ -20,6 +20,8 @@ final class WebsiteStudioController
     /** Screens that are ported and switched on. A screen is added here only when its actions work. */
     public const array SCREENS = [
         'logos' => ['title' => 'Client logos', 'view' => 'logos'],
+        'blog' => ['title' => 'Blog & insights', 'view' => 'blog'],
+        'portfolio' => ['title' => 'Portfolio', 'view' => 'portfolio'],
     ];
 
     public function show(Request $request, string $screen): View
