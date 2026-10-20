@@ -123,22 +123,27 @@ handler; an unimplemented one returns `{ok:false, error:"…"}` — the admin al
 a missing action looks like a message, never a fake success. Permissions are checked server-side
 (`website.edit` / `website.publish`) and the v2.1 token header is accepted but never trusted alone.
 
-**P1-2 — Content family (5–6 sessions).** The six modules that cover the owner's list, 73 distinct actions:
-`admin-content.js` (Blog & insights, Portfolio, Testimonials, Team, FAQ groups, starter packs, AI writing)
-→ `admin-logos.js` (client logos) → `admin-media.js` (media library: trash, optimise, responsive, alt,
-replace, purge) → `admin-fields.js` (service & site pages, city pages, bulk create) → `admin-templates.js`
-(templates) → `admin-pages.js` (page list, new page). The three builder actions (`load`, `save`,
+**P1-2 — The Website section, screen by screen (7–9 sessions).** 18 JS files, 4,435 lines, **108 actions**
+cover all 23 Website screens (the map is in 16.8). Order by dependency: `admin-pages.js` (page list) →
+`admin-content.js` (blog, portfolio, FAQ groups, testimonials, team, AI) → `admin-fields.js` (services,
+cities, bulk AI) → `admin-templates.js` → `admin-logos.js` → `admin-media.js` (24 actions, the biggest) →
+`admin-library.js` + `admin-chrome.js` + `admin-hero.js` + `admin-redirects.js` (the Pages & builder group)
+→ `admin-p18e.js` (forms, estimator) → `admin-seo.js` / `admin-seo38.js` / `admin-seoagent.js` /
+`admin-speed.js` / `admin-media.js` (health) / `admin-theme.js`. The three builder actions (`load`, `save`,
 `page_new`) map onto the builder we already have — one builder, one page.
 
-**P1-3 — Look and shell (1 session).** The ported screens keep their own stylesheet, scoped, inside the OS
-shell (sidebar + header). If a screen cannot live inside the shell (a full-width table or the editor), it
-gets the same full-document exception the builder has. Their sign-in screen is never shown: the OS session
-is the session.
+**P1-3 — Look, shell and the sidebar (1 session).** The ported screens keep their own stylesheet, scoped,
+inside the OS shell (sidebar + header). If a screen cannot live inside the shell (a full-width table or the
+editor), it gets the same full-document exception the builder has. Their sign-in screen is never shown: the
+OS session is the session. The Website sidebar regroups to the owner's own structure — **Pages & builder**
+(6), **Content** (11), then Media, SEO, SEO agent, Speed, Site health, Theme — and
+`WebsiteAdminParityTest`'s pinned label list is rewritten with it.
 
-**P1-4 — Switch and delete (1 session).** When a ported screen works, its OS-native predecessor is deleted
-the same day — Blog list, Portfolio list, and the Page templates creator (the library stays, it is now the
-screen the admin opens). `ListingIndex` stays only if the ported screens use it; otherwise it goes with its
-tests.
+**P1-4 — Switch and delete (1 session).** As each ported screen passes its browser check, the OS-native
+screen behind it is deleted the same day (the list is in 16.8). `ListingIndex` stays only if the ported
+screens use it; otherwise it goes with its tests. The OS *services* stay — `PageCache`, `PageAudit`,
+`PageSpeedRun`, `Menus`, the theme tokens, the media pipeline — because they are what the ported screens
+read. The port deletes presentation, never data.
 
 **P1-5 — Business family (later, only if wanted).** `admin-crm.js`, `admin-sales*.js`, `admin-chat*.js` and
 friends stay out: the OS already has better versions (ledger, permissions, CRM links). Porting them would
@@ -318,3 +323,100 @@ wrong approach and is now abandoned.
 
 **Effort.** P1-1 and P1-3 one session each; P1-2 five to six; P1-4 one. Eight to nine sessions for the whole
 content studio, against fifteen to twenty to rebuild it screen by screen — and the rebuild would not match.
+
+---
+
+## 16.8 The target: one Website section, 23 screens, the v2.1 front on the OS data (20 Oct)
+
+The owner's goal, written down: **the same frontend running on Woodex OS — the complete v2.1 content system —
+with the old different frontend removed and the usable data kept.**
+
+### The 23 screens, and where each one stands
+
+| v2.1 screen | v2.1 module | Woodex OS today | Decision |
+|---|---|---|---|
+| All pages | `admin-pages.js` | `PagesIndex` (OS style) | Port; OS list deleted |
+| Page builder | `admin.js` + `/builder/` | full-screen builder (HTML canvas, one page) | **Keep the OS builder**, wire `load`/`save`/`page_new` to it |
+| Section library | `admin-library.js` | `SectionLibraryIndex` | Port; OS screen deleted |
+| Header & footer | `admin-chrome.js` | `MenusIndex` | Port; OS screen deleted |
+| Hero slides | `admin-hero.js` | `HeroSlidesIndex` | Port; OS screen deleted |
+| Redirects | `admin-redirects.js` | `RedirectsIndex` | Port; OS screen deleted |
+| Blog | `admin-content.js` | `BlogIndex` (first pass) | Port; **my screen deleted** |
+| Portfolio | `admin-content.js` | `PortfolioIndex` (first pass) | Port; **my screen deleted** |
+| Service pages | `admin-fields.js` | **missing** | Port |
+| City pages | `admin-fields.js` | **missing** | Port |
+| Page templates | `admin-templates.js` | `PageTemplatesIndex` (+ creator) | Port; creator deleted, library kept as the screen |
+| Forms | `admin-p18e.js` | **missing** (public renderer only) | Port |
+| Estimator | `admin-p18e.js` | **missing** (rates + public estimator exist) | Port, rates stay `EstimatorRate` |
+| FAQs | `admin-content.js` | `ContentEntry` rows inside Content library | Port |
+| Testimonials | `admin-content.js` | same | Port |
+| Client logos | `admin-logos.js` | same | Port |
+| Team | `admin-content.js` | `TeamMembersIndex` | Port; OS screen deleted |
+| Media | `admin-media.js` | `MediaLibrary` | Port (24 actions: trash, optimise, responsive, alt, used-on) |
+| SEO | `admin-seo.js`, `admin-seo38.js`, `admin-p36.js` | `SeoOverviewIndex` | Port; `PageAudit` behind it |
+| SEO agent | `admin-seoagent.js` | `SeoAgentIndex` | Port |
+| Speed | `admin-speed.js` | `SpeedIndex` | Port; `PageSpeedRun` behind it |
+| Site health | `admin-media.js` | `SiteHealthIndex` | Port |
+| Theme | `admin-theme.js` | `ThemeBuilder` | Port; theme tokens unchanged |
+
+`Content library` disappears: its three kinds become the three v2.1 screens. `Website Settings` stays as it
+is (OS-only, the v2.1 equivalent is `business` / `settings`).
+
+**The sidebar after the port** (the owner's list, verbatim, in its own groups):
+
+```
+Website
+  Pages & builder   All pages · Page builder · Section library · Header & footer · Hero slides · Redirects
+  Content           Blog · Portfolio · Service pages · City pages · Page templates · Forms · Estimator
+                    FAQs · Testimonials · Client logos · Team
+  (no group)        Media · SEO · SEO agent · Speed · Site health · Theme
+```
+
+Seven of the 23 do not exist in the OS at all today (Service pages, City pages, Forms, Estimator, FAQs,
+Testimonials, Client logos) — the port is also what makes the sidebar match the owner's list for the first
+time.
+
+### How the same frontend runs inside the OS
+
+1. **Screens, not a second app.** The 18 files are copied into `platform/public/assets/admin-v21/`. Their
+   chrome — sidebar, topbar, login, hash router, session storage — is switched off by one adapter
+   (`wx-embed.js`) that: hides `#side`/header/login, calls their own `signedIn()` with a token the OS mints,
+   reads the screen from the OS URL, and tells the OS shell which nav item is active.
+2. **One seam.** `api()` and `bapi()` POST `{action}` to `/admin/website/api` and `/admin/website/builder-api`.
+   108 actions, one resolver table, each mapped to an OS class. Unimplemented → `{ok:false, error}` and the
+   screen shows the message; nothing pretends.
+3. **One session, one permission check.** The OS mints the token; the server checks `website.edit` /
+   `website.publish` on every action and never trusts the header alone. Their login screen is unreachable.
+4. **One database.** `cms_*` read and write `pages` + `page_blocks` + `pages.seo`; `media_*` the media table;
+   `heroes_*` the hero table; `chrome_*` the menus; `redirects*` the redirects; `est_*` the rates;
+   `forms_*` the forms bridge. **No migration is needed for the port itself.**
+5. **One look.** Their CSS is scoped to the mount point, inside the OS shell — same table, same buttons, same
+   OS header. A screen that needs the whole viewport (builder) keeps the existing full-document exception.
+6. **Delete on green.** My OS screen is removed the same day its ported twin passes its browser check.
+
+### What is deleted, and what must survive
+
+**Deleted (presentation only):** the 17 OS Website screens replaced above; the `Content library` nav item;
+the Page templates creator; my Blog and Portfolio lists; the v2.1 admin's own chrome, login, router and
+session code; the copy of the v2.1 static admin once the OS port is signed off.
+
+**Kept (all of it is data, and all of it is read by the ported screens):** 48 insight pages, 61 service pages,
+12 city pages, 8 area pages, 6 project pages, the home page, every `page_blocks` row, every `pages.seo`
+record, the 50 page templates, the media library, hero slides, menus, redirects, saved sections, FAQ /
+testimonial / logo entries, team members, theme tokens, PageSpeed runs and audit results.
+
+**Never deleted:** the public v1 site (it is final), and the CRM / sales / accounts data — the port does not
+touch them.
+
+### Questions that change this plan
+
+1. **Provenance.** Is `frontend-v1/admin` the studio's own code? If yes, it becomes our source, recorded in
+   `platform/THIRD-PARTY.md` with the SHA. If not, I port the behaviour and rewrite the screens.
+2. **The old admin.** `woodex.com.pk/admin` and the sandbox copy — retire both when the OS port is signed off,
+   or keep one read-only for comparison?
+3. **Estimator and Forms.** The v2.1 screens expect their own tables. Confirm the OS keeps `EstimatorRate`
+   as the rate source and `leads` as the form destination — the screens stay, the storage is ours.
+4. **AI keys.** The ported screens call `cms_ai_*` / `ai_run`. Reuse the chat bot's key (Settings → Bot) for
+   content AI with its own daily cap, or a second key?
+
+Answered “yes” to 1 and 3 and named a choice on 2 and 4, the port starts at P1-1.
