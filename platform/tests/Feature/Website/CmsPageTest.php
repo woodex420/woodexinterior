@@ -43,7 +43,7 @@ it('sends an old URL to its new page with one 301 and counts the hit', function 
     expect($redirect->fresh()->hits)->toBe(2);
 });
 
-it('lists the files the website serves, plus a CMS page that has no file of its own', function () {
+it('lists only the files the website serves, never a row that would answer 404', function () {
     // Since OS 1 the site is the files, so the sitemap is built from the files: built from the rows it listed 57
     // of 143 pages and was blind to the service, city, area and project pages (20 Oct).
     $site = sys_get_temp_dir().'/woodex-sitemap-'.bin2hex(random_bytes(4));
@@ -65,28 +65,32 @@ it('lists the files the website serves, plus a CMS page that has no file of its 
         $urls[] = (string) $url->loc;
     }
 
-    expect($urls)->toBe([
-        Page::urlFor('/'),
-        Page::urlFor('/about/'),
-        Page::urlFor('/cms-only/'),
-    ]);
+    // A published row with no file is a 404 since the renderer was retired, so the sitemap cannot advertise it.
+    $base = rtrim((string) config('woodex.public_site_url'), '/');
+
+    expect($urls)->toBe([$base.'/', $base.'/about/']);
+
+    $this->siteGet('/cms-only/')->assertNotFound();
 
     File::deleteDirectory($site);
 });
 
-it('answers each host with its own sitemap, never the copy another host cached', function () {
-    // The URLs in a sitemap are absolute, so a document built while the admin domain asked must not be handed to
-    // the public domain (or the other way round) for the rest of the day.
+it('answers every host with the same canonical sitemap', function () {
+    // The URLs are canonical (the public site), so asking through the admin domain must not put the admin host in
+    // the sitemap, and a document cached for one host must never hand back a different one.
     $site = sys_get_temp_dir().'/woodex-sitemap-hosts-'.bin2hex(random_bytes(4));
     File::ensureDirectoryExists($site);
     File::put($site.'/index.html', '<html><head><title>Home</title></head><body></body></html>');
     $this->app->usePublicPath($site);
 
-    $public = simplexml_load_string($this->get('https://woodex.com.pk/sitemap.xml')->assertOk()->getContent());
-    $admin = simplexml_load_string($this->get('https://admin.woodex.com.pk/sitemap.xml')->assertOk()->getContent());
+    $base = rtrim((string) config('woodex.public_site_url'), '/');
 
-    expect((string) $public->url[0]->loc)->toBe('https://woodex.com.pk/')
-        ->and((string) $admin->url[0]->loc)->toBe('https://admin.woodex.com.pk/');
+    $public = $this->get('https://woodex.com.pk/sitemap.xml')->assertOk()->getContent();
+    $admin = $this->get('https://admin.woodex.com.pk/sitemap.xml')->assertOk()->getContent();
+
+    expect($public)->toBe($admin)
+        ->and($public)->toContain('<loc>'.$base.'/</loc>')
+        ->and($public)->not->toContain('admin.woodex.com.pk');
 
     File::deleteDirectory($site);
 });

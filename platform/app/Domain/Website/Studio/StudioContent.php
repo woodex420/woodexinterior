@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Website\Studio;
 
 use App\Domain\Website\Enums\PageStatus;
+use App\Domain\Website\Builder\ArticleFile;
 use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
@@ -32,8 +33,9 @@ use RuntimeException;
  * Nothing is guessed on the way back: an article written before the port (48 of them) is read out of its
  * hero/text/intro blocks, so it opens with its real words instead of an empty form.
  *
- * Publishing no longer writes a file — the OS renders the page. A copy of the blocks is kept as a
- * `PageVersion` before every save, which is the rollback the static backup used to give.
+ * Publishing writes the page file (`ArticleFile`): the site is the files, so a post that is only a row answers
+ * 404. The design's own page is used as the shell, and only its head metadata and `<main>` are replaced. A copy
+ * of the blocks is kept as a `PageVersion` before every save, which is the rollback the static backup used to give.
  */
 final class StudioContent
 {
@@ -146,7 +148,7 @@ final class StudioContent
         $heroId = $this->mediaId((string) ($data['hero']['src'] ?? ''));
         $listing = Page::query()->where('slug', rtrim($definition['folder'], '/').'/')->first();
 
-        $page = DB::transaction(function () use ($id, $definition, $title, $path, $data, $seo, $heroId, $listing): Page {
+        $page = DB::transaction(function () use ($id, $type, $definition, $title, $path, $data, $seo, $heroId, $listing): Page {
             $page = $id > 0
                 ? Page::query()->where('type', $definition['type'])->find($id)
                 : new Page;
@@ -176,6 +178,11 @@ final class StudioContent
                         ])->all(),
                     ],
                 ]);
+            }
+
+            // A renamed post must not keep answering at its old address: the old file goes to storage.
+            if (! $creating && (string) $page->slug !== $path) {
+                ArticleFile::retire($page, $type);
             }
 
             $page->fill([
@@ -213,6 +220,11 @@ final class StudioContent
         PageCache::invalidate($page);
         Menus::flush();
 
+        // A published article is its file: saving one writes what the editor holds into the page.
+        if ($page->status === PageStatus::Published) {
+            ArticleFile::publish($page, $type);
+        }
+
         return ['item' => $this->item($page->refresh(), $type)];
     }
 
@@ -241,6 +253,14 @@ final class StudioContent
         }
 
         $page->save();
+
+        // Live means the URL answers, draft means it does not — and the URL is the file.
+        if ($wanted === PageStatus::Published) {
+            ArticleFile::publish($page, $type);
+        } else {
+            ArticleFile::retire($page, $type);
+        }
+
         PageCache::invalidate($page);
         Menus::flush();
 
@@ -265,6 +285,8 @@ final class StudioContent
             throw new RuntimeException('This page is live. Take it off the site first, then delete it.');
         }
 
+        ArticleFile::retire($page, $type);
+
         PageCache::invalidate($page);
         $page->delete();
 
@@ -272,7 +294,7 @@ final class StudioContent
     }
 
     /**
-     * `cms_published` — the publish button. The OS renders the page; there is no static file to write.
+     * `cms_published` — the publish button. It writes the page file, which is what the URL serves.
      *
      * @return array<string, mixed>
      */
@@ -295,6 +317,9 @@ final class StudioContent
 
         PageCache::invalidate($page);
         Menus::flush();
+
+        // Publishing is what makes the URL exist: the row alone answers 404 since the renderer was retired.
+        ArticleFile::publish($page, $type);
 
         return ['item' => $this->item($page->refresh(), $type)];
     }

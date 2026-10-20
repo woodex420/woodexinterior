@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Cache;
  *
  * Since Woodex OS 1 the site is the v1 files under public/, so the sitemap is built from **the files**, not from
  * the CMS rows. Built from the rows it listed 57 of the 143 pages and was blind to the 86 service, city, area and
- * project pages that carry the site's search traffic (20 Oct). A row that has no file is still listed: `SiteRouter`
- * answers it, so it is a real URL.
+ * project pages that carry the site's search traffic (20 Oct). Publishing writes the page file (Blog and
+ * Portfolio, docs/audit/20), so every published row has one; a row without a file is a 404 and is not listed.
  */
 final class SitemapController
 {
@@ -28,9 +28,10 @@ final class SitemapController
     {
         $pages = BuilderFile::pages();
 
-        // Keyed on what actually changed: the host being served (the URLs inside are absolute, so a copy built
-        // for one domain must never answer for another), the newest file, the number of pages, the newest row. A
-        // publish or a builder save changes the key, so the sitemap is never stale.
+        // Keyed on what actually changed: the host being served, the newest file, the number of pages, the
+        // newest row. The URLs are canonical, so the document is the same on every host — the host stays in the
+        // key so a copy built under one host can never be served for another by accident. A publish or a
+        // builder save changes the key, so the sitemap is never stale.
         $version = implode('|', [
             self::VERSION,
             request()->getSchemeAndHttpHost(),
@@ -95,19 +96,9 @@ final class SitemapController
             );
         }
 
-        // A CMS page with a file is that file's copy and is already listed; one without a file is still a URL —
-        // SiteRouter renders it — so it belongs in the sitemap until it becomes a file too.
-        Page::query()->published()->get(['slug', 'type', 'updated_at', 'seo'])
-            ->filter(fn (Page $page): bool => ! str_contains((string) ($page->seo['robots'] ?? ''), 'noindex'))
-            ->filter(fn (Page $page): bool => ! is_file(public_path(ltrim($page->path(), '/').'index.html')))
-            ->each(function (Page $page) use (&$entries): void {
-                $entries[self::absolute((string) $page->path())] = $this->entry(
-                    self::absolute((string) $page->path()),
-                    $page->updated_at?->toDateString() ?? $this->lastModified(),
-                    (string) $page->path(),
-                    $page->path() === '/',
-                );
-            });
+        // Only files are listed: a published row without a file answers 404 (the renderer was retired), so
+        // advertising it would send Google to a dead page. Rows still bump the cache key above, so a publish is
+        // never served stale.
 
         // The home page first, then alphabetical — stable output, so a diff is a real change.
         uksort($entries, static fn (string $a, string $b): int => [$entries[$a]['home'] ? 0 : 1, $a] <=> [$entries[$b]['home'] ? 0 : 1, $b]);
@@ -156,7 +147,14 @@ final class SitemapController
      */
     private static function absolute(string $path): string
     {
-        $base = rtrim((string) (url('/') === '/' ? config('app.url') : url('/')), '/');
+        // A sitemap lists canonical URLs, so it always names the public site — never the host that happened to
+        // ask. (Built from the request, a fetch through the admin domain put admin.woodex.com.pk in the sitemap,
+        // and an environment that reports no host produced a relative <loc>, which is not valid.)
+        $base = rtrim((string) config('woodex.public_site_url'), '/');
+
+        if (! str_starts_with($base, 'http')) {
+            $base = rtrim((string) (url('/') === '/' ? config('app.url') : url('/')), '/');
+        }
 
         return $base.'/'.ltrim($path, '/');
     }
@@ -165,10 +163,5 @@ final class SitemapController
     private static function noindex(string $html): bool
     {
         return (bool) preg_match('~<meta[^>]+name=["\']robots["\'][^>]+content=["\'][^"\']*noindex~i', $html);
-    }
-
-    private function lastModified(): string
-    {
-        return now()->toDateString();
     }
 }

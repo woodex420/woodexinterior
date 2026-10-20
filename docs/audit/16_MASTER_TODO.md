@@ -1296,3 +1296,26 @@ Same question as steps 10 and 13, asked of the Content band. Full evidence in
 
 Waiting on the owner: retire Blog, Portfolio and Content library, and make the sitemap list files only — or rewire
 the two editors to write page files.
+
+### Step 16 — Blog and Portfolio write the page files (21 Oct 2026)
+
+The audit in step 15 found the two editors writing rows only: a "published" article appeared in the sitemap and
+answered 404. The owner's decision was **not** to retire them — they had to publish.
+
+- **`ArticleFile`** renders a post/study into `public/<folder>/<slug>/index.html` using an existing page of the
+  same kind as the shell, replacing only the head metadata and `<main>`. Same design, same classes, no restyle.
+- **`cms_save`** (when published), **`cms_published`** and **`cms_status`** write the file; draft moves it to
+  `storage/app/studio-retired/` instead of deleting it; a rename retires the old address; `cms_delete` retires
+  then deletes the row.
+- **The sitemap lists files only** (rows can no longer hand Google a 404) and its `<loc>`s are canonical on every
+  host.
+- Verified in the sandbox: publish → file + 200 + listed once; draft → 404 and the file kept; delete → row gone;
+  sitemap back to 142. Browser render of a published article checked against the v1 design.
+- Tests: `tests/Feature/Website/ArticleFileTest.php` (7), `CmsPageTest` updated (files-only sitemap, canonical
+  URLs). Gates: `tests/Feature/Website` **202 passed (1853)**; full suite **1216 passed, 1 skipped (6626)**;
+  Pint clean (844 files); PHPStan no errors.
+
+Waiting on the owner: the same question for **Content library** (0 rows, no reader) — retire it, or give it a
+reader. And the **36 redirects** still need the owner's export before a DB deploy.
+
+---

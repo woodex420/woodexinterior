@@ -606,8 +606,9 @@
 
       function publish(btn) {
         collect(); if (!check()) return;
-        /* Woodex OS (wx-embed.js): pages are rendered by the server from their blocks, so there is no static
-           HTML to build or write. The save below already stored everything; publish only flips the status.
+        /* Woodex OS (wx-embed.js): the server writes the page file from what the editor saved — there is no
+           HTML to build in the browser. The save below stores the item; publishing writes
+           /<folder>/<slug>/index.html and flips the status.
            The v2.1 behaviour is untouched when the flag is absent (the standalone admin). */
         if (window.WX_STUDIO && window.WX_STUDIO.staticPublish === false) {
           busy(btn, true);
