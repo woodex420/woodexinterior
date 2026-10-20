@@ -157,8 +157,8 @@ foreach (['logos' => 'website.logos', 'blog' => 'website.blog', 'portfolio' => '
 Route::livewire('/website/pages/new', PageEditor::class)->name('website.pages.create')->middleware('can:website.edit');
 Route::livewire('/website/pages/{page}', PageEditor::class)->name('website.pages.edit')->middleware('can:website.edit');
 
-// Visual Page Builder (v2.1 front-end, OS back-end): full-document HTML pages only.
-Route::get('/website/builder/{page?}', [WebsiteBuilderController::class, 'show'])->name('website.builder')->middleware('can:website.edit');
+// Visual Page Builder (v2.1 front-end, OS back-end): edits the site's HTML files, opened with ?path=… .
+Route::get('/website/builder', [WebsiteBuilderController::class, 'show'])->name('website.builder')->middleware('can:website.edit');
 Route::post('/website/builder/api', [WebsiteBuilderController::class, 'api'])->name('website.builder.api')->middleware('can:website.edit');
 Route::livewire('/website/sections', SectionLibraryIndex::class)->name('website.sections')->middleware('can:website.edit');
 Route::livewire('/website/heroes', HeroSlidesIndex::class)->name('website.heroes')->middleware('can:website.edit');

@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Domain\Website\Builder\BuilderApi;
-use App\Domain\Website\Builder\BuilderPages;
+use App\Domain\Website\Builder\BuilderFile;
 use App\Domain\Website\Builder\StalePageException;
-use App\Domain\Website\Models\Page;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -22,22 +20,24 @@ use Illuminate\Validation\ValidationException;
  * The screen is a full-document HTML app of its own — it owns the viewport, the way the old /builder/
  * did — but it is a normal admin route: the OS session, the `website.edit` policy and the CSRF token
  * guard it. There is no second password and no second user list.
+ *
+ * It edits the site's real HTML files under `public/` (BuilderFile), not a database copy: the file the web
+ * server answers is the file the owner saves.
  */
 final class WebsiteBuilderController
 {
-    public function show(?Page $page = null): View|RedirectResponse
+    /**
+     * The builder opens a page file (Woodex OS 1): `?path=about/index.html`. Without one it opens the first
+     * page the site has, so the screen is never empty and never guesses at a page that is not there.
+     */
+    public function show(Request $request): View
     {
-        $page ??= Page::query()->where('slug', '/')->firstOrFail();
-
-        // A block page belongs in the section editor: the builder stores whole HTML documents and would
-        // flatten it, so sending the owner there with an error message is not a path.
-        if ($page->template !== 'html') {
-            return redirect()->route('admin.website.pages.edit', $page);
-        }
+        $pages = BuilderApi::pageList();
+        $wanted = trim((string) $request->query('path', ''));
+        $known = array_column($pages, 'path');
 
         return view('admin.website.builder', [
-            'page' => $page,
-            'bootPage' => BuilderPages::pathOf($page),
+            'bootPage' => in_array($wanted, $known, true) ? $wanted : ($known[0] ?? ''),
         ]);
     }
 

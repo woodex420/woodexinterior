@@ -141,8 +141,8 @@
                             <td class="hidden px-5 py-3 text-gray-500 lg:table-cell">{{ $page->updated_at?->diffForHumans() }}</td>
                             <td class="px-5 py-3">
                                 <div class="flex items-center justify-end gap-2">
-                                    @if ($page->template === 'html')
-                                        <a href="{{ route('admin.website.builder', $page) }}" class="font-medium text-theme-sm text-brand-600 hover:underline">Page builder</a>
+                                    @if (\App\Domain\Website\Builder\BuilderFile::exists(\App\Domain\Website\Builder\BuilderFile::pathForUrl($page->path())))
+                                        <a href="{{ route('admin.website.builder', ['path' => \App\Domain\Website\Builder\BuilderFile::pathForUrl($page->path())]) }}" class="font-medium text-theme-sm text-brand-600 hover:underline">Page builder</a>
                                     @else
                                         <a href="{{ route('admin.website.pages.edit', $page) }}" wire:navigate class="font-medium text-theme-sm text-brand-600 hover:underline">Edit sections</a>
                                     @endif

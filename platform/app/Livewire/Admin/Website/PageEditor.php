@@ -6,6 +6,7 @@ namespace App\Livewire\Admin\Website;
 
 use App\Domain\Website\Actions\RestorePageVersion;
 use App\Domain\Website\Actions\SavePage;
+use App\Domain\Website\Builder\BuilderFile;
 use App\Domain\Website\Enums\BlockType;
 use App\Domain\Website\Enums\PageStatus;
 use App\Domain\Website\Enums\PageType;
@@ -160,7 +161,7 @@ class PageEditor extends Component
         // write blocks and null the document, so the editor hands it over instead of showing forms.
         if ($page?->template === 'html') {
             // The builder is a full document, not a Livewire page: a normal navigation, or its CSS and JS never load.
-            $this->redirectRoute('admin.website.builder', ['page' => $page], navigate: false);
+            $this->redirectRoute('admin.website.builder', ['path' => BuilderFile::pathForUrl($page->path())], navigate: false);
 
             return;
         }

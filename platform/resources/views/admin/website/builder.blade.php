@@ -11,22 +11,18 @@
 </head>
 <body>
 
-<!-- ================= LOGIN ================= -->
-<div id="login" class="login" hidden>
-  <form id="login-form" class="login-card">
+<!-- ================= SESSION ENDED ================= -->
+<div id="session" class="login" hidden>
+  <div class="login-card">
     <img src="/assets/img/img-f941b08b9510.png" alt="Woodex" width="90">
-    <h1 id="login-title">Page Builder</h1>
-    <p id="login-sub">Sign in to edit the website.</p>
-    <label for="login-pass">Password</label>
-    <input type="password" id="login-pass" autocomplete="current-password" required minlength="8">
-    <div id="login-confirm-wrap" hidden><label for="login-pass2">Confirm password</label><input type="password" id="login-pass2" autocomplete="new-password"></div>
-    <button type="submit" class="btn btn-pri" id="login-btn">Sign in</button>
-    <p class="login-err" id="login-err" role="alert"></p>
-  </form>
+    <h1>Session ended</h1>
+    <p>Your Woodex OS session ended. Sign in again — this tab keeps your unsaved edits.</p>
+    <a class="btn btn-pri" href="/admin/login">Sign in to Woodex OS</a>
+  </div>
 </div>
 
 <!-- ================= APP ================= -->
-<div id="app" class="app" hidden>
+<div id="app" class="app" hidden data-boot-page="{{ $bootPage }}">
 
   <!-- top bar -->
   <header class="top">

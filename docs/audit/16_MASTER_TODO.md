@@ -728,7 +728,8 @@ exactly as before the session started. Sidebar count assertion 57 live destinati
 
 ## 16.18 Where the Content band stands after 16.13–16.17
 
-The nine screens the owner asked to run inside the OS are all live and tested:
+The six screens the owner asked to run inside the OS are all live and tested (two more, Service pages
+and City pages, were later retired in §16.19 — the table keeps their build record):
 
 | Screen | Route | Evidence | Test |
 |---|---|---|---|
@@ -755,3 +756,99 @@ The two shared libraries share one renderer path now: `StudioApi::libraryUsage()
 **Remaining in the 23-screen target:** the older OS-native screens (Blog/Portfolio editors, Page templates,
 Media, SEO, SEO agent, Speed, Site health, Theme, Team, Client logos) still have v2.1 depth gaps recorded in the
 table in §16.7. Those are next-screen work, not missing destinations.
+
+## 16.19 Woodex OS 1 — the files are the site, and the builder edits them (20 Oct 2026)
+
+Owner decision, 20 Oct: **model = files** and **retire** the four database-only screens. This section records
+step 1 (delete the copies) and step 2 (point the builder at the real files). Step 3 (the retire) is not in this
+section yet.
+
+### Step 1 — the 86 database copies are gone
+
+The v1 HTML files are the website. Every database page I created in the Wave 2 build was a second copy of a
+page that already existed as a file, so it could never be the page a visitor saw (the web server answers the
+file first). They are deleted, with their blocks and versions:
+
+| | Before | After |
+|---|---|---|
+| Pages | 143 (demo DB; 144 in the census) | **57** |
+| Blocks | 1,450 | 710 |
+| Versions | 143 | 57 |
+
+Deleted: 60 service, 12 city, 8 area, 6 project pages — **86 pages, 740 blocks, 86 versions**. What is left:
+48 insight, 3 listing, and one each of about, booking, contact, estimator, home, legal.
+
+Rollback is the backup taken immediately before the delete and kept out of Git:
+`platform/storage/app/private/os1-backup/database-20261020-143458.sqlite` (4.1 MB) and
+`pages-20261020-143458.json` (86 pages, 740 blocks, with per-page version counts). `/tmp/os1_delete.php` is
+the one-off script; it reports counts before and after and wraps the delete in one transaction.
+
+### Step 2 — the builder opens `platform/public/<path>/index.html`
+
+Before this change the builder never touched `public/`: `BuilderApi::load/save` went through
+`BuilderPages::document()` and `SaveHtmlPage`, both database-only. A save wrote a row the web server shadowed
+with a file — the screen could report “Saved & live ✓” and the page never changed. That is why the first thing
+proven here is the file on disk, not a green toast.
+
+Now:
+
+- **`BuilderFile`** (`app/Domain/Website/Builder/BuilderFile.php`) is the only code that touches the site's
+  files. It allows a clean `*.html` path inside `public/` (depth ≤ 4), refuses the system folders
+  (`admin`, `assets`, `build`, `builder`, `vendor`, `storage`, `livewire`, `api`, `webhooks`, `media`, `img`)
+  and anything with `..`. It lists the pages the site actually has (the home page first, then A–Z, each with
+  its `<title>`), reads them, hashes them, writes them atomically (temp file + rename) and keeps versions.
+- **`SaveHtmlFile`** (`app/Domain/Website/Actions/SaveHtmlFile.php`) is the only code that writes a page. It
+  keeps every rule the database-backed save had: a complete document under 3 MB, no `contenteditable`/
+  `data-wx-ed` left behind, the script guard for everyone below the owner, and a snapshot before every write.
+  The conflict check is now a **hash** of the file as the builder opened it, with mtime as the fallback, so a
+  save made in the same second as someone else's edit is still caught. A save the owner confirms with
+  `force` overwrites and says so.
+- **Versions live in storage, not the database**: `storage/app/private/builder/<sha1(path)>/<stamp>-u<id>.html`,
+  40 kept per page. `backups`, `backup_get` and `restore` answer from those files; a restore is itself a save
+  (so the current state is snapshotted first).
+- **The route takes a path**, `/admin/website/builder?path=about/index.html`; without one it opens the first
+  page of the site. `PageEditor` sends a database HTML page to `?path=…` and the pages index links to the
+  builder only when a file answers that slug.
+- **The builder has no password screen.** `BuilderPages`, `SaveHtmlPage`, the login form and the v2.1
+  `/api/admin.php` token flow are deleted. A 401 now shows one panel: “your Woodex OS session ended”, with the
+  link to sign in again. (The API already answered `login`/`setup` with “Sign in through Woodex OS”.)
+- **Home is not a file yet.** `platform/public/index.html` does not exist; `/` is a Blade/CMS page. The builder
+  therefore lists and edits the 141 files that do exist, and home stays CMS until the owner decides whether to
+  export the rendered home into `index.html` (that decision changes which page answers `/`, so it is not taken
+  silently).
+
+### Proof (real browser, 20 Oct)
+
+`node /tmp/prove-builder.mjs http://127.0.0.1:8080` — owner signs in, opens
+`/admin/website/builder?path=about/index.html`, the canvas shows the file's own `<h1>`
+(“Design and build, held to one standard”), types into it, presses Escape (finishing the edit, which enables
+Save) and clicks Save:
+
+```
+toast: Saved & live ✓ (backup kept)
+file on disk contains the edit: true
+a version was kept before the write: true (1 -> 2)
+that version is byte-identical to the old file: true
+/about/ now serves the edit: true
+```
+
+Screenshots: `docs/audit/evidence/os1-builder-edit.png` (the heading editable in the canvas) and
+`os1-builder-saved.png` (after Save, live). The edit was reverted afterwards by re-syncing the demo, so the
+shipped v1 pages are untouched (`git status` clean for `platform/public/**/index.html`).
+
+### Tests and gates
+
+- `tests/Feature/Website/VisualBuilderTest.php` — rewritten for files, 17 tests: list/load/save/versions/
+  restore, hash conflict (and `force`), editor markup, script guard (editor vs owner), path allow-list
+  (`../.env`, `admin/`, `assets/`, `builder/`), `page_new`, and no password field on the screen. It swaps the
+  application's public and storage paths for a scratch site, so no shipped page is written by the suite.
+- `pest tests/Feature/Website tests/Feature/P10SidebarHubsTest.php` → **371 passed (4,355 assertions)**.
+- `pint --test` → **PASS 859 files**; `phpstan analyse` → **[OK] No errors**.
+
+### What is still open
+
+- **Step 3, the retire**: remove Service pages, City pages, FAQs and Testimonials from `SCREENS`, routes,
+  `AdminNavigation`, `FULL_DOCUMENT` and their JS modules; `P10SidebarHubsTest` 57 → 53.
+- **Home**: decide whether `/` becomes a file (see above).
+- The editor still cannot create a *folder* that the site's navigation links to; `page_new` writes
+  `<folder>/<slug>/index.html` and that is enough for now.
