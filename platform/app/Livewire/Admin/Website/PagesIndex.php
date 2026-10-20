@@ -4,15 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Website;
 
-use App\Domain\Website\Actions\CreatePageFromTemplate;
-use App\Domain\Website\Enums\PageStatus;
-use App\Domain\Website\Enums\PageType;
-use App\Domain\Website\Models\Page;
-use App\Domain\Website\Models\PageTemplate;
-use App\Domain\Website\Services\Menus;
-use App\Domain\Website\Services\PageAudit;
-use App\Domain\Website\Services\PageCache;
-use App\Domain\Website\Services\PageCopier;
+use App\Domain\Website\Builder\BuilderFile;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
@@ -21,134 +13,87 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /**
- * All pages of the public website (docs/09 §2.2). Everything a page shows is edited here: title, URL, sections
- * and the fields search engines read.
+ * Every page of the public website — as a file (Woodex OS 1, docs/audit/16.19 step 6).
+ *
+ * The site is the v1 files under `public/`: the web server answers them before the application is asked. So
+ * this list is the builder's own page list (`BuilderFile::pages()`), not the `pages` table: a row cannot put a
+ * word on a live page, and showing rows here is what made the screen claim a result it did not have. Opening a
+ * page hands it to the builder, the one editor that writes the file.
+ *
+ * Retiring a page moves its file to `storage/app/private/site-retired/…` — it is reversible, and it is the only
+ * way to take a page off the site, because the file *is* the page.
  */
 #[Layout('layouts::admin')]
 #[Title('Pages')]
-class PagesIndex extends Component
+final class PagesIndex extends Component
 {
     use InteractsWithAdmin;
 
     public string $search = '';
 
-    public string $type = '';
-
-    public string $status = '';
+    /** The first segment of the URL: home, insights, projects, lahore… */
+    public string $section = '';
 
     public function mount(): void
     {
         abort_unless($this->user()->can('website.edit'), 403);
     }
 
-    public function unpublish(int $pageId): void
-    {
-        abort_unless($this->user()->can('website.publish'), 403);
-
-        $page = Page::query()->findOrFail($pageId);
-        $page->forceFill(['status' => PageStatus::Draft])->save();
-
-        PageCache::invalidate($page);
-        Menus::flush();
-        $this->toast('“'.$page->title.'” is no longer public.');
-    }
-
     /**
-     * Start a page from a template (V2-3 F5): the layout's sections land on a fresh draft, ready
-     * to fill in. Nothing is public until it is edited and published like any other page.
+     * Take a page off the site. The file is kept — moved to storage with a version snapshot first — so this is a
+     * reversible action, not a delete.
      */
-    public function createFromTemplate(int $templateId): void
-    {
-        $template = PageTemplate::query()->findOrFail($templateId);
-
-        $page = app(CreatePageFromTemplate::class)->handle($template, $this->user());
-
-        $this->toast("“{$page->title}” created as a draft — add the words, then publish.");
-        $this->redirectRoute('admin.website.pages.edit', $page, navigate: true);
-    }
-
-    public function duplicate(int $pageId): void
-    {
-        $page = Page::query()->findOrFail($pageId);
-
-        $copy = app(PageCopier::class)->copy($page);
-
-        $this->redirectRoute('admin.website.pages.edit', $copy, navigate: true);
-    }
-
-    public function delete(int $pageId): void
+    public function retire(string $path): void
     {
         abort_unless($this->user()->can('website.publish'), 403);
 
-        $page = Page::query()->findOrFail($pageId);
-        PageCache::invalidate($page);
-        $page->delete();
-        Menus::flush();
+        $title = BuilderFile::titleOf(BuilderFile::read($path));
 
-        $this->toast('“'.$page->title.'” moved to the recycle bin.');
+        BuilderFile::retire($path, $this->user());
+
+        $this->toast('“'.$title.'” is off the site. Its file is kept in storage, under site-retired.');
     }
 
     public function render(): View
     {
-        $pages = Page::query()
-            ->when($this->search !== '', fn ($query) => $query->where(fn ($q) => $q
-                ->where('title', 'like', '%'.$this->search.'%')
-                ->orWhere('slug', 'like', '%'.$this->search.'%')))
-            ->when($this->type !== '', fn ($query) => $query->where('type', $this->type))
-            ->when($this->status !== '', fn ($query) => $query->where('status', $this->status))
-            ->orderBy('type')
-            ->orderBy('sort')
-            ->orderBy('title')
-            ->withCount('blocks')
-            ->with('blocks')
-            ->get();
+        $all = collect(BuilderFile::pages())
+            ->map(static fn (array $page): array => $page + ['section' => self::sectionOf($page['url'])]);
 
-        // The page check, on the list (19 Oct): a published page can look fine and still be missing
-        // its description or an image's alt text. The count is the editor's own PageAudit, read-only.
-        $imageAlt = DB::table('website_media')->pluck('alt', 'id')
-            ->map(fn ($alt): string => (string) $alt)
-            ->all();
-
-        $checks = $pages->mapWithKeys(function (Page $page) use ($imageAlt): array {
-            $findings = PageAudit::findings(
-                $page->title,
-                (string) ($page->seo['title'] ?? ''),
-                (string) ($page->seo['description'] ?? ''),
-                (string) ($page->seo['focus_keyword'] ?? ''),
-                $page->blocks->map(fn ($block): array => [
-                    'type' => $block->type->value,
-                    'visible' => (bool) $block->visible,
-                    'data' => (array) $block->data,
-                ])->all(),
-                $imageAlt,
-            );
-
-            // Suggestions (a missing focus keyword) do not count here: the list is for pages that
-            // need work, not for every page in the site.
-            $issues = array_values(array_filter($findings, fn (array $finding): bool => $finding['level'] !== PageAudit::INFO));
-
-            return [$page->id => [
-                'count' => count($issues),
-                'bad' => count(array_filter($issues, fn (array $finding): bool => $finding['level'] === PageAudit::BAD)),
-                'first' => $issues[0]['message'] ?? '',
-            ]];
-        })->all();
-
-        // How many of the 143 URLs of the previous website are live or redirected (docs/09 §3).
-        $counts = [
-            'pages' => Page::query()->count(),
-            'published' => Page::query()->where('status', PageStatus::Published)->count(),
-            'redirects' => DB::table('redirects')->count(),
-            'media' => DB::table('website_media')->count(),
-        ];
+        $pages = $all
+            ->when($this->section !== '', fn ($pages) => $pages->where('section', $this->section))
+            ->when($this->search !== '', fn ($pages) => $pages->filter(fn (array $page): bool => str_contains(
+                mb_strtolower($page['title'].' '.$page['url'].' '.$page['path']),
+                mb_strtolower(trim($this->search)),
+            )))
+            ->values();
 
         return view('livewire.admin.website.pages-index', [
-            'templates' => PageTemplate::query()->orderBy('page_type')->orderByDesc('is_default')->orderBy('name')->get(),
             'pages' => $pages,
-            'checks' => $checks,
-            'counts' => $counts,
-            'types' => collect(PageType::cases())->mapWithKeys(fn (PageType $type): array => [$type->value => $type->label()])->all(),
-            'statuses' => collect(PageStatus::cases())->mapWithKeys(fn (PageStatus $status): array => [$status->value => $status->label()])->all(),
+            'sections' => $all->pluck('section')->unique()->sort()->values()->all(),
+            'counts' => [
+                'pages' => $all->count(),
+                'sections' => $all->pluck('section')->unique()->count(),
+                // What changed lately is the question a page list is opened to answer.
+                'recent' => $all->filter(fn (array $page): bool => $page['mtime'] >= now()->subDays(7)->getTimestamp())->count(),
+                'media' => DB::table('website_media')->count(),
+            ],
         ]);
+    }
+
+    /**
+     * `/insights/a-post/` → `insights`, `/about/` → `top-level`, `/` → `home`.
+     *
+     * The first segment only groups pages that sit under one: a service page is its own folder, so grouping by
+     * the first segment would give 81 "sections" of one page each — a filter that filters nothing.
+     */
+    private static function sectionOf(string $url): string
+    {
+        $segments = array_values(array_filter(explode('/', trim($url, '/')), static fn (string $s): bool => $s !== ''));
+
+        return match (true) {
+            $segments === [] => 'home',
+            count($segments) === 1 => 'top-level',
+            default => $segments[0],
+        };
     }
 }

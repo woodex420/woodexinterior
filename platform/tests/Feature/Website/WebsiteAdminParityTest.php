@@ -1,10 +1,7 @@
 <?php
 
-use App\Domain\Website\Enums\BlockType;
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\Redirect;
-use App\Domain\Website\Models\SavedSection;
-use App\Livewire\Admin\Website\SectionLibraryIndex;
 use App\Livewire\Admin\Website\SeoOverviewIndex;
 use App\Livewire\Admin\Website\SiteHealthIndex;
 use App\Models\User;
@@ -43,10 +40,12 @@ it('groups the Website section the way it is worked on', function () {
         ->all();
 
     // Build a page, fill it with content, then tune the whole site — the owner's three bands.
+    // Section library and Page templates left the sidebar with the block editor (step 6): they fed a
+    // screen that wrote rows, and the files never read them.
     expect($labels('Pages & builder'))->toBe([
-        'All pages', 'Page builder', 'Section library', 'Header & footer', 'Redirects',
+        'All pages', 'Page builder', 'Header & footer', 'Redirects',
     ])->and($labels('Content'))->toBe([
-        'Blog', 'Portfolio', 'Page templates', 'Forms', 'Estimator', 'Team',
+        'Blog', 'Portfolio', 'Forms', 'Estimator', 'Team',
     ])->and($labels(null))->toBe([
         'Media', 'SEO', 'SEO agent', 'Speed', 'Site health', 'Theme', 'Website Settings',
     ]);
@@ -74,32 +73,6 @@ it('retires the Content library from the sidebar but keeps its records', functio
     expect(route('admin.website.content', absolute: false))->toBe('/admin/website/content');
 
     $this->actingAs($owner)->get('/admin/website/content')->assertOk();
-});
-
-it('shows the section library standalone, renames and retires saved sections', function () {
-    SavedSection::query()->create([
-        'name' => 'Lahore gallery, tuned',
-        'type' => BlockType::Gallery,
-        'data' => ['heading' => 'Lahore', 'images' => []],
-        'created_by' => $this->editor->id,
-    ]);
-
-    Livewire::actingAs($this->editor)
-        ->test(SectionLibraryIndex::class)
-        ->assertSee('Lahore gallery, tuned')
-        ->assertSee(BlockType::Gallery->label())
-        ->call('rename', 1)
-        ->set('renameName', 'Lahore gallery, final')
-        ->call('saveRename')
-        ->assertDontSee('Lahore gallery, tuned');
-
-    expect(SavedSection::query()->first()->name)->toBe('Lahore gallery, final');
-
-    Livewire::actingAs($this->editor)
-        ->test(SectionLibraryIndex::class)
-        ->call('delete', 1);
-
-    expect(SavedSection::query()->count())->toBe(0);
 });
 
 it('shows every page\'s search listing on the SEO screen, and edits it in place', function () {
@@ -138,7 +111,6 @@ it('keeps the standalone screens behind the website permission', function () {
     $intruder = User::factory()->create(); // no website.edit
 
     foreach ([
-        '/admin/website/sections',
         '/admin/website/seo-overview',
         '/admin/website/health',
     ] as $path) {
@@ -146,6 +118,22 @@ it('keeps the standalone screens behind the website permission', function () {
         $this->actingAs($this->editor)->get($path)->assertOk();
     }
 });
+
+it('retires the screens that only wrote rows the files never read', function (string $url) {
+    $owner = User::factory()->create();
+    $owner->givePermissionTo(['website.edit']);
+
+    $all = collect(AdminNavigation::for($owner))->flatMap(fn (array $group): array => $group['items'])->pluck('label');
+
+    expect($all)
+        ->not->toContain('Section library')
+        ->not->toContain('Page templates');
+
+    $this->actingAs($owner)->get($url)->assertNotFound();
+})->with([
+    '/admin/website/sections',
+    '/admin/website/templates',
+]);
 
 it('retires the four database-only screens instead of leaving a destination that cannot reach the site', function (string $url) {
     $owner = User::factory()->create();

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Domain\Website\Builder\BuilderFile;
-use App\Domain\Website\Enums\PageStatus;
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Services\SiteRouter;
 use App\Models\User;
@@ -253,15 +252,16 @@ it('serves the saved file, because the file is the site', function () {
         ->and(app(SiteRouter::class)->respond($request))->toBeNull();
 });
 
-it('sends a database HTML page to the builder with its file path', function () {
-    $page = Page::factory()->create([
-        'slug' => '/built/',
-        'template' => 'html',
-        'canvas_html' => '<html><body>built</body></html>',
-        'status' => PageStatus::Published,
-    ]);
+it('sends the old page-editor URL to the builder, on the file that answers the page', function () {
+    // The block editor wrote rows the file site never read (OS 1, step 6). Its URL still has to land
+    // somewhere useful: the builder, on the file that answers the page.
+    $page = Page::factory()->create(['slug' => '/built/']);
 
     $this->actingAs($this->editor)
         ->get(route('admin.website.pages.edit', $page))
         ->assertRedirect(route('admin.website.builder', ['path' => 'built/index.html']));
+
+    $this->actingAs($this->editor)
+        ->get(route('admin.website.pages.create'))
+        ->assertRedirect(route('admin.website.builder'));
 });

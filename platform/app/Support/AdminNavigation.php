@@ -79,7 +79,6 @@ final class AdminNavigation
             self::group('Pages & builder', [
                 self::item('All pages', 'layout', 'admin.website.pages', 'website.edit'),
                 self::item('Page builder', 'panel', 'admin.website.builder', 'website.edit'),
-                self::item('Section library', 'layers', 'admin.website.sections', 'website.edit'),
                 self::item('Header & footer', 'menu', 'admin.website.menus', 'website.edit'),
                 self::item('Redirects', 'globe', 'admin.website.redirects', 'website.edit'),
             ]),
@@ -88,7 +87,6 @@ final class AdminNavigation
                 self::item('Portfolio', 'layout', 'admin.website.portfolio', 'website.edit'),
                 // The six screens still to port; listed now so the section matches the target, disabled
                 // until their actions are switched on in WebsiteStudioController::SCREENS.
-                self::item('Page templates', 'templates', 'admin.website.templates', 'website.edit'),
                 self::item('Forms', 'file', 'admin.website.forms', 'website.edit'),
                 self::item('Estimator', 'calculator', 'admin.website.estimator', 'website.edit'),
                 self::item('Team', 'users', 'admin.website.team', 'website.edit'),

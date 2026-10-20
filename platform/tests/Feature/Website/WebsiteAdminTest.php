@@ -1,7 +1,7 @@
 <?php
 
+use App\Domain\Website\Builder\BuilderFile;
 use App\Domain\Website\Enums\BlockType;
-use App\Domain\Website\Enums\PageStatus;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\NavigationItem;
 use App\Domain\Website\Models\Page;
@@ -9,7 +9,6 @@ use App\Domain\Website\Models\PageBlock;
 use App\Domain\Website\Models\Redirect;
 use App\Livewire\Admin\Website\MediaLibrary;
 use App\Livewire\Admin\Website\MenusIndex;
-use App\Livewire\Admin\Website\PageEditor;
 use App\Livewire\Admin\Website\PagesIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
 use App\Livewire\Admin\Website\WebsiteSettings;
@@ -33,20 +32,72 @@ beforeEach(function () {
     $this->editor->givePermissionTo(['website.edit', 'website.publish']);
 });
 
-it('lists the pages of the website', function () {
-    Page::factory()->published()->withSlug('/interior-design/')->create(['title' => 'Interior Design']);
-    Page::factory()->withSlug('/draft-page/')->create(['title' => 'Still a draft']);
+it('lists the pages of the site as the files they are', function () {
+    // A page is a file under public/, so the list is the builder's own page list, not the pages table.
+    $site = sys_get_temp_dir().'/woodex-pages-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($site.'/about');
+    File::ensureDirectoryExists($site.'/insights');
+    File::put($site.'/index.html', '<html><head><title>Woodex home</title></head><body></body></html>');
+    File::put($site.'/about/index.html', '<html><head><title>About the studio</title></head><body></body></html>');
+    File::put($site.'/insights/index.html', '<html><head><title>Insights</title></head><body></body></html>');
+    File::ensureDirectoryExists($site.'/insights/a-post');
+    File::put($site.'/insights/a-post/index.html', '<html><head><title>An article</title></head><body></body></html>');
+    $this->app->usePublicPath($site);
 
     $this->actingAs($this->editor);
 
     Livewire::test(PagesIndex::class)
-        ->assertSee('Interior Design')
-        ->assertSee('/interior-design/')
-        ->assertSee('Still a draft')
-        ->call('unpublish', Page::query()->where('slug', '/interior-design/')->first()->id)
+        ->assertSee('Woodex home')
+        ->assertSee('About the studio')
+        ->assertSee('/about/')
+        ->assertSee('Edit in builder')
+        // The filter groups the pages that sit under one: /insights/a-post/ belongs to insights, while
+        // /insights/ itself and /about/ are top-level pages.
+        ->set('section', 'insights')
+        ->assertSee('An article')
+        ->assertDontSee('About the studio');
+
+    // Nothing on the screen is a database row: an empty table still lists the site.
+    expect(Page::query()->count())->toBe(0);
+
+    File::deleteDirectory($site);
+});
+
+it('takes a page offline by moving its file out of the site, and keeps it', function () {
+    $site = sys_get_temp_dir().'/woodex-pages-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($site.'/about');
+    File::put($site.'/about/index.html', '<html><head><title>About the studio</title></head><body></body></html>');
+    $this->app->usePublicPath($site);
+
+    $this->actingAs($this->editor);
+
+    Livewire::test(PagesIndex::class)
+        ->call('retire', 'about/index.html')
         ->assertDispatched('toast');
 
-    expect(Page::query()->where('slug', '/interior-design/')->first()->status)->toBe(PageStatus::Draft);
+    // The URL is gone, the HTML is not: a version and the moved file both survive in storage.
+    expect(is_file($site.'/about/index.html'))->toBeFalse();
+    expect(BuilderFile::versions('about/index.html'))->not->toBe([]);
+
+    $kept = glob(storage_path('app/private/site-retired/*/about/index.html')) ?: [];
+    expect($kept)->not->toBe([]);
+
+    foreach ($kept as $file) {
+        @unlink($file);
+    }
+
+    File::deleteDirectory($site);
+});
+
+it('lets an editor take a page offline only with the publish permission', function () {
+    $writer = User::factory()->create();
+    $writer->givePermissionTo('website.edit');
+    $this->actingAs($writer);
+
+    Livewire::test(PagesIndex::class)
+        ->assertDontSee('Take offline')
+        ->call('retire', 'about/index.html')
+        ->assertStatus(403);
 });
 
 it('keeps the website screens away from users who do not edit the website', function () {
@@ -55,187 +106,6 @@ it('keeps the website screens away from users who do not edit the website', func
     $this->actingAs($sales)
         ->get(route('admin.website.pages'))
         ->assertForbidden();
-});
-
-it('lets an editor change a page but not publish it', function () {
-    $page = Page::factory()->withSlug('/interior-design/')->create(['title' => 'Interior Design']);
-
-    $writer = User::factory()->create();
-    $writer->givePermissionTo('website.edit');
-    $this->actingAs($writer);
-
-    // The screen opens, the draft is saved…
-    Livewire::test(PageEditor::class, ['page' => $page])
-        ->set('title', 'Interior Design, Lahore')
-        ->call('save', false)
-        ->assertDispatched('toast');
-
-    expect($page->fresh()->title)->toBe('Interior Design, Lahore')
-        ->and($page->fresh()->status)->toBe(PageStatus::Draft);
-
-    // …but publishing needs the second permission.
-    Livewire::test(PageEditor::class, ['page' => $page->fresh()])->call('save', true)->assertStatus(403);
-});
-
-it('creates a page, adds sections and publishes it', function () {
-    $this->actingAs($this->editor);
-
-    Livewire::test(PageEditor::class)
-        ->set('title', 'Interior Design in Lahore')
-        ->set('slug', '/interior-design/')
-        ->set('excerpt', 'Design, drawings and site supervision for homes and workplaces in Lahore, from one team.')
-        ->set('seoTitle', 'Interior Design in Lahore | Woodex Interior')
-        ->set('seoDescription', 'Interior design in Lahore: concept, drawings, 3D views, approvals and site supervision for homes, offices and retail, delivered by one studio team.')
-        ->call('addBlock', BlockType::Hero->value)
-        ->call('addBlock', BlockType::Faq->value)
-        ->call('save', true)
-        ->assertRedirect(route('admin.website.pages.edit', Page::query()->sole()));
-
-    $page = Page::query()->sole();
-
-    expect($page->status)->toBe(PageStatus::Published)
-        ->and($page->slug)->toBe('/interior-design/')
-        ->and($page->blocks()->count())->toBe(2)
-        ->and($page->versions()->count())->toBe(1);
-
-    // The page is live at its URL.
-    $this->siteGet('/interior-design/')->assertOk()->assertSee('Interior Design in Lahore');
-});
-
-it('holds back a page that is not ready to publish', function () {
-    $this->actingAs($this->editor);
-
-    Livewire::test(PageEditor::class)
-        ->set('title', 'Fit-Out')
-        ->set('slug', '/fit-out/')
-        ->call('save', true)
-        ->assertSet('issues.0', 'Add an SEO title (the blue link in search results).');
-
-    expect(Page::query()->count())->toBe(0);
-});
-
-it('will not publish a page whose images have no alt text', function () {
-    $image = Media::factory()->create(['alt' => '']);
-    $this->actingAs($this->editor);
-
-    $test = Livewire::test(PageEditor::class)
-        ->set('title', 'Renovation')
-        ->set('slug', '/renovation/')
-        ->set('excerpt', 'Renovation of homes and offices in Lahore, carried out by one team from survey to handover.')
-        ->set('seoTitle', 'Renovation in Lahore')
-        ->set('seoDescription', 'Renovation in Lahore for homes, offices and shops: survey, drawings, approvals, execution and handover by one studio team.')
-        ->call('addBlock', BlockType::Hero->value)
-        ->set('blocks.0.data.image_id', (string) $image->id)
-        ->call('addBlock', BlockType::Faq->value)
-        ->call('save', true);
-
-    expect($test->get('issues'))->toContain('Alt text is missing for the image '.basename($image->path).'.')
-        ->and(Page::query()->count())->toBe(0);
-
-    // Give the image a description and the page goes live.
-    $image->update(['alt' => 'Renovated drawing room with lime plaster walls and oak flooring']);
-
-    Livewire::test(PageEditor::class)
-        ->set('title', 'Renovation')
-        ->set('slug', '/renovation/')
-        ->set('excerpt', 'Renovation of homes and offices in Lahore, carried out by one team from survey to handover.')
-        ->set('seoTitle', 'Renovation in Lahore')
-        ->set('seoDescription', 'Renovation in Lahore for homes, offices and shops: survey, drawings, approvals, execution and handover by one studio team.')
-        ->call('addBlock', BlockType::Hero->value)
-        ->set('blocks.0.data.image_id', (string) $image->id)
-        ->call('addBlock', BlockType::Faq->value)
-        ->call('save', true)
-        ->assertRedirect(route('admin.website.pages.edit', Page::query()->sole()));
-});
-
-it('saves a draft with anything in it, and only publishing is checked', function () {
-    $this->actingAs($this->editor);
-
-    Livewire::test(PageEditor::class)
-        ->set('title', 'Architecture')
-        ->set('slug', '/architecture/')
-        ->call('save', false)
-        ->assertRedirect(route('admin.website.pages.edit', Page::query()->sole()));
-
-    expect(Page::query()->sole()->status)->toBe(PageStatus::Draft);
-});
-
-it('edits the sections of a page, reorders them and hides one', function () {
-    $page = Page::factory()->published()->withSlug('/fit-out/')->create(['title' => 'Fit-Out']);
-    PageBlock::factory()->for($page)->asType(BlockType::Text, ['heading' => 'First'])->create(['position' => 0]);
-    PageBlock::factory()->for($page)->asType(BlockType::Text, ['heading' => 'Second'])->create(['position' => 1]);
-
-    $this->actingAs($this->editor);
-
-    Livewire::test(PageEditor::class, ['page' => $page])
-        ->assertSet('blocks.0.data.heading', 'First')
-        ->call('moveBlock', 0, 1)
-        ->assertSet('blocks.0.data.heading', 'Second')
-        ->call('toggleBlock', 1)
-        ->call('addItem', 0, 'items')
-        ->call('save', false);
-
-    $blocks = $page->fresh()->blocks;
-
-    expect($blocks[0]->data['heading'])->toBe('Second')
-        ->and($blocks[1]->visible)->toBeFalse();
-});
-
-it('removes a section and keeps the rest', function () {
-    $page = Page::factory()->published()->withSlug('/fit-out/')->create(['title' => 'Fit-Out']);
-    PageBlock::factory()->for($page)->asType(BlockType::Text, ['heading' => 'Keep me'])->create(['position' => 0]);
-    PageBlock::factory()->for($page)->asType(BlockType::Text, ['heading' => 'Delete me'])->create(['position' => 1]);
-
-    $this->actingAs($this->editor);
-
-    Livewire::test(PageEditor::class, ['page' => $page])
-        ->call('removeBlock', 1)
-        ->call('save', false);
-
-    expect($page->fresh()->blocks->pluck('data.heading')->all())->toBe(['Keep me']);
-});
-
-it('restores an earlier version of a page', function () {
-    $page = Page::factory()->published()->withSlug('/furniture/')->create([
-        'title' => 'Furniture',
-        'excerpt' => 'Custom furniture made and fitted in Lahore.',
-        'seo' => ['title' => 'Furniture', 'description' => 'Custom furniture in Lahore: wardrobes, kitchens, vanities and joinery, designed, made in our own workshop and fitted by our team.'],
-    ]);
-    PageBlock::factory()->for($page)->asType(BlockType::Text, ['heading' => 'Original copy'])->create(['position' => 0]);
-    PageBlock::factory()->for($page)->asType(BlockType::Faq, ['items' => [['question' => 'How long?', 'answer' => 'Three to five weeks.']]])->create(['position' => 1]);
-
-    $this->actingAs($this->editor);
-
-    // Publish once so there is a version to go back to.
-    Livewire::test(PageEditor::class, ['page' => $page])->call('save', true)->assertRedirect(route('admin.website.pages.edit', $page));
-
-    $page->blocks()->first()->update(['data' => ['heading' => 'Rewritten copy', 'body' => '']]);
-    $page->update(['title' => 'Furniture & joinery']);
-
-    $version = $page->versions()->latest('id')->first();
-
-    Livewire::test(PageEditor::class, ['page' => $page->fresh()])
-        ->call('restore', $version->id)
-        ->assertDispatched('toast');
-
-    expect($page->fresh()->title)->toBe('Furniture')
-        ->and($page->fresh()->blocks->first()->data['heading'])->toBe('Original copy');
-});
-
-it('duplicates a page with its sections', function () {
-    $page = Page::factory()->published()->withSlug('/interior-design/')->create(['title' => 'Interior Design']);
-    PageBlock::factory()->for($page)->asType(BlockType::Text, ['heading' => 'Shared copy'])->create(['position' => 0]);
-
-    $this->actingAs($this->editor);
-
-    Livewire::test(PagesIndex::class)->call('duplicate', $page->id)->assertRedirect(route('admin.website.pages.edit', 2));
-
-    $copy = Page::query()->find(2);
-
-    expect($copy->title)->toBe('Interior Design (copy)')
-        ->and($copy->slug)->toBe('/interior-design-copy/')
-        ->and($copy->status)->toBe(PageStatus::Draft)
-        ->and($copy->blocks->first()->data['heading'])->toBe('Shared copy');
 });
 
 it('uploads an image, requires alt text and serves it from the media library', function () {
@@ -388,41 +258,4 @@ it('leaves the analytics out while tracking is switched off', function () {
 
     $this->publishHomePage();
     $this->siteGet('/')->assertOk()->assertDontSee('G-ABC1234567');
-});
-
-it('shows the page check on the list, and says Clear when there is nothing to fix', function () {
-    // A page with its SEO fields filled and a hero that has everything: nothing for the check to say.
-    $clean = Page::factory()->published()->withSlug('/clean-page/')->create([
-        'title' => 'Kitchen design in Lahore',
-        'seo' => [
-            'title' => 'Kitchen design in Lahore | Woodex Interior',
-            'description' => 'Kitchens planned around how a family actually cooks: measured, drawn and built by one studio team, with the same people from the first sketch to handover.',
-            'focus_keyword' => 'kitchen design lahore',
-        ],
-    ]);
-    PageBlock::factory()->for($clean)->asType(BlockType::Hero, [
-        'heading' => 'Kitchen design in Lahore',
-        'image_id' => null,
-        'primary_label' => 'Start a project',
-        'primary_url' => '/contact/',
-        'secondary_label' => '',
-        'secondary_url' => '',
-    ])->create(['position' => 0, 'block_key' => 'bcleanhero']);
-    PageBlock::factory()->for($clean)->asType(BlockType::Form)->create(['position' => 1, 'block_key' => 'bcleanform']);
-
-    // A page with a hero, no description at all: the check should point at it.
-    $needsWork = Page::factory()->published()->withSlug('/needs-work/')->create([
-        'title' => 'Needs work',
-        'seo' => [],
-    ]);
-    PageBlock::factory()->for($needsWork)->asType(BlockType::Hero)->create(['position' => 0, 'block_key' => 'bworkhero']);
-    PageBlock::factory()->for($needsWork)->asType(BlockType::Form)->create(['position' => 1, 'block_key' => 'bworkform']);
-
-    $this->actingAs($this->editor);
-
-    Livewire::test(PagesIndex::class)
-        ->assertSee('Clear')
-        ->assertSee('item')
-        // The row carries the first thing to fix, so the list explains itself without a click.
-        ->assertSee('No SEO title');
 });

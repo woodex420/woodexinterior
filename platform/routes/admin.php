@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\QuotePdfController;
 use App\Http\Controllers\Admin\SystemUpdateController;
 use App\Http\Controllers\Admin\WebsiteBuilderController;
+use App\Http\Controllers\Admin\WebsitePagesRedirectController;
 use App\Http\Controllers\Admin\WebsiteStudioApiController;
 use App\Http\Controllers\Admin\WebsiteStudioController;
 use App\Livewire\Admin\Accounts\ChartOfAccounts;
@@ -55,11 +56,8 @@ use App\Livewire\Admin\System\WhatsAppTemplates;
 use App\Livewire\Admin\Website\ContentLibraryIndex;
 use App\Livewire\Admin\Website\MediaLibrary;
 use App\Livewire\Admin\Website\MenusIndex;
-use App\Livewire\Admin\Website\PageEditor;
 use App\Livewire\Admin\Website\PagesIndex;
-use App\Livewire\Admin\Website\PageTemplatesIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
-use App\Livewire\Admin\Website\SectionLibraryIndex;
 use App\Livewire\Admin\Website\SeoAgentIndex;
 use App\Livewire\Admin\Website\SeoOverviewIndex;
 use App\Livewire\Admin\Website\SiteHealthIndex;
@@ -133,7 +131,6 @@ Route::get('/media/{media}/{conversion?}', MediaController::class)->name('media.
 Route::livewire('/marketing/social', SocialPlannerIndex::class)->name('marketing.social')->middleware('can:social.manage');
 
 Route::livewire('/website/pages', PagesIndex::class)->name('website.pages')->middleware('can:website.edit');
-Route::livewire('/website/templates', PageTemplatesIndex::class)->name('website.templates')->middleware('can:website.edit');
 
 /*
  * The ported v2.1 admin screens (docs/audit/16.8). Full document: they bring their own stylesheet and
@@ -153,13 +150,13 @@ foreach (['blog' => 'website.blog', 'portfolio' => 'website.portfolio', 'forms' 
         ->defaults('screen', $screen)->name($name)->middleware('can:website.edit');
 }
 
-Route::livewire('/website/pages/new', PageEditor::class)->name('website.pages.create')->middleware('can:website.edit');
-Route::livewire('/website/pages/{page}', PageEditor::class)->name('website.pages.edit')->middleware('can:website.edit');
+// A page is a file and the builder is its editor: the old editor URLs open the builder on that file.
+Route::get('/website/pages/new', WebsitePagesRedirectController::class)->name('website.pages.create')->middleware('can:website.edit');
+Route::get('/website/pages/{page}', WebsitePagesRedirectController::class)->name('website.pages.edit')->middleware('can:website.edit');
 
 // Visual Page Builder (v2.1 front-end, OS back-end): edits the site's HTML files, opened with ?path=… .
 Route::get('/website/builder', [WebsiteBuilderController::class, 'show'])->name('website.builder')->middleware('can:website.edit');
 Route::post('/website/builder/api', [WebsiteBuilderController::class, 'api'])->name('website.builder.api')->middleware('can:website.edit');
-Route::livewire('/website/sections', SectionLibraryIndex::class)->name('website.sections')->middleware('can:website.edit');
 Route::livewire('/website/seo-overview', SeoOverviewIndex::class)->name('website.seo.overview')->middleware('can:website.edit');
 Route::livewire('/website/health', SiteHealthIndex::class)->name('website.health')->middleware('can:website.edit');
 Route::livewire('/website/media', MediaLibrary::class)->name('website.media')->middleware('can:website.edit');

@@ -7,7 +7,6 @@ use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\PageBlock;
 use App\Domain\Website\Services\ContentLibrary;
 use App\Livewire\Admin\Website\ContentLibraryIndex;
-use App\Livewire\Admin\Website\PageEditor;
 use App\Models\User;
 use Livewire\Livewire;
 use Tests\Concerns\InteractsWithPublicWebsite;
@@ -126,16 +125,4 @@ it('shows library logos with their photos loaded', function () {
         ->and($libraryAt)->toBeLessThan($ownAt)
         // The library logo's photo URL really renders — the media map resolved it.
         ->and($body)->toContain($logo->url());
-});
-
-it('offers the library to the sections in the page editor', function () {
-    ContentEntry::query()->create(['kind' => 'faq', 'data' => ['question' => 'Editor question', 'answer' => 'Editor answer'], 'position' => 1]);
-
-    $page = Page::factory()->withSlug('/editor-library/')->create(['title' => 'Editor library']);
-    PageBlock::factory()->for($page)->asType(BlockType::Faq, ['items' => []])->create(['position' => 0]);
-
-    Livewire::actingAs($this->editor)
-        ->test(PageEditor::class, ['page' => $page])
-        ->assertSee('From the shared FAQ library')
-        ->assertSee('Editor question');
 });

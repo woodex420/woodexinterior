@@ -249,6 +249,34 @@ final class BuilderFile
     }
 
     /**
+     * Take a page off the site. The HTML is kept as a version first, then the file is moved out of `public/`
+     * into `storage/app/private/site-retired/<stamp>/<path>`: nothing is deleted outright, so putting a page
+     * back is moving its file home (and the version is there even if that folder is emptied).
+     *
+     * @return string the path the file was moved to
+     */
+    public static function retire(string $path, ?User $user = null): string
+    {
+        $absolute = self::resolve($path);
+
+        if (! is_file($absolute)) {
+            throw ValidationException::withMessages(['path' => 'That page is not there any more.']);
+        }
+
+        self::snapshot($path, $user, 'retired');
+
+        $target = storage_path('app/private/site-retired/'.now()->format('Ymd-His').'/'.self::normalise($path));
+
+        File::ensureDirectoryExists(dirname($target));
+        File::move($absolute, $target);
+
+        // The page's folder usually holds nothing else; leaving `public/about/` behind would be an empty URL.
+        @rmdir(dirname($absolute));
+
+        return $target;
+    }
+
+    /**
      * Keep the current file as a version before it is overwritten.
      *
      * Versions live in storage, not in the database (the database no longer describes the site), one folder per
