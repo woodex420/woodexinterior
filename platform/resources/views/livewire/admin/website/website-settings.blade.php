@@ -48,8 +48,9 @@
                     </x-admin.field>
 
                     <p class="text-theme-xs text-gray-500">
-                        The footer's link columns come from <a href="{{ route('admin.website.menus') }}" class="text-brand-600 hover:underline">Website → Header &amp; footer → Footer</a>:
-                        a top link with children under it becomes one column — the link is the column's title, its children are the links inside it.
+                        These words and switches reach a page only when the CMS renders it. The site's pages are files
+                        under public/, and each file carries its own header and footer — the page builder is where
+                        those are edited.
                     </p>
                 </div>
             </x-admin.card>

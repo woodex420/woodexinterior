@@ -3,12 +3,10 @@
 use App\Domain\Website\Builder\BuilderFile;
 use App\Domain\Website\Enums\BlockType;
 use App\Domain\Website\Models\Media;
-use App\Domain\Website\Models\NavigationItem;
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\PageBlock;
 use App\Domain\Website\Models\Redirect;
 use App\Livewire\Admin\Website\MediaLibrary;
-use App\Livewire\Admin\Website\MenusIndex;
 use App\Livewire\Admin\Website\PagesIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
 use App\Livewire\Admin\Website\WebsiteSettings;
@@ -201,24 +199,6 @@ it('exports the redirect map as a CSV', function () {
         ->assertFileDownloaded();
 
     $this->get(route('admin.website.redirects'))->assertOk()->assertSee('/old-page/');
-});
-
-it('builds the header menu from the dashboard', function () {
-    Page::factory()->published()->withSlug('/interior-design/')->create(['title' => 'Interior Design']);
-    $this->actingAs($this->editor);
-
-    Livewire::test(MenusIndex::class)
-        ->set('menu', 'header')
-        ->set('label', 'Interior design')
-        ->set('url', '/interior-design/')
-        ->call('add')
-        ->assertSee('Interior design');
-
-    expect(NavigationItem::query()->where('menu', 'header')->count())->toBe(1);
-
-    // The menu is what the public header shows (menus are cached for a day).
-    $this->publishHomePage();
-    $this->siteGet('/')->assertOk()->assertSee('Interior design')->assertSee('href="/interior-design/"', false);
 });
 
 it('takes the tracking IDs the owner pastes and loads nothing until they are filled in', function () {

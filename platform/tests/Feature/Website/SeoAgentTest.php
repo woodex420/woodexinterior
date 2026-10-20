@@ -1,157 +1,127 @@
 <?php
 
-use App\Domain\Website\Enums\BlockType;
-use App\Domain\Website\Models\Media;
-use App\Domain\Website\Models\Page;
-use App\Domain\Website\Models\PageBlock;
 use App\Domain\Website\Models\Redirect;
+use App\Domain\Website\Seo\FileAudit;
 use App\Livewire\Admin\Website\SeoAgentIndex;
 use App\Models\User;
-use App\Settings\BotSettings;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\File;
 use Livewire\Livewire;
-use Tests\Concerns\InteractsWithPublicWebsite;
 
 /*
-| V2-3 F8 + F10 (docs/14 §5a): the SEO agent. Deterministic, keyless-first — every finding is a
-| plain rule; one-click fixes mend what a rule can mend. AI proposals wake only when the studio's
-| model key exists (the BOT pattern) and land only by the owner's click.
+| The SEO agent, read from the pages themselves (Woodex OS 1, step 6). Every finding is a plain rule a person
+| can repeat: a title, a description, one H1, alt text, enough words, and every internal link answering. The fix
+| happens in the builder, on the file — the screen points at it.
 */
-
-uses(InteractsWithPublicWebsite::class);
 
 beforeEach(function () {
     $this->editor = User::factory()->create();
     $this->editor->givePermissionTo('website.edit');
 
-    // The studio starts keyless (the shipped default) — the AI half must stay asleep.
-    app(BotSettings::class)->fill(['provider' => 'none', 'api_key' => null])->save();
+    $this->site = sys_get_temp_dir().'/woodex-seo-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($this->site);
+    $this->app->usePublicPath($this->site);
 });
 
-it('audits every page with plain rules, no key asked', function () {
-    $thin = Page::factory()->published()->withSlug('/Thin_Page/')->create(['title' => 'Short', 'excerpt' => '']);
-    PageBlock::factory()->for($thin)->asType(BlockType::Text, ['text' => 'Tiny.'])->create(['position' => 0]);
+afterEach(function () {
+    File::deleteDirectory($this->site);
+});
 
-    $described = Page::factory()->published()->withSlug('/described-page/')->create(['title' => 'A properly long, well described title for a page', 'seo' => ['description' => 'Described.']]);
-    PageBlock::factory()->for($described)->asType(BlockType::Text, ['text' => str_repeat('Interior design words. ', 40)])->create(['position' => 0]);
+/** A page with a complete listing and enough words; $overrides replace individual parts. */
+function seoPage(string $title = 'A complete, well described page for the studio', string $description = 'One studio in Lahore: design, drawings, joinery and handing over a finished room to the family that asked for it.'): string
+{
+    return '<html><head><title>'.e($title).'</title><meta name="description" content="'.e($description).'"></head>'
+        .'<body><main><h1>'.e($title).'</h1><p>'.str_repeat('word ', 150).'</p></main></body></html>';
+}
 
-    $component = Livewire::actingAs($this->editor)->test(SeoAgentIndex::class);
+it('lists every finding against the file that has it, and points at the builder', function () {
+    File::ensureDirectoryExists($this->site.'/missing');
+    File::ensureDirectoryExists($this->site.'/complete');
+    // Both are linked from the home page, so the orphan rule does not name them.
+    File::put($this->site.'/index.html', '<html><head><title>The home page of the Woodex studio</title>'
+        .'<meta name="description" content="Interior design in Lahore by one studio: drawings, joinery, site work and a finished handover."></head>'
+        .'<body><main><h1>Home</h1><a href="/missing/">Missing</a><a href="/complete/">Complete</a><p>'.str_repeat('word ', 150).'</p></main></body></html>');
+    File::put($this->site.'/missing/index.html', '<html><head><title>Thin</title></head><body><main><h1>Thin</h1><p>Tiny.</p></main></body></html>');
+    File::put($this->site.'/complete/index.html', seoPage());
 
-    // The untidy page is found with its rules; the healthy page is absent.
-    $component->assertSee('Thin_Page')
-        ->assertSee('Slug is not lowercase-with-hyphens')
+    Livewire::actingAs($this->editor)
+        ->test(SeoAgentIndex::class)
+        ->assertSee('/missing/')
         ->assertSee('No meta description')
-        ->assertSee('Only about 1 words')
-        ->assertDontSee('described-page');
+        ->assertSee('Title is only 4 characters')
+        ->assertSee('Open in builder')
+        ->assertDontSee('/complete/');
 
-    // Keyless: the AI card is shown, the draft button is not.
-    $component->assertSee('AI proposals are asleep')
-        ->assertDontSee('Draft title &amp; description with AI')
-        ->assertDontSee('Draft title & description with AI');
-
-    $component->assertSee('fixable in one click');
-});
-
-it('fixes what a rule can mend: description, slug with a redirect behind it, alt texts', function () {
-    $page = Page::factory()->published()->withSlug('/Mixed_Case page/')->create(['title' => 'A page that needs mending', 'excerpt' => '', 'seo' => ['title' => 'A page that needs mending']]);
-    PageBlock::factory()->for($page)->asType(BlockType::Text, ['text' => 'This page sells thoughtful interiors in Lahore with natural materials. '.str_repeat('Every room is planned, drawn and built by our own team. ', 15)])->create(['position' => 0]);
-    $image = Media::factory()->create(['path' => 'website/media/atrium.webp', 'title' => 'The atrium']);
-    $gallery = PageBlock::factory()->for($page)->asType(BlockType::Gallery, ['items' => [['id' => $image->id, 'alt' => '']]])->create(['position' => 1]);
-
-    $component = Livewire::actingAs($this->editor)->test(SeoAgentIndex::class);
-
-    $component->call('fixDescription', $page->id)
-        ->assertDispatched('toast', message: 'Meta description taken from the page itself.');
-
-    $component->call('fixSlug', $page->id)
-        ->assertDispatched('toast', message: 'Slug tidied — the old address now redirects to it.');
-
-    $component->call('fixAlt', $page->id)
-        ->assertDispatched('toast', message: '1 alt text(s) filled from the media library.');
-
-    $page->refresh();
-    expect($page->slug)->toBe('/mixed-case-page/')
-        ->and(mb_substr((string) $page->seo['description'], 0, 40))->toBe('This page sells thoughtful interiors in ')
-        ->and($gallery->fresh()->data['items'][0]['alt'])->not->toBe('');
-
-    // The old address now redirects to the tidy one.
-    $redirect = Redirect::query()->where('from_path', '/Mixed_Case page/')->first();
-    expect($redirect)->not->toBeNull()
-        ->and($redirect->to_path)->toBe('/mixed-case-page/');
-
-    // And the audit no longer lists the page.
-    $this->travel(1)->seconds();
+    // The rule filter narrows the worklist to one rule.
     Livewire::actingAs($this->editor)
         ->test(SeoAgentIndex::class)
-        ->assertDontSee('Mixed_Case')
-        ->assertDontSee('mixed-case-page');
+        ->call('setCode', 'missing_description')
+        ->assertSee('/missing/')
+        ->assertDontSee('Title is only 4 characters');
 });
 
-it('carries the F10 website health sweep: broken redirects, dead links, orphan pages', function () {
-    // A published page nothing links to…
-    $orphan = Page::factory()->published()->withSlug('/orphan-page/')->create(['title' => 'An orphan page with a long enough title', 'seo' => ['description' => 'Described.']]);
-    PageBlock::factory()->for($orphan)->asType(BlockType::Text, ['text' => str_repeat('Words about interiors. ', 20)])->create(['position' => 0]);
+it('counts a content image without alt text, but not the decorative brand mark', function () {
+    File::ensureDirectoryExists($this->site.'/hero');
+    File::ensureDirectoryExists($this->site.'/plain');
+    File::put($this->site.'/hero/index.html', '<html><head><title>A page with an undescribed hero image</title></head><body>'
+        .'<header><img src="/assets/img/logo.webp" alt=""></header>'
+        .'<main><h1>Hero</h1><p>'.str_repeat('word ', 150).'</p><img src="/assets/img/hero.webp" alt=""></main>'
+        .'<footer><img src="/assets/img/mark.webp" alt=""></footer></body></html>');
+    File::put($this->site.'/plain/index.html', '<html><head><title>A page whose only empty alt is the logo</title></head><body>'
+        .'<header><img src="/assets/img/logo.webp" alt=""></header><main><h1>Plain</h1><p>'.str_repeat('word ', 150).'</p></main></body></html>');
 
-    // …a redirect to a page that does not exist…
-    Redirect::query()->create(['from_path' => '/gone/', 'to_path' => '/nowhere/']);
+    $audit = (new FileAudit)->handle();
 
-    // …and a link in the orphan's own text to another page that does not exist.
-    $orphan->blocks()->first()->update(['data' => ['text' => 'See <a href="/also-nowhere/">our missing page</a> '.str_repeat('Words about interiors. ', 20)]]);
+    $byUrl = collect($audit['pages'])->keyBy('url');
+    $plainCodes = collect($byUrl->get('/plain/')['issues'] ?? [])->pluck('code')->all();
 
-    $component = Livewire::actingAs($this->editor)->test(SeoAgentIndex::class)
-        ->set('tab', 'site');
-
-    $component->assertSee('redirect(s) point at no page')
-        ->assertSee('/gone/ → /nowhere/')
-        ->assertSee('internal link(s) lead nowhere')
-        ->assertSee('also-nowhere')
-        ->assertSee('Nothing links to 1 published page(s)')
-        ->assertSee('/orphan-page/');
-
-    // Broken redirects are mended by removal — the rest is advice.
-    $component->call('fixRedirect', Redirect::query()->first()->id)
-        ->assertDispatched('toast', message: 'Redirect removed.');
-
-    expect(Redirect::query()->count())->toBe(0);
+    expect($audit['counts']['images_without_alt'])->toBe(1)
+        ->and($byUrl->has('/hero/'))->toBeTrue()
+        ->and($plainCodes)->not->toContain('missing_alt');
 });
 
-it('proposes with the studio key and lands nothing until the owner clicks Apply', function () {
-    app(BotSettings::class)->fill(['provider' => 'openai', 'api_key' => 'sk-test', 'model' => ''])->save();
+it('checks every internal link, orphan page and redirect against the files', function () {
+    File::ensureDirectoryExists($this->site.'/about');
+    File::ensureDirectoryExists($this->site.'/alone');
+    File::put($this->site.'/index.html', '<html><head><title>The home page of the Woodex studio</title>'
+        .'<meta name="description" content="Interior design in Lahore by one studio: drawings, joinery, site work and a finished handover."></head>'
+        .'<body><main><h1>Home</h1><a href="/about/">About</a><a href="/nowhere/">Dead</a><p>'.str_repeat('word ', 150).'</p></main></body></html>');
+    File::put($this->site.'/about/index.html', '<html><head><title>About the Woodex studio in Lahore</title>'
+        .'<meta name="description" content="The people, the workshop and the way a project runs from the first visit to the last coat of paint."></head>'
+        .'<body><main><h1>About</h1><p>'.str_repeat('word ', 150).'</p></main></body></html>');
+    File::put($this->site.'/alone/index.html', '<html><head><title>A page nothing links to at all</title>'
+        .'<meta name="description" content="A page that exists and answers, but no other page on the site points a visitor at it."></head>'
+        .'<body><main><h1>Alone</h1><p>'.str_repeat('word ', 150).'</p></main></body></html>');
 
-    $page = Page::factory()->published()->withSlug('/proposed-page/')->create(['title' => 'A page worth proposing for', 'excerpt' => '']);
-    PageBlock::factory()->for($page)->asType(BlockType::Text, ['text' => 'The studio designs calm, warm interiors across Lahore.'])->create(['position' => 0]);
+    Redirect::query()->create(['from_path' => '/old-page/', 'to_path' => '/does-not-exist/', 'code' => 301, 'note' => null]);
 
-    Http::fake(['api.openai.com/*' => Http::response(['choices' => [['message' => ['content' => '{"title": "Calm interiors in Lahore", "description": "Thoughtful interior design for homes across Lahore, in natural materials."}']]]])]);
+    $audit = (new FileAudit)->handle();
+    $site = collect($audit['site'])->keyBy('code');
 
-    $component = Livewire::actingAs($this->editor)->test(SeoAgentIndex::class)
-        ->assertDontSee('AI proposals are asleep');
-
-    $component->call('propose', $page->id)
-        ->assertSee('Proposal — read it, then apply or walk away.')
-        ->assertSee('Calm interiors in Lahore');
-
-    // The proposal is on the table, not on the page.
-    expect($page->fresh()->seo['title'] ?? null)->toBeNull();
-
-    $component->call('applyProposal');
-
-    $page->refresh();
-    expect($page->seo['title'])->toBe('Calm interiors in Lahore')
-        ->and($page->seo['description'])->toBe('Thoughtful interior design for homes across Lahore, in natural materials.')
-        ->and($component->get('proposal'))->toBe([]);
+    expect($audit['counts']['broken_links'])->toBe(1)
+        ->and($site->get('broken_links')['message'])->toContain('/nowhere/')
+        ->and($site->get('orphan_pages')['message'])->toContain('/alone/')
+        ->and($site->get('broken_redirects')['message'])->toContain('/old-page/');
 });
 
-it('stays keyless when the key is empty, whatever the provider says', function () {
-    app(BotSettings::class)->fill(['provider' => 'openai', 'api_key' => null])->save();
+it('catches a listing a search engine cuts off, and a page that asks not to be indexed', function () {
+    File::ensureDirectoryExists($this->site.'/long');
+    File::ensureDirectoryExists($this->site.'/hidden');
+    File::put($this->site.'/long/index.html', seoPage(
+        str_repeat('A very long title for a page that Google will cut off in the results ', 2),
+        str_repeat('A description far longer than a search result can show, written without a full stop ', 3),
+    ));
+    File::put($this->site.'/hidden/index.html', '<html><head><title>A page kept out of search on purpose</title>'
+        .'<meta name="robots" content="noindex"><meta name="description" content="Out of the index on purpose, for a campaign or a test."></head>'
+        .'<body><main><h1>Hidden</h1><p>'.str_repeat('word ', 150).'</p></main></body></html>');
 
-    $page = Page::factory()->published()->withSlug('/still-keyless/')->create(['title' => 'A keyless page with a long enough title', 'seo' => ['description' => 'Described.']]);
-    PageBlock::factory()->for($page)->asType(BlockType::Text, ['text' => str_repeat('Interior words. ', 20)])->create(['position' => 0]);
+    $audit = (new FileAudit)->handle();
+    $codes = collect($audit['pages'])->flatMap(fn (array $page): array => collect($page['issues'])->pluck('code')->all());
 
-    Http::fake();
+    expect($codes)->toContain('long_title')->toContain('long_description')->toContain('noindex');
+});
 
-    Livewire::actingAs($this->editor)
-        ->test(SeoAgentIndex::class)
-        ->assertSee('AI proposals are asleep');
+it('keeps the SEO screens behind the website permission', function () {
+    $intruder = User::factory()->create();
 
-    Http::assertNothingSent();
+    Livewire::actingAs($intruder)->test(SeoAgentIndex::class)->assertStatus(403);
 });

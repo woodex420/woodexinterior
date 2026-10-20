@@ -79,7 +79,6 @@ final class AdminNavigation
             self::group('Pages & builder', [
                 self::item('All pages', 'layout', 'admin.website.pages', 'website.edit'),
                 self::item('Page builder', 'panel', 'admin.website.builder', 'website.edit'),
-                self::item('Header & footer', 'menu', 'admin.website.menus', 'website.edit'),
                 self::item('Redirects', 'globe', 'admin.website.redirects', 'website.edit'),
             ]),
             self::group('Content', [
@@ -89,7 +88,6 @@ final class AdminNavigation
                 // until their actions are switched on in WebsiteStudioController::SCREENS.
                 self::item('Forms', 'file', 'admin.website.forms', 'website.edit'),
                 self::item('Estimator', 'calculator', 'admin.website.estimator', 'website.edit'),
-                self::item('Team', 'users', 'admin.website.team', 'website.edit'),
             ]),
             // Tools for the whole site, not for one page: no heading, the way the owner asked for them.
             self::group(null, [

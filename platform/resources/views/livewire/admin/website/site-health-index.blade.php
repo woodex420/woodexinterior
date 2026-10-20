@@ -1,14 +1,15 @@
 <div>
-    <x-admin.page-header title="Site health" description="The website as a whole, on one screen: links that lead nowhere, redirects pointing at nothing, orphan pages nothing links to, images without alt text, and the two generated files search engines read first. Findings are computed fresh on every load."
+    <x-admin.page-header title="Site health" description="The website as a whole, read from the files in public/: links that lead nowhere, redirects pointing at nothing, pages nothing links to, images without alt text, and the two generated files search engines read first. Every page is checked, not just the ones in the database."
                          :breadcrumbs="['Website' => null, 'Site health' => null]">
         <x-slot:actions>
             <x-admin.button variant="secondary" icon="refresh" wire:click="rescan">Rescan</x-admin.button>
         </x-slot:actions>
     </x-admin.page-header>
 
-    <div class="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+    <div class="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
         <x-admin.stat label="Verdict" :value="$unhealthy === 0 ? 'Healthy' : $unhealthy.' finding(s)'" icon="health" :tone="$unhealthy === 0 ? 'success' : 'warning'" />
-        <x-admin.stat label="Published pages" :value="$stats['published']" icon="globe" />
+        <x-admin.stat label="Pages checked" :value="$stats['files']" icon="globe" />
+        <x-admin.stat label="With findings" :value="$stats['flagged']" icon="alert" />
         <x-admin.stat label="Redirects" :value="$stats['redirects']" icon="refresh" />
         <x-admin.stat label="Media files" :value="$stats['media']" icon="image" />
     </div>

@@ -6,6 +6,7 @@ use App\Livewire\Admin\Website\SeoOverviewIndex;
 use App\Livewire\Admin\Website\SiteHealthIndex;
 use App\Models\User;
 use App\Support\AdminNavigation;
+use Illuminate\Support\Facades\File;
 use Livewire\Livewire;
 use Tests\Concerns\InteractsWithPublicWebsite;
 
@@ -43,9 +44,9 @@ it('groups the Website section the way it is worked on', function () {
     // Section library and Page templates left the sidebar with the block editor (step 6): they fed a
     // screen that wrote rows, and the files never read them.
     expect($labels('Pages & builder'))->toBe([
-        'All pages', 'Page builder', 'Header & footer', 'Redirects',
+        'All pages', 'Page builder', 'Redirects',
     ])->and($labels('Content'))->toBe([
-        'Blog', 'Portfolio', 'Forms', 'Estimator', 'Team',
+        'Blog', 'Portfolio', 'Forms', 'Estimator',
     ])->and($labels(null))->toBe([
         'Media', 'SEO', 'SEO agent', 'Speed', 'Site health', 'Theme', 'Website Settings',
     ]);
@@ -75,36 +76,58 @@ it('retires the Content library from the sidebar but keeps its records', functio
     $this->actingAs($owner)->get('/admin/website/content')->assertOk();
 });
 
-it('shows every page\'s search listing on the SEO screen, and edits it in place', function () {
-    $this->publishHomePage(['title' => 'Woodex Interior — design & build', 'description' => 'Interior design in Lahore.']);
+it('shows every page\'s search listing on the SEO screen, read from the files', function () {
+    $site = sys_get_temp_dir().'/woodex-seo-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($site.'/about');
+    File::ensureDirectoryExists($site.'/quiet');
+    File::put($site.'/index.html', '<html><head><title>Woodex Interior — design &amp; build in Lahore</title>'
+        .'<meta name="description" content="Interior design, fit-out and architecture in Lahore since 2016, by one studio team."></head>'
+        .'<body><main><h1>Woodex</h1><p>'.str_repeat('word ', 200).'</p></main></body></html>');
+    File::put($site.'/about/index.html', '<html><head><title>About the studio</title></head>'
+        .'<body><main><h1>About</h1><p>'.str_repeat('word ', 150).'</p></main></body></html>');
+    File::put($site.'/quiet/index.html', '<html><head><title>Quiet page</title></head>'
+        .'<body><main><h1>Quiet</h1><p>'.str_repeat('word ', 150).'</p></main></body></html>');
+    $this->app->usePublicPath($site);
 
     Livewire::actingAs($this->editor)
         ->test(SeoOverviewIndex::class)
-        ->assertSee('Woodex Interior — design & build')
-        ->call('setFilter', 'draft')
+        // The default view is the worklist: the pages with a finding, read from their files.
+        ->assertSee('/about/')
+        ->assertSee('About the studio')
+        ->assertSee('No description')
+        ->assertDontSee('/quiet/thin-', false)
         ->call('setFilter', 'all')
-        ->call('edit', 1)
-        ->set('editTitle', 'Woodex Interior — Lahore studio')
-        ->set('editDescription', 'Interior design, fit-out and architecture in Lahore since 2016.')
-        ->call('saveEdit');
+        ->assertSee('/about/')
+        ->assertSee('/quiet/')
+        // The listing is changed in the builder, on the file — not in a row nothing reads.
+        ->assertSee('Open in builder');
 
-    $seo = Page::query()->where('slug', '/')->first()->seo;
-    expect($seo['title'])->toBe('Woodex Interior — Lahore studio')
-        ->and($seo['description'])->toBe('Interior design, fit-out and architecture in Lahore since 2016.');
+    File::deleteDirectory($site);
 });
 
-it('reports the whole site\'s health, and catches a redirect to nowhere', function () {
-    $this->publishHomePage();
+it('reports the whole site\'s health from the files, and catches a redirect to nowhere', function () {
+    $site = sys_get_temp_dir().'/woodex-health-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($site.'/about');
+    File::put($site.'/index.html', '<html><head><title>Woodex home page in Lahore</title>'
+        .'<meta name="description" content="Interior design in Lahore, from one studio team that draws, builds and hands over."></head>'
+        .'<body><main><h1>Woodex</h1><a href="/about/">About</a></main></body></html>');
+    File::put($site.'/about/index.html', '<html><head><title>About the Woodex studio</title>'
+        .'<meta name="description" content="The studio, its people and how a project runs from the first visit to handover."></head>'
+        .'<body><main><h1>About</h1><a href="/nowhere/">A dead link</a></main></body></html>');
+    $this->app->usePublicPath($site);
+
     Redirect::query()->create(['from_path' => '/old-page/', 'to_path' => '/does-not-exist/', 'code' => 301, 'note' => null]);
 
     Livewire::actingAs($this->editor)
         ->test(SiteHealthIndex::class)
         ->assertSee('Internal links that lead nowhere')
+        ->assertSee('/nowhere/')
         ->assertSee('Redirects pointing at no page')
-        ->assertSee('/old-page/ → /does-not-exist/')
+        ->assertSee('/old-page/')
         ->assertSee('robots.txt is generated')
-        ->assertSee('sitemap.xml is generated')
-        ->assertSee('finding(s)');
+        ->assertSee('sitemap.xml is generated');
+
+    File::deleteDirectory($site);
 });
 
 it('keeps the standalone screens behind the website permission', function () {
@@ -127,12 +150,18 @@ it('retires the screens that only wrote rows the files never read', function (st
 
     expect($all)
         ->not->toContain('Section library')
-        ->not->toContain('Page templates');
+        ->not->toContain('Page templates')
+        ->not->toContain('Header & footer')
+        ->not->toContain('Team');
 
     $this->actingAs($owner)->get($url)->assertNotFound();
 })->with([
     '/admin/website/sections',
     '/admin/website/templates',
+    // Their records stay (the Blade layout and the importer still read them); the screens only edited
+    // rows no file page renders.
+    '/admin/website/menus',
+    '/admin/website/team',
 ]);
 
 it('retires the four database-only screens instead of leaving a destination that cannot reach the site', function (string $url) {
