@@ -21,7 +21,7 @@ final class AdminNavigation
      *
      * @var list<string>
      */
-    public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.logos', 'admin.website.blog', 'admin.website.portfolio', 'admin.website.services'];
+    public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.logos', 'admin.website.blog', 'admin.website.portfolio', 'admin.website.services', 'admin.website.cities'];
 
     /**
      * @return list<array{title: string, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}>
@@ -90,7 +90,7 @@ final class AdminNavigation
                 // The six screens still to port; listed now so the section matches the target, disabled
                 // until their actions are switched on in WebsiteStudioController::SCREENS.
                 self::item('Service pages', 'layers', 'admin.website.services', 'website.edit'),
-                self::item('City pages', 'map-pin', null, null, 'soon'),
+                self::item('City pages', 'map-pin', 'admin.website.cities', 'website.edit'),
                 self::item('Page templates', 'templates', 'admin.website.templates', 'website.edit'),
                 self::item('Forms', 'file', null, null, 'soon'),
                 self::item('Estimator', 'calculator', null, null, 'soon'),

@@ -23,6 +23,7 @@ final class WebsiteStudioController
         'blog' => ['title' => 'Blog & insights', 'view' => 'blog'],
         'portfolio' => ['title' => 'Portfolio', 'view' => 'portfolio'],
         'services' => ['title' => 'Service & site pages', 'view' => 'services'],
+        'cities' => ['title' => 'City pages', 'view' => 'cities'],
     ];
 
     public function show(Request $request, string $screen): View

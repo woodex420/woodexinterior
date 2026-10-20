@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
+use Throwable;
 
 /**
  * The server behind the ported v2.1 admin (docs/audit/16.7, 16.8).
@@ -57,6 +58,9 @@ final class StudioApi
         'cms_page_kinds' => 'pageKinds',
         'cms_page_new' => 'pageNew',
         'cms_page_duplicate' => 'pageDuplicate',
+        // City pages: a new city is a draft copied from a template city, one at a time or several at once.
+        'cms_city_new' => 'cityNew',
+        'cms_city_bulk' => 'cityBulk',
         'bapi_load' => 'builderLoad',
         'bapi_save' => 'builderSave',
         'bapi_page_new' => 'builderSave',
@@ -281,6 +285,121 @@ final class StudioApi
             'url' => $page->slug,
             'status' => $page->status->value,
         ];
+    }
+
+    /**
+     * “New city”: a draft city page copied from a template city, with the template's city name swapped
+     * for the new one (v2.1's cloneCity did the same against the HTML file).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{item: array{id: int, title: string, url: string, status: string}}
+     */
+    private function cityNew(array $payload): array
+    {
+        return ['item' => $this->createCity((string) ($payload['name'] ?? ''), (int) ($payload['from'] ?? 0))];
+    }
+
+    /**
+     * “Bulk create”: one city per line, each a draft. A name that fails is reported and the rest continue.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{created: list<array{id: int, title: string, url: string, status: string}>, failed: list<array{name: string, error: string}>}
+     */
+    private function cityBulk(array $payload): array
+    {
+        $raw = $payload['names'] ?? [];
+        $names = is_array($raw) ? $raw : preg_split('/\r\n|\r|\n|,/', (string) $raw);
+        $from = (int) ($payload['from'] ?? 0);
+
+        $created = [];
+        $failed = [];
+
+        foreach (array_slice(array_values(array_filter(array_map(
+            fn ($name): string => trim((string) $name),
+            is_array($names) ? $names : []
+        ))), 0, 25) as $name) {
+            try {
+                $created[] = $this->createCity($name, $from);
+            } catch (Throwable $exception) {
+                $failed[] = ['name' => $name, 'error' => $exception->getMessage()];
+            }
+        }
+
+        return ['created' => $created, 'failed' => $failed];
+    }
+
+    /**
+     * @return array{id: int, title: string, url: string, status: string}
+     */
+    private function createCity(string $name, int $from): array
+    {
+        $name = trim((string) preg_replace('/\s+/', ' ', $name));
+
+        if ($name === '') {
+            throw new RuntimeException('A city name is needed.');
+        }
+
+        $source = $from > 0
+            ? Page::query()->find($from)
+            : Page::query()->where('type', PageType::City)->orderBy('id')->first();
+
+        if ($source === null || $source->type !== PageType::City) {
+            throw new RuntimeException('There is no city page to copy from yet.');
+        }
+
+        $slug = Page::normalizeSlug('/'.Str::slug($name).'/');
+
+        if (Page::query()->where('slug', $slug)->exists()) {
+            throw new RuntimeException("“{$name}” already has a page.");
+        }
+
+        $page = app(PageCopier::class)->copy($source, $name, $slug);
+        $this->swapCityName($page, Str::headline(trim($source->slug, '/')), $name);
+
+        PageCache::invalidate($page);
+        Menus::flush();
+
+        return $this->pageItem($page);
+    }
+
+    /**
+     * Replace the template city's name inside the copied copy — the words, never a path or an image id,
+     * so a copied page cannot end up pointing at the template's media.
+     */
+    private function swapCityName(Page $page, string $from, string $to): void
+    {
+        if ($from === '' || $from === $to) {
+            return;
+        }
+
+        $pattern = '/(?<![\w-])'.preg_quote($from, '/').'(?![\w-])/u';
+
+        $swap = function (mixed $value) use (&$swap, $pattern, $to) {
+            if (is_array($value)) {
+                foreach ($value as $key => $item) {
+                    $value[$key] = $swap($item);
+                }
+
+                return $value;
+            }
+
+            if (! is_string($value) || $value === '') {
+                return $value;
+            }
+
+            // Addresses, media references and ids are copied as they are.
+            if (preg_match('#^(/|https?:|mailto:|tel:|\#)#', $value) || str_contains($value, '/media/')) {
+                return $value;
+            }
+
+            return (string) preg_replace($pattern, $to, $value);
+        };
+
+        foreach ($page->blocks as $block) {
+            /** @var array<string, mixed> $data */
+            $data = (array) $block->data;
+            $block->forceFill(['data' => $swap($data)])->save();
+        }
     }
 
     /** The v2.1 address shape the screen's filters were written for. No file is read or written. */

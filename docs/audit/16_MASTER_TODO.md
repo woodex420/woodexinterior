@@ -465,7 +465,7 @@ entries is now:
 | Band | Items |
 |---|---|
 | **Pages & builder** | All pages · Page builder · Section library · Header & footer · Hero slides · Redirects |
-| **Content** | Blog · Portfolio · **Service pages** · City pages* · Page templates · Forms* · Estimator* · FAQs* · Testimonials* · Client logos · Team |
+| **Content** | Blog · Portfolio · **Service pages** · **City pages** · Page templates · Forms* · Estimator* · FAQs* · Testimonials* · Client logos · Team |
 | **No heading** (site-wide tools) | Media · SEO · SEO agent · Speed · Site health · Theme · Website Settings |
 
 `*` = not ported yet: listed disabled with a “soon” pill and the tooltip “arrives with the Website port”,
@@ -513,3 +513,37 @@ map, copy-from-layout, blank page, taken address, duplicate numbering, and the n
 Full Website suite + sidebar test: **328 passed**; Pint PASS 852; PHPStan 0.
 
 Next screens in the band: City pages, Forms, Estimator, FAQs, Testimonials.
+
+---
+
+## 16.12 Screen 5 — City pages, ported (20 Oct 2026)
+
+`/admin/website/cities` is live (`docs/audit/evidence/studio-cities.png`). v2.1 kept city pages as **content
+drafts** and published them by writing HTML; the OS has one kind of page, so a city draft is a page of type
+`city` with draft status — it appears in this list, opens in the section editor, and goes live from Pages.
+
+Carried over: the banner (“new cities are copied from a template city, saved as drafts”; footer link now goes
+to the OS Header & footer), the **Draft first, Live after** ordering with the status badge, the search, **New
+city** with a template picker, and **Bulk create** (one per line, up to 25, each result reported per row).
+
+Carried over honestly: **“Bulk create with AI” is not**. The AI rewrite needs `ai_run`, which is not ported;
+the screen says the text is the template's with the name swapped and that no AI key is connected here,
+instead of showing a checkbox that does nothing.
+
+The copy swaps the **template city's name in the words only** — headings, body copy, titles — and never in an
+address, a `/media/` reference or an image id. A page copied from Faisalabad therefore says “Interior design
+in Gujrat” while the studio's own Lahore address stays correct.
+
+Two bugs caught while doing it:
+
+1. `catch (Throwable)` in a namespaced class without `use Throwable;` silently matches nothing — the bulk
+   path aborted on the first bad name instead of reporting it. Imported, and the test now proves a bulk run
+   creates the good cities and reports the skipped one.
+2. The new screen's JS had double-escaped regexes (`/^\\/+…/`), so the file failed to parse and the v2.1
+   view stayed active — the browser showed v2.1's own “no city pages loaded” text. `node --check` on every
+   ported module is now part of the check.
+
+Verified in the browser: 12 cities listed, 12 template options, New city created a draft and opened the
+editor, Bulk created 2 drafts with 2 green rows, 15 rows afterwards, **0 console errors**. Smoke pages
+deleted (back to 143 pages / 12 cities). Tests: `StudioCityPagesTest` **6 passed (32 assertions)**.
+Sidebar count assertion moved to 53.
