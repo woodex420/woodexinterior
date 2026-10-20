@@ -956,6 +956,45 @@ that marks itself `noindex`, still lists a published CMS page that has no file (
 is cached on the newest file mtime, the page count and the newest row. Verified: **143 URLs, 143 files, no
 difference either way.**
 
+### Step 6b — the SEO screens read the site, and the row-only screens are gone
+
+**The audit was told about a fifth of the website.** SEO, SEO agent and Site health all read `SeoAudit`, which
+walked the 56 `pages` rows. The site had 143 pages. So the screen could say "everything checks out" about a
+site whose 86 service, city, area and project pages it had never opened — the same class of lie as the page
+editor's Publish.
+
+`FileAudit` replaces it: one pass over `public/` through `BuilderFile::pages()`, reading each file's `<title>`,
+meta description, H1 count, body words, `noindex`, and every `href`. It finds:
+
+- **per page** — no/long/short/repeated title, no/long/repeated description, no or several H1s, images without
+  alt text (inside `<main>`: the logo's `alt=""` is decorative on purpose), thin content, `noindex`.
+- **site-wide** — internal links that lead nowhere, pages nothing links to, redirects pointing at no page.
+- **143 pages checked, 0 broken links, 0 orphans, 0 stray redirects** on the demo site. The one real finding is
+  **83 content images with an empty `alt` across 78 pages** — a content fix in the files, not a bug.
+
+The three screens now show it: Site health is seven checks over the files, SEO lists every page's listing with
+its file's real lengths, SEO agent is a worklist with a rule filter. `SeoAudit` and `ProposeSeoCopy` (the row
+audit and its AI proposal) are deleted with them — nothing read the result.
+
+**Retired with it** — the screens whose records no file page renders: **Menus** ("Header & footer") and
+**Team**. Their models and records stay (the importer and the Blade layout still read them, and the Blade
+layout still answers a CMS page that has no file), but the destinations are gone: the nav is in the files, and
+a team section is written in the page. `/admin/website/menus` and `/admin/website/team` answer 404.
+**Sidebar: 47 destinations** (was 49).
+
+**Still open — one decision.** **Website Settings** holds the tracking IDs (GA4, GTM, Clarity, Search Console
+verification) and the header/footer words. Both reach only a CMS-rendered page, and every page is a file, so
+**analytics is loaded by nothing on the live site today** — no IDs are set, which is why nobody has noticed.
+Two honest ways forward, and it needs the owner's call:
+
+1. **Make tracking work on the files**: a `/site/tags.js` route that renders the IDs when they are set, plus one
+   `<script>` line in each of the 143 files (a scripted, additive edit — no restyling). The screen then tells
+   the truth, and a future GA/GTM setup just works.
+2. **Retire the screen**: the file site has no tracking, and the OS stops pretending it can add one.
+
+Recommendation: (1). It is small, additive, reversible, and analytics is the one thing on that screen that a
+website genuinely needs.
+
 **Which screens reach the site** (audited one by one):
 
 | Screen | Reaches the live site? |
