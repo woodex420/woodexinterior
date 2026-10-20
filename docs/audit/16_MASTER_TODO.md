@@ -110,51 +110,44 @@ Order chosen so that each phase is shippable, testable and reversible on its own
 **Done when:** a visitor can submit every form on `/` and `/contact/`, the lead appears in the OS, and no public
 page can render blank.
 
-### P1 — Content studio parity with v2.1 (revised 2026-10-20, after the owner's review)
+### P1 — Port the v2.1 content admin (revised 2026-10-20, second revision)
 
-_The v2.1 admin is the complete system (the owner's screenshots, 20 Oct). The work is to **import its content
-workflows** into Woodex OS — same fields, same order of steps — inside the OS theme and on the page model we
-already have. Not to invent screens of my own. What each screen is for is settled in 16.6._
+_The owner's call, and it is right: do not rebuild the content system, **port it**. The screens exist, they
+are used in production, and they are plain JavaScript. What follows is the smallest honest way to have one
+content system inside Woodex OS. The reasoning and the measurements are in 16.7._
 
-**P1A — One content editor (3–4 sessions).**
-`ContentEditor`, one Livewire component, used by every content type. Fields, as in v2.1: title, kicker, page
-address, standfirst, template, hero image, details strip (label + value rows, add/remove), body sections
-(heading, paragraph with bold/italic/link, image, table — the block editor underneath). Sidebar: publish now /
-date / schedule / save draft; status & visibility (draft, published, public, unlisted, words, reading time);
-category and tags; search & sharing (SEO title and meta description with counters, share image, focus
-keyphrase, SEO check, Google preview); listing card (image, text, label). Type panels: project → facts box
-(box title, facts, note under the facts); city → city and region; service → service type.
-No new columns without approval: the SEO block goes in `pages.seo`, the rest in block data.
+**P1-1 — The seam (1 session).** Two routes in the OS that speak the language the admin already uses:
+`POST /admin/website/api` (`/api/admin.php` in v2.1) and `POST /admin/website/builder-api`
+(`/api/builder.php`). Both take `{action, ...}` and return `{ok, ...}`. Each action resolves to an OS
+handler; an unimplemented one returns `{ok:false, error:"…"}` — the admin already renders that honestly, so
+a missing action looks like a message, never a fake success. Permissions are checked server-side
+(`website.edit` / `website.publish`) and the v2.1 token header is accepted but never trusted alone.
 
-**P1B — Templates and AI (2–3 sessions).**
-Article templates (Cost guide, How-to guide, Project story, Ideas & trends list, Comparison, Blank) and page
-layouts (Service, Sector, Landing, About & team, Packages, Case study, plus “copy layout from this page”).
-Templates live in **New page → Start from**, **New article** and a manage-only Template library — the current
-standalone Page templates screen stops creating pages. AI: Settings → AI (provider, model, key, tone, daily
-cap — `BotSettings` already stores the key) feeding draft-from-template, the SEO writer (`ProposeSeoCopy`),
-city localisation and bulk city drafts, plus starter packs (FAQ groups, team roles). No key → the action is
-disabled and says where to add one; never fake output. The chat assistant may create a draft from a template;
-it never publishes without `website.publish`.
+**P1-2 — Content family (5–6 sessions).** The six modules that cover the owner's list, 73 distinct actions:
+`admin-content.js` (Blog & insights, Portfolio, Testimonials, Team, FAQ groups, starter packs, AI writing)
+→ `admin-logos.js` (client logos) → `admin-media.js` (media library: trash, optimise, responsive, alt,
+replace, purge) → `admin-fields.js` (service & site pages, city pages, bulk create) → `admin-templates.js`
+(templates) → `admin-pages.js` (page list, new page). The three builder actions (`load`, `save`,
+`page_new`) map onto the builder we already have — one builder, one page.
 
-**P1C — The four content screens on that editor (3–4 sessions).**
-**Blog & insights** (articles; the 48 live articles appear in the same list, marked live, editable in the
-builder as v2.1 does), **Portfolio** (studies with project facts and consent), **Service & site pages**
-(type filter + Start from + copy layout), **City pages** (city picker, edit content, bulk create with AI).
+**P1-3 — Look and shell (1 session).** The ported screens keep their own stylesheet, scoped, inside the OS
+shell (sidebar + header). If a screen cannot live inside the shell (a full-width table or the editor), it
+gets the same full-document exception the builder has. Their sign-in screen is never shown: the OS session
+is the session.
 
-**P1D — Reusable content: FAQ groups, testimonials, logos, team (3–4 sessions).**
-FAQ groups that feed the AI chat, link to articles and emit Google FAQ schema (needs a new table — approval
-requested); testimonials with role, project, city, rating, photo and Live; client-logo display settings
-(show on home, small title, heading, grid vs sliding, speed, grey, reorder); team with starter roles,
-department, Featured, pages tick-list, reorder and Live.
+**P1-4 — Switch and delete (1 session).** When a ported screen works, its OS-native predecessor is deleted
+the same day — Blog list, Portfolio list, and the Page templates creator (the library stays, it is now the
+screen the admin opens). `ListingIndex` stays only if the ported screens use it; otherwise it goes with its
+tests.
 
-**P1E — Media library (2 sessions).**
-Trash and restore, optimise large images, make responsive (480/960 WebP), used-on list, replace picture,
-crop/resize, bulk alt text, and the counters (files, MB, unused, used, broken). Upload carries filename, alt,
-title and caption.
+**P1-5 — Business family (later, only if wanted).** `admin-crm.js`, `admin-sales*.js`, `admin-chat*.js` and
+friends stay out: the OS already has better versions (ledger, permissions, CRM links). Porting them would
+replace a working system with a copy.
 
-**Done when:** every starred v2.1 Content screen exists in the OS with the same fields, creates real public
-content, and a non-technical person can go from “New article” to a published post without opening the block
-editor.
+**Done when:** the owner's missing content screens (article editor with templates and AI, project editor,
+service pages, city pages with AI, FAQ groups, testimonials, client logos, team, media library) open inside
+Woodex OS, are the v2.1 screens, and write to the OS database through OS permissions — and my own versions
+of Blog, Portfolio and Page templates no longer exist.
 
 ### P2 — Sales documents (4–6 sessions)
 
@@ -266,3 +259,62 @@ Three rules that come out of the review:
 
 **Order inside P1, as agreed:** P1A editor → P1B templates + AI → P1C the four screens → P1D FAQ groups,
 testimonials, logos, team → P1E media. Documents (P2) stay blocked on the owner's sheet.
+
+---
+
+## 16.7 Decision: port the v2.1 content admin, do not rebuild it (20 Oct)
+
+The owner asked the right question: **why not copy the complete system?** I read the source before answering.
+
+**What the v2.1 content system actually is** (Verified, `marketingwoodex-cloud/-marketingwoodex`, 2.9 MB):
+
+| Part | Measurement |
+|---|---|
+| Screens | `frontend-v1/admin/` — 67 files: `index.html` (112 KB), `admin.css` (111 KB), `admin.js` (50 KB core) + 60 plain-JS modules. **No build step** |
+| The seam | Every module calls `W.api(action, data)` or `W.bapi(action, data)`; both POST JSON to one endpoint (`/api/admin.php`, `/api/builder.php`) with an `action` field |
+| Actions | 73 distinct actions across the 12 content modules |
+| Backend | `api/v2/` — a separate PHP app: its own tables (`wx_content`, …), its own auth (`wx_require_user`), its own audit and approvals, its own dispatcher |
+
+**Why the screens can be copied and the backend cannot.** The screens are the system; the backend is a second
+truth. Copied whole, a website lead would be written to `wx_*` and the OS CRM would never see it, a quotation
+made in the OS would be invisible to the copied admin, and the permission matrix would be decided twice. The
+one thing that must stay ours is the data and the permissions. So: **their screens, our server.**
+
+**Where each of the owner's missing screens already lives:**
+
+| Owner's list | File |
+|---|---|
+| New article with template + AI | `admin-content.js` (“Start a new article”, `cms_ai_*`, `ai_run`) |
+| New project | `admin-content.js` (study editor, facts box) |
+| Services and city pages with AI | `admin-fields.js` (`cms_biz_*`, “Bulk create with AI”) |
+| FAQ groups | `admin-content.js` + `admin-starters.js` (“Add starter FAQ groups”) |
+| Add testimonial | `admin-content.js` (testimonials / team, 5 designs) |
+| Client logos | `admin-logos.js` |
+| Team | `admin-content.js` |
+| Media library (trash, optimise, responsive, alt, used-on) | `admin-media.js` |
+| Templates | `admin-templates.js` |
+| New page / page list | `admin-pages.js` |
+
+That is the whole list, already written. Rebuilding it — what I started with Blog and Portfolio — was the
+wrong approach and is now abandoned.
+
+**Rules for the port**
+
+1. **One frontend.** The public site is v1, already imported; nothing in this port touches it.
+2. **One builder.** `load` / `save` / `page_new` map onto the existing builder; the builder edits one page.
+3. **One database.** `cms_list` / `cms_get` / `cms_save` read and write the OS `pages` table; the article
+   fields go in `pages.seo` and block data, so the port needs **no migration**.
+4. **One permission check.** Server-side, on every action; the v2.1 token is never the authority.
+5. **Delete what the port replaces**, same day, so there is never a second way to do the same job.
+6. **Nothing pretends.** An action that is not implemented says so.
+
+**Two things to confirm before the code starts**
+
+1. **Provenance.** That repository has no licence file. If it is the studio's own code, say so and it becomes
+   our source, recorded in `platform/THIRD-PARTY.md` with the commit SHA. If not, I port the behaviour and
+   rewrite the screens — same result, more time.
+2. **The delete order.** I will not remove Blog, Portfolio and Page templates until their replacements open;
+   the OS must not go a day without a content screen.
+
+**Effort.** P1-1 and P1-3 one session each; P1-2 five to six; P1-4 one. Eight to nine sessions for the whole
+content studio, against fifteen to twenty to rebuild it screen by screen — and the rebuild would not match.
