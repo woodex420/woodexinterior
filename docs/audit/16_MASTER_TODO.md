@@ -931,12 +931,58 @@ other asset keep their hashes, and Blade still reads the manifest for those. Ver
 manifest maps `resources/css/site.css → assets/site.css` and `resources/js/site.js → assets/site.js`, and the
 home renders identically from the new names.
 
+### Step 6 — the URL the retire run broke, and which screens can actually reach the site
+
+**What broke.** `website:retire-shadow-pages --force --home` deleted `/furniture/`. The row was a published
+service page whose file had never been written, so the row *was* the page — the command assumed every retired
+row was a copy of a file. The URL is linked from the v1 pages and answered 404 for a day.
+
+The command now has two guards before it deletes anything:
+
+- **A published page with no file is exported first** (`site.page` render, media made root-relative like the
+  rest of the site), then its row is deleted. `/furniture/` was restored this way and is now
+  `platform/public/furniture/index.html` — header, hero, services, process, gallery, FAQ and form, the page the
+  row rendered.
+- **A draft with no file is kept**, not exported: exporting it would publish it.
+- Rows an earlier run only soft-deleted are force-deleted, so a second run finishes the job; a soft-deleted
+  row still held the unique slug and blocked a restore.
+
+`RetireShadowPagesTest` covers all three (8 tests), plus the `--home` opt-in and the backup JSON.
+
+**The sitemap was reading the wrong truth.** It was built from the `pages` table, so after the 86 rows were
+retired it listed **57 of the 143 pages the site serves** — every service, city, area and project page was
+missing from the sitemap while still answering 200. It now reads the files (`BuilderFile::pages()`), skips one
+that marks itself `noindex`, still lists a published CMS page that has no file (SiteRouter answers those), and
+is cached on the newest file mtime, the page count and the newest row. Verified: **143 URLs, 143 files, no
+difference either way.**
+
+**Which screens reach the site** (audited one by one):
+
+| Screen | Reaches the live site? |
+|---|---|
+| Page builder (`/admin/website/builder`) | **Yes** — reads and writes `public/<path>/index.html` |
+| Media | **Yes** — files serve `/media/{id}/…` |
+| Redirects | **Yes** — `SiteRouter` 301s; table currently empty |
+| Theme builder | **Yes** — `--wx-*` tokens become `/theme/<hash>.css`, linked by every page |
+| Forms | **Yes** — posts to `/api/forms.php` and lands in `leads` |
+| Estimator | **Yes** — writes `public/assets/js/estimator-rates.js` |
+| Pages + Page editor | **Only for a row with no file.** All 56 rows have files, so today every save is shadowed — yet Publish still says “is live at /…”. A page with no file is rendered by `SiteRouter`. |
+| Page templates, Section library | **No** — they create rows and blocks for the editor above, which the files shadow |
+| SEO overview, SEO agent, Site health | **No** — they read `Page` rows and `SeoAudit` over rows: 56 pages, not the 143 that exist |
+| Speed | Partly — it runs PageSpeed against `Page::canonical()`, a URL that does exist |
+| Menus, Team, Header & footer + tracking | **No** — they feed `layouts/site.blade.php`, which no file page uses |
+| Content library | **No** — records for the retired FAQ/testimonial/logo screens; kept as the logo store |
+
+**What that leaves:** the page editor is the only screen left that actively *misleads* (the rest are honest but
+inert). The next decision is whether the Pages screen becomes an index of files that hands off to the builder,
+or the block editor starts writing the file on save. Recommendation: the first — one builder, and the file stays
+the page.
+
 ### What is still open
 
-- **Which remaining screens can actually reach the file site?** Forms (→ `leads`) and Estimator (→
-  `estimator-rates.js`) do. Blog, Portfolio, Page templates, Header & footer, SEO overview, Site health and
-  the rest need the same audit: anything that only writes a page/block row is now a screen the owner cannot
-  use to change the website. That is the next decision, not a thing to guess at.
+- **The Pages screen and the page editor** are now the only screen that still claims a live result it does not
+  have (a row with a file is shadowed by it, so Publish changes nothing). Step 6's table above lists every
+  screen and what it reaches; this one is the next decision.
 - `StudioApi` still answers the retired screens' actions (`cms_faq*`, `cms_testimonial*`, `cms_city*`,
   `logos_*`, `pages`, `cms_page_new/duplicate`) with no screen calling them. Removing them is its own change,
   because `admin-templates.js` still uses `cms_page_kinds` and `admin-fields.js` uses `bapi_load`.
