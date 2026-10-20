@@ -6,7 +6,6 @@ namespace App\Domain\Website\Builder;
 
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
-use App\Domain\Website\Models\PageBlock;
 use Illuminate\Support\Str;
 
 /**

@@ -34,7 +34,47 @@ beforeEach(function () {
         'folder' => 'website/2026/10',
         'uploaded_by' => $this->owner->id,
     ]);
+
+    // Publishing writes a page file now, so the site folder has to be a temporary tree: a test must never
+    // leave a page in public/ that the next deploy would ship.
+    $this->site = storage_path('framework/testing/studio-site-'.uniqid());
+    mkdir($this->site.'/insights/template', 0o775, true);
+    mkdir($this->site.'/projects/template', 0o775, true);
+
+    $shell = '<!doctype html><html lang="en"><head><title>Template</title>'
+        .'<meta name="description" content="Template" />'
+        .'<link rel="canonical" href="https://woodex.com.pk/insights/template/" />'
+        .'</head><body><header id="site-header">Woodex</header><main id="main-content"></main>'
+        .'<footer id="site-footer">Footer</footer></body></html>';
+
+    file_put_contents($this->site.'/insights/template/index.html', $shell);
+    file_put_contents($this->site.'/projects/template/index.html', str_replace('insights/', 'projects/', $shell));
+
+    $this->app->usePublicPath($this->site);
 });
+
+afterEach(function () {
+    studioContentRemoveTree($this->site);
+
+    foreach (glob(storage_path('app/studio-retired/insights/*/*.html')) ?: [] as $kept) {
+        @unlink($kept);
+        @rmdir(dirname($kept));
+    }
+});
+
+/** Remove a temporary site tree. */
+function studioContentRemoveTree(string $path): void
+{
+    if (! is_dir($path)) {
+        return;
+    }
+
+    foreach (glob($path.'/*') ?: [] as $entry) {
+        is_dir($entry) ? studioContentRemoveTree($entry) : @unlink($entry);
+    }
+
+    @rmdir($path);
+}
 
 /** @param array<string, mixed> $payload */
 function studioApi(array $payload): TestResponse

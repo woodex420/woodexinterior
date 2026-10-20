@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Website\Studio;
 
-use App\Domain\Website\Enums\PageStatus;
 use App\Domain\Website\Builder\ArticleFile;
+use App\Domain\Website\Enums\PageStatus;
 use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
