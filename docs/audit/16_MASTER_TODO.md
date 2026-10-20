@@ -454,3 +454,35 @@ the credentials are rotated and the import has been rehearsed. The working paper
 
 **Not blocked by the dump:** Wave 1 (canonical settings, sidebar regroup) and the Website screen port
 continue in parallel. Waves 2–10 stay as written in the owner's plan; §16.8 is the Website slice of it.
+
+---
+
+## 16.10 Website sidebar regrouped (20 Oct 2026)
+
+The owner's three-band list is live (`847c2bd` → `AdminNavigation`). The single “Website” group of 19
+entries is now:
+
+| Band | Items |
+|---|---|
+| **Pages & builder** | All pages · Page builder · Section library · Header & footer · Hero slides · Redirects |
+| **Content** | Blog · Portfolio · Service pages* · City pages* · Page templates · Forms* · Estimator* · FAQs* · Testimonials* · Client logos · Team |
+| **No heading** (site-wide tools) | Media · SEO · SEO agent · Speed · Site health · Theme · Website Settings |
+
+`*` = not ported yet: listed disabled with a “soon” pill and the tooltip “arrives with the Website port”,
+so the section matches the target without pretending a screen works. **Content library left the nav** —
+its route still answers and its records are the pages and blocks the screens above edit, so no data moved
+or was deleted (asserted in `WebsiteAdminParityTest`).
+
+Two bugs surfaced while checking it in the browser:
+
+1. `VisualBuilderTest` and `QuoteBuilderTest` both declared a global `builder()` helper. Any **full**
+   `vendor/bin/pest` run — which is exactly what CI runs — died at bootstrap with “Cannot redeclare
+   function builder()”. Renamed to `builderApi()`. The complete suite now runs: **1,299 passed, 1 skipped
+   (8,847 assertions)**. CI item 6 would have failed on this even with the `workflows` permission.
+2. The Website settings card printed “Header &amp; social” (an escaped entity inside an escaped title);
+   now “Header & social”.
+
+Evidence: `docs/audit/evidence/studio-sidebar.png` (Pages & builder / Content, with the disabled pills)
+and `studio-sidebar-tools.png` (the heading-less tools band).
+
+Pint PASS 850, PHPStan 0 errors.

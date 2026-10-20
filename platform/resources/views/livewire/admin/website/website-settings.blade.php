@@ -4,7 +4,7 @@
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <form wire:submit="save" class="contents">
-            <x-admin.card title="Header &amp; social" class="xl:col-span-2">
+            <x-admin.card title="Header & social" class="xl:col-span-2">
                 <div class="space-y-4">
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <x-admin.field label="Header button text" for="header_cta_label" hint="Empty keeps “Start your project”.">

@@ -35,7 +35,7 @@ beforeEach(function () {
     ]);
 });
 
-function builder(User $user, array $payload): TestResponse
+function builderApi(User $user, array $payload): TestResponse
 {
     return test()->actingAs($user)->postJson(route('admin.website.builder.api'), $payload);
 }
@@ -67,15 +67,15 @@ it('opens the builder screen for an editor', function () {
 it('lists and loads HTML pages only', function () {
     $block = Page::factory()->create(['slug' => '/blocks/', 'title' => 'Blocks']);
 
-    builder($this->editor, ['action' => 'pages'])
+    builderApi($this->editor, ['action' => 'pages'])
         ->assertOk()
         ->assertJsonPath('pages.0.path', 'built/index.html');
 
-    builder($this->editor, ['action' => 'load', 'path' => 'built/index.html'])
+    builderApi($this->editor, ['action' => 'load', 'path' => 'built/index.html'])
         ->assertOk()
         ->assertJsonPath('html', $this->document);
 
-    builder($this->editor, ['action' => 'load', 'path' => 'blocks/index.html'])
+    builderApi($this->editor, ['action' => 'load', 'path' => 'blocks/index.html'])
         ->assertOk()
         ->assertJsonPath('ok', false);
 
@@ -83,7 +83,7 @@ it('lists and loads HTML pages only', function () {
 });
 
 it('saves a document, publishes it and keeps the previous version', function () {
-    $response = builder($this->editor, [
+    $response = builderApi($this->editor, [
         'action' => 'save',
         'path' => 'built/index.html',
         'html' => str_replace('Hello', 'Hello again', $this->document),
@@ -101,7 +101,7 @@ it('saves a document, publishes it and keeps the previous version', function () 
 });
 
 it('refuses a stale save with 409 and writes nothing', function () {
-    builder($this->editor, [
+    builderApi($this->editor, [
         'action' => 'save',
         'path' => 'built/index.html',
         'html' => str_replace('Hello', 'Mine', $this->document),
@@ -112,7 +112,7 @@ it('refuses a stale save with 409 and writes nothing', function () {
 });
 
 it('forces a save when the editor confirms the overwrite', function () {
-    builder($this->editor, [
+    builderApi($this->editor, [
         'action' => 'save',
         'path' => 'built/index.html',
         'html' => str_replace('Hello', 'Mine', $this->document),
@@ -124,7 +124,7 @@ it('forces a save when the editor confirms the overwrite', function () {
 });
 
 it('rejects editor markup left in the document', function () {
-    builder($this->editor, [
+    builderApi($this->editor, [
         'action' => 'save',
         'path' => 'built/index.html',
         'html' => '<html><body><h1 contenteditable="true">oops</h1></body></html>',
@@ -139,7 +139,7 @@ it('lets an editor keep existing code but not add new code', function () {
     ])->save();
 
     // Same script, different text: allowed.
-    builder($this->editor, [
+    builderApi($this->editor, [
         'action' => 'save',
         'path' => 'built/index.html',
         'html' => '<html><head><script src="/assets/site.js"></script></head><body>edited</body></html>',
@@ -147,14 +147,14 @@ it('lets an editor keep existing code but not add new code', function () {
     ])->assertOk();
 
     // A new script: refused for an editor, allowed for the owner.
-    builder($this->editor, [
+    builderApi($this->editor, [
         'action' => 'save',
         'path' => 'built/index.html',
         'html' => '<html><head><script>alert(1)</script></head><body>x</body></html>',
         'force' => true,
     ])->assertStatus(422);
 
-    builder($this->owner, [
+    builderApi($this->owner, [
         'action' => 'save',
         'path' => 'built/index.html',
         'html' => '<html><head><script>alert(1)</script></head><body>x</body></html>',
@@ -165,18 +165,18 @@ it('lets an editor keep existing code but not add new code', function () {
 });
 
 it('lists backups and restores one', function () {
-    builder($this->editor, [
+    builderApi($this->editor, [
         'action' => 'save',
         'path' => 'built/index.html',
         'html' => str_replace('Hello', 'Second', $this->document),
         'force' => true,
     ])->assertOk();
 
-    $backups = builder($this->editor, ['action' => 'backups', 'path' => 'built/index.html'])->json('backups');
+    $backups = builderApi($this->editor, ['action' => 'backups', 'path' => 'built/index.html'])->json('backups');
 
     expect($backups)->toHaveCount(1);
 
-    builder($this->editor, [
+    builderApi($this->editor, [
         'action' => 'restore',
         'path' => 'built/index.html',
         'file' => $backups[0]['file'],
@@ -186,7 +186,7 @@ it('lists backups and restores one', function () {
 });
 
 it('creates a new HTML page from the builder', function () {
-    builder($this->editor, [
+    builderApi($this->editor, [
         'action' => 'page_new',
         'folder' => '',
         'slug' => 'new-page',

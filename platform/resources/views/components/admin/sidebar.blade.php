@@ -28,21 +28,25 @@
 
     <nav class="no-scrollbar flex-1 overflow-y-auto pb-8">
         @foreach ($groups as $group)
-            @php($groupKey = \Illuminate\Support\Str::slug($group['title']))
+            @php($groupKey = \Illuminate\Support\Str::slug($group['title'] ?? 'more'))
+            {{-- A group with no title is a flat run of items: no heading, nothing to collapse. --}}
+            @php($titled = $group['title'] !== null)
             <div class="mt-5 first:mt-2">
-                <button type="button"
-                        x-show="$store.sidebar.expanded || $store.sidebar.mobileOpen"
-                        @click="$store.sidebar.toggleGroup('{{ $groupKey }}')"
-                        :aria-expanded="$store.sidebar.groupOpen('{{ $groupKey }}') ? 'true' : 'false'"
-                        class="mb-2 flex w-full items-center justify-between gap-2 rounded px-3 text-[11px] font-medium tracking-[0.12em] text-gray-400 uppercase transition hover:text-gray-600 dark:hover:text-gray-300">
-                    <span>{{ $group['title'] }}</span>
-                    <span class="shrink-0 transition-transform duration-200"
-                          :class="$store.sidebar.groupOpen('{{ $groupKey }}') ? '' : '-rotate-90'">
-                        <x-icon name="chevron-down" class="size-3.5" />
-                    </span>
-                </button>
+                @if ($titled)
+                    <button type="button"
+                            x-show="$store.sidebar.expanded || $store.sidebar.mobileOpen"
+                            @click="$store.sidebar.toggleGroup('{{ $groupKey }}')"
+                            :aria-expanded="$store.sidebar.groupOpen('{{ $groupKey }}') ? 'true' : 'false'"
+                            class="mb-2 flex w-full items-center justify-between gap-2 rounded px-3 text-[11px] font-medium tracking-[0.12em] text-gray-400 uppercase transition hover:text-gray-600 dark:hover:text-gray-300">
+                        <span>{{ $group['title'] }}</span>
+                        <span class="shrink-0 transition-transform duration-200"
+                              :class="$store.sidebar.groupOpen('{{ $groupKey }}') ? '' : '-rotate-90'">
+                            <x-icon name="chevron-down" class="size-3.5" />
+                        </span>
+                    </button>
+                @endif
                 <ul class="flex flex-col gap-0.5"
-                    x-show="! ($store.sidebar.expanded || $store.sidebar.mobileOpen) || $store.sidebar.groupOpen('{{ $groupKey }}')">
+                    @if ($titled) x-show="! ($store.sidebar.expanded || $store.sidebar.mobileOpen) || $store.sidebar.groupOpen('{{ $groupKey }}')" @endif>
                     @foreach ($group['items'] as $item)
                         @php($badge = $badges[$item['route'] ?? ''] ?? 0)
                         <li>
@@ -64,9 +68,14 @@
                                     @endif
                                 </a>
                             @else
+                                @php($why = match (true) {
+                                    $item['phase'] === 'soon' => 'arrives with the Website port',
+                                    str_starts_with((string) $item['phase'], 'P') => 'arrives in '.$item['phase'],
+                                    default => 'run from the command line',
+                                })
                                 <span class="menu-item menu-item-disabled"
                                       :class="!$store.sidebar.expanded && !$store.sidebar.mobileOpen ? 'xl:justify-center' : ''"
-                                      title="{{ $item['label'] }} ({{ str_starts_with((string) $item['phase'], 'P') ? 'arrives in '.$item['phase'] : 'run from the command line' }})" aria-disabled="true">
+                                      title="{{ $item['label'] }} ({{ $why }})" aria-disabled="true">
                                     <x-icon :name="$item['icon']" class="size-5 shrink-0" />
                                     <span x-show="$store.sidebar.expanded || $store.sidebar.mobileOpen" class="flex flex-1 items-center justify-between gap-2 truncate">
                                         {{ $item['label'] }}

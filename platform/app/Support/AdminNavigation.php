@@ -73,22 +73,35 @@ final class AdminNavigation
                 self::item('Social Planner', 'megaphone', 'admin.marketing.social', 'social.manage'),
                 self::item('Lead Ads', 'sparkles', null, null, 'P7'),
             ]),
-            self::group('Website', [
-                // The old admin v2.1 pro's starred Website section, item for item (docs/14 §5a),
-                // one flat group so everything the owner starred is visible at once.
+            // The Website section is the v2.1 front, grouped the way it is worked on (docs/16 §16.8):
+            // build a page, fill it with content, then tune the site. The Content library left the nav on
+            // 20 Oct — its records are the same pages and blocks the screens below edit, so nothing is lost.
+            self::group('Pages & builder', [
                 self::item('All pages', 'layout', 'admin.website.pages', 'website.edit'),
                 self::item('Page builder', 'panel', 'admin.website.builder', 'website.edit'),
-                self::item('Page templates', 'layers', 'admin.website.templates', 'website.edit'),
-                self::item('Blog', 'book', 'admin.website.blog', 'website.edit'),
-                self::item('Portfolio', 'layout', 'admin.website.portfolio', 'website.edit'),
                 self::item('Section library', 'layers', 'admin.website.sections', 'website.edit'),
                 self::item('Header & footer', 'menu', 'admin.website.menus', 'website.edit'),
                 self::item('Hero slides', 'image', 'admin.website.heroes', 'website.edit'),
                 self::item('Redirects', 'globe', 'admin.website.redirects', 'website.edit'),
-                self::item('Media', 'folder', 'admin.website.media', 'website.edit'),
-                self::item('Content library', 'book', 'admin.website.content', 'website.edit'),
+            ]),
+            self::group('Content', [
+                self::item('Blog', 'book', 'admin.website.blog', 'website.edit'),
+                self::item('Portfolio', 'layout', 'admin.website.portfolio', 'website.edit'),
+                // The six screens still to port; listed now so the section matches the target, disabled
+                // until their actions are switched on in WebsiteStudioController::SCREENS.
+                self::item('Service pages', 'layers', null, null, 'soon'),
+                self::item('City pages', 'map-pin', null, null, 'soon'),
+                self::item('Page templates', 'templates', 'admin.website.templates', 'website.edit'),
+                self::item('Forms', 'file', null, null, 'soon'),
+                self::item('Estimator', 'calculator', null, null, 'soon'),
+                self::item('FAQs', 'info', null, null, 'soon'),
+                self::item('Testimonials', 'quote', null, null, 'soon'),
                 self::item('Client logos', 'image', 'admin.website.logos', 'website.edit'),
                 self::item('Team', 'users', 'admin.website.team', 'website.edit'),
+            ]),
+            // Tools for the whole site, not for one page: no heading, the way the owner asked for them.
+            self::group(null, [
+                self::item('Media', 'folder', 'admin.website.media', 'website.edit'),
                 self::item('SEO', 'target', 'admin.website.seo.overview', 'website.edit'),
                 self::item('SEO agent', 'search', 'admin.website.seo', 'website.edit'),
                 self::item('Speed', 'gauge', 'admin.website.speed', 'website.edit'),
@@ -146,7 +159,13 @@ final class AdminNavigation
      * @param  list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>  $items
      * @return array{title: string, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}
      */
-    private static function group(string $title, array $items): array
+    /**
+     * A titled group collapses; a group with no title is a flat run of items (the Website tools).
+     *
+     * @param  list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>  $items
+     * @return array{title: string|null, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}
+     */
+    private static function group(?string $title, array $items): array
     {
         return ['title' => $title, 'items' => $items];
     }

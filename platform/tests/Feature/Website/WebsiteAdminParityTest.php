@@ -27,7 +27,7 @@ beforeEach(function () {
     $this->editor->givePermissionTo(['website.edit', 'website.publish']);
 });
 
-it('lists the old admin\'s Website section in the sidebar, item for item', function () {
+it('groups the Website section the way it is worked on', function () {
     $owner = User::factory()->create();
     $owner->givePermissionTo([
         'dashboard.view', 'website.edit', 'website.publish', 'theme.manage', 'settings.manage',
@@ -37,13 +37,46 @@ it('lists the old admin\'s Website section in the sidebar, item for item', funct
         'system.change_requests', 'leads.delete', 'system.import',
     ]);
 
-    $groups = collect(AdminNavigation::for($owner))->keyBy('title');
-    $labels = collect($groups['Website']['items'])->pluck('label')->all();
+    $groups = collect(AdminNavigation::for($owner));
 
-    expect($labels)->toBe([
-        'All pages', 'Page builder', 'Page templates', 'Blog', 'Portfolio', 'Section library', 'Header & footer', 'Hero slides', 'Redirects',
-        'Media', 'Content library', 'Client logos', 'Team', 'SEO', 'SEO agent', 'Speed', 'Site health', 'Theme', 'Website Settings',
+    $labels = fn (?string $title): array => collect($groups->firstWhere('title', $title)['items'])
+        ->pluck('label')
+        ->all();
+
+    // Build a page, fill it with content, then tune the whole site — the owner's three bands.
+    expect($labels('Pages & builder'))->toBe([
+        'All pages', 'Page builder', 'Section library', 'Header & footer', 'Hero slides', 'Redirects',
+    ])->and($labels('Content'))->toBe([
+        'Blog', 'Portfolio', 'Service pages', 'City pages', 'Page templates', 'Forms', 'Estimator',
+        'FAQs', 'Testimonials', 'Client logos', 'Team',
+    ])->and($labels(null))->toBe([
+        'Media', 'SEO', 'SEO agent', 'Speed', 'Site health', 'Theme', 'Website Settings',
     ]);
+
+    // The six screens that are not ported yet are listed disabled, so the section matches the target
+    // without pretending they work.
+    $planned = collect($groups->firstWhere('title', 'Content')['items'])
+        ->whereNull('route')
+        ->pluck('phase')
+        ->unique()
+        ->all();
+
+    expect($planned)->toBe(['soon']);
+});
+
+it('retires the Content library from the sidebar but keeps its records', function () {
+    $owner = User::factory()->create();
+    $owner->givePermissionTo(['website.edit']);
+
+    $all = collect(AdminNavigation::for($owner))->flatMap(fn (array $group): array => $group['items'])->pluck('label');
+
+    expect($all)->not->toContain('Content library');
+
+    // The screen itself still answers: nothing was deleted, it simply is not a separate destination
+    // any more — the pages and blocks it listed are edited by the screens above.
+    expect(route('admin.website.content', absolute: false))->toBe('/admin/website/content');
+
+    $this->actingAs($owner)->get('/admin/website/content')->assertOk();
 });
 
 it('shows the section library standalone, renames and retires saved sections', function () {
