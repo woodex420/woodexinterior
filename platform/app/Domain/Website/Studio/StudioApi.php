@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Website\Studio;
 
+use App\Domain\Bot\Models\BotKnowledge;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Sales\Enums\Unit;
 use App\Domain\Sales\Models\EstimatorRate;
@@ -75,6 +76,16 @@ final class StudioApi
         'cms_estimator' => 'estimatorBook',
         'cms_estimator_save' => 'estimatorSave',
         'cms_estimator_tpl' => 'estimatorTemplate',
+        // The FAQs screen is the shared FAQ library every page's FAQ section can draw from (ContentEntry).
+        'cms_faqs' => 'faqList',
+        'cms_faq_save' => 'faqSave',
+        'cms_faq_delete' => 'faqDelete',
+        'cms_faq_order' => 'faqOrder',
+        // The Testimonials screen is the shared review library the Reviews section draws from.
+        'cms_testimonials' => 'testimonialList',
+        'cms_testimonial_save' => 'testimonialSave',
+        'cms_testimonial_delete' => 'testimonialDelete',
+        'cms_testimonial_order' => 'testimonialOrder',
         'bapi_load' => 'builderLoad',
         'bapi_save' => 'builderSave',
         'bapi_page_new' => 'builderSave',
@@ -354,6 +365,365 @@ final class StudioApi
         }
 
         return ['forms' => $forms, 'alerts' => $this->alertRouting()];
+    }
+
+    /**
+     * The shared testimonials library, with the pages already quoting each review.
+     *
+     * The shape is the one the site's Reviews section renders — text, name, when, source — so what is written
+     * here is exactly what a visitor reads. v2.1 also had a per-review star rating and photo; the OS section
+     * has neither, so this screen does not offer fields that would never appear (docs/audit/16.17).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{items: list<array<string, mixed>>, pages: int}
+     */
+    private function testimonialList(array $payload): array
+    {
+        $entries = ContentEntry::query()->ofKind(ContentEntry::TESTIMONIAL)->orderBy('position')->orderBy('id')->get();
+        $used = $this->libraryUsage(ContentEntry::TESTIMONIAL);
+
+        $items = [];
+
+        foreach ($entries as $entry) {
+            $items[] = [
+                'id' => (int) $entry->id,
+                'text' => (string) ($entry->data['text'] ?? ''),
+                'name' => (string) ($entry->data['name'] ?? ''),
+                'when' => (string) ($entry->data['when'] ?? ''),
+                'source' => (string) ($entry->data['source'] ?? ''),
+                'used_on' => $used[(int) $entry->id] ?? [],
+            ];
+        }
+
+        return ['items' => $items, 'pages' => Page::query()->count()];
+    }
+
+    /**
+     * Create or update one review. The words are quoted verbatim on the site, so nothing is rewritten here.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{item: array<string, mixed>}
+     */
+    private function testimonialSave(array $payload): array
+    {
+        $id = (int) ($payload['id'] ?? 0);
+        $data = [
+            'text' => trim((string) ($payload['text'] ?? '')),
+            'name' => trim((string) ($payload['name'] ?? '')),
+            'when' => trim((string) ($payload['when'] ?? '')),
+            'source' => trim((string) ($payload['source'] ?? '')),
+        ];
+
+        if ($data['text'] === '') {
+            throw new RuntimeException('Paste the client’s review — a review with no words cannot be shown.');
+        }
+
+        if (mb_strlen($data['text']) > 2000) {
+            throw new RuntimeException('That review is over 2,000 characters — quote the part the client agreed to.');
+        }
+
+        if ($data['name'] === '') {
+            throw new RuntimeException('Write the client’s name — an unsigned review reads as invented.');
+        }
+
+        if (mb_strlen($data['name']) > 120) {
+            throw new RuntimeException('The client’s name is over 120 characters.');
+        }
+
+        if (mb_strlen($data['when']) > 40 || mb_strlen($data['source']) > 60) {
+            throw new RuntimeException('Keep “When” under 40 characters and “Source” under 60.');
+        }
+
+        $entry = $id > 0
+            ? ContentEntry::query()->ofKind(ContentEntry::TESTIMONIAL)->find($id)
+            : null;
+
+        if ($id > 0 && $entry === null) {
+            throw new RuntimeException('That review is not in the list any more.');
+        }
+
+        if ($entry === null) {
+            $entry = ContentEntry::query()->create([
+                'kind' => ContentEntry::TESTIMONIAL,
+                'data' => $data,
+                'position' => (int) ContentEntry::query()->ofKind(ContentEntry::TESTIMONIAL)->max('position') + 1,
+            ]);
+        } else {
+            $entry->data = $data;
+            $entry->save();
+        }
+
+        ContentLibrary::flush();
+        $this->revalidateLibraryPages('reviews');
+
+        return ['item' => [
+            'id' => (int) $entry->id,
+            'text' => $data['text'],
+            'name' => $data['name'],
+            'when' => $data['when'],
+            'source' => $data['source'],
+            'used_on' => $this->libraryUsage(ContentEntry::TESTIMONIAL)[(int) $entry->id] ?? [],
+        ]];
+    }
+
+    /**
+     * Remove one review. As with the answers, the pages keep their blocks and the renderer skips a missing id.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{note: string}
+     */
+    private function testimonialDelete(array $payload): array
+    {
+        $entry = ContentEntry::query()->ofKind(ContentEntry::TESTIMONIAL)->find((int) ($payload['id'] ?? 0));
+
+        if ($entry === null) {
+            throw new RuntimeException('That review is already gone.');
+        }
+
+        $used = count($this->libraryUsage(ContentEntry::TESTIMONIAL)[(int) $entry->id] ?? []);
+        $entry->delete();
+        ContentLibrary::flush();
+        $this->revalidateLibraryPages('reviews');
+
+        return ['note' => $used === 0
+            ? 'Deleted.'
+            : "Deleted — {$used} reviews section(s) were showing it and no longer do."];
+    }
+
+    /**
+     * Save the order the screen shows (up/down arrows post the whole list).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{note: string}
+     */
+    private function testimonialOrder(array $payload): array
+    {
+        $ids = array_values(array_filter(array_map('intval', (array) ($payload['ids'] ?? []))));
+
+        if ($ids === []) {
+            throw new RuntimeException('The new order was empty.');
+        }
+
+        foreach ($ids as $position => $id) {
+            ContentEntry::query()->ofKind(ContentEntry::TESTIMONIAL)->whereKey($id)->update(['position' => $position]);
+        }
+
+        ContentLibrary::flush();
+        $this->revalidateLibraryPages('reviews');
+
+        return ['note' => 'Order saved.'];
+    }
+
+    /**
+     * Which pages show each library entry, read from the page blocks that pick it (never a stored list, so a
+     * section edited by hand is counted too).
+     *
+     * @return array<int, list<array{id: int, title: string, url: string}>>
+     */
+    private function libraryUsage(string $kind): array
+    {
+        $blockType = $kind === ContentEntry::TESTIMONIAL ? 'reviews' : $kind;
+        $usage = [];
+
+        $blocks = PageBlock::query()
+            ->where('type', $blockType)
+            ->with(['page' => fn ($query) => $query->select('id', 'title', 'slug', 'type')])
+            ->get();
+
+        foreach ($blocks as $block) {
+            $page = $block->page;
+
+            if ($page === null) {
+                continue;
+            }
+
+            foreach ((array) ($block->data['library_ids'] ?? []) as $id) {
+                $usage[(int) $id][] = [
+                    'id' => (int) $page->id,
+                    'title' => (string) $page->title,
+                    'url' => $page->path(),
+                ];
+            }
+        }
+
+        return $usage;
+    }
+
+    /**
+     * The shared FAQ library, with the pages already using each answer.
+     *
+     * v2.1 kept named "FAQ groups"; the OS keeps one library and a page's FAQ section picks from it, which is
+     * the same promise — write the answer once, reuse it anywhere — with one store instead of nested groups.
+     * A named group would be a new table, so it is not pretended here (docs/audit/16.16).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{items: list<array<string, mixed>>, pages: int, bot: array<string, int>}
+     */
+    private function faqList(array $payload): array
+    {
+        $entries = ContentEntry::query()->ofKind(ContentEntry::FAQ)->orderBy('position')->orderBy('id')->get();
+        $used = $this->faqUsage();
+
+        $items = [];
+
+        foreach ($entries as $entry) {
+            $items[] = [
+                'id' => (int) $entry->id,
+                'question' => (string) ($entry->data['question'] ?? ''),
+                'answer' => (string) ($entry->data['answer'] ?? ''),
+                'used_on' => $used[(int) $entry->id] ?? [],
+            ];
+        }
+
+        return [
+            'items' => $items,
+            'pages' => Page::query()->count(),
+            'bot' => [
+                'knowledge' => BotKnowledge::query()->where('is_active', true)->count(),
+            ],
+        ];
+    }
+
+    /**
+     * Create or update one answer. The library is one ordered list, so a new entry goes to the end.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{item: array<string, mixed>}
+     */
+    private function faqSave(array $payload): array
+    {
+        $id = (int) ($payload['id'] ?? 0);
+        $question = trim((string) ($payload['question'] ?? ''));
+        $answer = trim((string) ($payload['answer'] ?? ''));
+
+        if ($question === '') {
+            throw new RuntimeException('Write the question first.');
+        }
+
+        if (mb_strlen($question) > 300) {
+            throw new RuntimeException('The question is over 300 characters — split it into two.');
+        }
+
+        if ($answer === '') {
+            throw new RuntimeException('Write the answer as well — a question on its own cannot be shown.');
+        }
+
+        if (mb_strlen($answer) > 5000) {
+            throw new RuntimeException('The answer is over 5,000 characters.');
+        }
+
+        $entry = $id > 0
+            ? ContentEntry::query()->ofKind(ContentEntry::FAQ)->find($id)
+            : null;
+
+        if ($id > 0 && $entry === null) {
+            throw new RuntimeException('That question is not in the FAQ list any more.');
+        }
+
+        if ($entry === null) {
+            $entry = ContentEntry::query()->create([
+                'kind' => ContentEntry::FAQ,
+                'data' => ['question' => $question, 'answer' => $answer],
+                'position' => (int) ContentEntry::query()->ofKind(ContentEntry::FAQ)->max('position') + 1,
+            ]);
+        } else {
+            $entry->data = ['question' => $question, 'answer' => $answer];
+            $entry->save();
+        }
+
+        ContentLibrary::flush();
+        $this->revalidateLibraryPages('faq');
+
+        return ['item' => [
+            'id' => (int) $entry->id,
+            'question' => $question,
+            'answer' => $answer,
+            'used_on' => $this->faqUsage()[(int) $entry->id] ?? [],
+        ]];
+    }
+
+    /**
+     * Remove one answer. Pages keep their blocks; the renderer already skips an id that no longer exists, so
+     * nothing is silently rewritten — the reply says how many pages were showing it.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{note: string}
+     */
+    private function faqDelete(array $payload): array
+    {
+        $entry = ContentEntry::query()->ofKind(ContentEntry::FAQ)->find((int) ($payload['id'] ?? 0));
+
+        if ($entry === null) {
+            throw new RuntimeException('That question is already gone.');
+        }
+
+        $used = count($this->faqUsage()[(int) $entry->id] ?? []);
+        $entry->delete();
+        ContentLibrary::flush();
+        $this->revalidateLibraryPages('faq');
+
+        return ['note' => $used === 0
+            ? 'Deleted.'
+            : "Deleted — {$used} page section(s) were showing it and no longer do."];
+    }
+
+    /**
+     * Save the order the screen shows (up/down arrows post the whole list).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{note: string}
+     */
+    private function faqOrder(array $payload): array
+    {
+        $ids = array_values(array_filter(array_map('intval', (array) ($payload['ids'] ?? []))));
+
+        if ($ids === []) {
+            throw new RuntimeException('The new order was empty.');
+        }
+
+        foreach ($ids as $position => $id) {
+            ContentEntry::query()->ofKind(ContentEntry::FAQ)->whereKey($id)->update(['position' => $position]);
+        }
+
+        ContentLibrary::flush();
+        $this->revalidateLibraryPages('faq');
+
+        return ['note' => 'Order saved.'];
+    }
+
+    /**
+     * A published page is rendered once and served from cache until the page itself changes. An answer in the
+     * library is not part of that page's timestamp, so editing one would leave every page showing the old text
+     * until somebody happened to edit the page — exactly the promise these screens make (“edit once, every page
+     * updates”). Every page whose section of this type draws from the library is rendered again here.
+     *
+     * @param  'faq'|'reviews'  $blockType
+     */
+    private function revalidateLibraryPages(string $blockType): void
+    {
+        $pages = Page::query()
+            ->whereHas('blocks', fn ($query) => $query->where('type', $blockType))
+            ->with(['blocks' => fn ($query) => $query->where('type', $blockType)])
+            ->get();
+
+        foreach ($pages as $page) {
+            foreach ($page->blocks as $block) {
+                if ((array) ($block->data['library_ids'] ?? []) !== []) {
+                    PageCache::invalidate($page);
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Which pages show each answer.
+     *
+     * @return array<int, list<array{id: int, title: string, url: string}>>
+     */
+    private function faqUsage(): array
+    {
+        return $this->libraryUsage(ContentEntry::FAQ);
     }
 
     /**

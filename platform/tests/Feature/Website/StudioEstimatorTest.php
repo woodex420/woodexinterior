@@ -178,5 +178,6 @@ it('lists Estimator as a live destination in the sidebar', function () {
         ->keyBy('label');
 
     expect($items['Estimator']['route'])->toBe('admin.website.estimator')
-        ->and($items->filter(fn (array $i): bool => ($i['phase'] ?? null) === 'soon'))->toHaveCount(2); // FAQs, Testimonials
+        // FAQs and Testimonials are live too; no Website screen is listed as planned any more.
+        ->and($items->filter(fn (array $i): bool => ($i['phase'] ?? null) === 'soon'))->toHaveCount(0);
 });

@@ -996,3 +996,6 @@ html.dark .hub-bar{background:#111a2b;border-color:#24304a}html.dark .hub-bar a{
 .es-pct input{max-width:110px;margin:0}
 .es-pct p{margin:0}
 @media(max-width:1100px){.es-svc .es-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* FAQs screen (docs/audit/16.16): four buttons in the last cell, kept on one line. */
+.fq-btns{display:inline-flex;gap:5px;align-items:center}

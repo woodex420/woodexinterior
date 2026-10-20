@@ -149,7 +149,7 @@ Route::post('/website/studio/builder-api', WebsiteStudioApiController::class)
     ->name('website.studio.builder-api')->middleware('can:website.edit');
 
 // The screens the OS navigation links to by name, instead of a route with a parameter.
-foreach (['logos' => 'website.logos', 'blog' => 'website.blog', 'portfolio' => 'website.portfolio', 'services' => 'website.services', 'cities' => 'website.cities', 'forms' => 'website.forms', 'estimator' => 'website.estimator'] as $screen => $name) {
+foreach (['logos' => 'website.logos', 'blog' => 'website.blog', 'portfolio' => 'website.portfolio', 'services' => 'website.services', 'cities' => 'website.cities', 'forms' => 'website.forms', 'estimator' => 'website.estimator', 'faqs' => 'website.faqs', 'testimonials' => 'website.testimonials'] as $screen => $name) {
     Route::get('/website/'.$screen, [WebsiteStudioController::class, 'show'])
         ->defaults('screen', $screen)->name($name)->middleware('can:website.edit');
 }

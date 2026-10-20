@@ -53,15 +53,14 @@ it('groups the Website section the way it is worked on', function () {
         'Media', 'SEO', 'SEO agent', 'Speed', 'Site health', 'Theme', 'Website Settings',
     ]);
 
-    // The six screens that are not ported yet are listed disabled, so the section matches the target
-    // without pretending they work.
+    // The whole Content band is ported (docs/16 §16.12–16.17): every item has a route, so nothing is
+    // listed disabled any more. A screen may only join the nav once it works.
     $planned = collect($groups->firstWhere('title', 'Content')['items'])
         ->whereNull('route')
-        ->pluck('phase')
-        ->unique()
+        ->pluck('label')
         ->all();
 
-    expect($planned)->toBe(['soon']);
+    expect($planned)->toBe([]);
 });
 
 it('retires the Content library from the sidebar but keeps its records', function () {

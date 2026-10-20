@@ -21,7 +21,7 @@ final class AdminNavigation
      *
      * @var list<string>
      */
-    public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.logos', 'admin.website.blog', 'admin.website.portfolio', 'admin.website.services', 'admin.website.cities', 'admin.website.forms', 'admin.website.estimator'];
+    public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.logos', 'admin.website.blog', 'admin.website.portfolio', 'admin.website.services', 'admin.website.cities', 'admin.website.forms', 'admin.website.estimator', 'admin.website.faqs', 'admin.website.testimonials'];
 
     /**
      * @return list<array{title: string, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}>
@@ -94,8 +94,8 @@ final class AdminNavigation
                 self::item('Page templates', 'templates', 'admin.website.templates', 'website.edit'),
                 self::item('Forms', 'file', 'admin.website.forms', 'website.edit'),
                 self::item('Estimator', 'calculator', 'admin.website.estimator', 'website.edit'),
-                self::item('FAQs', 'info', null, null, 'soon'),
-                self::item('Testimonials', 'quote', null, null, 'soon'),
+                self::item('FAQs', 'info', 'admin.website.faqs', 'website.edit'),
+                self::item('Testimonials', 'quote', 'admin.website.testimonials', 'website.edit'),
                 self::item('Client logos', 'image', 'admin.website.logos', 'website.edit'),
                 self::item('Team', 'users', 'admin.website.team', 'website.edit'),
             ]),

@@ -39,9 +39,11 @@ Committed with this document.
 | Content: Blog ★ | **Partial (first pass)** | A post **is** a page of type `insight` — one content model, kept. The list, create, duplicate, unpublish and the `/insights/` index card work (`6c22e99`, evidence `docs/audit/evidence/blog.png`). **What the owner is missing:** v2.1's article editor — template picker, kicker, standfirst, hero, details strip, category/tags, listing card, SEO panel with live preview, FAQ link, AI drafting. Rebuilt on the shared content editor in P1A–P1B |
 | Content: Portfolio ★ | **Partial (first pass)** | The 6 project pages list with the project link (`projects.case_study_page_id`, consent), index card, duplicate and unpublish work (`ec7613e`, evidence `docs/audit/evidence/portfolio.png`). **Missing:** v2.1's project editor — template picker, hero, details strip (project type, setting, year, size), facts box (scope, key move, materials, note), listing card, AI drafting |
 | Content: Page templates ★ | **Partial (first pass)** | 50 layouts with search, type filter, default per type, duplicate and retire are live (`5c164ae`, evidence `docs/audit/evidence/page-templates.png`). **Wrong shape:** it is a standalone screen that also creates pages, while v2.1 offers templates inside “New page → Start from”, inside “New article”, and in a Template library. Being folded into the create flows in P1B; the builder edits one page, so a template must never create a builder page |
-| Content: Forms ★ | **Partial** | Forms render through the website bridge (`/api/forms.php` → lead), but there is no form manager or submissions screen |
+| Content: Forms ★ | **Done (16.13)** | `/admin/website/forms` lists the seven site forms with counts from `leads`, the field names actually received, and the one real alert-routing rule. No per-form routing store — see 16.13 |
+| Content: FAQs ★ | **Done (16.16)** | `/admin/website/faqs` edits the shared FAQ library every page's FAQ section picks from, shows which pages use each answer, and re-renders them on save. Rename/reorder/add/delete; no second store |
+| Content: Testimonials ★ | **Done (16.17)** | `/admin/website/testimonials` edits the shared review library; reviews are quoted verbatim, “Used on” is the switch, and there is no per-review rating or photo because the site's section shows neither |
 | Content: Estimator ★ | **Done (16.15)** | `/admin/website/estimator` edits the file the public page reads and mirrors the rates into `EstimatorRate`; template pack (14 ready-made services), saved rate books, “adjust all rates %”, finish names, quotation terms and the live preview are all in |
-| Content: FAQs ★, Testimonials ★, Client logos ★ | **Partial** | `ContentEntry` has only `faq` / `testimonial` / `logo` as untitled records. **Missing:** FAQ *groups* (reused in the AI chat, linked to articles, emitted as Google FAQ schema, “Add starter FAQ groups”), testimonial fields (role, project, city, rating, photo, Live), client-logo display settings (show on home, small title, heading, grid vs sliding row, speed, grey-on-hover, reorder) |
+| Content: Client logos ★ | **Partial** | Client logos are ported separately (`admin-logos.js`, evidence `studio-logos.png`). **Missing from the v2.1 screen:** the display settings on the home Clients section (small title, heading, grid vs sliding row, speed, grey-on-hover) — those are section fields, not library rows |
 | Content: Team ★, Media ★ | **Partial** | `TeamMembersIndex` and `MediaLibrary` (upload, alt text, filters) exist. **Missing:** team — starter roles, department, portrait ratio, Featured, “Pages & heading” tick-list, reorder, Live; media — Trash, Optimise large images, Make responsive (480/960 WebP), used-on list, replace picture, crop/resize, Save alt text with “add it to pages where this image has no alt text” |
 | Redirects | **Exists** | `RedirectsIndex`; needs the v2.1 bulk/redirect-chain tools |
 | Header & footer, Hero slides, Section library, SEO/AI, Speed, Site health, Theme, Settings | **Exists** | All routed; Theme now shares one token store |
@@ -662,3 +664,94 @@ publish answers “The estimator page and the bot now use these rates.”; a rat
 public page still loads with 6 services / 22 catalogue / 3 terms; **0 console errors**. Tests:
 `StudioEstimatorTest` **8 passed (43 assertions)**; Website + sidebar **348 passed (4,274 assertions)**;
 Pint PASS 857; PHPStan 0.
+
+## 16.16 Screen 8 — FAQs, ported (20 Oct 2026)
+
+`/admin/website/faqs` is live (`docs/audit/evidence/studio-faqs.png`, editor `studio-faqs-editor.png`).
+
+v2.1 called these **FAQ groups**: a named set of questions, reused on pages, by the chat agent, and in Google's
+FAQ results. The OS already has the same idea with one store — `content_entries` of kind `faq`, the shared
+library a page's FAQ section picks from (`library_ids`). So the screen edits that library rather than growing a
+second one:
+
+- every answer in library order, with **the pages that already show it** (read from the page blocks, never
+  from a stored list, so a section edited by hand is counted);
+- add / edit / delete, reorder with arrows that save immediately;
+- delete says **how many page sections were showing it** and leaves those pages' blocks alone — the renderer
+  already skips an id that no longer exists.
+
+Two things are stated on the screen instead of implied:
+
+1. **No named groups.** Nested groups would be a new table; one library keeps the promise (“write once, reuse
+   anywhere”) and the page still picks which answers it shows.
+2. **The chat bot does not read this list.** It answers from the studio knowledge in Settings → Bot, which
+   mirrors page text and hand-written answers. v2.1 fed published FAQ groups to its agent; saying that here is
+   true, and a link goes to the real control.
+
+A cache bug was caught and fixed while testing: a published page is rendered once and cached until the page's
+own `updated_at` changes, and a library edit does not touch any page — so editing an answer left every page
+showing the old text until somebody happened to edit the page. Every action now re-renders the pages whose FAQ
+section draws from the library (and only those: a page that types its own questions keeps its timestamp). The
+test proves both halves, and the browser run proves it end to end — the edited answer appeared on the live home
+page with its FAQPage JSON-LD, without the page being touched.
+
+Verified in the browser: add, edit, reorder and delete all work with toasts; “Used on” lists the page; the
+public page shows the new wording; **0 console errors**. Tests: `StudioFaqsTest` **11 passed (41 assertions)**.
+
+## 16.17 Screen 9 — Testimonials, ported (20 Oct 2026)
+
+`/admin/website/testimonials` is live (`docs/audit/evidence/studio-testimonials.png`, editor
+`studio-testimonials-editor.png`). **This closes the Content band: nothing in the Website sidebar is on “soon”.**
+
+v2.1 kept testimonials in its content store with a per-card **Live** switch, a star rating, a photo and a
+“Pages & heading” dialog that rewrote pages' HTML. The OS keeps one shared review library
+(`content_entries`, kind `testimonial`) and a page's Reviews section picks from it — so:
+
+- the screen lists every review **as the client said it**, with client, when, source, and **which pages quote
+  it**. “Used on” is the switch that matters: add the review to a page's Reviews section in Pages, or remove it
+  there to stop showing it. The page rewritten is the page's own data, not HTML.
+- **no per-review Live switch, star rating or photo.** The OS Reviews section renders five stars for every
+  review and no photo, so offering those fields would promise something the site never shows. The screen says
+  so. (A per-review rating is a template change — a decision, not a form field.)
+- the words are stored exactly as typed; the screen warns that it will not tidy a quote.
+
+Same library semantics as the answers: delete reports how many sections were showing it and never edits the
+pages, and every change re-renders the pages whose Reviews section draws from the library.
+
+Verified in the browser: two reviews added, an empty one refused with the server's own sentence, reorder saved,
+“Used on” filled in once a Reviews section picked them, **0 console errors**; the Reviews section renders the
+library rows (text, name, when, source) with a temporary draft page made and deleted for the check. Tests:
+`StudioTestimonialsTest` **8 passed (35 assertions)**.
+
+Evidence pages used for the checks were deleted afterwards — 143 pages, 0 reviews sections, 0 content entries,
+exactly as before the session started. Sidebar count assertion 57 live destinations.
+
+## 16.18 Where the Content band stands after 16.13–16.17
+
+The nine screens the owner asked to run inside the OS are all live and tested:
+
+| Screen | Route | Evidence | Test |
+|---|---|---|---|
+| Service pages | `/admin/website/services` | `studio-services.png` | `StudioServicePagesTest` 9 |
+| City pages | `/admin/website/cities` | `studio-cities.png` | `StudioCityPagesTest` 6 |
+| Forms | `/admin/website/forms` | `studio-forms.png` | `StudioFormsTest` 6 |
+| Estimator | `/admin/website/estimator` | `studio-estimator.png` | `StudioEstimatorTest` 8 |
+| FAQs | `/admin/website/faqs` | `studio-faqs.png` | `StudioFaqsTest` 11 |
+| Testimonials | `/admin/website/testimonials` | `studio-testimonials.png` | `StudioTestimonialsTest` 8 |
+
+**Nothing in the Website sidebar is disabled any more.** `WebsiteAdminParityTest` now asserts that every
+Content item has a route, so a screen cannot go back to being listed before it works.
+
+What was deliberately **not** built, each for a stated reason:
+
+- per-form alert routing (16.13) — a second routing table competing with the one real rule;
+- named FAQ groups (16.16) — the shared library + per-page picking already delivers “write once, reuse”;
+- per-review star rating, photo and Live switch (16.17) — the site's Reviews section renders none of them;
+- the 22 calculator add-ons editor (16.15) — they belong to the estimator file and are preserved verbatim.
+
+The two shared libraries share one renderer path now: `StudioApi::libraryUsage()` and
+`revalidateLibraryPages()` serve both screens, so an edit on either re-renders exactly the pages that quote it.
+
+**Remaining in the 23-screen target:** the older OS-native screens (Blog/Portfolio editors, Page templates,
+Media, SEO, SEO agent, Speed, Site health, Theme, Team, Client logos) still have v2.1 depth gaps recorded in the
+table in §16.7. Those are next-screen work, not missing destinations.
