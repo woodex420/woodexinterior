@@ -13,17 +13,28 @@ use Illuminate\Support\Facades\File;
 
 /*
 | Woodex OS 1 (docs/audit/16.19): the database copies of pages that exist as v1 files are deleted with
-| their blocks and versions — and only those. The command reports first, keeps a JSON backup, and the
-| other page types are untouched.
+| their blocks and versions — and only those. Two rules matter more than the delete itself: a page with
+| no file is exported before its row goes (deleting it takes a live URL off the site), and a draft is
+| kept (exporting it would publish it).
 */
 
 beforeEach(function () {
     $this->backup = sys_get_temp_dir().'/woodex-retire-'.bin2hex(random_bytes(4));
 
+    // A scratch site: the command writes files for pages that have none, and the suite must never write a
+    // shipped page.
+    $this->site = sys_get_temp_dir().'/woodex-site-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($this->site);
+    $this->app->usePublicPath($this->site);
+
     $this->shadow = collect([
         PageType::Service, PageType::City, PageType::Area, PageType::Project,
     ])->map(function (PageType $type) {
-        $page = Page::factory()->create(['type' => $type, 'slug' => '/'.$type->value.'-one/']);
+        // Published, like the rows the command was written for: a draft without a file is kept (see below).
+        $page = Page::factory()->published()->create([
+            'type' => $type,
+            'slug' => '/'.$type->value.'-one/',
+        ]);
 
         PageBlock::factory()->for($page)->asType(BlockType::Text, ['heading' => 'A section'])->create(['position' => 0]);
         PageVersion::query()->create([
@@ -43,6 +54,7 @@ beforeEach(function () {
 
 afterEach(function () {
     File::deleteDirectory($this->backup);
+    File::deleteDirectory($this->site);
 });
 
 it('only reports what it would delete until --force is given', function () {
@@ -56,6 +68,12 @@ it('only reports what it would delete until --force is given', function () {
 });
 
 it('deletes the shadow pages, keeps the rest, and backs up everything it deleted', function () {
+    // Every shadow page has its file, so nothing needs exporting.
+    foreach (['service-one', 'city-one', 'area-one', 'project-one'] as $folder) {
+        File::ensureDirectoryExists($this->site.'/'.$folder);
+        File::put($this->site.'/'.$folder.'/index.html', '<html><body>file</body></html>');
+    }
+
     expect($this->artisan('website:retire-shadow-pages', ['--force' => true, '--backup-dir' => $this->backup]))->toBe(0)
         ->and(Artisan::output())->toContain('Deleted 4 pages');
 
@@ -76,6 +94,38 @@ it('deletes the shadow pages, keeps the rest, and backs up everything it deleted
         ->and($backup['pages'][0]['versions'])->toHaveCount(1);
 });
 
+it('exports a published page that has no file before deleting its row, and points media at the site', function () {
+    // No files at all: every published shadow page is the only copy of something a visitor can reach.
+    expect($this->artisan('website:retire-shadow-pages', ['--force' => true, '--backup-dir' => $this->backup]))->toBe(0)
+        ->and(Artisan::output())->toContain('Exported to files first');
+
+    foreach (['service-one', 'city-one', 'area-one', 'project-one'] as $folder) {
+        expect(File::isFile($this->site.'/'.$folder.'/index.html'))->toBeTrue();
+    }
+
+    // The page is written root-relative, like every other file of the site, so a domain change cannot
+    // break its images.
+    expect((string) file_get_contents($this->site.'/service-one/index.html'))->not->toContain((string) config('app.url'));
+
+    // The row is gone; the URL is not.
+    expect(Page::query()->where('slug', '/service-one/')->exists())->toBeFalse()
+        ->and(Page::query()->withTrashed()->where('slug', '/service-one/')->exists())->toBeFalse();
+});
+
+it('keeps a draft that has no file instead of publishing it by exporting it', function () {
+    $draft = Page::factory()->create([
+        'type' => PageType::Service,
+        'slug' => '/service-draft/',
+        'status' => PageStatus::Draft,
+    ]);
+
+    expect($this->artisan('website:retire-shadow-pages', ['--force' => true, '--backup-dir' => $this->backup]))->toBe(0)
+        ->and(Artisan::output())->toContain('Kept (draft');
+
+    expect(Page::query()->whereKey($draft->id)->exists())->toBeTrue()
+        ->and(File::exists($this->site.'/service-draft/index.html'))->toBeFalse();
+});
+
 it('leaves the home row alone unless --home is given, then deletes it too', function () {
     $home = Page::factory()->create(['type' => PageType::Home, 'slug' => '/', 'title' => 'Home']);
     $home->blocks()->create([
@@ -86,8 +136,12 @@ it('leaves the home row alone unless --home is given, then deletes it too', func
         'data' => ['slides' => [['heading' => 'The home opening']]],
     ]);
 
-    expect($this->artisan('website:retire-shadow-pages', ['--force' => true, '--backup-dir' => $this->backup]))->toBe(0)
-        ->and(Artisan::output())->toContain('Deleted 4 pages');
+    // The home page is a file now, so the row is a plain copy.
+    File::put($this->site.'/index.html', '<html><body>home</body></html>');
+
+    expect($this->artisan('website:retire-shadow-pages', ['--force' => true, '--backup-dir' => $this->backup]))->toBe(0);
+
+    expect(Artisan::output())->toContain('Deleted 4 pages');
 
     expect(Page::query()->whereKey($home->id)->exists())->toBeTrue();
 
@@ -97,7 +151,9 @@ it('leaves the home row alone unless --home is given, then deletes it too', func
 
     expect($this->artisan('website:retire-shadow-pages', [
         '--force' => true, '--home' => true, '--backup-dir' => $this->backup,
-    ]))->toBe(0)->and(Artisan::output())->toContain('Deleted 1 pages');
+    ]))->toBe(0);
+
+    expect(Artisan::output())->toContain('Deleted 1 pages');
 
     expect(Page::query()->whereKey($home->id)->exists())->toBeFalse()
         ->and(Page::query()->count())->toBe(1);
@@ -111,8 +167,40 @@ it('leaves the home row alone unless --home is given, then deletes it too', func
         ->and($second['pages'][0]['blocks'])->toHaveCount(1);
 });
 
-it('says so instead of failing when there is nothing to retire', function () {
+it('really deletes, so a restored backup can use the same slug again', function () {
+    File::ensureDirectoryExists($this->site.'/service-one');
+    File::put($this->site.'/service-one/index.html', '<html><body>file</body></html>');
+
+    $this->artisan('website:retire-shadow-pages', ['--force' => true, '--backup-dir' => $this->backup]);
+
+    // A soft delete would keep the unique slug taken and the page's content on disk.
+    expect(Page::query()->withTrashed()->where('slug', '/service-one/')->exists())->toBeFalse()
+        ->and(PageBlock::query()->count())->toBe(0);
+
+    $restored = Page::factory()->create(['type' => PageType::Service, 'slug' => '/service-one/']);
+
+    expect($restored->exists)->toBeTrue();
+});
+
+it('purges rows an earlier run only soft-deleted', function () {
+    // A soft-deleted row still holds the unique slug and the page's blocks; a second run must finish the job.
     Page::query()->whereKeyNot($this->kept->id)->delete();
+
+    expect(Page::withTrashed()->count())->toBe(5);
+
+    expect($this->artisan('website:retire-shadow-pages', ['--force' => true, '--backup-dir' => $this->backup]))->toBe(0);
+
+    // One call: the buffered console output is consumed when it is read.
+    $out = Artisan::output();
+
+    expect($out)->toContain('Already retired (soft-deleted): 4')
+        ->and($out)->toContain('Deleted 4 pages');
+
+    expect(Page::withTrashed()->count())->toBe(1);
+});
+
+it('says so instead of failing when there is nothing to retire', function () {
+    Page::query()->whereKeyNot($this->kept->id)->forceDelete();
 
     expect($this->artisan('website:retire-shadow-pages', ['--force' => true, '--backup-dir' => $this->backup]))->toBe(0)
         ->and(Artisan::output())->toContain('Nothing to do');
