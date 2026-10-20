@@ -35,14 +35,14 @@ Committed with this document.
 | “Built from sections” error | **Fixed** | The API still refuses block pages by design; the UI no longer routes them there |
 | “Fix live website error” | **Needs evidence** | `/`, `/about/?preview=1`, `/3d-visualization/?preview=1`, `/1-kanal-house-design/?preview=1` all return 200 in the sandbox. The message quoted is the builder's, not the public site's. A URL/screenshot of the failing page is required. Defensive fix planned: an `html` page with empty `canvas_html` must fall back to the block renderer or 404, never a blank document |
 | “Update missing frontend v1” | **Partial** | The Website menu already has all 15 items the owner listed (Verified in `AdminNavigation`). What is missing is the v2.1 **Content** group below |
-| Content: Service pages ★, City pages ★ | **Missing** as dedicated screens | The pages exist by type (`PageType`); what is missing is a screen per type with its own fields. `ContentEntry` covers only FAQ / testimonial / logo |
-| Content: Blog ★ | **Done (2026-10-20)** | A post **is** a page of type `insight` — same block editor, SEO, publish rules, sitemap. Website → **Blog** lists the 48 existing posts, creates a draft at `/insights/<slug>/` with a hero and a text section, duplicates, unpublishes, and keeps the hand-curated `/insights/` card list honest (show / hide; unpublishing removes the card). Evidence `docs/audit/evidence/blog.png`, `blog-new-post.png` |
-| Content: Portfolio ★ | **Done (2026-10-20)** | Website → **Portfolio**: the 6 project pages as case studies, each showing whether it is linked to a real project (`projects.case_study_page_id`, consent flagged) and whether it is on the `/projects/` index. Create (optionally linking a project), link/unlink later, duplicate, unpublish (also removes the card), show/hide on the index. Evidence `docs/audit/evidence/portfolio.png`, `portfolio-new-post.png` |
-| Content: Page templates ★ | **Done (2026-10-20)** | Website → **Page templates**: 50 layouts with type filters and search; create a draft page from any layout, rename/describe it, choose the default per page type, duplicate, retire. `CreatePageFromTemplate` is shared with the pages index. Evidence `docs/audit/evidence/page-templates.png` |
+| Content: Service pages ★, City pages ★ | **Missing** | 61 service and 12 city pages exist as pages, but there is no manager for them. v2.1 has **Service & site pages** (New page → Start from: Blank / Service / Sector / Landing / About & team / Packages / Case study, or copy an existing layout) and **City pages** (city picker, “Edit content”, `Bulk create with AI`, city-localised copy) |
+| Content: Blog ★ | **Partial (first pass)** | A post **is** a page of type `insight` — one content model, kept. The list, create, duplicate, unpublish and the `/insights/` index card work (`6c22e99`, evidence `docs/audit/evidence/blog.png`). **What the owner is missing:** v2.1's article editor — template picker, kicker, standfirst, hero, details strip, category/tags, listing card, SEO panel with live preview, FAQ link, AI drafting. Rebuilt on the shared content editor in P1A–P1B |
+| Content: Portfolio ★ | **Partial (first pass)** | The 6 project pages list with the project link (`projects.case_study_page_id`, consent), index card, duplicate and unpublish work (`ec7613e`, evidence `docs/audit/evidence/portfolio.png`). **Missing:** v2.1's project editor — template picker, hero, details strip (project type, setting, year, size), facts box (scope, key move, materials, note), listing card, AI drafting |
+| Content: Page templates ★ | **Partial (first pass)** | 50 layouts with search, type filter, default per type, duplicate and retire are live (`5c164ae`, evidence `docs/audit/evidence/page-templates.png`). **Wrong shape:** it is a standalone screen that also creates pages, while v2.1 offers templates inside “New page → Start from”, inside “New article”, and in a Template library. Being folded into the create flows in P1B; the builder edits one page, so a template must never create a builder page |
 | Content: Forms ★ | **Partial** | Forms render through the website bridge (`/api/forms.php` → lead), but there is no form manager or submissions screen |
-| Content: Estimator ★ | **Partial** | Public estimator + `EstimatorRate` + `EstimationsIndex` exist; no content/config screen and no master template (see Sales) |
-| Content: FAQs ★, Testimonials ★, Client logos ★ | **Exists** | `ContentEntry` + Content library screen |
-| Content: Team ★, Media ★ | **Exists** | `TeamMembersIndex`, `MediaLibrary` (upload, alt text, filters) |
+| Content: Estimator ★ | **Partial** | Public estimator + `EstimatorRate` + `EstimationsIndex` exist. **Missing, per v2.1:** template pack (Kitchen, Wardrobes, Bedroom, Living, Complete home, Restaurant, Salon/clinic, Retail, Elevation, Grey structure, House construction, False ceiling, Flooring, 3D), saved rate books, “adjust all rates %”, and the live preview (From/To range in lac) |
+| Content: FAQs ★, Testimonials ★, Client logos ★ | **Partial** | `ContentEntry` has only `faq` / `testimonial` / `logo` as untitled records. **Missing:** FAQ *groups* (reused in the AI chat, linked to articles, emitted as Google FAQ schema, “Add starter FAQ groups”), testimonial fields (role, project, city, rating, photo, Live), client-logo display settings (show on home, small title, heading, grid vs sliding row, speed, grey-on-hover, reorder) |
+| Content: Team ★, Media ★ | **Partial** | `TeamMembersIndex` and `MediaLibrary` (upload, alt text, filters) exist. **Missing:** team — starter roles, department, portrait ratio, Featured, “Pages & heading” tick-list, reorder, Live; media — Trash, Optimise large images, Make responsive (480/960 WebP), used-on list, replace picture, crop/resize, Save alt text with “add it to pages where this image has no alt text” |
 | Redirects | **Exists** | `RedirectsIndex`; needs the v2.1 bulk/redirect-chain tools |
 | Header & footer, Hero slides, Section library, SEO/AI, Speed, Site health, Theme, Settings | **Exists** | All routed; Theme now shares one token store |
 
@@ -110,20 +110,51 @@ Order chosen so that each phase is shippable, testable and reversible on its own
 **Done when:** a visitor can submit every form on `/` and `/contact/`, the lead appears in the OS, and no public
 page can render blank.
 
-### P1 — Content parity with v2.1 (5–7 sessions)
+### P1 — Content studio parity with v2.1 (revised 2026-10-20, after the owner's review)
 
-1. **Page templates**: gallery, preview, “create from template”, edit/duplicate (finish the stashed picker).
-2. **Blog / Insights**: a post is a page of type `insight` — no second content model. `BlogIndex` lists,
-   creates, duplicates and unpublishes them; writing happens in the block editor. Public
-   `/insights/{slug}/` route behind the existing cutover switch.
-3. **Portfolio**: case studies linked to `Project`, gallery, public page. `ListingIndex` owns the
-   hand-curated index card on both `/projects/` and `/insights/` (Frontend v1 keeps its own markup).
-4. **Service pages / City pages**: filtered page managers with the right `PageType`, bulk SEO fields.
-5. **Forms**: definitions + submissions list (the renderer already exists).
-6. **Estimator content**: rates + copy editor (ties into P2).
-7. **Content library polish**: filters and shortcuts for FAQ / testimonials / logos.
+_The v2.1 admin is the complete system (the owner's screenshots, 20 Oct). The work is to **import its content
+workflows** into Woodex OS — same fields, same order of steps — inside the OS theme and on the page model we
+already have. Not to invent screens of my own. What each screen is for is settled in 16.6._
 
-**Done when:** every starred v2.1 Content item has a screen in the OS and creates real public content.
+**P1A — One content editor (3–4 sessions).**
+`ContentEditor`, one Livewire component, used by every content type. Fields, as in v2.1: title, kicker, page
+address, standfirst, template, hero image, details strip (label + value rows, add/remove), body sections
+(heading, paragraph with bold/italic/link, image, table — the block editor underneath). Sidebar: publish now /
+date / schedule / save draft; status & visibility (draft, published, public, unlisted, words, reading time);
+category and tags; search & sharing (SEO title and meta description with counters, share image, focus
+keyphrase, SEO check, Google preview); listing card (image, text, label). Type panels: project → facts box
+(box title, facts, note under the facts); city → city and region; service → service type.
+No new columns without approval: the SEO block goes in `pages.seo`, the rest in block data.
+
+**P1B — Templates and AI (2–3 sessions).**
+Article templates (Cost guide, How-to guide, Project story, Ideas & trends list, Comparison, Blank) and page
+layouts (Service, Sector, Landing, About & team, Packages, Case study, plus “copy layout from this page”).
+Templates live in **New page → Start from**, **New article** and a manage-only Template library — the current
+standalone Page templates screen stops creating pages. AI: Settings → AI (provider, model, key, tone, daily
+cap — `BotSettings` already stores the key) feeding draft-from-template, the SEO writer (`ProposeSeoCopy`),
+city localisation and bulk city drafts, plus starter packs (FAQ groups, team roles). No key → the action is
+disabled and says where to add one; never fake output. The chat assistant may create a draft from a template;
+it never publishes without `website.publish`.
+
+**P1C — The four content screens on that editor (3–4 sessions).**
+**Blog & insights** (articles; the 48 live articles appear in the same list, marked live, editable in the
+builder as v2.1 does), **Portfolio** (studies with project facts and consent), **Service & site pages**
+(type filter + Start from + copy layout), **City pages** (city picker, edit content, bulk create with AI).
+
+**P1D — Reusable content: FAQ groups, testimonials, logos, team (3–4 sessions).**
+FAQ groups that feed the AI chat, link to articles and emit Google FAQ schema (needs a new table — approval
+requested); testimonials with role, project, city, rating, photo and Live; client-logo display settings
+(show on home, small title, heading, grid vs sliding, speed, grey, reorder); team with starter roles,
+department, Featured, pages tick-list, reorder and Live.
+
+**P1E — Media library (2 sessions).**
+Trash and restore, optimise large images, make responsive (480/960 WebP), used-on list, replace picture,
+crop/resize, bulk alt text, and the counters (files, MB, unused, used, broken). Upload carries filename, alt,
+title and caption.
+
+**Done when:** every starred v2.1 Content screen exists in the OS with the same fields, creates real public
+content, and a non-technical person can go from “New article” to a published post without opening the block
+editor.
 
 ### P2 — Sales documents (4–6 sessions)
 
@@ -186,7 +217,7 @@ and tested from the UI.
 
 ## 16.4 Rules for every phase
 
-- No schema change without explicit approval (P3 pipelines is the first).
+- No schema change without explicit approval (P3 pipelines and P1D FAQ groups are the two asked for).
 - Each phase: tests (feature + browser), Pint, PHPStan, `Feature/Website` suite, smoke, docs section, one commit.
 - Rollback is a revert; nothing deletes data.
 - The public site stays byte-identical unless the phase is about changing it.
@@ -205,3 +236,33 @@ and tested from the UI.
 5. **MCP**: what should it do first — read pages/leads, or let an agent edit content?
 6. **Priority**: my order is P0 → P1 → P2. If cash flow matters more than website content, P2 (invoices) can go
    before P1 — say the word.
+7. **FAQ groups** need two tables (`faq_groups`, `faq_group_items`). Approve the schema change?
+8. **AI for content**: which provider, and whose key? The chat bot already stores one in Settings; the content
+   actions can reuse it with their own daily cap, or take a second key.
+
+---
+
+## 16.6 Content studio — what each screen is for (owner review, 20 Oct)
+
+| Screen | What it is for | What it is not |
+|---|---|---|
+| Page builder | The HTML canvas for the one page the site still builds that way (home). Frontend v1 pages are HTML and stay HTML | Not a section editor; not how articles, services or cities are written |
+| Page templates | A library of section layouts that fills “Start from” in New page and the article template picker | Not a page list; not a creator of builder pages |
+| Blog & insights | Writing and publishing articles: template, AI draft, kicker/standfirst/hero/details, SEO, listing card, FAQ link, schedule. The 48 live articles sit in the same list, marked live | Not a page list with a filter — that was the first pass |
+| Portfolio | Case studies made from real projects: project link, consent, facts box, gallery, listing card | Not a second project manager — the job itself lives in Projects |
+| Service & site pages | Pages of type service / page / landing / about / legal: created from a layout, managed by type | Not a second “All pages” — same inventory, filtered |
+| City pages | One page per city on the same layout, copy localised by AI, bulk create | Not a copy of the service pages |
+| All pages | The whole page inventory, every type, for finding and housekeeping | Not the place to write |
+| Content library | FAQ groups, testimonials, logos and team — written once, reused in sections, in the AI chat and in schema | Not per-page copies of the same question |
+
+Three rules that come out of the review:
+
+1. **Import, don't invent.** Where v2.1 has a screen or a field, the OS copy has the same screen and the same
+   fields, in the same order. Where the OS data model differs (a post *is* a page), the workflow stays the
+   same and only the storage differs.
+2. **One content model.** Articles, studies, services and cities are pages. There is no second article table.
+3. **One editor.** Blog, Portfolio, Service pages and City pages all open `ContentEditor`; the screen only
+   decides the type, the defaults and the sidebar panels.
+
+**Order inside P1, as agreed:** P1A editor → P1B templates + AI → P1C the four screens → P1D FAQ groups,
+testimonials, logos, team → P1E media. Documents (P2) stay blocked on the owner's sheet.
