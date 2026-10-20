@@ -1,5 +1,5 @@
 <div>
-    <x-admin.page-header title="Website settings" description="The website's analytics, the chat widget and what is live. Nothing is loaded until an ID is filled in here, and nothing is loaded for signed-in staff."
+    <x-admin.page-header title="Website settings" description="The website's analytics, the chat widget and what is live. No analytics tag is emitted until an ID is filled in here, and none for signed-in staff; the chat bubble appears only while its switch is on."
                          :breadcrumbs="['Website' => null, 'Settings' => null]" />
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">

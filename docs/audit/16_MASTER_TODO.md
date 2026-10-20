@@ -1177,6 +1177,12 @@ change. **The eight header/footer fields are gone.**
 The screen now has two cards: **Tracking** (which reaches the site through `/site/tags.js`, and the DNS note for
 Search Console) and **What is live**. Both describe something the site can actually produce.
 
+**The chat switch was checked, not assumed.** It reaches the files too: `site.js` loads `/chat/widget.js` on every
+page and the controller answers `/* Woodex web chat is switched off. */` while the switch is off — 38 bytes, then
+nothing. With the switch on it serves the bubble, and the three `/api/chat/*` endpoints refuse requests while it is
+off. The stale comment claiming the deleted layout injected the same script is corrected, and the page description
+now says no analytics tag is emitted rather than nothing is loaded (the no-op request is real).
+
 Verified: the migration ran; `/admin/website/settings` answers 200 with "Tracking" present and "Header & social" /
 "Footer tagline" absent, no console errors.
 
