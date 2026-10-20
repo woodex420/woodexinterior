@@ -17,17 +17,18 @@ use Illuminate\Http\Request;
  */
 final class WebsiteStudioController
 {
-    /** Screens that are ported and switched on. A screen is added here only when its actions work. */
+    /**
+     * Screens that are ported and switched on. A screen is added here only when its actions work.
+     *
+     * Service pages, City pages, FAQs and Testimonials are retired (Woodex OS 1, §16.19): they only wrote
+     * database rows, and the site is the v1 HTML files now. Their work is done in the page builder.
+     */
     public const array SCREENS = [
         'logos' => ['title' => 'Client logos', 'view' => 'logos'],
         'blog' => ['title' => 'Blog & insights', 'view' => 'blog'],
         'portfolio' => ['title' => 'Portfolio', 'view' => 'portfolio'],
-        'services' => ['title' => 'Service & site pages', 'view' => 'services'],
-        'cities' => ['title' => 'City pages', 'view' => 'cities'],
         'forms' => ['title' => 'Forms', 'view' => 'forms'],
         'estimator' => ['title' => 'Estimator', 'view' => 'estimator'],
-        'faqs' => ['title' => 'FAQs', 'view' => 'faqs'],
-        'testimonials' => ['title' => 'Testimonials', 'view' => 'testimonials'],
     ];
 
     public function show(Request $request, string $screen): View

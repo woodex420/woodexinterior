@@ -47,14 +47,13 @@ it('groups the Website section the way it is worked on', function () {
     expect($labels('Pages & builder'))->toBe([
         'All pages', 'Page builder', 'Section library', 'Header & footer', 'Hero slides', 'Redirects',
     ])->and($labels('Content'))->toBe([
-        'Blog', 'Portfolio', 'Service pages', 'City pages', 'Page templates', 'Forms', 'Estimator',
-        'FAQs', 'Testimonials', 'Client logos', 'Team',
+        'Blog', 'Portfolio', 'Page templates', 'Forms', 'Estimator', 'Client logos', 'Team',
     ])->and($labels(null))->toBe([
         'Media', 'SEO', 'SEO agent', 'Speed', 'Site health', 'Theme', 'Website Settings',
     ]);
 
-    // The whole Content band is ported (docs/16 §16.12–16.17): every item has a route, so nothing is
-    // listed disabled any more. A screen may only join the nav once it works.
+    // Every Content item has a route, so nothing is listed disabled. The four database-only screens
+    // (Service pages, City pages, FAQs, Testimonials) were retired with the database-page model (§16.19).
     $planned = collect($groups->firstWhere('title', 'Content')['items'])
         ->whereNull('route')
         ->pluck('label')
@@ -202,3 +201,35 @@ it('keeps the four screens behind the website permission', function () {
         $this->actingAs($this->editor)->get($path)->assertOk();
     }
 });
+
+it('retires the four database-only screens instead of leaving a destination that cannot reach the site', function (string $url) {
+    $owner = User::factory()->create();
+    $owner->givePermissionTo(['website.edit']);
+
+    $all = collect(AdminNavigation::for($owner))->flatMap(fn (array $group): array => $group['items'])->pluck('label');
+
+    expect($all)
+        ->not->toContain('Service pages')
+        ->not->toContain('City pages')
+        ->not->toContain('FAQs')
+        ->not->toContain('Testimonials');
+
+    // The URLs are gone with the screens — not hidden rows that still write a page nobody serves.
+    $this->actingAs($owner)->get($url)->assertNotFound();
+})->with([
+    '/admin/website/services',
+    '/admin/website/cities',
+    '/admin/website/faqs',
+    '/admin/website/testimonials',
+]);
+
+it('keeps the screens that still have work to do', function (string $url) {
+    $owner = User::factory()->create();
+    $owner->givePermissionTo(['website.edit']);
+
+    $this->actingAs($owner)->get($url)->assertOk();
+})->with([
+    '/admin/website/forms',
+    '/admin/website/estimator',
+    '/admin/website/logos',
+]);
