@@ -760,8 +760,7 @@ table in §16.7. Those are next-screen work, not missing destinations.
 ## 16.19 Woodex OS 1 — the files are the site, and the builder edits them (20 Oct 2026)
 
 Owner decision, 20 Oct: **model = files** and **retire** the four database-only screens. This section records
-step 1 (delete the copies) and step 2 (point the builder at the real files). Step 3 (the retire) is not in this
-section yet.
+step 1 (delete the copies), step 2 (point the builder at the real files) and step 3 (retire the four screens).
 
 ### Step 1 — the 86 database copies are gone
 
@@ -842,13 +841,36 @@ shipped v1 pages are untouched (`git status` clean for `platform/public/**/index
   restore, hash conflict (and `force`), editor markup, script guard (editor vs owner), path allow-list
   (`../.env`, `admin/`, `assets/`, `builder/`), `page_new`, and no password field on the screen. It swaps the
   application's public and storage paths for a scratch site, so no shipped page is written by the suite.
-- `pest tests/Feature/Website tests/Feature/P10SidebarHubsTest.php` → **371 passed (4,355 assertions)**.
-- `pint --test` → **PASS 859 files**; `phpstan analyse` → **[OK] No errors**.
+- `pest tests/Feature/Website tests/Feature/P10SidebarHubsTest.php` → **371 passed (4,355 assertions)** before
+  the retire; **302 passed (4,125 assertions)** in `tests/Feature/Website` after it, plus 57 in
+  `WebsiteAdminParityTest` + `P10SidebarHubsTest`.
+- `pint --test` → **PASS 855 files**; `phpstan analyse` → **[OK] No errors** (after the retire).
+
+### Step 3 — the four screens are retired
+
+Service pages, City pages, FAQs and Testimonials only ever wrote database rows. With the rows gone and the
+site served from files, they could not put a single word on a page: a sidebar destination that cannot reach
+the website is a lie. So they are gone, not hidden:
+
+- `WebsiteStudioController::SCREENS`, the `routes/admin.php` loop and `AdminNavigation` (items and
+  `FULL_DOCUMENT`) list only Client logos, Blog, Portfolio, Forms and Estimator of the ported screens.
+- The four v2.1 modules left `studio.blade.php` and the repository: `admin-services.js`, `admin-cities.js`,
+  `admin-faqs.js`, `admin-testimonials.js`.
+- Their tests are deleted (`StudioServicePagesTest` 9, `StudioCityPagesTest` 6, `StudioFaqsTest` 11,
+  `StudioTestimonialsTest` 8).
+- `WebsiteAdminParityTest` asserts the four URLs **404**, that no Content item is listed without a route, and
+  that Forms, Estimator and Client logos still answer 200. `P10SidebarHubsTest` counts **53** live
+  destinations (was 57).
+
+Editing a service page, a city page, an FAQ or a testimonial now means opening the page's file in the page
+builder (§16.19 step 2) — the one editor the owner kept.
 
 ### What is still open
 
-- **Step 3, the retire**: remove Service pages, City pages, FAQs and Testimonials from `SCREENS`, routes,
-  `AdminNavigation`, `FULL_DOCUMENT` and their JS modules; `P10SidebarHubsTest` 57 → 53.
 - **Home**: decide whether `/` becomes a file (see above).
+- **Dead endpoints**: `StudioApi` still answers the retired screens' actions (`cms_faq*`, `cms_testimonial*`,
+  `cms_city*`, `pages`, `cms_page_new/duplicate`) even though no screen calls them. Removing them needs care —
+  `admin-templates.js` still uses `cms_page_kinds` and `admin-fields.js` uses `bapi_load` — so it is its own
+  change, not a deletion sweep.
 - The editor still cannot create a *folder* that the site's navigation links to; `page_new` writes
   `<folder>/<slug>/index.html` and that is enough for now.
