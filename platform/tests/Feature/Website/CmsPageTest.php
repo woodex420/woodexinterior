@@ -74,6 +74,23 @@ it('lists the files the website serves, plus a CMS page that has no file of its 
     File::deleteDirectory($site);
 });
 
+it('answers each host with its own sitemap, never the copy another host cached', function () {
+    // The URLs in a sitemap are absolute, so a document built while the admin domain asked must not be handed to
+    // the public domain (or the other way round) for the rest of the day.
+    $site = sys_get_temp_dir().'/woodex-sitemap-hosts-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($site);
+    File::put($site.'/index.html', '<html><head><title>Home</title></head><body></body></html>');
+    $this->app->usePublicPath($site);
+
+    $public = simplexml_load_string($this->get('https://woodex.com.pk/sitemap.xml')->assertOk()->getContent());
+    $admin = simplexml_load_string($this->get('https://admin.woodex.com.pk/sitemap.xml')->assertOk()->getContent());
+
+    expect((string) $public->url[0]->loc)->toBe('https://woodex.com.pk/')
+        ->and((string) $admin->url[0]->loc)->toBe('https://admin.woodex.com.pk/');
+
+    File::deleteDirectory($site);
+});
+
 it('keeps page slugs unique and always stores them with a trailing slash', function () {
     Page::factory()->withSlug('/interior-design')->create();
 

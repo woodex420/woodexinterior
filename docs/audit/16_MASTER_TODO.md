@@ -1219,5 +1219,10 @@ at `docs/audit/evidence/live-sitemap-2026-10-21.txt`.
 - **11,588 internal links, 153 distinct paths, 0 unresolved.**
 - **The 36 redirects the other instance reports do not exist here** and are not in the repository's data; no
   sitemap URL depends on them. Keeping them would need an export from that instance before a database deploy.
-- **One defect found, not fixed:** the sitemap cache key omits the host, so a document built for one domain is
-  served to the other for up to a day. The one-line fix plus a test is waiting on the owner's go-ahead.
+- **One defect found and fixed the same day:** the sitemap cache key omitted the host, so a document built for one
+  domain was served to the other for up to a day. The host is now part of the key, and a test builds as
+  `woodex.com.pk`, asks as `admin.woodex.com.pk` and expects each `<loc>` to carry the asking host.
+- **The 36 redirects are to be exported from that instance before deploy** (owner's answer): `from_path`,
+  `to_path`, `code` per row, from `/admin/website/redirects` there or
+  `SELECT from_path, to_path, code, note FROM redirects ORDER BY from_path;`. They are imported and asserted to
+  answer 301 here; none of the 143 sitemap URLs depends on them.

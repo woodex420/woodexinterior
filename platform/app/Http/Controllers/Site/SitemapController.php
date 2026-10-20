@@ -28,10 +28,12 @@ final class SitemapController
     {
         $pages = BuilderFile::pages();
 
-        // Keyed on what actually changed: the newest file, the number of pages, the newest row. A publish or a
-        // builder save changes the key, so the sitemap is never stale.
+        // Keyed on what actually changed: the host being served (the URLs inside are absolute, so a copy built
+        // for one domain must never answer for another), the newest file, the number of pages, the newest row. A
+        // publish or a builder save changes the key, so the sitemap is never stale.
         $version = implode('|', [
             self::VERSION,
+            request()->getSchemeAndHttpHost(),
             (string) collect($pages)->max('mtime'),
             count($pages),
             (string) (Page::query()->max('updated_at') ?? 'none'),
