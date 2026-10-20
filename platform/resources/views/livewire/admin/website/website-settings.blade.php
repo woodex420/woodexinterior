@@ -48,9 +48,9 @@
                     </x-admin.field>
 
                     <p class="text-theme-xs text-gray-500">
-                        These words and switches reach a page only when the CMS renders it. The site's pages are files
-                        under public/, and each file carries its own header and footer — the page builder is where
-                        those are edited.
+                        These words and switches no longer reach the site: every page is a file under public/ and
+                        carries its own header and footer, which the page builder edits. The CMS layout that read
+                        this card is gone (21 Oct 2026), so the fields are kept for the record only.
                     </p>
                 </div>
             </x-admin.card>
@@ -85,6 +85,13 @@
                             <span class="block text-theme-xs text-gray-500">A chat bubble on every page. A rule-based flow asks for name, number and service, creates the lead, alerts the team, and the team replies from Conversations — no WhatsApp number needed. Off by default (A0).</span>
                         </span>
                     </label>
+
+                    <p class="text-theme-xs text-gray-500">
+                        Analytics does reach the site: every page loads <code class="text-xs">/site/tags.js</code>,
+                        which answers with the IDs above — and with nothing at all while the switch is off or for
+                        signed-in staff. Search Console verification is the one exception: Google reads the meta
+                        tag without running JavaScript, so verify the property with a DNS record instead.
+                    </p>
                 </div>
             </x-admin.card>
 

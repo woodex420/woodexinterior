@@ -10,6 +10,7 @@ use App\Http\Controllers\Portal\ProjectPortalController;
 use App\Http\Controllers\Portal\QuotePortalController;
 use App\Http\Controllers\Site\SitemapController;
 use App\Http\Controllers\Site\WebsiteMediaController;
+use App\Http\Controllers\SiteTagsController;
 use App\Http\Controllers\Webhooks\TelegramWebhookController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
 use App\Http\Middleware\VerifyTelegramWebhook;
@@ -161,6 +162,10 @@ Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap
 // The web chat widget's script (P8.5): one <script> tag on the site layout covers the home page and
 // every CMS page. It 404s (and the layout never links it) while the widget is off in Website Settings.
 Route::get('/chat/widget.js', [ChatWidgetController::class, 'script'])->name('chat.widget');
+
+// The tracking IDs from Website → Settings (docs/09 §11.3). The pages are files, so this is the only way a
+// switch in the admin reaches them: every page loads /site/tags.js and it answers with the tags that are set.
+Route::get('/site/tags.js', SiteTagsController::class)->name('site.tags');
 
 /*
 | A URL no route owns is a page from the CMS or one of the 301s of the old website (docs/09 §3).

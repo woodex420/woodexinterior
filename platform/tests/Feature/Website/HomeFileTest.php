@@ -48,10 +48,11 @@ it('links only to stylesheets and scripts that exist', function () {
     $missing = array_values(array_filter($matches[1], static function (string $url): bool {
         $file = public_path(ltrim($url, '/'));
 
-        // Media and theme URLs are answered by the app, not by a file.
+        // Media, theme and tracking URLs are answered by the app, not by a file.
         return ! str_starts_with($url, '/media/')
             && ! str_starts_with($url, '/theme/')
             && ! str_starts_with($url, '/assets/theme.css')
+            && ! str_starts_with($url, '/site/tags.js')
             && ! is_file($file);
     }));
 

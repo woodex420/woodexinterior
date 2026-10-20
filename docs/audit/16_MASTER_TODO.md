@@ -1127,3 +1127,32 @@ words, and they were read by the layout that is now deleted — so they reach no
 files' one shared script (`/assets/site.js`) already loads `/chat/widget.js`, and the switch changes what that
 script serves. Tracking has no such loader; the earlier recommendation stands (a `/site/tags.js` route plus one
 script line per file), or retire the screen.
+
+### Step 9 — tracking reaches the files (21 Oct 2026)
+
+Owner's answer: continue with the recommendation. **Website Settings' tracking IDs now reach the site.**
+
+The renderer that used to print the tags is gone (step 8), and the pages are files the web server answers before
+Laravel runs — so no switch in the admin could change them. The files needed one thing they could share:
+
+- **`GET /site/tags.js`** (`SiteTagsController` + `resources/views/site/tags.blade.php`) answers with GA4,
+  Google Tag Manager or Clarity, using the IDs already on the screen. **Nothing is emitted until an ID is set**,
+  nothing is emitted while the switch is off, and **nothing for signed-in staff** — the same three rules the
+  Blade partial had. `Cache-Control: no-store`, so a saved ID is live on the next page load, not in five minutes.
+- **All 142 page files load it** — one line after their shared `site.js`:
+  `<script src="/site/tags.js" defer></script>`. The edit is scripted and additive: no markup, text or styling
+  changed, and `HomeFileTest` now knows `/site/tags.js` is answered by the app like `/media/` and `/theme/`.
+- **Tag Manager wins over GA4** when both are set (one container, no double counting), and Clarity loads
+  alongside either.
+- **Search Console verification cannot travel this way.** Google's verifier reads the meta tag without running
+  JavaScript, so the field is kept for the record and the screen tells the owner to verify with a DNS record.
+
+**The header/footer card is now labelled honestly**: every page is a file and carries its own header and footer,
+so those words and switches no longer reach the site. The fields are kept for the record; retiring them is its
+own small change.
+
+Verified: `/site/tags.js` answers `No tracking is configured` with no IDs; with `tracking_enabled` and a GA4 ID it
+answers the gtag loader with that ID; reset returns to the no-op. `SiteTagsTest` (8 tests) covers the file link,
+the empty answer, GTM-over-GA4, GA4 alone, Clarity, the off switch, staff exclusion and the cache header.
+
+Gates: `tests/Feature` + `tests/Unit` **1203 passed, 1 skipped (6553)**; Pint clean; PHPStan no errors.
