@@ -22,6 +22,7 @@ final class WebsiteStudioController
         'logos' => ['title' => 'Client logos', 'view' => 'logos'],
         'blog' => ['title' => 'Blog & insights', 'view' => 'blog'],
         'portfolio' => ['title' => 'Portfolio', 'view' => 'portfolio'],
+        'services' => ['title' => 'Service & site pages', 'view' => 'services'],
     ];
 
     public function show(Request $request, string $screen): View

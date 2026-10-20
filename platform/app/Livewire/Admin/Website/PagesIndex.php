@@ -12,6 +12,7 @@ use App\Domain\Website\Models\PageTemplate;
 use App\Domain\Website\Services\Menus;
 use App\Domain\Website\Services\PageAudit;
 use App\Domain\Website\Services\PageCache;
+use App\Domain\Website\Services\PageCopier;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
@@ -70,21 +71,7 @@ class PagesIndex extends Component
     {
         $page = Page::query()->findOrFail($pageId);
 
-        $copy = $page->replicate(['slug', 'published_at']);
-        $copy->title = $page->title.' (copy)';
-        $copy->slug = Page::normalizeSlug('/'.trim($page->slug, '/').'-copy/');
-        $copy->status = PageStatus::Draft;
-        $copy->published_at = null;
-        $copy->save();
-
-        foreach ($page->blocks as $block) {
-            $copy->blocks()->create([
-                'type' => $block->type,
-                'data' => $block->data,
-                'visible' => $block->visible,
-                'position' => $block->position,
-            ]);
-        }
+        $copy = app(PageCopier::class)->copy($page);
 
         $this->redirectRoute('admin.website.pages.edit', $copy, navigate: true);
     }

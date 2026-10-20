@@ -465,7 +465,7 @@ entries is now:
 | Band | Items |
 |---|---|
 | **Pages & builder** | All pages · Page builder · Section library · Header & footer · Hero slides · Redirects |
-| **Content** | Blog · Portfolio · Service pages* · City pages* · Page templates · Forms* · Estimator* · FAQs* · Testimonials* · Client logos · Team |
+| **Content** | Blog · Portfolio · **Service pages** · City pages* · Page templates · Forms* · Estimator* · FAQs* · Testimonials* · Client logos · Team |
 | **No heading** (site-wide tools) | Media · SEO · SEO agent · Speed · Site health · Theme · Website Settings |
 
 `*` = not ported yet: listed disabled with a “soon” pill and the tooltip “arrives with the Website port”,
@@ -486,3 +486,30 @@ Evidence: `docs/audit/evidence/studio-sidebar.png` (Pages & builder / Content, w
 and `studio-sidebar-tools.png` (the heading-less tools band).
 
 Pint PASS 850, PHPStan 0 errors.
+
+---
+
+## 16.11 Screen 4 — Service pages, ported (20 Oct 2026)
+
+`/admin/website/services` is live in the studio shell (`docs/audit/evidence/studio-services.png`). It is the
+v2.1 screen's job, carried over honestly: v2.1 listed **built HTML files** and edited a page by rewriting the
+file; the OS renders every page from blocks, so this screen lists the OS page table (77 pages: services, areas,
+about, home, booking, contact…) with the same columns and sends **Edit content** to the OS section editor.
+
+Kept from v2.1: the how-to box, the search, the **Duplicate** row action, and **New service page** started from
+an existing layout (61 service pages offered) or blank. Added because the OS has them: the address is
+normalised and checked before anything is created, and both new-page paths land as **drafts**.
+
+New seam actions: `pages`, `cms_page_kinds`, `cms_page_new`, `cms_page_duplicate`. The copy itself lives in
+`App\Domain\Website\Services\PageCopier`, shared with Pages → Duplicate so the two cannot drift; it numbers
+the address (`-copy`, `-copy-2` …) instead of failing on a collision.
+
+Verified in the browser: 77 rows listed, search “kitchen” narrowed to 4, Duplicate produced `/about-copy/`
+with all 8 blocks as a draft, and “New service page” created a draft from a source layout and opened the OS
+editor on it. Smoke rows deleted afterwards (pages back to 143). **0 console errors.**
+
+Tests: `StudioServicePagesTest` **9 passed (36 assertions)** — the screen, the permission, the list, the kind
+map, copy-from-layout, blank page, taken address, duplicate numbering, and the nav contract.
+Full Website suite + sidebar test: **328 passed**; Pint PASS 852; PHPStan 0.
+
+Next screens in the band: City pages, Forms, Estimator, FAQs, Testimonials.

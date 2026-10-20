@@ -157,6 +157,7 @@
 <script src="/assets/admin-v21/admin-content.js"></script>
 <script src="/assets/admin-v21/admin-starters.js"></script>
 <script src="/assets/admin-v21/admin-fields.js"></script>
+<script src="/assets/admin-v21/admin-services.js"></script>
 <script src="/assets/admin-v21/admin-media.js"></script>
 <script src="/assets/admin-v21/admin-speed.js"></script>
 <script src="/assets/admin-v21/admin-theme.js"></script>

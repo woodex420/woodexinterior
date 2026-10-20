@@ -12,7 +12,9 @@ use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\PageBlock;
 use App\Domain\Website\Models\PageVersion;
 use App\Domain\Website\Services\ContentLibrary;
+use App\Domain\Website\Services\Menus;
 use App\Domain\Website\Services\PageCache;
+use App\Domain\Website\Services\PageCopier;
 use App\Domain\Website\Services\PageRenderer;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -49,6 +51,12 @@ final class StudioApi
         'cms_status' => 'cmsStatus',
         'cms_delete' => 'cmsDelete',
         'cms_published' => 'cmsPublished',
+        // The Service pages screen (docs/audit/16.8): the page list, its types, and the two ways a new
+        // service page is made — from an existing layout, or by duplicating a row.
+        'pages' => 'pagesList',
+        'cms_page_kinds' => 'pageKinds',
+        'cms_page_new' => 'pageNew',
+        'cms_page_duplicate' => 'pageDuplicate',
         'bapi_load' => 'builderLoad',
         'bapi_save' => 'builderSave',
         'bapi_page_new' => 'builderSave',
@@ -153,6 +161,132 @@ final class StudioApi
     private function cmsPublished(array $payload): array
     {
         return $this->content($payload)->publish((int) ($payload['id'] ?? 0), $this->typeOf($payload));
+    }
+
+    /**
+     * The pages the Service pages screen manages: everything except the article/study editors and the
+     * city drafts, which have their own screens. `path` keeps the v2.1 shape (`foo/index.html`) because
+     * the screen's own filters and labels were written for it; nothing on this server uses it as a file.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{pages: list<array{id: int, path: string, title: string, url: string, kind: string, status: string}>}
+     */
+    private function pagesList(array $payload): array
+    {
+        $pages = Page::query()
+            ->whereNotIn('type', [PageType::Insight, PageType::Project])
+            ->orderBy('type')
+            ->orderBy('title')
+            ->get()
+            ->map(fn (Page $page): array => [
+                'id' => $page->id,
+                'path' => $this->pathOf($page),
+                'title' => $page->title,
+                'url' => $page->slug,
+                'kind' => $page->type->value,
+                'status' => $page->status->value,
+            ])
+            ->values()
+            ->all();
+
+        return ['pages' => $pages];
+    }
+
+    /**
+     * The type badge the screen shows per page (v2.1 asked `cms_page_kinds` and got a path → kind map).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{kinds: array<string, string>}
+     */
+    private function pageKinds(array $payload): array
+    {
+        $kinds = [];
+
+        foreach (Page::query()->get() as $page) {
+            $kinds[$this->pathOf($page)] = $page->type->value;
+        }
+
+        return ['kinds' => $kinds];
+    }
+
+    /**
+     * “New service page”: a draft carrying the chosen page's sections, or a blank service page.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{item: array{id: int, title: string, url: string, status: string}}
+     */
+    private function pageNew(array $payload): array
+    {
+        $title = trim((string) ($payload['title'] ?? ''));
+        $slug = trim((string) ($payload['slug'] ?? ''));
+
+        if ($title === '' || $slug === '') {
+            throw new RuntimeException('A title and an address are both needed.');
+        }
+
+        $slug = Page::normalizeSlug($slug);
+
+        if (Page::query()->where('slug', $slug)->exists()) {
+            throw new RuntimeException('Another page already uses that address.');
+        }
+
+        $from = (int) ($payload['from'] ?? 0);
+        $source = $from > 0 ? Page::query()->find($from) : null;
+        $copier = app(PageCopier::class);
+
+        $page = $source !== null
+            ? $copier->copy($source, $title, $slug)
+            : Page::query()->create([
+                'type' => PageType::Service,
+                'slug' => $slug,
+                'title' => $title,
+                'status' => PageStatus::Draft,
+                'author_id' => $this->user->id,
+            ]);
+
+        PageCache::invalidate($page);
+        Menus::flush();
+
+        return ['item' => $this->pageItem($page)];
+    }
+
+    /**
+     * `Duplicate` on a row: the same page as a fresh draft, address “-copy”, numbered if that is taken.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{item: array{id: int, title: string, url: string, status: string}}
+     */
+    private function pageDuplicate(array $payload): array
+    {
+        $page = Page::query()->find((int) ($payload['id'] ?? 0));
+
+        if ($page === null) {
+            throw new RuntimeException('That page no longer exists.');
+        }
+
+        $copy = app(PageCopier::class)->copy($page);
+
+        PageCache::invalidate($copy);
+        Menus::flush();
+
+        return ['item' => $this->pageItem($copy)];
+    }
+
+    /** @return array{id: int, title: string, url: string, status: string} */
+    private function pageItem(Page $page): array
+    {
+        return [
+            'id' => $page->id,
+            'title' => $page->title,
+            'url' => $page->slug,
+            'status' => $page->status->value,
+        ];
+    }
+
+    /** The v2.1 address shape the screen's filters were written for. No file is read or written. */
+    private function pathOf(Page $page): string
+    {
+        return $page->slug === '/' ? 'index.html' : trim($page->slug, '/').'/index.html';
     }
 
     /**
