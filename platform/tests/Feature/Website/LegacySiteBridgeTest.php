@@ -2,6 +2,7 @@
 
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
+use App\Settings\BusinessSettings;
 
 // The original pages are served exactly as the old site made them, so they keep calling `/api/forms.php` and
 // `/api/chat.php` (docs/11 §11.0.1). This file is the contract those pages rely on: if one of these fails, a form
@@ -152,13 +153,19 @@ it('keeps the chat widget out of the way until website chat is switched on', fun
 });
 
 it('stops a flood of enquiries from one address without stopping the pages', function () {
+    // The WhatsApp number in the refusal is the studio's own setting (docs/18 §4), not a copy in the controller.
+    $business = app(BusinessSettings::class);
+    $business->phone = '+923001234567';
+    $business->save();
+
     for ($i = 0; $i < 5; $i++) {
         $this->postJson('/api/forms.php', originalEnquiry(['phone' => '0300 00000'.($i % 10).'1']))->assertSuccessful();
     }
 
     $this->postJson('/api/forms.php', originalEnquiry(['phone' => '0311 2223334']))
         ->assertStatus(429)
-        ->assertJsonPath('ok', false);
+        ->assertJsonPath('ok', false)
+        ->assertJsonPath('error', 'Too many enquiries from this connection. Please try again in a minute, or send us a WhatsApp message on +92 300 1234567.');
 
     expect(Lead::query()->count())->toBe(5);
 

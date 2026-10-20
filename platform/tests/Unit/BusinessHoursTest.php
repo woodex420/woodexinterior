@@ -20,3 +20,11 @@ it('rolls late-evening and Sunday enquiries to the next opening', function () us
         ->and($hours->dueAt($sunday, 15)->format('D H:i'))->toBe('Mon 10:30')
         ->and($hours->dueAt($nearClosing, 15)->format('D H:i'))->toBe('Tue 10:15');
 });
+
+it('names the working days the way the footer prints them', function () {
+    expect((new BusinessHours(workingDays: [1, 2, 3, 4, 5, 6]))->daysLabel())->toBe('Monday to Saturday')
+        ->and((new BusinessHours(workingDays: [1, 2, 3, 4, 5, 6, 7]))->daysLabel())->toBe('Every day')
+        ->and((new BusinessHours(workingDays: [1, 3, 5]))->daysLabel())->toBe('Monday, Wednesday, Friday')
+        ->and((new BusinessHours(workingDays: [6]))->daysLabel())->toBe('Saturday')
+        ->and((new BusinessHours(workingDays: []))->daysLabel())->toBe('By appointment');
+});

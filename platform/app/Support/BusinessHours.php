@@ -24,6 +24,32 @@ final readonly class BusinessHours
         public array $holidays = [],
     ) {}
 
+    /**
+     * The working days as the public footer says them: "Monday to Saturday", "Every day", or a list.
+     * The footer used to spell out "Monday to Saturday" itself, so changing the setting changed nothing.
+     */
+    public function daysLabel(): string
+    {
+        $names = [1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday', 4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday', 7 => 'Sunday'];
+
+        $days = array_values(array_intersect(array_keys($names), $this->workingDays));
+        sort($days);
+
+        if ($days === []) {
+            return 'By appointment';
+        }
+
+        if ($days === range(1, 7)) {
+            return 'Every day';
+        }
+
+        if ($days === range($days[0], end($days))) {
+            return count($days) === 1 ? $names[$days[0]] : $names[$days[0]].' to '.$names[end($days)];
+        }
+
+        return implode(', ', array_map(fn (int $day): string => $names[$day], $days));
+    }
+
     public function isWorkingDay(CarbonImmutable $day): bool
     {
         $local = $day->setTimezone($this->timezone);

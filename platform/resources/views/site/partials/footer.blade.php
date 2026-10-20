@@ -74,7 +74,7 @@
                         <p>{{ $business->address }}<br>{{ $business->city }}, Pakistan</p>
                         <p><a href="tel:{{ $business->phone }}" class="inline-block py-1 hover:text-white">{{ $phone }}</a></p>
                         <p><a href="mailto:{{ $business->email }}" class="inline-block py-1 hover:text-white">{{ $business->email }}</a></p>
-                        <p>Monday to Saturday · {{ $business->opens_at }} – {{ $business->closes_at }}</p>
+                        <p>{{ $business->hours()->daysLabel() }} · {{ $business->opens_at }} – {{ $business->closes_at }}</p>
                     </address>
                 </div>
             @endif

@@ -9,6 +9,7 @@ use App\Domain\Crm\Data\LeadInput;
 use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Crm\Enums\LeadSource;
 use App\Http\Controllers\Controller;
+use App\Settings\BusinessSettings;
 use App\Support\Phone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,8 @@ use Illuminate\Validation\ValidationException;
  */
 final class LegacySiteBridgeController extends Controller
 {
+    public function __construct(private readonly BusinessSettings $business) {}
+
     /** The form keys the pages send, and the lead source each one means. */
     private const array SOURCES = [
         'whatsapp' => LeadSource::WhatsApp,
@@ -80,7 +83,9 @@ final class LegacySiteBridgeController extends Controller
         if ($this->tooManyEnquiries($request)) {
             return response()->json([
                 'ok' => false,
-                'error' => 'Too many enquiries from this connection. Please try again in a minute, or send us a WhatsApp message on +92 322 4000768.',
+                // The number comes from Settings → Business: it is the studio's public WhatsApp line, and the
+                // one place it may be typed is the settings screen (docs/18 §4).
+                'error' => 'Too many enquiries from this connection. Please try again in a minute, or send us a WhatsApp message on '.Phone::display($this->business->phone).'.',
             ], 429);
         }
 

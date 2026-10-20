@@ -6,7 +6,7 @@
             {{ $business->address }}<br>{{ $business->city }}, Pakistan<br>
             <a class="underline" href="tel:{{ $business->phone }}">{{ $phone }}</a><br>
             <a class="underline" href="mailto:{{ $business->email }}">{{ $business->email }}</a><br>
-            Monday to Saturday · {{ $business->opens_at }} – {{ $business->closes_at }}
+            {{ $business->hours()->daysLabel() }} · {{ $business->opens_at }} – {{ $business->closes_at }}
         </address>
         @if ($block->field('embed_url'))
             <iframe src="{{ $block->field('embed_url') }}" loading="lazy" title="{{ $business->brand_name }} studio location"

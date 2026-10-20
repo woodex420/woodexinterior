@@ -446,7 +446,7 @@ the credentials are rotated and the import has been rehearsed. The working paper
 |---|---|---|---|
 | 1 | Staging database | `legacy` connection now takes `LEGACY_DB_DRIVER=mysql\|sqlite` + `LEGACY_DB_SQLITE_PATH`; default behaviour unchanged | Owner: a v2.1 dump **with rows**, or read-only `LEGACY_DB_*` |
 | 2 | Inventory — tables, stores, screens, routes, APIs | **Done** in §1–§2 of doc 18: 44 `wx_*` tables in three destinations, 4 JSON stores, 60 admin modules, 35 API route files, 65 OS migrations, 90 OS screens | Keep it current as modules port |
-| 3 | Canonical business settings | Inventoried (§4): phone typed in 40 places (4 non-test files), address/hours/email in 3 partials, currency/payment terms in 2 | Wave 1 |
+| 3 | Canonical business settings | **Closed for the public site** (§4 of doc 18): the site already reads NAP from `BusinessSettings`; the one real number in application code (the flood refusal) and the three literal “Monday to Saturday” labels now follow the settings, both covered by tests. Validation examples stay literal on purpose | Settings → Business edits the values |
 | 4 | Rotate old credentials | **List issued** (§5, 10 items with where each lives) | Owner: hPanel, Meta, BotFather, Cloudflare, AI provider |
 | 5 | `composer.lock` | Absent (Q-01). CI already falls back to `composer update` and prints a gzip+base64 lock to commit | One CI run, or `composer update --lock` locally |
 | 6 | Activate CI | Workflows written and validated against local runs (276 tests, Pint PASS, PHPStan 0) but **cannot be pushed**: the GitHub App lacks `workflows` permission | Owner: grant the permission or commit `.github/workflows/` |

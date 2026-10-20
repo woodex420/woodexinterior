@@ -127,21 +127,23 @@ The report lands in `storage/app/private/imports/` and is attached to the Wave 0
 
 ---
 
-## 4. Canonical business settings (inventory only; the change is Wave 1)
+## 4. Canonical business settings (closed for the public site; one gap found and fixed)
 
-`app/Settings/BusinessSettings.php` is the intended single source. Today the same facts are typed in
-more than one place:
+`app/Settings/BusinessSettings.php` is the single source, and the public site already reads from it:
+`layouts/site.blade.php`, the header, the footer, the map section, the 404 page and the page renderer all
+take name, address, phone, email and hours from the settings group.
 
-| Fact | Where it appears now | Count |
-|---|---|---|
-| Phone `+92 322 4000768` | views (`holding`, `lead-form`, CRM empty states), `LegacySiteBridgeController`, tests | 40 occurrences, 4 non-test files |
-| Address / hours / email | site footer partials, `holding`, contact page | 3 partials |
-| Currency and payment terms | `SalesSettings`, quote/invoice views | 2 places |
+What the inventory turned up, and what was done:
 
-Wave 1 moves the four non-test views onto `BusinessSettings` and leaves the tests asserting the
-canonical value, so the next change of phone number is one setting, not a search.
+| Fact | State |
+|---|---|
+| Phone, email, address in the public header/footer/map/404 | **Already canonical** — 21 reads of `$business->*` across the site views |
+| The WhatsApp number inside the flood refusal (`LegacySiteBridgeController`) | **Fixed** — the one real number typed in application code; it now prints `Phone::display($business->phone)`, and a test changes the setting and asserts the message follows it |
+| Working days in the footer, map and form sections | **Fixed** — they were the literal string “Monday to Saturday”. `BusinessHours::daysLabel()` now derives it from `working_days` (“Every day”, “Monday to Saturday”, “Monday, Wednesday, Friday”, “By appointment”), with a unit test for each shape |
+| `0322 4000768` in validation messages and placeholders (9 places) | **Kept on purpose** — they are input examples, not the studio's NAP data. Changing them with the setting would make a form example lie when the number changes |
 
----
+Nothing changes visually: the default `[1..6]` working week still renders “Monday to Saturday · 10:00 – 19:00”
+(Verified on `/` after the change).
 
 ## 5. Credentials to rotate (owner action; list produced here)
 
@@ -191,7 +193,7 @@ generate the values; only the owner can install them.
 |---|---|---|---|
 | 1 | Staging database | **Ready** — `legacy` connection accepts a MySQL copy or an SQLite dump; rehearsal ran on the latter | A real dump / read-only credentials |
 | 2 | Inventory of tables, stores, screens, routes, APIs | **Done in this document** (§1, §2) | — |
-| 3 | Canonical business settings | **Inventoried** (§4) | Wave 1 work |
+| 3 | Canonical business settings | **Closed for the public site** (§4) — one hardcoded number and three literal day labels replaced; examples deliberately kept | Settings screen already edits the values |
 | 4 | Rotate old credentials | **List issued** (§5) | Owner consoles (items 1–8) |
 | 5 | `composer.lock` | **Unblocked by CI fallback**; not in the repo yet | One CI run, or `composer update --lock` |
 | 6 | Activate CI | **Written, cannot be pushed** | GitHub `workflows` permission |

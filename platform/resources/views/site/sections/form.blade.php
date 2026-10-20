@@ -10,7 +10,7 @@
                     <div><dt class="text-muted">Studio</dt><dd class="text-ink">{{ $business->address }}, {{ $business->city }}</dd></div>
                     <div><dt class="text-muted">Phone &amp; WhatsApp</dt><dd class="text-ink"><a class="underline" href="tel:{{ $business->phone }}">{{ $phone }}</a></dd></div>
                     <div><dt class="text-muted">Email</dt><dd class="text-ink"><a class="underline" href="mailto:{{ $business->email }}">{{ $business->email }}</a></dd></div>
-                    <div><dt class="text-muted">Hours</dt><dd class="text-ink">Monday to Saturday · {{ $business->opens_at }} – {{ $business->closes_at }}</dd></div>
+                    <div><dt class="text-muted">Hours</dt><dd class="text-ink">{{ $business->hours()->daysLabel() }} · {{ $business->opens_at }} – {{ $business->closes_at }}</dd></div>
                 </dl>
             @endif
         </div>
