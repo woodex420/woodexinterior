@@ -586,3 +586,31 @@ Verified in the browser: 7 forms, `3D brief` 2 in 30 days / 2 total / today / fi
 The two submissions used for the check were posted through the real public endpoint and deleted afterwards
 (back to 26 leads / 26 contacts). Tests: `StudioFormsTest` **6 passed (26 assertions)**; Website + sidebar
 **340 passed (4,231 assertions)**; Pint PASS 854; PHPStan 0.
+
+## 16.14 Next up — Estimator: what the screen has to write (analysis, 20 Oct 2026)
+
+Read before building, because this screen is not like the others: **the public estimator does not read the
+database.** `/estimator/` is a static v1 page that loads `/assets/js/estimator-rates.js` and builds the
+calculator from `window.WX_RATES` — 6 services with three rates each, 3 finish levels with a label and a hint,
+22 catalogue add-ons (`cat`, `desc`, `unit`, `rate`), and 3 quotation terms. That file is the live price book.
+
+The OS already holds the same six services in `estimator_rates` (minor units: 150.00/sq ft …), and it is what
+the bot and the staff estimate builder price from. So the two copies exist today and can already disagree.
+
+**Design for the port (no schema change):**
+
+1. The screen edits the rate book; saving writes **both** — regenerates `estimator-rates.js` (so the public
+   page changes) and upserts `estimator_rates` (so the bot and estimates change with it). One save, one truth.
+2. The 22 calculator add-ons stay in the file, written back verbatim. The OS `catalog_items` table (78 rows)
+   is the *quotation* catalogue at a different granularity — not these add-ons, and not merged.
+3. Finish labels/hints and the 3 terms have no OS table. They go into a small settings group
+   (`App\Settings\EstimatorSettings`) — the OS's own settings subsystem, not a new table — and the file is
+   rendered from it. The first save seeds it from the current file, so nothing is retyped.
+4. “Saved rate books” (v2.1's snapshot templates) are the same settings group: name → the four sections. If
+   they are dropped instead, it is stated on the screen — a snapshot with nowhere to live is not shown as a
+   button that does nothing.
+5. The live preview stays: range = essential × qty … premium × qty, selection = chosen level × qty, with the
+   Essential ≤ Standard ≤ Premium check the v2.1 screen had.
+
+Open question for the owner (not blocking; default is to keep): **saved rate books** — keep them in settings
+(recommended) or drop them?
