@@ -1205,3 +1205,19 @@ this workspace, and nothing here was changed to match those numbers.
 
 Gates: `tests/Feature` + `tests/Unit` **1202 passed, 1 skipped (6543)** — exactly the one test and ten assertions
 that `HeaderFooterEditorTest` took with it; Pint clean (839 files); PHPStan no errors.
+
+### Step 12 — the live sitemap checked against the files (21 Oct 2026)
+
+The pre-deploy check, run before any further build work: every URL Google is told about today, against the files
+that will replace it. Full evidence in **`docs/audit/19_URL_PARITY_2026-10-21.md`**; the sitemap itself is kept
+at `docs/audit/evidence/live-sitemap-2026-10-21.txt`.
+
+- **143 live URLs, 142 files, one loss: `/furniture/`** — deleted by the owner's decision, linked from nowhere in
+  the site, and the app's own sitemap (142 `loc`s) leaves it out.
+- **Titles, descriptions and canonicals: 142 / 142 identical** to the CMS export; 142 distinct titles; one `<h1>`
+  per page; no `noindex`; no duplicate canonical.
+- **11,588 internal links, 153 distinct paths, 0 unresolved.**
+- **The 36 redirects the other instance reports do not exist here** and are not in the repository's data; no
+  sitemap URL depends on them. Keeping them would need an export from that instance before a database deploy.
+- **One defect found, not fixed:** the sitemap cache key omits the host, so a document built for one domain is
+  served to the other for up to a day. The one-line fix plus a test is waiting on the owner's go-ahead.
