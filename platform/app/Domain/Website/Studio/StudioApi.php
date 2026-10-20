@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Website\Studio;
 
+use App\Domain\Crm\Models\Lead;
+use App\Domain\System\Models\Automation;
 use App\Domain\Website\Enums\PageStatus;
 use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\ContentEntry;
@@ -17,6 +19,7 @@ use App\Domain\Website\Services\PageCache;
 use App\Domain\Website\Services\PageCopier;
 use App\Domain\Website\Services\PageRenderer;
 use App\Models\User;
+use App\Settings\NotificationSettings;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -61,6 +64,9 @@ final class StudioApi
         // City pages: a new city is a draft copied from a template city, one at a time or several at once.
         'cms_city_new' => 'cityNew',
         'cms_city_bulk' => 'cityBulk',
+        // The Forms screen reads the enquiry forms the public site posts, and the alert routing that is
+        // already configured for all of them (there is no per-form store in the OS — see the screen's note).
+        'cms_forms' => 'formsList',
         'bapi_load' => 'builderLoad',
         'bapi_save' => 'builderSave',
         'bapi_page_new' => 'builderSave',
@@ -285,6 +291,84 @@ final class StudioApi
             'url' => $page->slug,
             'status' => $page->status->value,
         ];
+    }
+
+    /**
+     * The enquiry forms the v1 pages post, with what has actually arrived for each: submissions, the last
+     * one, and the field names the leads carry. Nothing is written here — alert routing is configured once
+     * for every form in Settings and Automations, and per-form routing would need a table the OS does not
+     * have (docs/audit/16.13).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{forms: list<array<string, mixed>>, alerts: array<string, mixed>}
+     */
+    private function formsList(array $payload): array
+    {
+        $labels = [
+            'brief' => '3D brief',
+            'contact' => 'Contact form',
+            'website' => 'Website form',
+            'estimator' => 'Estimator',
+            'booking' => 'Booking request',
+            'book-a-visit' => 'Book a visit',
+            'whatsapp' => 'WhatsApp widget',
+        ];
+
+        $forms = [];
+
+        foreach ($labels as $key => $label) {
+            $query = Lead::query()->where('source_detail', $key);
+
+            $total = (clone $query)->count();
+            $month = (clone $query)->where('created_at', '>=', now()->subDays(30))->count();
+            $last = (clone $query)->max('created_at');
+
+            /** @var list<string> $fields */
+            $fields = [];
+
+            foreach ((clone $query)->latest('id')->limit(200)->get(['meta']) as $lead) {
+                /** @var array<string, mixed> $meta */
+                $meta = (array) $lead->meta;
+
+                foreach (array_keys((array) ($meta['fields'] ?? [])) as $field) {
+                    $fields[(string) $field] = true;
+                }
+            }
+
+            $forms[] = [
+                'key' => $key,
+                'label' => $label,
+                'total' => $total,
+                'month' => $month,
+                'last' => $last === null ? null : (string) $last,
+                'fields' => array_slice(array_keys($fields), 0, 30),
+            ];
+        }
+
+        return ['forms' => $forms, 'alerts' => $this->alertRouting()];
+    }
+
+    /**
+     * How the OS routes a new enquiry today. Read from the services that actually send it, so this screen
+     * cannot drift from the behaviour it describes.
+     *
+     * @return array<string, mixed>
+     */
+    private function alertRouting(): array
+    {
+        try {
+            $settings = app(NotificationSettings::class);
+
+            return [
+                'automation' => Automation::enabled('woodex:new-lead-alert'),
+                'roles' => array_values((array) $settings->unassigned_lead_roles),
+                'quiet' => [$settings->quiet_hours_start, $settings->quiet_hours_end],
+                'telegram' => $settings->telegram_enabled,
+            ];
+        } catch (Throwable) {
+            // Settings that have not been seeded yet must not break the screen.
+            return ['automation' => null, 'roles' => [], 'quiet' => null, 'telegram' => null];
+        }
     }
 
     /**

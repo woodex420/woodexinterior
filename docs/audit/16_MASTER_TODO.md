@@ -547,3 +547,42 @@ Verified in the browser: 12 cities listed, 12 template options, New city created
 editor, Bulk created 2 drafts with 2 green rows, 15 rows afterwards, **0 console errors**. Smoke pages
 deleted (back to 143 pages / 12 cities). Tests: `StudioCityPagesTest` **6 passed (32 assertions)**.
 Sidebar count assertion moved to 53.
+
+## 16.13 Screen 6 — Forms, ported (20 Oct 2026)
+
+`/admin/website/forms` is live (`docs/audit/evidence/studio-forms.png`). The screen answers two questions the
+v2.1 screen asked: **what came in through each form**, and **where a new enquiry goes**.
+
+What came in is read from the OS, not from a new table: the public pages already post to the site bridge,
+which writes every submission into `leads` with `source_detail` = the form key (`brief`, `contact`,
+`website`, `estimator`, `booking`, `book-a-visit`, `whatsapp`). The screen lists those seven forms with the
+count in the last 30 days, the total, the last submission, and **the names of the fields actually received**
+(from `meta.fields` on the latest 200 leads of that form). A form with no submission says so instead of
+showing an empty box. Every row links to Enquiries.
+
+**Deliberately not carried over: the per-form alert editor.** v2.1 let each form set its own alert email,
+WhatsApp number, WhatsApp switch, auto-reply switch and auto-reply text, stored in its own settings blob.
+The OS routes every new enquiry through one rule — the roles in Settings → Notifications, in-app and
+Telegram, email for staff without Telegram — switched on or off by `woodex:new-lead-alert` in Automations.
+Storing a second, per-form routing table would be a schema change and a product decision (two competing
+routing rules, and no way to tell which one won) — so the screen shows the one real routing rule and links to
+where it is set. If the owner wants per-form routing later, it is a table and a form on this screen; nothing
+here pretends it exists.
+
+The v2.1 view for Forms was **removed** from `admin-p18e.js` rather than left to shadow the new one: it called
+`forms_get`, which is not ported, and painted a red “not ported yet” box over the ported screen. `admin-p18e.js`
+still owns the Estimator view, which is the next screen in the queue.
+
+Two bugs caught in the browser, both invisible to the PHP test:
+
+1. `$("#fm-alerts .card-b").className = ""` followed by another query for the same selector returned `null` —
+   the class had just been stripped, so the selector no longer matched and the whole read fell into the error
+   branch. It now queries the box once and writes into it.
+2. The literal `→` in “Automations → New lead alert” renders as a tofu box in the admin font. Replaced with
+   `·` (the em dash the rest of the screen uses renders correctly).
+
+Verified in the browser: 7 forms, `3D brief` 2 in 30 days / 2 total / today / fields `area`, `style`,
+`budget`; alert switch **on**, roles `sales_manager`, `owner`, quiet hours 21:00–09:00; **0 console errors**.
+The two submissions used for the check were posted through the real public endpoint and deleted afterwards
+(back to 26 leads / 26 contacts). Tests: `StudioFormsTest` **6 passed (26 assertions)**; Website + sidebar
+**340 passed (4,231 assertions)**; Pint PASS 854; PHPStan 0.

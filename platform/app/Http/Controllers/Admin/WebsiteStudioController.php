@@ -24,6 +24,7 @@ final class WebsiteStudioController
         'portfolio' => ['title' => 'Portfolio', 'view' => 'portfolio'],
         'services' => ['title' => 'Service & site pages', 'view' => 'services'],
         'cities' => ['title' => 'City pages', 'view' => 'cities'],
+        'forms' => ['title' => 'Forms', 'view' => 'forms'],
     ];
 
     public function show(Request $request, string $screen): View

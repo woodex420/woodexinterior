@@ -101,29 +101,6 @@
     });
   };
 
-  // ================================================================ Forms
-  W.VIEWS.forms = function (el) {
-    el.innerHTML = W.head("Forms", "Content", '<button class="btn pri" id="fm-save">' + ic("save") + "Save</button>") + '<div id="fm-l"><div class="empty">Loading…</div></div>';
-    W.fillIcons(el);
-    var D = null;
-    api("forms_get").then(function (r) {
-      if (!r.ok) return ($("#fm-l").innerHTML = '<div class="empty">' + esc(r.error) + "</div>"); D = r; var d = r.defaults;
-      $("#fm-l").innerHTML = '<div class="card fm-def"><div class="card-h"><h3>' + ic("send") + ' Default alerts (used when a form has no own email / number)</h3></div><div class="card-b"><div class="g2"><label>Default alert email(s)<input id="fm-de" value="' + esc(d.emailTo || "") + '" placeholder="woodexinterior.pk@gmail.com"></label><label class="check" style="align-self:end"><input type="checkbox" id="fm-deon"' + (d.emailOn ? " checked" : "") + '> Send email alerts</label></div>' + (!d.emailTo ? '<p class="err" style="margin:6px 0 0">No default email yet. Type one above and press Save, otherwise enquiries only show in the admin.</p>' : "") + (!d.smtpReady ? '<p class="muted" style="margin:6px 0 0">Email sending needs mail settings (SMTP) in <a href="#/leads">Enquiries → Alerts &amp; spam</a>.</p>' : "") + '<p class="muted" style="margin:6px 0 0">WhatsApp alerts: ' + (d.waOn && d.waReady ? "on" + (d.waTo ? " → " + esc(d.waTo) : "") : 'off (connect WhatsApp in <a href="#/offers">WhatsApp</a>)') + ". Auto-replies use the “Enquiry received” message from <a href=\"#/updates\">Client updates</a> unless you write a custom one.</p></div></div>" +
-        r.forms.map(function (f) { var c = f.cfg;
-          return '<div class="fm-card" data-id="' + esc(f.id) + '"><div class="fm-h"><span class="ic-box">' + ic("file-text") + "</span><div><h3>" + esc(f.label) + '</h3><span class="fm-stat">' + (f.last ? "last " + esc(W.ago ? W.ago(f.last) : f.last) : "no submissions yet") + '</span></div><span class="sp"></span><span class="fm-stat"><b>' + f.month + '</b> in 30 days</span><span class="fm-stat"><b>' + f.total + '</b> total</span><a class="btn sm" href="#/leads">View</a></div>' +
-            '<div class="fm-b"><div><h4>Used on (' + f.pages.length + ')</h4><div class="fm-chips">' + (f.pages.length ? f.pages.slice(0, 14).map(function (p) { return '<a href="' + esc(p) + '" target="_blank" rel="noopener">' + esc(p) + "</a>"; }).join("") + (f.pages.length > 14 ? "<span>+" + (f.pages.length - 14) + " more</span>" : "") : '<span class="muted">not found on pages</span>') + "</div>" +
-            '<h4 style="margin-top:14px">Fields received</h4><div class="fm-chips">' + f.fields.map(function (x) { return "<span>" + esc(x) + "</span>"; }).join("") + "</div></div>" +
-            '<div><h4>Where submissions go</h4><label>Alert email(s) <small class="muted">— blank = default</small><input data-f="alertTo" placeholder="' + esc(d.emailTo || "team@example.com") + '" value="' + esc(c.alertTo) + '"></label>' +
-            '<label>WhatsApp alert number(s) <small class="muted">— blank = default · with country code</small><input data-f="waTo" placeholder="' + esc(d.waTo || "923224000768") + '" value="' + esc(c.waTo || "") + '"></label>' +
-            '<label class="check"><input type="checkbox" data-f="waAlert"' + (c.waAlert ? " checked" : "") + "> WhatsApp alert to the team</label>" +
-            '<label class="check"><input type="checkbox" data-f="reply"' + (c.reply ? " checked" : "") + "> Auto-reply to the customer (WhatsApp + email)</label>" +
-            '<label>Custom auto-reply <small class="muted">— optional · {name} {company} {phone} {ref}</small><textarea data-f="replyText" rows="3" placeholder="Leave blank to use the standard “Enquiry received” message">' + esc(c.replyText) + "</textarea></label></div></div></div>";
-        }).join("");
-      W.fillIcons($("#fm-l"));
-    });
-    $("#fm-save").onclick = function () {
-      var b = this, out = {}; $$(".fm-card", el).forEach(function (c) { var o = {}; $$("[data-f]", c).forEach(function (x) { o[x.dataset.f] = x.type === "checkbox" ? x.checked : x.value; }); out[c.dataset.id] = o; });
-      b.disabled = true; api("forms_save", { forms: out, defaults: { emailTo: $("#fm-de").value.trim(), emailOn: $("#fm-deon").checked } }).then(function (r) { b.disabled = false; if (!r.ok) return toast(r.error, true); toast("Form settings saved ✓"); });
-    };
-  };
+  // Forms moved to admin-forms.js (Woodex OS: read-only, enquiries live in leads).
+  // The v2.1 screen wrote per-form alert routing into its own settings store, which has no OS home.
 })();

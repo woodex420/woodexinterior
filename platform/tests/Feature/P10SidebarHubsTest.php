@@ -59,10 +59,10 @@ it('consolidates the sidebar to the confirmed P10.1 map', function () {
         ->and(collect($groups['Sales']['items'])->pluck('label')->all())->toBe(['Estimations', 'Quotations', 'Invoices', 'Payments', 'Documents']);
 
     $live = collect(AdminNavigation::for($this->owner))->flatMap(fn (array $g): array => $g['items'])->filter(fn (array $item): bool => $item['route'] !== null);
-    // 53 live destinations today: the P10.1 map plus every Website screen switched on for the v2.1 port
+    // 54 live destinations today: the P10.1 map plus every Website screen switched on for the v2.1 port
     // (docs/16 §16.8), less the Content library, retired from the nav on 20 Oct. The exact number is
     // asserted on purpose — a screen cannot join the sidebar without a test saying so.
-    expect($live)->toHaveCount(53);
+    expect($live)->toHaveCount(54);
 });
 
 it('renders every hub tab for the owner', function (string $path, string $marker) {
