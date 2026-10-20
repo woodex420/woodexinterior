@@ -426,8 +426,31 @@ Answered “yes” to 1 and 3 and named a choice on 2 and 4, the port starts at 
 | Step | State |
 |---|---|
 | P1-1 The seam | **Done.** `POST /admin/website/studio/api` (+ `builder-api`), `{action}` in, `{ok}` out, OS session and `website.edit` on every call; an unported action answers honestly. 10 tests |
-| First screen | **Client logos is live** at `/admin/website/logos`: the v2.1 module, inside the OS, writing the home page's clients section — verified end to end in a browser (upload → save → the home page renders it) |
+| Screen 1 — Client logos | **Live** at `/admin/website/logos`: the v2.1 module, inside the OS, writing the home page's clients section — verified end to end in a browser (upload → save → the home page renders it) |
+| Screens 2–3 — Blog, Portfolio | **Live** (`175b7b4`). The real v2.1 editor inside the OS: 48 imported articles open with their words, a new article creates a `Page` draft, takes a hero from the media picker, publishes through `cms_published` and renders at `/insights/<slug>/` with kicker, h1, dek, meta and hero. `StudioContent` keeps the editor JSON in one `text` block and a `PageVersion` before every save; publish requires `website.publish` and adds the `/insights/` index card. The OS-native `BlogIndex`/`PortfolioIndex` (Livewire, views, tests) are **deleted**. 19 tests |
 | The rest | Screens are switched on one at a time in `WebsiteStudioController::SCREENS`, each after its actions are ported |
 
 Evidence: `docs/audit/evidence/studio-logos.png` (the ported screen inside the OS), and the browser run that
 uploaded a logo, saved, and then found the new heading on `/`.
+
+---
+
+## 16.9 Wave 0 — freeze, inventory and safety (started 20 Oct 2026)
+
+The owner supplied a full upgrade plan (`docs/audit/17_OWNER_MASTER_PLAN_2026-10-20.md`, 1,182 lines,
+Waves 0–10) and said **start**. Wave 0 is the gate: no real row moves until the inventory is written,
+the credentials are rotated and the import has been rehearsed. The working paper is
+**`docs/audit/18_WAVE0_BASELINE.md`**; this table is the tracking view.
+
+| # | Item | State on 20 Oct | Next action |
+|---|---|---|---|
+| 1 | Staging database | `legacy` connection now takes `LEGACY_DB_DRIVER=mysql\|sqlite` + `LEGACY_DB_SQLITE_PATH`; default behaviour unchanged | Owner: a v2.1 dump **with rows**, or read-only `LEGACY_DB_*` |
+| 2 | Inventory — tables, stores, screens, routes, APIs | **Done** in §1–§2 of doc 18: 44 `wx_*` tables in three destinations, 4 JSON stores, 60 admin modules, 35 API route files, 65 OS migrations, 90 OS screens | Keep it current as modules port |
+| 3 | Canonical business settings | Inventoried (§4): phone typed in 40 places (4 non-test files), address/hours/email in 3 partials, currency/payment terms in 2 | Wave 1 |
+| 4 | Rotate old credentials | **List issued** (§5, 10 items with where each lives) | Owner: hPanel, Meta, BotFather, Cloudflare, AI provider |
+| 5 | `composer.lock` | Absent (Q-01). CI already falls back to `composer update` and prints a gzip+base64 lock to commit | One CI run, or `composer update --lock` locally |
+| 6 | Activate CI | Workflows written and validated against local runs (276 tests, Pint PASS, PHPStan 0) but **cannot be pushed**: the GitHub App lacks `workflows` permission | Owner: grant the permission or commit `.github/workflows/` |
+| 7 | First dry-run import report | **Pipeline rehearsed end to end** on a synthetic v2.1 database: `users 3, clients 3, leads 12, notes 19/20, bookings 6`, 0 failed, 5 expected warnings, transaction rolled back. Evidence `docs/audit/evidence/wave0-import-rehearsal.txt`, fixture `platform/database/rehearsal/build-v21-rehearsal.php` | Re-run against the real dump and attach the report |
+
+**Not blocked by the dump:** Wave 1 (canonical settings, sidebar regroup) and the Website screen port
+continue in parallel. Waves 2–10 stay as written in the owner's plan; §16.8 is the Website slice of it.

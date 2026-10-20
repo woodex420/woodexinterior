@@ -91,10 +91,14 @@ return [
         | `php artisan woodex:import-v21` until the cut-over (docs/04 §8).
         */
         'legacy' => [
-            'driver' => 'mysql',
+            // A restored copy of the v2.1 database, or an SQLite dump of it, so a rehearsal of the
+            // import never needs the live server (docs/08 §1, docs/18 §4). MySQL stays the default.
+            'driver' => env('LEGACY_DB_DRIVER', 'mysql'),
+            'database' => env('LEGACY_DB_DRIVER', 'mysql') === 'sqlite'
+                ? env('LEGACY_DB_SQLITE_PATH', database_path('legacy-v21.sqlite'))
+                : env('LEGACY_DB_DATABASE', 'woodex_v21'),
             'host' => env('LEGACY_DB_HOST', '127.0.0.1'),
             'port' => env('LEGACY_DB_PORT', '3306'),
-            'database' => env('LEGACY_DB_DATABASE', 'woodex_v21'),
             'username' => env('LEGACY_DB_USERNAME', ''),
             'password' => env('LEGACY_DB_PASSWORD', ''),
             'charset' => 'utf8mb4',

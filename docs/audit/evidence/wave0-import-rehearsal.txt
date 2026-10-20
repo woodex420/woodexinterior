@@ -1,0 +1,49 @@
+# Wave 0 · Import rehearsal — verbatim console output
+
+Date: 2026-10-20 (sandbox)
+Source: a synthetic v2.1 database built by `platform/database/rehearsal/build-v21-rehearsal.php`.
+The rows are fictional; this proves the pipeline, not production volumes.
+
+```
+$ php database/rehearsal/build-v21-rehearsal.php storage/app/private/rehearsal-v21.sqlite
+Rehearsal database written to storage/app/private/rehearsal-v21-second.sqlite
+  wx_users: 3
+  wx_clients: 3
+  wx_leads: 12
+  wx_lead_notes: 20
+  wx_bookings: 6
+Synthetic rows — fictional people. Not evidence about production volumes.
+
+$ LEGACY_DB_DRIVER=sqlite LEGACY_DB_SQLITE_PATH=…/rehearsal-v21.sqlite php artisan woodex:import-v21 --dry-run
+
+   INFO  DRY RUN — nothing will be saved. Reading v2.1 data from the "legacy" connection….  
+
+
++----------+--------+---------+--------+---------+--------+
+| Step     | Source | Created | Merged | Skipped | Failed |
++----------+--------+---------+--------+---------+--------+
+| users    | 3      | 3       | 0      | 0       | 0      |
+| clients  | 3      | 3       | 0      | 0       | 0      |
+| leads    | 12     | 12      | 0      | 0       | 0      |
+| notes    | 20     | 19      | 0      | 1       | 0      |
+| bookings | 6      | 6       | 0      | 0       | 0      |
++----------+--------+---------+--------+---------+--------+
+  Warnings ................................................................. 5  
+  Duplicates merged ........................................................ 0  
+  Time ................................................................. 1.43s  
+  Report ................. storage/app/private/imports/20261020-062918-dry-run  
+
+   WARN  Dry run finished. Review the warnings, then run again without --dry-run.  
+
+```
+
+## Warnings raised by the report (all five are deliberate edge cases in the fixture)
+
+```
+step,legacy_id,message
+leads,9,"No usable phone or email; contact created with the name only."
+leads,10,"Phone ""0300"" is not a valid number; kept in notes."
+leads,10,"No usable phone or email; contact created with the name only."
+notes,4,"Lead #99 was not imported; note skipped."
+bookings,3,"Booking had no enquiry; created lead V21-B00003."
+```
