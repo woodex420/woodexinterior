@@ -973,16 +973,26 @@ difference either way.**
 | Menus, Team, Header & footer + tracking | **No** — they feed `layouts/site.blade.php`, which no file page uses |
 | Content library | **No** — records for the retired FAQ/testimonial/logo screens; kept as the logo store |
 
-**What that leaves:** the page editor is the only screen left that actively *misleads* (the rest are honest but
-inert). The next decision is whether the Pages screen becomes an index of files that hands off to the builder,
-or the block editor starts writing the file on save. Recommendation: the first — one builder, and the file stays
-the page.
+**Decided and shipped (owner, 20 Oct): the Pages screen is an index of the files, and the builder is the only
+page editor.** The screen was the last one that claimed a live result it could not deliver — every row it showed
+had a file, so its Publish changed nothing a visitor saw while the toast said “is live at /…”.
+
+- `PagesIndex` now lists `BuilderFile::pages()`: 143 files, the section each sits under (home, top-level,
+  insights, projects, lahore), size, and when it changed. A row opens the builder on that file, the live page, or
+  takes the page **offline** — which moves the file to `storage/app/private/site-retired/`, after a version
+  snapshot, so it comes back by moving it home.
+- The block page editor, **Page templates** and **Section library** are gone with their routes, nav items, views
+  and 13 test files that only exercised them. `/admin/website/pages/{page}` and `/pages/new` redirect to the
+  builder on that file, so old bookmarks still land somewhere that can change the page.
+- The sidebar is **49** destinations (was 51).
 
 ### What is still open
 
-- **The Pages screen and the page editor** are now the only screen that still claims a live result it does not
-  have (a row with a file is shadowed by it, so Publish changes nothing). Step 6's table above lists every
-  screen and what it reaches; this one is the next decision.
+- **The screens that still read rows**: SEO overview, SEO agent and Site health audit the 56 `pages` rows, not
+  the 143 files — so they describe a fifth of the site. Menus, Team, Header & footer and tracking feed
+  `layouts/site.blade.php`, which no file page uses. Making the first group read the files and retiring the
+  second is the next piece of step 6; neither can mislead the owner the way the page editor did, so neither is
+  urgent.
 - `StudioApi` still answers the retired screens' actions (`cms_faq*`, `cms_testimonial*`, `cms_city*`,
   `logos_*`, `pages`, `cms_page_new/duplicate`) with no screen calling them. Removing them is its own change,
   because `admin-templates.js` still uses `cms_page_kinds` and `admin-fields.js` uses `bapi_load`.
