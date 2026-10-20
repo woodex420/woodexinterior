@@ -779,8 +779,18 @@ Deleted: 60 service, 12 city, 8 area, 6 project pages — **86 pages, 740 blocks
 
 Rollback is the backup taken immediately before the delete and kept out of Git:
 `platform/storage/app/private/os1-backup/database-20261020-143458.sqlite` (4.1 MB) and
-`pages-20261020-143458.json` (86 pages, 740 blocks, with per-page version counts). `/tmp/os1_delete.php` is
-the one-off script; it reports counts before and after and wraps the delete in one transaction.
+`pages-20261020-143458.json` (86 pages, 740 blocks, with per-page version counts).
+
+The delete itself now ships as a command, so the owner's installation gets the same result rather than only
+this sandbox's copy:
+
+```
+php artisan website:retire-shadow-pages            # report: pages, blocks, versions, what stays
+php artisan website:retire-shadow-pages --force    # writes a JSON backup, then deletes in one transaction
+```
+
+`RetireShadowPagesTest` proves the report deletes nothing, `--force` removes only the four types with their
+blocks and versions, the backup holds the pages it deleted, and a second run is a no-op.
 
 ### Step 2 — the builder opens `platform/public/<path>/index.html`
 
