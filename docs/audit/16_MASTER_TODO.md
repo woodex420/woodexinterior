@@ -40,7 +40,7 @@ Committed with this document.
 | Content: Portfolio ★ | **Partial (first pass)** | The 6 project pages list with the project link (`projects.case_study_page_id`, consent), index card, duplicate and unpublish work (`ec7613e`, evidence `docs/audit/evidence/portfolio.png`). **Missing:** v2.1's project editor — template picker, hero, details strip (project type, setting, year, size), facts box (scope, key move, materials, note), listing card, AI drafting |
 | Content: Page templates ★ | **Partial (first pass)** | 50 layouts with search, type filter, default per type, duplicate and retire are live (`5c164ae`, evidence `docs/audit/evidence/page-templates.png`). **Wrong shape:** it is a standalone screen that also creates pages, while v2.1 offers templates inside “New page → Start from”, inside “New article”, and in a Template library. Being folded into the create flows in P1B; the builder edits one page, so a template must never create a builder page |
 | Content: Forms ★ | **Partial** | Forms render through the website bridge (`/api/forms.php` → lead), but there is no form manager or submissions screen |
-| Content: Estimator ★ | **Partial** | Public estimator + `EstimatorRate` + `EstimationsIndex` exist. **Missing, per v2.1:** template pack (Kitchen, Wardrobes, Bedroom, Living, Complete home, Restaurant, Salon/clinic, Retail, Elevation, Grey structure, House construction, False ceiling, Flooring, 3D), saved rate books, “adjust all rates %”, and the live preview (From/To range in lac) |
+| Content: Estimator ★ | **Done (16.15)** | `/admin/website/estimator` edits the file the public page reads and mirrors the rates into `EstimatorRate`; template pack (14 ready-made services), saved rate books, “adjust all rates %”, finish names, quotation terms and the live preview are all in |
 | Content: FAQs ★, Testimonials ★, Client logos ★ | **Partial** | `ContentEntry` has only `faq` / `testimonial` / `logo` as untitled records. **Missing:** FAQ *groups* (reused in the AI chat, linked to articles, emitted as Google FAQ schema, “Add starter FAQ groups”), testimonial fields (role, project, city, rating, photo, Live), client-logo display settings (show on home, small title, heading, grid vs sliding row, speed, grey-on-hover, reorder) |
 | Content: Team ★, Media ★ | **Partial** | `TeamMembersIndex` and `MediaLibrary` (upload, alt text, filters) exist. **Missing:** team — starter roles, department, portrait ratio, Featured, “Pages & heading” tick-list, reorder, Live; media — Trash, Optimise large images, Make responsive (480/960 WebP), used-on list, replace picture, crop/resize, Save alt text with “add it to pages where this image has no alt text” |
 | Redirects | **Exists** | `RedirectsIndex`; needs the v2.1 bulk/redirect-chain tools |
@@ -347,7 +347,7 @@ with the old different frontend removed and the usable data kept.**
 | City pages | `admin-fields.js` | **missing** | Port |
 | Page templates | `admin-templates.js` | `PageTemplatesIndex` (+ creator) | Port; creator deleted, library kept as the screen |
 | Forms | `admin-p18e.js` | **missing** (public renderer only) | Port |
-| Estimator | `admin-p18e.js` | **missing** (rates + public estimator exist) | Port, rates stay `EstimatorRate` |
+| Estimator | `admin-estimator.js` | **ported** (16.15) | Rate book file + `EstimatorRate` mirrored on save |
 | FAQs | `admin-content.js` | `ContentEntry` rows inside Content library | Port |
 | Testimonials | `admin-content.js` | same | Port |
 | Client logos | `admin-logos.js` | same | Port |
@@ -614,3 +614,51 @@ the bot and the staff estimate builder price from. So the two copies exist today
 
 Open question for the owner (not blocking; default is to keep): **saved rate books** — keep them in settings
 (recommended) or drop them?
+
+## 16.15 Screen 7 — Estimator, ported (20 Oct 2026)
+
+`/admin/website/estimator` is live (`docs/audit/evidence/studio-estimator.png`). This screen is not like the
+others: **the public estimator does not read the database.** `/estimator/` is the v1 page and it builds the
+calculator from `assets/js/estimator-rates.js` — six services with three rates each, three finish levels with
+a name and a description, 22 catalogue add-ons, and three quotation terms. The file is the live price list.
+
+So one save writes **both**:
+
+1. it regenerates `estimator-rates.js`, which is what the public page loads, and
+2. it mirrors the same rates into `estimator_rates`, which is what the bot and the staff estimate builder price
+   from (150.00/sq ft is stored as 15000 minor units).
+
+The file is written inside the database transaction. If `estimator_rates` fails to save, the previous file is
+written back, so the page can never show prices the bot does not use.
+
+Carried over from v2.1: the 14 ready-made services, saved rate books (named snapshots), “adjust every rate by
+%”, the three finish levels with their names and descriptions, the quotation terms box, the Essential ≤
+Standard ≤ Premium check (the server refuses, it does not just colour the box), add/remove/reorder, and the
+live preview (From = essential × qty, To = premium × qty, selection = chosen level × qty).
+
+Two honest limits, stated on the screen rather than hidden:
+
+- **The 22 catalogue add-ons are not editable here.** The OS `catalog_items` table is the quotation catalogue
+  (78 rows at a different granularity), not these calculator add-ons, and the v1 page needs them in the file.
+  They are written back exactly as they are — the screen counts them and says so.
+- **Removing a service never deletes its `estimator_rates` row.** An old estimate may still reference it; the
+  row is switched off (`is_active = false`) and the position is renumbered.
+
+How the file is read matters: it is hand-written JavaScript (unquoted keys, trailing commas, a header
+comment), so `json_decode()` cannot read it. `RateBook` scans it with a string-aware reader, and when it writes
+it back uses the file's own style — two-space indent, unquoted keys, the original header comment. A round trip
+of the live file is byte-for-byte identical in content, proven in the test and again in the browser: after a
+save, `/estimator/` still returns 200 with 6 services, 22 catalogue lines and 3 terms.
+
+Saved rate books live in a new settings group (`App\Settings\EstimatorSettings`, one JSON property). That is
+the OS settings table, not a new table; spatie/laravel-settings needs the row to exist before the first save,
+so `EstimatorSettings::shelf()` creates it.
+
+The v2.1 module `admin-p18e.js` held the Estimator and Forms views and injected their CSS. With both screens
+ported it had nothing left, so it is **deleted**; the two chip styles it injected moved into `admin.css`.
+
+Verified in the browser: the screen renders 6 services, 3 finishes, 3 terms and 22 catalogue lines; Save &
+publish answers “The estimator page and the bot now use these rates.”; a rate book is saved and deleted; the
+public page still loads with 6 services / 22 catalogue / 3 terms; **0 console errors**. Tests:
+`StudioEstimatorTest` **8 passed (43 assertions)**; Website + sidebar **348 passed (4,274 assertions)**;
+Pint PASS 857; PHPStan 0.

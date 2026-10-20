@@ -160,13 +160,13 @@
 <script src="/assets/admin-v21/admin-services.js"></script>
 <script src="/assets/admin-v21/admin-cities.js"></script>
 <script src="/assets/admin-v21/admin-forms.js"></script>
+<script src="/assets/admin-v21/admin-estimator.js"></script>
 <script src="/assets/admin-v21/admin-media.js"></script>
 <script src="/assets/admin-v21/admin-speed.js"></script>
 <script src="/assets/admin-v21/admin-theme.js"></script>
 <script src="/assets/admin-v21/admin-seo.js"></script>
 <script src="/assets/admin-v21/admin-redirects.js"></script>
 <script src="/assets/admin-v21/admin-templates.js"></script>
-<script src="/assets/admin-v21/admin-p18e.js"></script>
 <script src="/assets/admin-v21/admin-logos.js"></script>
 <script src="/assets/admin-v21/admin-hero.js"></script>
 <script src="/assets/admin-v21/admin-p36.js"></script>

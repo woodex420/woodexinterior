@@ -21,7 +21,7 @@ final class AdminNavigation
      *
      * @var list<string>
      */
-    public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.logos', 'admin.website.blog', 'admin.website.portfolio', 'admin.website.services', 'admin.website.cities', 'admin.website.forms'];
+    public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.logos', 'admin.website.blog', 'admin.website.portfolio', 'admin.website.services', 'admin.website.cities', 'admin.website.forms', 'admin.website.estimator'];
 
     /**
      * @return list<array{title: string, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}>
@@ -93,7 +93,7 @@ final class AdminNavigation
                 self::item('City pages', 'map-pin', 'admin.website.cities', 'website.edit'),
                 self::item('Page templates', 'templates', 'admin.website.templates', 'website.edit'),
                 self::item('Forms', 'file', 'admin.website.forms', 'website.edit'),
-                self::item('Estimator', 'calculator', null, null, 'soon'),
+                self::item('Estimator', 'calculator', 'admin.website.estimator', 'website.edit'),
                 self::item('FAQs', 'info', null, null, 'soon'),
                 self::item('Testimonials', 'quote', null, null, 'soon'),
                 self::item('Client logos', 'image', 'admin.website.logos', 'website.edit'),
