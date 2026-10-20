@@ -1041,3 +1041,35 @@ had a file, so its Publish changed nothing a visitor saw while the toast said �
   change, not a deletion sweep.
 - The editor still cannot create a *folder* that the site's navigation links to; `page_new` writes
   `<folder>/<slug>/index.html` and that is enough for now.
+
+### Step 7 — the home file is the v1 page again (21 Oct 2026)
+
+**Step 4 was wrong, and this corrects the record.** It said the home export was "the page the CMS was serving",
+"exported from the running site", so "nothing was restyled". Only the first half was true: the running *sandbox*
+served the CMS render. The owner's live site served the **v1** page, and the file written back to
+`public/index.html` was the Tailwind render — a different design with a one-shot hero and a different nav.
+
+The owner saw it as two frontends in one site: `/` (new design, "Cost guides", "Start your project") beside
+`/3d-visualization/` (v1, "Woodex Studio", "Get a quote"). The site itself was the evidence:
+
+| | v1 | new export |
+|---|---|---|
+| Pages in `public/` | **141** (`site-p21.css` + `v1-p21.css`) | **2** — `/` and `/furniture/` (`build/assets/site.css`) |
+| Hero | six slides (INTERIORS … CRAFT) | one static hero |
+| Nav | Home · Woodex Studio · Services · Projects · About · Insights · Contact · Get a quote | Services · Cost guides · Projects · About · Contact · Start your project |
+
+**Fixed:** `resources/legacy/home-v1.html` (the live page, kept since `228dcc3`) is moved to
+`platform/public/index.html` — `git mv`, so there is one home and its history follows it. The file needs no
+new asset: every path it references (`site-p21.css`, `v1-p21.css`, `site.js`, `theme.css`, `assets/img/*`)
+already exists, and it contains **no `/media/` and no `/build/`** reference, so it is identical on every
+install. `HomeFileTest` still passes: no Blade source, no `localhost`, no beacon.
+
+Verified in the preview: `#` slider has 6 slides and works (next → WORKPLACE, dot 6 → CRAFT), no console or
+network errors, title/description/canonical unchanged. Gates: `tests/Feature/Website` **210 passed (2138)**,
+`P10SidebarHubsTest` **42 passed** — 252, unchanged.
+
+**Still new design:** `/furniture/`. It has no v1 original — it was created as a CMS page while the site was
+being ported — and it is **live today** (`https://woodex.com.pk/furniture/`, 200, its own title, media and
+FAQ). It is reachable from no v1 page (only the old home linked to it), and its body is largely the same
+wardrobe copy as `/wardrobe-design/` in v1. Deleting it would 404 a live, indexed URL; that decision is the
+owner's.
