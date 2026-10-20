@@ -4,7 +4,6 @@ use App\Domain\Website\Enums\BlockType;
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\Redirect;
 use App\Domain\Website\Models\SavedSection;
-use App\Livewire\Admin\Website\HeroSlidesIndex;
 use App\Livewire\Admin\Website\SectionLibraryIndex;
 use App\Livewire\Admin\Website\SeoOverviewIndex;
 use App\Livewire\Admin\Website\SiteHealthIndex;
@@ -45,9 +44,9 @@ it('groups the Website section the way it is worked on', function () {
 
     // Build a page, fill it with content, then tune the whole site — the owner's three bands.
     expect($labels('Pages & builder'))->toBe([
-        'All pages', 'Page builder', 'Section library', 'Header & footer', 'Hero slides', 'Redirects',
+        'All pages', 'Page builder', 'Section library', 'Header & footer', 'Redirects',
     ])->and($labels('Content'))->toBe([
-        'Blog', 'Portfolio', 'Page templates', 'Forms', 'Estimator', 'Client logos', 'Team',
+        'Blog', 'Portfolio', 'Page templates', 'Forms', 'Estimator', 'Team',
     ])->and($labels(null))->toBe([
         'Media', 'SEO', 'SEO agent', 'Speed', 'Site health', 'Theme', 'Website Settings',
     ]);
@@ -103,59 +102,6 @@ it('shows the section library standalone, renames and retires saved sections', f
     expect(SavedSection::query()->count())->toBe(0);
 });
 
-it('manages the home page hero slides on their own screen', function () {
-    $home = $this->publishHomePage();
-    $home->blocks()->create([
-        'type' => BlockType::Slider,
-        'block_key' => 'bhero01',
-        'position' => 0,
-        'visible' => true,
-        'data' => ['slides' => [
-            ['image_id' => null, 'kicker' => 'Lahore', 'heading' => 'Spaces', 'text' => '', 'display' => '', 'primary_label' => '', 'primary_url' => '', 'secondary_label' => '', 'secondary_url' => ''],
-            ['image_id' => null, 'kicker' => 'Since 2016', 'heading' => 'Purpose', 'text' => '', 'display' => '', 'primary_label' => '', 'primary_url' => '', 'secondary_label' => '', 'secondary_url' => ''],
-        ]],
-    ]);
-
-    $component = Livewire::actingAs($this->editor)
-        ->test(HeroSlidesIndex::class)
-        ->assertSet('homeId', $home->id)
-        ->assertSee('Slide 1')
-        ->assertSee('Slide 2')
-        ->call('addSlide')
-        ->assertSet('slides', fn (array $slides): bool => count($slides) === 3)
-        ->call('removeSlide', 2)
-        ->call('moveSlide', 1, -1)
-        ->call('save', false);
-
-    $block = $home->fresh(['blocks'])->blocks->first(fn ($block) => $block->type === BlockType::Slider);
-    expect($block->data['slides'][0]['kicker'])->toBe('Since 2016') // the move held through the save
-        ->and($home->fresh()->blocks->count())->toBe(1);
-
-    // Publishing is its own permission.
-    $plainEditor = User::factory()->create();
-    $plainEditor->givePermissionTo(['website.edit']);
-
-    Livewire::actingAs($plainEditor)
-        ->test(HeroSlidesIndex::class)
-        ->call('save', true)
-        ->assertStatus(403);
-});
-
-it('creates the hero slider when the home page has none yet', function () {
-    $home = $this->publishHomePage();
-
-    Livewire::actingAs($this->editor)
-        ->test(HeroSlidesIndex::class)
-        ->assertSee('No hero slider yet')
-        ->call('addSlide')
-        ->set('slides.0.heading', 'Spaces shaped by purpose')
-        ->call('save', true);
-
-    $block = $home->fresh(['blocks'])->blocks->firstWhere('type', BlockType::Slider->value);
-    expect($block)->not->toBeNull()
-        ->and($block->data['slides'][0]['heading'])->toBe('Spaces shaped by purpose');
-});
-
 it('shows every page\'s search listing on the SEO screen, and edits it in place', function () {
     $this->publishHomePage(['title' => 'Woodex Interior — design & build', 'description' => 'Interior design in Lahore.']);
 
@@ -188,12 +134,11 @@ it('reports the whole site\'s health, and catches a redirect to nowhere', functi
         ->assertSee('finding(s)');
 });
 
-it('keeps the four screens behind the website permission', function () {
+it('keeps the standalone screens behind the website permission', function () {
     $intruder = User::factory()->create(); // no website.edit
 
     foreach ([
         '/admin/website/sections',
-        '/admin/website/heroes',
         '/admin/website/seo-overview',
         '/admin/website/health',
     ] as $path) {
@@ -231,5 +176,22 @@ it('keeps the screens that still have work to do', function (string $url) {
 })->with([
     '/admin/website/forms',
     '/admin/website/estimator',
+]);
+
+it('retires the home screens now that / is a file', function (string $url) {
+    $owner = User::factory()->create();
+    $owner->givePermissionTo(['website.edit']);
+
+    $all = collect(AdminNavigation::for($owner))->flatMap(fn (array $group): array => $group['items'])->pluck('label');
+
+    // The home page is public/index.html (§16.19 step 4): a screen that writes the CMS home row can no
+    // longer put a word on the live page, so it is not a destination.
+    expect($all)
+        ->not->toContain('Hero slides')
+        ->not->toContain('Client logos');
+
+    $this->actingAs($owner)->get($url)->assertNotFound();
+})->with([
+    '/admin/website/heroes',
     '/admin/website/logos',
 ]);

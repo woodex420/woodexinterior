@@ -76,6 +76,41 @@ it('deletes the shadow pages, keeps the rest, and backs up everything it deleted
         ->and($backup['pages'][0]['versions'])->toHaveCount(1);
 });
 
+it('leaves the home row alone unless --home is given, then deletes it too', function () {
+    $home = Page::factory()->create(['type' => PageType::Home, 'slug' => '/', 'title' => 'Home']);
+    $home->blocks()->create([
+        'type' => BlockType::Slider,
+        'block_key' => 'bhome001',
+        'position' => 0,
+        'visible' => true,
+        'data' => ['slides' => [['heading' => 'The home opening']]],
+    ]);
+
+    expect($this->artisan('website:retire-shadow-pages', ['--force' => true, '--backup-dir' => $this->backup]))->toBe(0)
+        ->and(Artisan::output())->toContain('Deleted 4 pages');
+
+    expect(Page::query()->whereKey($home->id)->exists())->toBeTrue();
+
+    $files = File::files($this->backup);
+    $first = json_decode((string) file_get_contents($files[0]->getPathname()), true);
+    expect($first['types'])->toBe(['service', 'city', 'area', 'project']);
+
+    expect($this->artisan('website:retire-shadow-pages', [
+        '--force' => true, '--home' => true, '--backup-dir' => $this->backup,
+    ]))->toBe(0)->and(Artisan::output())->toContain('Deleted 1 pages');
+
+    expect(Page::query()->whereKey($home->id)->exists())->toBeFalse()
+        ->and(Page::query()->count())->toBe(1);
+
+    $files = File::files($this->backup);
+    $second = json_decode((string) file_get_contents($files[count($files) - 1]->getPathname()), true);
+
+    expect($second['types'])->toBe(['service', 'city', 'area', 'project', 'home'])
+        ->and($second['pages'])->toHaveCount(1)
+        ->and($second['pages'][0]['slug'])->toBe('/')
+        ->and($second['pages'][0]['blocks'])->toHaveCount(1);
+});
+
 it('says so instead of failing when there is nothing to retire', function () {
     Page::query()->whereKeyNot($this->kept->id)->delete();
 

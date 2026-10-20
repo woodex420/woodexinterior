@@ -44,4 +44,32 @@ export default defineConfig({
             ignored: ['**/storage/framework/views/**'],
         },
     },
+    build: {
+        rollupOptions: {
+            output: {
+                /*
+                 * The public site's home page is a static file (docs/audit/16.19): public/index.html
+                 * links its stylesheet and script by name, and no Blade template can rewrite that link
+                 * after a build. A content hash would break the home page the first time the assets are
+                 * rebuilt, so the site entry keeps stable names. Every other asset keeps its hash, and
+                 * the admin keeps its hashes too — Blade reads the manifest for those.
+                 */
+                entryFileNames: (chunk) => {
+                    // The site's JS entry only; the CSS entry is emitted through assetFileNames below.
+                    return (chunk.facadeModuleId ?? '').endsWith('/resources/js/site.js')
+                        ? 'assets/site.js'
+                        : 'assets/[name]-[hash].js';
+                },
+                assetFileNames: (asset) => {
+                    const name = asset.names?.[0] ?? asset.name ?? '';
+
+                    if (name === 'site.css') {
+                        return 'assets/site.css';
+                    }
+
+                    return 'assets/[name]-[hash][extname]';
+                },
+            },
+        },
+    },
 });

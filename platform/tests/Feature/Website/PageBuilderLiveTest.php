@@ -6,7 +6,6 @@ use App\Domain\Website\Enums\BlockType;
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Services\PageValidator;
 use App\Http\Middleware\SecurityHeaders;
-use App\Livewire\Admin\Website\HeroSlidesIndex;
 use App\Livewire\Admin\Website\PageEditor;
 use App\Models\User;
 use Illuminate\Contracts\Http\Kernel;
@@ -137,49 +136,6 @@ it('keeps one opening section per page, hiding — never deleting — the second
         ->and($blocks->firstWhere('id', $second->id)->visible)->toBeFalse()
         ->and($blocks->firstWhere('id', $second->id)->data['heading'])->toBe('The second opening')
         ->and($blocks->where('visible', true))->toHaveCount(1);
-});
-
-it('shows the hero an imported page already has instead of "0 slides"', function () {
-    $home = $this->publishHomePage();
-    $hero = $home->blocks()->create(hero_block());
-
-    Livewire::actingAs($this->editor)
-        ->test(HeroSlidesIndex::class)
-        ->assertSet('fromHero', true)
-        ->assertSee('The home page opens with a single hero')
-        ->assertSet('slides', fn (array $slides): bool => count($slides) === 1
-            && $slides[0]['heading'] === 'Spaces shaped by purpose')
-        ->set('slides.0.heading', 'Spaces shaped by purpose and identity')
-        ->call('save', false);
-
-    $saved = $hero->fresh();
-    $blocks = $home->fresh(['blocks'])->blocks;
-
-    // One slide writes the Hero back in place: still a hero, key figures untouched, no second
-    // opening section added.
-    expect($saved->type)->toBe(BlockType::Hero)
-        ->and($saved->data['heading'])->toBe('Spaces shaped by purpose and identity')
-        ->and($saved->data['facts'])->toBe([['label' => 'Years', 'value' => '10']])
-        ->and($blocks)->toHaveCount(1);
-});
-
-it('turns a single hero into a slider when a second slide arrives, keeping the old hero hidden', function () {
-    $home = $this->publishHomePage();
-    $hero = $home->blocks()->create(hero_block());
-
-    Livewire::actingAs($this->editor)
-        ->test(HeroSlidesIndex::class)
-        ->call('addSlide')
-        ->set('slides.1.heading', 'Workplaces planned around people')
-        ->call('save', false);
-
-    $blocks = $home->fresh(['blocks'])->blocks;
-    $slider = $blocks->firstWhere('type', BlockType::Slider);
-
-    expect($slider)->not->toBeNull()
-        ->and($slider->data['slides'])->toHaveCount(2)
-        ->and($blocks->firstWhere('id', $hero->id)->visible)->toBeFalse()
-        ->and($blocks)->toHaveCount(2);
 });
 
 it('serves a draft preview to a signed-in editor through the real route', function () {

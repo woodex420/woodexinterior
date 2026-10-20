@@ -12,7 +12,7 @@
     "isDynamicEntry": true
   },
   "resources/css/admin.css": {
-    "file": "assets/admin-BlUyUJOV.css",
+    "file": "assets/admin-DjPkG0mF.css",
     "name": "admin",
     "names": [
       "admin.css"
@@ -27,7 +27,7 @@
     ]
   },
   "resources/css/site.css": {
-    "file": "assets/site-B-iEJJvX.css",
+    "file": "assets/site.css",
     "name": "site",
     "names": [
       "site.css"
@@ -68,7 +68,7 @@
     ]
   },
   "resources/js/site.js": {
-    "file": "assets/site-DxU188hW.js",
+    "file": "assets/site.js",
     "name": "site",
     "src": "resources/js/site.js",
     "isEntry": true

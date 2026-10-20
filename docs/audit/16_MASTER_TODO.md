@@ -854,7 +854,7 @@ shipped v1 pages are untouched (`git status` clean for `platform/public/**/index
 - `pest tests/Feature/Website tests/Feature/P10SidebarHubsTest.php` → **371 passed (4,355 assertions)** before
   the retire; **302 passed (4,125 assertions)** in `tests/Feature/Website` after it, plus 57 in
   `WebsiteAdminParityTest` + `P10SidebarHubsTest`; **347 passed (4,257 assertions)** with `HomeFileTest` and
-  `RetireShadowPagesTest` added.
+  `RetireShadowPagesTest` added; **346 passed (4,247 assertions)** after step 5.
 - `pint --test` → **PASS 855 files**; `phpstan analyse` → **[OK] No errors** (after the retire).
 
 ### Step 3 — the four screens are retired
@@ -900,12 +900,46 @@ longer drive `/` — the file does. That is the same "a screen that cannot reach
 retired screens had. The recommendation is to retire Hero slides and the home row (backup first) so there is
 one home, not two; the alternative is to keep the row as a draft staging area, which nobody has asked for.
 
+### Step 5 — Hero slides and the studio Client logos screen are retired; the home row is deleted
+
+Owner answer: retire. With `/` served by `public/index.html`, the Hero slides screen and the home row it wrote
+could not put a word on the live page — and **Client logos** turned out to be the same: `logos_save` writes a
+`clients` block on the home row (`StudioApi::clientsBlock`), so once the row is gone it would create records
+that no page renders. It is retired with it. **The logo records themselves stay**: the shared content library
+(`/admin/website/content`, `ContentLibraryIndex`) still lists and edits the client-logo entries, which is where
+the earlier decision put them.
+
+What went:
+
+- `Hero slides` and `Client logos` out of `AdminNavigation` and `FULL_DOCUMENT`; their routes, the
+  `HeroSlidesIndex` component and view, and `admin-logos.js` / `admin-hero.js` are no longer loaded by the
+  studio document. `SCREENS` is now Blog, Portfolio, Forms, Estimator.
+- Their tests are gone (`PageBuilderLiveTest` hero cases, three `WebsiteAdminParityTest` cases, five
+  `StudioSeamTest` logos cases). `StudioSeamTest` now opens the Forms screen as its ported fixture.
+- `WebsiteAdminParityTest` asserts both URLs **404** and both labels are absent; `P10SidebarHubsTest` counts
+  **51** live destinations (was 53).
+- The home row is deleted with its blocks: `website:retire-shadow-pages --force --home` deleted **87 pages,
+  752 blocks, 87 versions** on the demo database (86 shadows + home), backing up first to
+  `storage/app/private/os1-backup/shadow-pages-*.json`. Pages now: **56**.
+
+### The home file's assets no longer change name on a rebuild
+
+`public/index.html` links `/build/assets/site.css` and `/build/assets/site.js`. A content hash there would
+have broken the home page the first time anybody ran `npm run build`, because no Blade template can rewrite a
+static file's `<link>`. The site entry now keeps stable names in `vite.config.js`; the admin entry and every
+other asset keep their hashes, and Blade still reads the manifest for those. Verified by rebuilding: the
+manifest maps `resources/css/site.css → assets/site.css` and `resources/js/site.js → assets/site.js`, and the
+home renders identically from the new names.
+
 ### What is still open
 
-- **Hero slides + the home CMS row** (see step 4): retire, or keep as staging?
-- **Assets on the home file are Vite-hashed** (`/build/assets/site-DO3AKjvv.css`). The built files are in the
-  repository, so they ship with the deploy; a rebuild mints new hashes, and the static home would then point
-  at files that no longer exist. If that becomes a chore, copy the two assets to stable paths and relink.
+- **Which remaining screens can actually reach the file site?** Forms (→ `leads`) and Estimator (→
+  `estimator-rates.js`) do. Blog, Portfolio, Page templates, Header & footer, SEO overview, Site health and
+  the rest need the same audit: anything that only writes a page/block row is now a screen the owner cannot
+  use to change the website. That is the next decision, not a thing to guess at.
+- `StudioApi` still answers the retired screens' actions (`cms_faq*`, `cms_testimonial*`, `cms_city*`,
+  `logos_*`, `pages`, `cms_page_new/duplicate`) with no screen calling them. Removing them is its own change,
+  because `admin-templates.js` still uses `cms_page_kinds` and `admin-fields.js` uses `bapi_load`.
 - **Dead endpoints**: `StudioApi` still answers the retired screens' actions (`cms_faq*`, `cms_testimonial*`,
   `cms_city*`, `pages`, `cms_page_new/duplicate`) even though no screen calls them. Removing them needs care —
   `admin-templates.js` still uses `cms_page_kinds` and `admin-fields.js` uses `bapi_load` — so it is its own

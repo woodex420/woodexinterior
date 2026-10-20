@@ -21,7 +21,7 @@ final class AdminNavigation
      *
      * @var list<string>
      */
-    public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.logos', 'admin.website.blog', 'admin.website.portfolio', 'admin.website.forms', 'admin.website.estimator'];
+    public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.blog', 'admin.website.portfolio', 'admin.website.forms', 'admin.website.estimator'];
 
     /**
      * @return list<array{title: string, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}>
@@ -81,7 +81,6 @@ final class AdminNavigation
                 self::item('Page builder', 'panel', 'admin.website.builder', 'website.edit'),
                 self::item('Section library', 'layers', 'admin.website.sections', 'website.edit'),
                 self::item('Header & footer', 'menu', 'admin.website.menus', 'website.edit'),
-                self::item('Hero slides', 'image', 'admin.website.heroes', 'website.edit'),
                 self::item('Redirects', 'globe', 'admin.website.redirects', 'website.edit'),
             ]),
             self::group('Content', [
@@ -92,7 +91,6 @@ final class AdminNavigation
                 self::item('Page templates', 'templates', 'admin.website.templates', 'website.edit'),
                 self::item('Forms', 'file', 'admin.website.forms', 'website.edit'),
                 self::item('Estimator', 'calculator', 'admin.website.estimator', 'website.edit'),
-                self::item('Client logos', 'image', 'admin.website.logos', 'website.edit'),
                 self::item('Team', 'users', 'admin.website.team', 'website.edit'),
             ]),
             // Tools for the whole site, not for one page: no heading, the way the owner asked for them.

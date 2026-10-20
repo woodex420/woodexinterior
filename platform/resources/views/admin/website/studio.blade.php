@@ -165,8 +165,6 @@
 <script src="/assets/admin-v21/admin-seo.js"></script>
 <script src="/assets/admin-v21/admin-redirects.js"></script>
 <script src="/assets/admin-v21/admin-templates.js"></script>
-<script src="/assets/admin-v21/admin-logos.js"></script>
-<script src="/assets/admin-v21/admin-hero.js"></script>
 <script src="/assets/admin-v21/admin-p36.js"></script>
 <script src="/assets/admin-v21/admin-seo38.js"></script>
 <script src="/assets/admin-v21/admin-seoagent.js"></script>

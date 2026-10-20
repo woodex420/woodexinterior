@@ -53,7 +53,6 @@ use App\Livewire\Admin\System\SettingsPage;
 use App\Livewire\Admin\System\UsersIndex;
 use App\Livewire\Admin\System\WhatsAppTemplates;
 use App\Livewire\Admin\Website\ContentLibraryIndex;
-use App\Livewire\Admin\Website\HeroSlidesIndex;
 use App\Livewire\Admin\Website\MediaLibrary;
 use App\Livewire\Admin\Website\MenusIndex;
 use App\Livewire\Admin\Website\PageEditor;
@@ -149,7 +148,7 @@ Route::post('/website/studio/builder-api', WebsiteStudioApiController::class)
     ->name('website.studio.builder-api')->middleware('can:website.edit');
 
 // The screens the OS navigation links to by name, instead of a route with a parameter.
-foreach (['logos' => 'website.logos', 'blog' => 'website.blog', 'portfolio' => 'website.portfolio', 'forms' => 'website.forms', 'estimator' => 'website.estimator'] as $screen => $name) {
+foreach (['blog' => 'website.blog', 'portfolio' => 'website.portfolio', 'forms' => 'website.forms', 'estimator' => 'website.estimator'] as $screen => $name) {
     Route::get('/website/'.$screen, [WebsiteStudioController::class, 'show'])
         ->defaults('screen', $screen)->name($name)->middleware('can:website.edit');
 }
@@ -161,7 +160,6 @@ Route::livewire('/website/pages/{page}', PageEditor::class)->name('website.pages
 Route::get('/website/builder', [WebsiteBuilderController::class, 'show'])->name('website.builder')->middleware('can:website.edit');
 Route::post('/website/builder/api', [WebsiteBuilderController::class, 'api'])->name('website.builder.api')->middleware('can:website.edit');
 Route::livewire('/website/sections', SectionLibraryIndex::class)->name('website.sections')->middleware('can:website.edit');
-Route::livewire('/website/heroes', HeroSlidesIndex::class)->name('website.heroes')->middleware('can:website.edit');
 Route::livewire('/website/seo-overview', SeoOverviewIndex::class)->name('website.seo.overview')->middleware('can:website.edit');
 Route::livewire('/website/health', SiteHealthIndex::class)->name('website.health')->middleware('can:website.edit');
 Route::livewire('/website/media', MediaLibrary::class)->name('website.media')->middleware('can:website.edit');
