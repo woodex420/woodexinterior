@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Website;
 
+use App\Domain\Website\Builder\PageImageAlt;
 use App\Domain\Website\Models\Media;
-use App\Domain\Website\Models\Page;
-use App\Domain\Website\Models\PageBlock;
 use App\Domain\Website\Services\Menus;
-use App\Domain\Website\Services\PageCache;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
@@ -92,15 +90,24 @@ class MediaLibrary extends Component
         abort_unless($this->user()->can('website.edit'), 403);
 
         $media = Media::query()->findOrFail($mediaId);
-        $media->fill([
-            'alt' => trim($this->alt[$mediaId] ?? $media->alt),
-            'title' => trim($this->titles[$mediaId] ?? (string) $media->title),
-        ])->save();
+        $alt = trim($this->alt[$mediaId] ?? $media->alt);
+        $title = trim($this->titles[$mediaId] ?? (string) $media->title);
 
-        // Alt text is printed by the pages that show the image, so their cached copies are stale now.
-        PageCache::invalidateAll($media->pagesUsing());
+        $media->fill(['alt' => $alt, 'title' => $title])->save();
 
-        $this->toast('Saved.');
+        $stem = PageImageAlt::stem($media->path);
+
+        // One photograph, one alt: the rows for its responsive variants (`-480`, `-960`) carry the same wording.
+        Media::query()->get(['id', 'path', 'alt'])
+            ->filter(fn (Media $other): bool => PageImageAlt::stem($other->path) === $stem)
+            ->each(fn (Media $other): bool => $other->forceFill(['alt' => $alt])->save());
+
+        // The pages are files, so the wording has to be written into them — a row change alone would show nothing.
+        $written = PageImageAlt::write($stem, $alt);
+
+        $this->toast($written['pages'] === 0
+            ? 'Saved. No page shows this image yet, so the site itself has not changed.'
+            : 'Saved. The alt text now appears on '.$written['pages'].' '.Str::plural('page', $written['pages']).'.');
     }
 
     public function delete(int $mediaId): void
@@ -108,14 +115,13 @@ class MediaLibrary extends Component
         abort_unless($this->user()->can('website.edit'), 403);
 
         $media = Media::query()->findOrFail($mediaId);
-        $used = Page::query()
-            ->where('featured_image_id', $media->id)
-            ->orWhereJsonContains('seo->og_image_id', $media->id)
-            ->exists()
-            || PageBlock::query()->whereJsonContains('data', $media->id)->exists();
+        $pages = PageImageAlt::pagesUsing(PageImageAlt::stem($media->path));
 
-        if ($used) {
-            $this->toast('This image is used on a page. Remove it from the page first.', 'error');
+        if ($pages !== []) {
+            $this->toast(
+                'This image is used on '.count($pages).' '.Str::plural('page', count($pages)).'. Remove it from the page first.',
+                'error',
+            );
 
             return;
         }

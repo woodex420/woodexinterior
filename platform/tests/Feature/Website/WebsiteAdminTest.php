@@ -1,16 +1,15 @@
 <?php
 
 use App\Domain\Website\Builder\BuilderFile;
-use App\Domain\Website\Enums\BlockType;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
-use App\Domain\Website\Models\PageBlock;
 use App\Domain\Website\Models\Redirect;
 use App\Livewire\Admin\Website\MediaLibrary;
 use App\Livewire\Admin\Website\PagesIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\Concerns\InteractsWithPublicWebsite;
@@ -132,16 +131,64 @@ it('uploads an image, requires alt text and serves it from the media library', f
     expect($media->fresh()->alt)->toBe('Living room with timber panelling and linen seating');
 });
 
-it('refuses to delete an image that a page uses', function () {
-    $image = Media::factory()->create();
-    $page = Page::factory()->published()->withSlug('/fit-out/')->create();
-    PageBlock::factory()->for($page)->asType(BlockType::Hero, ['image_id' => $image->id])->create();
+it('writes edited alt text into the pages that show the image', function () {
+    // The pages are files (Woodex OS 1): saving the row alone changed nothing the site could show.
+    $site = sys_get_temp_dir().'/woodex-alt-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($site.'/about');
+    File::put($site.'/about/index.html', '<html><body><main>'
+        .'<img src="/assets/img/img-abc.webp" srcset="/assets/img/img-abc-480.webp 480w, /assets/img/img-abc-960.webp 960w" alt="Old wording">'
+        .'<img src="/assets/img/img-other.webp" alt="">'
+        .'</main></body></html>');
+    File::put($site.'/index.html', '<html><body><img src="/assets/img/img-abc.webp"></body></html>');
+    $this->app->usePublicPath($site);
+
+    $media = Media::factory()->create(['path' => 'website/imported/img-abc.webp', 'alt' => 'Old wording']);
+    $variant = Media::factory()->create(['path' => 'website/imported/img-abc-960.webp', 'alt' => 'Another wording']);
+    Media::factory()->create(['path' => 'website/imported/img-other.webp', 'alt' => 'Other photo']);
 
     $this->actingAs($this->editor);
 
-    Livewire::test(MediaLibrary::class)->call('delete', $image->id)->assertDispatched('toast', type: 'error');
+    Livewire::test(MediaLibrary::class)
+        ->set('alt.'.$media->id, 'Living room with a timber ceiling')
+        ->call('updateMeta', $media->id);
 
-    expect(Media::query()->count())->toBe(1);
+    $about = (string) file_get_contents($site.'/about/index.html');
+    $home = (string) file_get_contents($site.'/index.html');
+
+    expect($about)->toContain('alt="Living room with a timber ceiling"')
+        ->and($about)->not->toContain('Old wording')
+        ->and($about)->toContain('<img src="/assets/img/img-other.webp" alt="">')
+        ->and($home)->toContain('alt="Living room with a timber ceiling"')
+        ->and($media->fresh()->alt)->toBe('Living room with a timber ceiling')
+        ->and($variant->fresh()->alt)->toBe('Living room with a timber ceiling');
+
+    File::deleteDirectory($site);
+});
+
+it('refuses to delete an image a page still shows, and deletes one no page uses', function () {
+    $site = sys_get_temp_dir().'/woodex-alt-delete-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($site.'/about');
+    File::put($site.'/about/index.html', '<html><body><img src="/assets/img/img-used.webp" alt="Used"></body></html>');
+    File::put($site.'/index.html', '<html><body></body></html>');
+    $this->app->usePublicPath($site);
+
+    Storage::fake('public');
+
+    $used = Media::factory()->create(['path' => 'website/imported/img-used.webp']);
+    Storage::disk('public')->put($used->path, 'image');
+    $free = Media::factory()->create(['path' => 'website/imported/img-free.webp']);
+    Storage::disk('public')->put($free->path, 'image');
+
+    $this->actingAs($this->editor);
+
+    Livewire::test(MediaLibrary::class)->call('delete', $used->id)->assertDispatched('toast', type: 'error');
+    expect(Media::query()->count())->toBe(2);
+
+    Livewire::test(MediaLibrary::class)->call('delete', $free->id);
+    expect(Media::query()->count())->toBe(1)
+        ->and(Storage::disk('public')->exists($free->path))->toBeFalse();
+
+    File::deleteDirectory($site);
 });
 
 it('imports the redirect map from a CSV and answers each old URL with one 301', function () {

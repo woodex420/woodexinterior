@@ -1226,3 +1226,29 @@ at `docs/audit/evidence/live-sitemap-2026-10-21.txt`.
   `to_path`, `code` per row, from `/admin/website/redirects` there or
   `SELECT from_path, to_path, code, note FROM redirects ORDER BY from_path;`. They are imported and asserted to
   answer 301 here; none of the 143 sitemap URLs depends on them.
+
+### Step 13 — the Media screen's alt text reaches the pages (21 Oct 2026)
+
+Step 11 put the CMS's own alt wording into the files; the screen that edits that wording still wrote only to a
+database row and answered "Saved." for something the site never showed. The owner chose to make the screen reach
+the files rather than retire it.
+
+- **`App\Domain\Website\Builder\PageImageAlt`** — finds every `<img>` that shows an image by its **stem**
+  (`img-abc` also matches the `-480`/`-960` variants used in `srcset`), replaces the `alt` value or adds one when
+  the tag has none, and leaves the rest of the tag untouched. Matching is by filename, because the pages embed
+  `/assets/img/img-*.webp` while the library serves `/media/{id}/{name}`.
+- **`MediaLibrary::updateMeta()`** saves the row, gives the sibling rows of the same photograph the same wording
+  (one image, one alt), then writes the files and reports what happened:
+  *"Saved. The alt text now appears on N pages."* — or, when nothing shows it,
+  *"Saved. No page shows this image yet, so the site itself has not changed."*
+- **`MediaLibrary::delete()`** now refuses when a **page file** shows the image ("used on N pages") instead of
+  reading `pages`/`page_blocks` rows the site no longer renders; the page cache flush is gone with them.
+- The field hint says what the button does: edit, then press **Save** to write it into the pages.
+
+Verified in the browser: on `/admin/website/media`, editing one image and pressing Save answered *"Saved. The alt
+text now appears on 7 pages."*, and exactly 7 page files carried the new wording afterwards (restored from the
+repository copy). A site-wide image reported 142 pages / 261 tags. Tests: `WebsiteAdminTest` gains a file-level
+test (replaces the alt on two pages, including a tag that had none, leaves a different image alone, syncs the
+variant row) and a delete test (refuses the used image, deletes the unused one).
+
+Gates: `tests/Feature` + `tests/Unit` **1204 passed, 1 skipped (6555)**; Pint clean (840 files); PHPStan no errors.

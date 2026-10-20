@@ -1,7 +1,7 @@
 @use('App\Domain\Website\Models\Media')
 
 <div>
-    <x-admin.page-header title="Media" description="Every photograph on the public website. Alt text is not optional: it is what a screen reader reads aloud, and the only description of an image that search engines and AI assistants ever see."
+    <x-admin.page-header title="Media" description="Every photograph on the public website. Alt text is not optional: it is what a screen reader reads aloud, and the only description of an image that search engines and AI assistants ever see. Saving it writes the wording into the pages that show the photo."
                          :breadcrumbs="['Website' => null, 'Media' => null]" />
 
     <x-admin.card title="Add images" description="JPG, PNG, WebP or AVIF, up to 5 MB each. Large photographs slow a page down: keep them under 300 KB where you can.">
@@ -34,7 +34,7 @@
                     <img src="{{ $image->url() }}" alt="{{ $image->alt }}" loading="lazy" class="aspect-[4/3] w-full bg-gray-50 object-cover">
                 </a>
                 <div class="space-y-2 p-4">
-                    <x-admin.field label="Alt text" hint="{{ strlen($alt[$image->id] ?? '') }} characters · describe what the photo shows.">
+                    <x-admin.field label="Alt text" hint="{{ strlen($alt[$image->id] ?? '') }} characters · describe what the photo shows, then press Save to write it into the pages.">
                         <input type="text" wire:model.blur="alt.{{ $image->id }}" class="wx-input @if (trim($alt[$image->id] ?? '') === '') border-warning-400 @endif" placeholder="Warm living room with timber panelling and linen seating">
                     </x-admin.field>
                     <x-admin.field label="Name (for the picker)">
