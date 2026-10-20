@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\QuotePdfController;
 use App\Http\Controllers\Admin\SystemUpdateController;
 use App\Http\Controllers\Admin\WebsiteBuilderController;
+use App\Http\Controllers\Admin\WebsiteStudioApiController;
+use App\Http\Controllers\Admin\WebsiteStudioController;
 use App\Livewire\Admin\Accounts\ChartOfAccounts;
 use App\Livewire\Admin\Accounts\JournalsIndex;
 use App\Livewire\Admin\Accounts\MethodAccounts;
@@ -136,6 +138,22 @@ Route::livewire('/marketing/social', SocialPlannerIndex::class)->name('marketing
 Route::livewire('/website/pages', PagesIndex::class)->name('website.pages')->middleware('can:website.edit');
 Route::livewire('/website/templates', PageTemplatesIndex::class)->name('website.templates')->middleware('can:website.edit');
 Route::livewire('/website/blog', BlogIndex::class)->name('website.blog')->middleware('can:website.edit');
+
+/*
+ * The ported v2.1 admin screens (docs/audit/16.8). Full document: they bring their own stylesheet and
+ * layout, the same exception the builder has. One URL per screen, and the screen has to be switched on
+ * in WebsiteStudioController::SCREENS before it resolves.
+ */
+Route::get('/website/studio/{screen}', [WebsiteStudioController::class, 'show'])
+    ->name('website.studio')->middleware('can:website.edit');
+Route::post('/website/studio/api', WebsiteStudioApiController::class)
+    ->name('website.studio.api')->middleware('can:website.edit');
+Route::post('/website/studio/builder-api', WebsiteStudioApiController::class)
+    ->name('website.studio.builder-api')->middleware('can:website.edit');
+
+// A screen the OS navigation can link to by name, instead of a route with a parameter.
+Route::get('/website/logos', [WebsiteStudioController::class, 'show'])
+    ->defaults('screen', 'logos')->name('website.logos')->middleware('can:website.edit');
 Route::livewire('/website/portfolio', PortfolioIndex::class)->name('website.portfolio')->middleware('can:website.edit');
 Route::livewire('/website/pages/new', PageEditor::class)->name('website.pages.create')->middleware('can:website.edit');
 Route::livewire('/website/pages/{page}', PageEditor::class)->name('website.pages.edit')->middleware('can:website.edit');

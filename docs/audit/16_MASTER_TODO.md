@@ -116,7 +116,7 @@ _The owner's call, and it is right: do not rebuild the content system, **port it
 are used in production, and they are plain JavaScript. What follows is the smallest honest way to have one
 content system inside Woodex OS. The reasoning and the measurements are in 16.7._
 
-**P1-1 — The seam (1 session).** Two routes in the OS that speak the language the admin already uses:
+**P1-1 — The seam (1 session). — DONE 2026-10-20 (`ce…` this commit).** Two routes in the OS that speak the language the admin already uses:
 `POST /admin/website/api` (`/api/admin.php` in v2.1) and `POST /admin/website/builder-api`
 (`/api/builder.php`). Both take `{action, ...}` and return `{ok, ...}`. Each action resolves to an OS
 handler; an unimplemented one returns `{ok:false, error:"…"}` — the admin already renders that honestly, so
@@ -420,3 +420,14 @@ touch them.
    content AI with its own daily cap, or a second key?
 
 Answered “yes” to 1 and 3 and named a choice on 2 and 4, the port starts at P1-1.
+
+### Status of the port (2026-10-20, end of session)
+
+| Step | State |
+|---|---|
+| P1-1 The seam | **Done.** `POST /admin/website/studio/api` (+ `builder-api`), `{action}` in, `{ok}` out, OS session and `website.edit` on every call; an unported action answers honestly. 10 tests |
+| First screen | **Client logos is live** at `/admin/website/logos`: the v2.1 module, inside the OS, writing the home page's clients section — verified end to end in a browser (upload → save → the home page renders it) |
+| The rest | Screens are switched on one at a time in `WebsiteStudioController::SCREENS`, each after its actions are ported |
+
+Evidence: `docs/audit/evidence/studio-logos.png` (the ported screen inside the OS), and the browser run that
+uploaded a logo, saved, and then found the new heading on `/`.

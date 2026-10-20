@@ -42,7 +42,7 @@ it('lists the old admin\'s Website section in the sidebar, item for item', funct
 
     expect($labels)->toBe([
         'All pages', 'Page builder', 'Page templates', 'Blog', 'Portfolio', 'Section library', 'Header & footer', 'Hero slides', 'Redirects',
-        'Media', 'Content library', 'Team', 'SEO', 'SEO agent', 'Speed', 'Site health', 'Theme', 'Website Settings',
+        'Media', 'Content library', 'Client logos', 'Team', 'SEO', 'SEO agent', 'Speed', 'Site health', 'Theme', 'Website Settings',
     ]);
 });
 

@@ -14,3 +14,13 @@
 | Alpine.js, SortableJS, ApexCharts | MIT | Front-end libraries |
 | Inter typeface | SIL Open Font License 1.1 | `resources/fonts/Inter-LICENSE.txt` |
 | Nohemi typeface | Pangram Pangram licence | Commercial licence to be confirmed (docs/07 P-09) |
+
+## First-party: the v2.1 admin (ported, not third-party)
+
+`public/assets/admin-v21/` is the Woodex admin v2.1 content front end, written for the studio by Imtiaz Ahmad
+and maintained in `marketingwoodex-cloud/-marketingwoodex` (`frontend-v1/admin/`, commit `63868e0`, 2026-10-17).
+It is **our own code**, not a third-party dependency: the owner confirmed provenance on 2026-10-20. It is
+copied here to run inside Woodex OS — the screens are unchanged, the server behind them is this application.
+
+It carries no separate licence file; it is covered by the studio's own copyright, like the rest of this
+repository. Every change we make to a copied file is noted in `public/assets/admin-v21/PORT-NOTES.md`.

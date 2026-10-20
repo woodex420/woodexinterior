@@ -21,7 +21,7 @@ final class AdminNavigation
      *
      * @var list<string>
      */
-    public const array FULL_DOCUMENT = ['admin.website.builder'];
+    public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.logos'];
 
     /**
      * @return list<array{title: string, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}>
@@ -87,6 +87,7 @@ final class AdminNavigation
                 self::item('Redirects', 'globe', 'admin.website.redirects', 'website.edit'),
                 self::item('Media', 'folder', 'admin.website.media', 'website.edit'),
                 self::item('Content library', 'book', 'admin.website.content', 'website.edit'),
+                self::item('Client logos', 'image', 'admin.website.logos', 'website.edit'),
                 self::item('Team', 'users', 'admin.website.team', 'website.edit'),
                 self::item('SEO', 'target', 'admin.website.seo.overview', 'website.edit'),
                 self::item('SEO agent', 'search', 'admin.website.seo', 'website.edit'),
