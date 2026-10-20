@@ -1156,3 +1156,46 @@ answers the gtag loader with that ID; reset returns to the no-op. `SiteTagsTest`
 the empty answer, GTM-over-GA4, GA4 alone, Clarity, the off switch, staff exclusion and the cache header.
 
 Gates: `tests/Feature` + `tests/Unit` **1203 passed, 1 skipped (6553)**; Pint clean; PHPStan no errors.
+
+### Step 10 — the settings screen loses what the files cannot show (21 Oct 2026)
+
+Step 9 left one card labelled honestly rather than retired, because retiring it was its own change. This is that
+change. **The eight header/footer fields are gone.**
+
+- **Why they could not work:** the keys (`site.header_cta_label`, `site.header_cta_url`, `site.social_links`,
+  `site.footer_tagline`, three `site.footer_show_*` switches and `site.footer_copyright`) were read only by
+  `layouts/site.blade.php`, which went out with the page renderer in step 8. Every page is a file with its own
+  header and footer, so the form was inviting edits no page could show.
+- **What went:** the properties, the mount defaults, the validation rules and the fill block in `SiteSettings` and
+  `WebsiteSettings`; the "Header & social" and "Footer" cards in the settings view; and `HeaderFooterEditorTest`.
+- **Stored keys are deleted, not orphaned** — `2026_10_21_100000_remove_the_header_footer_settings.php` calls
+  `deleteIfExists` on each key. `down()` is empty and says why: the layout that would read them is gone, so
+  restoring the rows would restore nothing. They were never read by a page, so no live output depends on them.
+- **`save()` no longer flushes the page cache.** Nothing on the remaining screen changes a file, so the flush only
+  threw away rendered pages for nothing.
+
+The screen now has two cards: **Tracking** (which reaches the site through `/site/tags.js`, and the DNS note for
+Search Console) and **What is live**. Both describe something the site can actually produce.
+
+Verified: the migration ran; `/admin/website/settings` answers 200 with "Tracking" present and "Header & social" /
+"Footer tagline" absent, no console errors.
+
+### Step 11 — the content images carry their own alt text (21 Oct 2026)
+
+The bundle already held alt wording for all 105 media rows; the page files carried empty `alt=""` on 83 `<img>`
+inside `<main>`, across 78 of the 142 pages. Each one now takes the wording stored on its own media row, matched
+by filename.
+
+- **83 images on 78 files filled; 0 filenames unmatched.** The edit is attribute-only — no tag, text, class or
+  styling changed, and no other `<img>` was touched.
+- **Not every one is a screen-reader fix:** 63 of the 83 sit on images marked `aria-hidden`, i.e. deliberately
+  decorative. The wording is correct and harmless there; the count matters because an audit tool counts an empty
+  alt either way.
+- The filenames are the same `img-*.webp` set the bundle lists, so a re-import keeps the match.
+
+Census against the owner's screenshots (taken from a different instance): pages **142 vs 145**, media **105 vs 113**,
+missing alt in `<main>` **0 vs 112**, redirects **0 vs 36**; `404.html` / `500.html` / `503.html` do not exist in
+this workspace, and nothing here was changed to match those numbers.
+
+Gates: `tests/Feature` + `tests/Unit` **1202 passed, 1 skipped (6543)** — exactly the one test and ten assertions
+that `HeaderFooterEditorTest` took with it; Pint clean (839 files); PHPStan no errors.
