@@ -33,6 +33,16 @@ beforeEach(function () {
         'status' => PageStatus::Published,
     ]);
 
+    $this->listing->blocks()->create([
+        'type' => 'services',
+        'block_key' => 'blist0002',
+        'data' => ['heading' => 'Featured guides', 'items' => [
+            ['number' => '1', 'name' => 'Kitchen cost in Lahore', 'copy' => 'Guide', 'url' => '/insights/kitchen-cost/'],
+        ]],
+        'visible' => true,
+        'position' => 0,
+    ]);
+
     $this->post->blocks()->create([
         'type' => 'text',
         'block_key' => 'b1234567',
@@ -129,4 +139,23 @@ it('keeps people without website.edit out of the screen', function () {
     $this->actingAs($this->userWithRole('sales'));
 
     $this->get(route('admin.website.blog'))->assertForbidden();
+});
+
+it('takes the post off the index and puts it back', function () {
+    $items = fn (): array => $this->listing->blocks()->where('type', 'services')->firstOrFail()->refresh()->data['items'];
+
+    Livewire::test(BlogIndex::class)->call('toggleIndex', $this->post->id);
+    expect($items())->toBeEmpty();
+
+    Livewire::test(BlogIndex::class)->call('toggleIndex', $this->post->id);
+    expect($items())->toHaveCount(1)
+        ->and($items()[0]['url'])->toBe('/insights/kitchen-cost/');
+});
+
+it('leaves the index when a post is unpublished', function () {
+    Livewire::test(BlogIndex::class)->call('unpublish', $this->post->id);
+
+    $items = $this->listing->blocks()->where('type', 'services')->firstOrFail()->refresh()->data['items'];
+
+    expect($items)->toBeEmpty();
 });

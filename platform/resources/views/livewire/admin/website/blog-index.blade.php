@@ -39,12 +39,14 @@
                     <tr>
                         <th class="px-5 py-3 font-medium">Post</th>
                         <th class="px-5 py-3 font-medium">Status</th>
+                        <th class="px-5 py-3 font-medium">Index</th>
                         <th class="px-5 py-3 font-medium">Updated</th>
                         <th class="px-5 py-3 text-right font-medium">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                     @foreach ($posts as $post)
+                        @php $onIndex = in_array(rtrim($post->slug, '/').'/', $listed, true); @endphp
                         <tr wire:key="post-{{ $post->id }}" class="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
                             <td class="px-5 py-3">
                                 <a href="{{ route('admin.website.pages.edit', $post) }}" wire:navigate
@@ -59,6 +61,23 @@
                                     <span class="rounded-full bg-success-50 px-2.5 py-1 text-theme-xs font-medium text-success-700 dark:bg-success-500/10 dark:text-success-400">Published</span>
                                 @else
                                     <span class="rounded-full bg-gray-100 px-2.5 py-1 text-theme-xs font-medium text-gray-600 dark:bg-white/5 dark:text-gray-300">Draft</span>
+                                @endif
+                            </td>
+                            <td class="px-5 py-3 whitespace-nowrap">
+                                @if ($onIndex)
+                                    <span class="rounded-full bg-success-50 px-2.5 py-1 text-theme-xs font-medium text-success-700 dark:bg-success-500/10 dark:text-success-400">On /insights/</span>
+                                    @can('website.publish')
+                                        <button type="button" wire:click="toggleIndex({{ $post->id }})"
+                                                class="mt-1 block text-theme-xs text-gray-500 hover:text-gray-800 dark:text-gray-400">Hide</button>
+                                    @endcan
+                                @elseif ($post->status === \App\Domain\Website\Enums\PageStatus::Published)
+                                    <span class="rounded-full bg-gray-100 px-2.5 py-1 text-theme-xs font-medium text-gray-600 dark:bg-white/5 dark:text-gray-300">Not listed</span>
+                                    @can('website.publish')
+                                        <button type="button" wire:click="toggleIndex({{ $post->id }})"
+                                                class="mt-1 block text-theme-xs font-medium text-brand-600 hover:underline dark:text-brand-400">Show on /insights/</button>
+                                    @endcan
+                                @else
+                                    <span class="text-theme-xs text-gray-400">Draft</span>
                                 @endif
                             </td>
                             <td class="px-5 py-3 whitespace-nowrap text-gray-500">{{ $post->updated_at?->diffForHumans() }}</td>

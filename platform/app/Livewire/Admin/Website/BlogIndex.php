@@ -7,6 +7,7 @@ namespace App\Livewire\Admin\Website;
 use App\Domain\Website\Enums\PageStatus;
 use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\Page;
+use App\Domain\Website\Services\ListingIndex;
 use App\Domain\Website\Services\Menus;
 use App\Domain\Website\Services\PageCache;
 use App\Livewire\Concerns\InteractsWithAdmin;
@@ -179,12 +180,43 @@ class BlogIndex extends Component
         abort_unless($this->user()->can('website.publish'), 403);
 
         $page = $this->post($pageId);
+
+        ListingIndex::remove($page);
         $page->forceFill(['status' => PageStatus::Draft])->save();
 
         PageCache::invalidate($page);
         Menus::flush();
 
-        $this->toast("“{$page->title}” is no longer public.");
+        $this->toast("“{$page->title}” is a draft again and off the /insights/ index.");
+    }
+
+    /** Puts the post's card on the blog index, or takes it off. */
+    public function toggleIndex(int $pageId): void
+    {
+        abort_unless($this->user()->can('website.publish'), 403);
+
+        $page = $this->post($pageId);
+
+        if (ListingIndex::isListed($page)) {
+            ListingIndex::remove($page);
+            $this->toast("“{$page->title}” is off the /insights/ index.");
+
+            return;
+        }
+
+        if ($page->status !== PageStatus::Published) {
+            $this->toast('Publish the post first — a card on a live page must not lead to a draft.', 'error');
+
+            return;
+        }
+
+        if (! ListingIndex::add($page)) {
+            $this->toast('The /insights/ page has no card list to add it to.', 'error');
+
+            return;
+        }
+
+        $this->toast("“{$page->title}” is on the /insights/ index.");
     }
 
     public function render(): View
@@ -204,11 +236,14 @@ class BlogIndex extends Component
             ->orderByDesc('id')
             ->paginate(20);
 
+        $listing = Page::query()->where('slug', '/insights/')->first();
+
         return view('livewire.admin.website.blog-index', [
             'posts' => $posts,
             'published' => Page::query()->where('type', PageType::Insight)->where('status', PageStatus::Published)->count(),
             'drafts' => Page::query()->where('type', PageType::Insight)->where('status', PageStatus::Draft)->count(),
-            'listing' => Page::query()->where('slug', '/insights/')->first(),
+            'listing' => $listing,
+            'listed' => ListingIndex::urls($listing),
         ]);
     }
 

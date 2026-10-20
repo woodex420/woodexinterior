@@ -80,6 +80,7 @@ final class AdminNavigation
                 self::item('Page builder', 'panel', 'admin.website.builder', 'website.edit'),
                 self::item('Page templates', 'layers', 'admin.website.templates', 'website.edit'),
                 self::item('Blog', 'book', 'admin.website.blog', 'website.edit'),
+                self::item('Portfolio', 'layout', 'admin.website.portfolio', 'website.edit'),
                 self::item('Section library', 'layers', 'admin.website.sections', 'website.edit'),
                 self::item('Header & footer', 'menu', 'admin.website.menus', 'website.edit'),
                 self::item('Hero slides', 'image', 'admin.website.heroes', 'website.edit'),
