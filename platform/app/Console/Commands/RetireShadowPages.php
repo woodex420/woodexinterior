@@ -8,7 +8,6 @@ use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\PageBlock;
 use App\Domain\Website\Models\PageVersion;
-use App\Domain\Website\Services\PageRenderer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -24,10 +23,11 @@ use Illuminate\Support\Facades\DB;
  *
  * Two rules keep the URLs alive while the rows go:
  *
- *  - **A page with no file is not a shadow.** It is the only copy of something a visitor can reach, so a
- *    published page is exported to its file first (`/furniture/` was live from its row alone; deleting it
- *    took a linked URL off the site on 20 Oct).
- *  - **A draft is left alone.** Exporting it would publish it, which is worse than keeping the row.
+ *  - **A page with no file is not a shadow.** It is the only copy of something a page used to be able to
+ *    reach, so the row is kept and the command says which. It used to be exported to a file first; the CMS
+ *    renderer that wrote those files is gone (owner, 21 Oct 2026), and without it the honest answer is to
+ *    keep the row, not to delete the last copy.
+ *  - **A draft is left alone.** It was never live, and the row is the only thing that holds its words.
  *
  * Runs as a report first. `--force` writes a JSON backup, then deletes in one transaction. The rows are
  * force-deleted, not soft-deleted: a trashed row still holds its unique slug and its content, and "deleted"
@@ -128,8 +128,8 @@ final class RetireShadowPages extends Command
             ])->values()->all(),
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
-        $exported = [];
         $kept = [];
+        $unexportable = [];
 
         foreach ($pages as $page) {
             // A row that is already retired needs no export: it is not live.
@@ -149,8 +149,10 @@ final class RetireShadowPages extends Command
                 continue;
             }
 
-            $this->export($page, $path);
-            $exported[] = $page->slug;
+            // Published with no file: the row is the only copy of something that used to be reachable, and
+            // there is no renderer left to write the file. It stays.
+            $kept[] = $page->slug;
+            $unexportable[] = $page->slug;
         }
 
         $delete = array_values(array_diff($ids, array_map(
@@ -171,12 +173,12 @@ final class RetireShadowPages extends Command
 
         $this->newLine();
 
-        if ($exported !== []) {
-            $this->line('Exported to files first (the page had no file of its own): '.implode(', ', $exported));
+        if ($unexportable !== []) {
+            $this->warn('Kept (no file of its own, and there is no renderer to write one): '.implode(', ', $unexportable));
         }
 
-        if ($kept !== []) {
-            $this->warn('Kept (draft, no file — exporting it would publish it): '.implode(', ', $kept));
+        if (array_diff($kept, $unexportable) !== []) {
+            $this->warn('Kept (draft, never live): '.implode(', ', array_diff($kept, $unexportable)));
         }
 
         $this->info('Deleted '.$deleted.' pages, '.$blocks.' blocks and '.$versions.' versions.');
@@ -192,35 +194,5 @@ final class RetireShadowPages extends Command
         $file = public_path(ltrim($path, '/'));
 
         return is_file($file) ? $file : null;
-    }
-
-    /**
-     * Write the page the CMS renders to the file the web server serves: an HTML-template page is its stored
-     * document, a block page is the same `site.page` view a visitor would have received.
-     */
-    private function export(Page $page, string $path): void
-    {
-        $html = $page->template === 'html' && trim((string) $page->canvas_html) !== ''
-            ? (string) $page->canvas_html
-            : (string) view('site.page', app(PageRenderer::class)->viewData($page->loadMissing(['blocks', 'featuredImage'])))->render();
-
-        // Media URLs come out absolute (APP_URL). A page file must not depend on the host it was exported
-        // on: the rest of the v1 site links /media/… root-relative, so this does too — a domain change
-        // must not break every image on the page.
-        $origin = rtrim((string) config('app.url'), '/');
-
-        if ($origin !== '') {
-            $html = (string) preg_replace('~'.preg_quote($origin, '~').'(?=/)~', '', $html);
-            $html = str_replace('"'.$origin.'"', '"/"', $html);
-        }
-
-        $file = public_path(ltrim($path, '/'));
-
-        if (! is_dir(dirname($file))) {
-            mkdir(dirname($file), 0o775, true);
-        }
-
-        file_put_contents($file, $html);
-        $this->line('  exported '.$page->slug.' → /'.ltrim($path, '/'));
     }
 }

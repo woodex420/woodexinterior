@@ -26,8 +26,6 @@ return [
         '/fit-out/' => ['type' => 'service', 'source' => 'fit-out/index.html'],
         '/interior-design/' => ['type' => 'service', 'source' => 'interior-design/index.html'],
         '/renovation/' => ['type' => 'service', 'source' => 'renovation/index.html'],
-        // The old site had no furniture page of its own: it is seeded from the wardrobe page and rewritten by hand.
-        '/furniture/' => ['type' => 'service', 'source' => null, 'seed_from' => 'wardrobe-design/index.html'],
         // Cities
         '/bahawalpur/' => ['type' => 'city', 'source' => 'bahawalpur/index.html'],
         '/faisalabad/' => ['type' => 'city', 'source' => 'faisalabad/index.html'],
@@ -173,7 +171,6 @@ return [
         '/restaurant-fit-out/' => ['type' => 'service', 'source' => 'restaurant-fit-out/index.html'],
         '/retail-fit-out/' => ['type' => 'service', 'source' => 'retail-fit-out/index.html'],
         '/turnkey-design-build/' => ['type' => 'service', 'source' => 'turnkey-design-build/index.html'],
-        // -> /furniture/
         '/dressing-room-design/' => ['type' => 'service', 'source' => 'dressing-room-design/index.html'],
         '/kitchen-design/' => ['type' => 'service', 'source' => 'kitchen-design/index.html'],
         '/wardrobe-design/' => ['type' => 'service', 'source' => 'wardrobe-design/index.html'],

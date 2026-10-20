@@ -20,7 +20,6 @@ use App\Domain\Website\Services\ContentLibrary;
 use App\Domain\Website\Services\Menus;
 use App\Domain\Website\Services\PageCache;
 use App\Domain\Website\Services\PageCopier;
-use App\Domain\Website\Services\PageRenderer;
 use App\Models\User;
 use App\Settings\EstimatorSettings;
 use App\Settings\NotificationSettings;
@@ -86,7 +85,6 @@ final class StudioApi
         'cms_testimonial_save' => 'testimonialSave',
         'cms_testimonial_delete' => 'testimonialDelete',
         'cms_testimonial_order' => 'testimonialOrder',
-        'bapi_load' => 'builderLoad',
         'bapi_save' => 'builderSave',
         'bapi_page_new' => 'builderSave',
         'bapi_media' => 'builderMedia',
@@ -1122,37 +1120,6 @@ final class StudioApi
     private function pathOf(Page $page): string
     {
         return $page->slug === '/' ? 'index.html' : trim($page->slug, '/').'/index.html';
-    }
-
-    /**
-     * The builder's `load`: the page as the site renders it, used by the editor's preview. A slug that is
-     * not live yet gets the same shell from the index page, so the preview still looks like the site.
-     *
-     * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
-     */
-    private function builderLoad(array $payload): array
-    {
-        $path = trim((string) ($payload['path'] ?? ''), '/');
-        $slug = '/'.preg_replace('#/index\.html$#', '/', $path);
-
-        $page = Page::query()->where('slug', $slug)->first()
-            ?? Page::query()->where('slug', '/'.preg_replace('#/index\.html$#', '/', $path))->first()
-            ?? Page::query()->where('slug', '/insights/')->first()
-            ?? Page::query()->where('slug', '/')->first();
-
-        if ($page === null) {
-            throw new RuntimeException('No page can be used as the preview shell yet.');
-        }
-
-        /** @var view-string $view */
-        $view = 'site.page';
-
-        return [
-            'html' => view($view, app(PageRenderer::class)->viewData($page))->render(),
-            'mtime' => $page->updated_at?->getTimestamp() ?? time(),
-            'path' => $path,
-        ];
     }
 
     /**

@@ -27,51 +27,6 @@ function sliderMedia(): array
     return [$one->id, $two->id, $three->id];
 }
 
-it('renders the slider section with controls, lazy photos and one H1', function () {
-    [$one, $two] = sliderMedia();
-
-    $page = Page::factory()->published()->withSlug('/slider-page/')->create(['title' => 'Slider page']);
-    PageBlock::factory()->for($page)->asType(BlockType::Slider, [
-        'slides' => [
-            ['image_id' => $one, 'kicker' => 'Woodex Interior · Lahore', 'heading' => 'Spaces shaped by purpose', 'text' => 'One accountable team.', 'display' => 'INTERIORS', 'primary_label' => 'Start your project', 'primary_url' => '/contact/', 'secondary_label' => 'Explore services', 'secondary_url' => '/services/'],
-            ['image_id' => $two, 'kicker' => 'Commercial spaces', 'heading' => 'Workplaces that work', 'text' => 'Ready for day one.', 'display' => '', 'primary_label' => '', 'primary_url' => '', 'secondary_label' => '', 'secondary_url' => ''],
-        ],
-    ])->create(['position' => 0]);
-
-    $body = $this->siteGet('/slider-page/')->assertOk()->getContent();
-
-    // The carousel: slides, dots, arrows, the count, and the display word of the v26 design.
-    expect($body)->toContain('aria-roledescription="carousel"')
-        ->and($body)->toContain('Spaces shaped by purpose')
-        ->and($body)->toContain('Workplaces that work')
-        ->and($body)->toContain('INTERIORS')
-        ->and($body)->toContain('aria-label="Previous slide"')
-        ->and($body)->toContain('aria-label="Next slide"')
-        ->and($body)->toContain('aria-label="Go to slide 2"')
-        ->and($body)->toContain('prefers-reduced-motion')
-        ->and($body)->toContain('Start your project');
-
-    // The first photo is the LCP element; the second must not steal its priority.
-    expect(substr_count($body, 'fetchpriority="high"'))->toBeGreaterThanOrEqual(1)
-        ->and($body)->toContain('loading="lazy"');
-
-    // One H1 on the page: the first slide carries it, the second is an H2.
-    preg_match_all('/<h1[^>]*>/', $body, $h1);
-    expect($h1[0])->toHaveCount(1)
-        ->and($body)->toContain('<h2 class="mt-4 max-w-3xl');
-});
-
-it('skips the slider markup entirely when no slide has a photo', function () {
-    $page = Page::factory()->published()->withSlug('/empty-slider/')->create(['title' => 'Empty slider']);
-    PageBlock::factory()->for($page)->asType(BlockType::Slider, ['slides' => [['image_id' => null, 'heading' => 'No photo']]])->create(['position' => 0]);
-
-    $body = $this->siteGet('/empty-slider/')->assertOk()->getContent();
-
-    expect($body)->not->toContain('aria-roledescription="carousel"')
-        // The page falls back to its own title as the H1.
-        ->and($body)->toContain('<h1');
-});
-
 it('gives the home page the v26 slider, once, and skips slides without photos', function () {
     sliderMedia();
 

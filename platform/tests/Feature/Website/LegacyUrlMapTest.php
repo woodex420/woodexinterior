@@ -4,15 +4,15 @@ use App\Domain\Website\Data\LegacyUrlMap;
 use App\Domain\Website\Enums\PageType;
 
 /*
-| The URL map is the contract with the previous website (docs/09 §3, D-68): all 143 URLs are pages now (the owner
+| The URL map is the contract with the previous website (docs/09 §3, D-68): all 142 URLs are pages now (the owner
 | asked for the complete old website to run in the CMS, 17 Oct 2026). If a slug is both a page and a redirect, or
 | a redirect points at a page that does not exist, visitors get a 404 where the old site had a page — so the map
 | is checked itself, before anything is imported.
 */
 it('holds every URL of the old site as a page', function () {
-    expect(LegacyUrlMap::pages())->toHaveCount(143)
+    expect(LegacyUrlMap::pages())->toHaveCount(142)
         ->and(LegacyUrlMap::redirects())->toHaveCount(0)
-        ->and(LegacyUrlMap::count())->toBe(143);
+        ->and(LegacyUrlMap::count())->toBe(142);
 });
 
 it('gives every URL one home: a slug is either a page or a redirect, never both', function () {
@@ -39,8 +39,9 @@ it('keeps the 54 old service URLs as service pages, each with its own old HTML',
         fn (array $page): bool => $page['type'] === PageType::Service->value,
     ));
 
-    // The six disciplines the studio sells, plus the 54 specialist URLs the old site had.
-    expect($services)->toHaveCount(60)
+    // The six disciplines the studio sells, plus the old site's specialist URLs (one fewer since the owner
+    // deleted `/furniture/` on 21 Oct 2026).
+    expect($services)->toHaveCount(59)
         ->and($services)->toContain('/kitchen-design/', '/office-fit-out/', '/1-kanal-house-design/', '/wardrobe-design/');
 
     foreach ($services as $slug) {

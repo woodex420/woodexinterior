@@ -66,10 +66,12 @@ it('serves the tokens as CSS, with the v1 vocabulary, its aliases and the v2 voc
     expect(themeCacheControl($live))->toContain('max-age=60')
         ->and($live->getContent())->toBe($css);
 
-    // The home page links the hashed URL.
+    // The v1 pages link the un-hashed URL last (the theme is served from the database); the hashed URL is
+    // what the theme mints for anything that wants an immutable address.
     $hashBefore = $theme->hash();
-    $home = $this->get('/')->assertOk()->getContent();
-    expect($home)->toContain('/theme/'.$hashBefore.'.css');
+    $home = (string) file_get_contents(base_path('public/index.html'));
+    expect($home)->toContain('/assets/theme.css?v=p21')
+        ->and($this->get('/theme/'.$hashBefore.'.css'))->assertOk();
 });
 
 it('re-skins every page when a token is saved: the hash changes and old URLs stay current', function () {
@@ -163,6 +165,6 @@ it('serves an empty theme until the database update runs, not an error', functio
     $this->get('/assets/theme.css')->assertOk()->assertSee(':root {}', false);
     $this->get('/theme/'.$theme->hash().'.css')->assertOk();
 
-    // The home page still renders with the theme link, unbroken.
-    $this->get('/')->assertOk();
+    // The home file still links the theme, and the URL behind it answers with the empty theme.
+    expect((string) file_get_contents(base_path('public/index.html')))->toContain('/assets/theme.css');
 });

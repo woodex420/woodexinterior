@@ -49,9 +49,9 @@ function sendChat(string $token, string $body): object
 }
 
 it('keeps the widget invisible while it is switched off', function () {
-    $home = $this->get('/');
-    $home->assertOk();
-    $this->assertStringNotContainsString('chat/widget.js', $home->content());
+    // The pages are files: none of them carries the tag. /assets/site.js is the one script they share and it
+    // loads /chat/widget.js, which answers a no-op while the widget is off (checked below).
+    expect((string) file_get_contents(base_path('public/index.html')))->not->toContain('chat/widget.js');
 
     // The script URL serves a valid no-op (a cached page must never error), the data endpoints 404.
     $script = $this->get('/chat/widget.js')->assertOk();
@@ -66,9 +66,9 @@ it('serves the script and greets a new visitor by name flow', function () {
     widgetOn();
 
     $this->get('/chat/widget.js')->assertOk()->assertHeader('Content-Type', 'application/javascript; charset=utf-8');
-    $home = $this->get('/');
-    $home->assertOk();
-    $this->assertStringContainsString('/chat/widget.js', $home->content());
+
+    // The tag is not in the page: the v1 files load their one shared script, and that script loads the widget.
+    expect((string) file_get_contents(base_path('public/assets/site.js')))->toContain("s.src = '/chat/widget.js'");
 
     $response = startChat()->assertOk()->assertJsonPath('ok', true);
     $token = $response->json('token');
@@ -258,9 +258,9 @@ it('ships the loader to the static v1 pages as well', function () {
     expect($script)->toContain("s.src = '/chat/widget.js'");
 });
 
-it('drops the cached pages when the switch flips, so the bubble follows the setting', function () {
-    // The visitor's view of the home page is cached whole with the widget off.
-    $this->assertStringNotContainsString('/chat/widget.js', $this->get('/')->content());
+it('answers the loader with the widget only while the switch is on', function () {
+    // The pages are files and cannot be re-rendered, so the switch changes the script they already load.
+    $off = $this->get('/chat/widget.js')->assertOk()->getContent();
 
     $this->actingAs($this->owner);
     Livewire::test(WebsiteSettings::class)
@@ -269,8 +269,10 @@ it('drops the cached pages when the switch flips, so the bubble follows the sett
         ->assertHasNoErrors();
     $this->app['auth']->forgetGuards();
 
-    // Without the cache drop the next visitor would keep yesterday's tag-less page for a day.
-    $this->assertStringContainsString('/chat/widget.js', $this->get('/')->content());
+    $on = $this->get('/chat/widget.js')->assertOk()->getContent();
+
+    expect($on)->toContain('WX_CHAT')
+        ->and($off)->not->toContain('WX_CHAT');
 });
 
 it('counts the visitor message as unread for the inbox', function () {

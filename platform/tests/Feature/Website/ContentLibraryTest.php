@@ -1,10 +1,7 @@
 <?php
 
-use App\Domain\Website\Enums\BlockType;
 use App\Domain\Website\Models\ContentEntry;
-use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
-use App\Domain\Website\Models\PageBlock;
 use App\Domain\Website\Services\ContentLibrary;
 use App\Livewire\Admin\Website\ContentLibraryIndex;
 use App\Models\User;
@@ -69,60 +66,4 @@ it('manages the three kinds from the dashboard, in the library\'s order', functi
         ->assertHasErrors('answer');
 
     expect(ContentEntry::query()->ofKind('faq')->count())->toBe(2);
-});
-
-it('shows library FAQs and reviews on a page, in the library\'s order before the section\'s own', function () {
-    $first = ContentEntry::query()->create(['kind' => 'faq', 'data' => ['question' => 'Library question one', 'answer' => 'Library answer one'], 'position' => 1]);
-    ContentEntry::query()->create(['kind' => 'faq', 'data' => ['question' => 'Library question two', 'answer' => 'Library answer two'], 'position' => 2]);
-    $testimonial = ContentEntry::query()->create(['kind' => 'testimonial', 'data' => ['text' => 'Library review text', 'name' => 'Library client', 'when' => 'June 2026', 'source' => 'Google'], 'position' => 1]);
-
-    $page = Page::factory()->published()->withSlug('/library-page/')->create(['title' => 'Library page']);
-    PageBlock::factory()->for($page)->asType(BlockType::Faq, [
-        'items' => [['question' => 'Own question', 'answer' => 'Own answer']],
-        'library_ids' => [$second = $first->id + 1, $first->id],
-    ])->create(['position' => 0]);
-    PageBlock::factory()->for($page)->asType(BlockType::Reviews, [
-        'items' => [],
-        'library_ids' => [$first->id, $testimonial->id], // the kind decides: a FAQ id cannot leak a review in.
-    ])->create(['position' => 1]);
-
-    $body = $this->siteGet('/library-page/')->assertOk()->getContent();
-
-    // Both library FAQs, in library order (one, two), before the section's own question.
-    $one = strpos($body, 'Library question one');
-    $two = strpos($body, 'Library question two');
-    $own = strpos($body, 'Own question');
-    expect($one)->not->toBeFalse()
-        ->and($two)->not->toBeFalse()
-        ->and($own)->not->toBeFalse()
-        ->and($one)->toBeLessThan($two)
-        ->and($two)->toBeLessThan($own)
-        // The testimonial renders; the wrong-kind id does not invent one.
-        ->and($body)->toContain('Library review text')
-        ->and($body)->toContain('Library client');
-
-    // The rich results carry the library's answers too.
-    expect($body)->toContain('Library answer one');
-});
-
-it('shows library logos with their photos loaded', function () {
-    $logo = Media::factory()->create();
-    $other = Media::factory()->create();
-    ContentEntry::query()->create(['kind' => 'logo', 'data' => ['media_id' => $logo->id, 'alt' => 'DHA Lahore'], 'position' => 1]);
-
-    $page = Page::factory()->published()->withSlug('/logos-page/')->create(['title' => 'Logos page']);
-    PageBlock::factory()->for($page)->asType(BlockType::Clients, [
-        'logos' => [['id' => $other->id, 'alt' => 'Own logo']],
-        'library_ids' => [ContentEntry::query()->ofKind('logo')->first()->id],
-    ])->create(['position' => 0]);
-
-    $body = $this->siteGet('/logos-page/')->assertOk()->getContent();
-
-    $libraryAt = strpos($body, 'alt="DHA Lahore"');
-    $ownAt = strpos($body, 'alt="Own logo"');
-    expect($libraryAt)->not->toBeFalse()
-        ->and($ownAt)->not->toBeFalse()
-        ->and($libraryAt)->toBeLessThan($ownAt)
-        // The library logo's photo URL really renders — the media map resolved it.
-        ->and($body)->toContain($logo->url());
 });

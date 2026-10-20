@@ -1087,3 +1087,43 @@ act, not a deploy.
 
 Verified: `/furniture/` **404**, `/furniture` 301 to it, `/wardrobe-design/` 200, sitemap **142 URLs**, Pages and
 Site health **142**, no console errors on the pages that remain. Gates: **252 passed (2247)**.
+
+### Step 8 — the CMS renderer is retired; a page with no file is a 404 (21 Oct 2026)
+
+Owner's answer: retire it. The renderer was what made a second frontend possible. A page was a file **or** a row,
+the layout drew the row when the file was missing, and that is how `/` and `/furniture/` came to look different
+from the other 141 pages. With every page now a file, the row renderer had no page left to draw — but it would
+still have drawn any row that appeared later.
+
+**Deleted:** `resources/views/site/page.blade.php`, its 20 section views, its 5 partials, the
+`layouts/site.blade.php` layout and `PageRenderer`. `StudioApi` loses `bapi_load` (nothing called it; the builder
+reads files), and `SiteRouter` keeps only what it still owns: the one canonical 301 for a missing trailing slash
+and the old website's 301s. A URL with no file is a 404; no database row can answer one.
+
+**The 404 is a page of its own now** — `resources/views/errors/404.blade.php`, built from the v1 chrome (the same
+header, mobile panel, footer and `wx-crit` stylesheet every page carries, wrapped in `@verbatim`) plus
+`public/assets/404.css` for the band. It uses no new design: the header, buttons and footer are the site's.
+
+**`/furniture/` left the URL map too.** It was the map's one page the old site did not have, and the parity test
+counts the map: with the page deleted, the contract was asserting a URL that answers nothing. The map is 142 URLs,
+every one with a file, and `LegacyUrlParityTest` now reads `public/` — the same thing the web server reads — instead
+of asking `SiteRouter` to render a row.
+
+**`RetireShadowPages` no longer exports.** It cannot: the renderer that wrote the file is gone. A published page
+with no file is now **kept** and reported (it is the only copy), and a draft is kept as before.
+
+**Tests that went with the code:** `SiteRenderingTest` (5 — the section library), `WebsiteHomeTest` (7 — the CMS
+home), and 21 render tests out of `CmsPageTest` (8), `ContentLibraryTest` (2), `HeaderFooterEditorTest` (4),
+`HomeCutoverTest` (1), `MenusTreeTest` (1), `SliderSectionTest` (2) and `WebsiteAdminTest` (3). Adapted rather than
+deleted: `LegacyUrlParityTest` (file-based), `LegacyUrlMapTest` (142), `RetireShadowPagesTest` (keeps, not exports),
+`ThemeTokensTest` (the home file links `/assets/theme.css`), `WebChatWidgetTest` (the loader lives in `site.js`,
+which the files share).
+
+Gates: `tests/Feature` + `tests/Unit` **1195 passed, 1 skipped (6385 assertions)**; Pint clean; PHPStan no errors.
+Preview: `/` 200 (v1), `/furniture/` 404 with the new page, mobile menu opens, no console errors.
+
+**What this leaves open, in the same class:** Website Settings still holds the tracking IDs and the header/footer
+words, and they were read by the layout that is now deleted — so they reach nothing. The chat widget is fine: the
+files' one shared script (`/assets/site.js`) already loads `/chat/widget.js`, and the switch changes what that
+script serves. Tracking has no such loader; the earlier recommendation stands (a `/site/tags.js` route plus one
+script line per file), or retire the screen.

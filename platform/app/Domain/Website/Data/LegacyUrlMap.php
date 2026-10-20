@@ -11,8 +11,9 @@ use App\Domain\Website\Enums\PageType;
  *
  * The map is the single source of truth for three things: the importer (`woodex:import-legacy`, which turns the old
  * HTML into pages), the 301 redirects (seeded by a migration, edited in the admin afterwards) and the parity test
- * that requests all 143 URLs. It was generated from the old site's 142 HTML files; `/furniture/` is new, because the
- * three furniture URLs of the old site have no page of their own to keep.
+ * that checks all 142 URLs have a file. It was generated from the old site's 142 HTML files. `/furniture/` was in
+ * the map as the one page the old site did not have; the owner deleted the page on 21 Oct 2026, so it is out of the
+ * map too — the contract now matches the site.
  */
 final class LegacyUrlMap
 {

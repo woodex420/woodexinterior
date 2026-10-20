@@ -13,16 +13,16 @@ use Illuminate\Support\Facades\File;
 
 /*
 | Woodex OS 1 (docs/audit/16.19): the database copies of pages that exist as v1 files are deleted with
-| their blocks and versions — and only those. Two rules matter more than the delete itself: a page with
-| no file is exported before its row goes (deleting it takes a live URL off the site), and a draft is
-| kept (exporting it would publish it).
+| their blocks and versions — and only those. Two rules matter more than the delete itself: a published
+| page with no file is kept (it is the only copy, and the renderer that used to export it is gone), and a
+| draft is kept too (it was never live).
 */
 
 beforeEach(function () {
     $this->backup = sys_get_temp_dir().'/woodex-retire-'.bin2hex(random_bytes(4));
 
-    // A scratch site: the command writes files for pages that have none, and the suite must never write a
-    // shipped page.
+    // A scratch site: the command deletes rows the files answer, and the suite must never touch a shipped
+    // page.
     $this->site = sys_get_temp_dir().'/woodex-site-'.bin2hex(random_bytes(4));
     File::ensureDirectoryExists($this->site);
     $this->app->usePublicPath($this->site);
@@ -94,22 +94,18 @@ it('deletes the shadow pages, keeps the rest, and backs up everything it deleted
         ->and($backup['pages'][0]['versions'])->toHaveCount(1);
 });
 
-it('exports a published page that has no file before deleting its row, and points media at the site', function () {
-    // No files at all: every published shadow page is the only copy of something a visitor can reach.
+it('keeps a published page that has no file, because no renderer can write one', function () {
+    // No files at all. Deleting these rows would take the only copy of four published pages, and the CMS
+    // renderer that used to export them is gone — so the command keeps them and says so.
     expect($this->artisan('website:retire-shadow-pages', ['--force' => true, '--backup-dir' => $this->backup]))->toBe(0)
-        ->and(Artisan::output())->toContain('Exported to files first');
+        ->and(Artisan::output())->toContain('Kept (no file of its own');
 
-    foreach (['service-one', 'city-one', 'area-one', 'project-one'] as $folder) {
-        expect(File::isFile($this->site.'/'.$folder.'/index.html'))->toBeTrue();
+    foreach ($this->shadow as $page) {
+        expect(Page::query()->whereKey($page->id)->exists())->toBeTrue();
+        expect(File::exists($this->site.'/'.trim($page->slug, '/').'/index.html'))->toBeFalse();
     }
 
-    // The page is written root-relative, like every other file of the site, so a domain change cannot
-    // break its images.
-    expect((string) file_get_contents($this->site.'/service-one/index.html'))->not->toContain((string) config('app.url'));
-
-    // The row is gone; the URL is not.
-    expect(Page::query()->where('slug', '/service-one/')->exists())->toBeFalse()
-        ->and(Page::query()->withTrashed()->where('slug', '/service-one/')->exists())->toBeFalse();
+    expect(Page::query()->count())->toBe(5);
 });
 
 it('keeps a draft that has no file instead of publishing it by exporting it', function () {
@@ -136,8 +132,14 @@ it('leaves the home row alone unless --home is given, then deletes it too', func
         'data' => ['slides' => [['heading' => 'The home opening']]],
     ]);
 
-    // The home page is a file now, so the row is a plain copy.
+    // The home page is a file now, so the row is a plain copy — and the four shadow pages need theirs, or
+    // the command keeps their rows (a published page with no file has no other copy).
     File::put($this->site.'/index.html', '<html><body>home</body></html>');
+
+    foreach (['service-one', 'city-one', 'area-one', 'project-one'] as $folder) {
+        File::ensureDirectoryExists($this->site.'/'.$folder);
+        File::put($this->site.'/'.$folder.'/index.html', '<html><body>file</body></html>');
+    }
 
     expect($this->artisan('website:retire-shadow-pages', ['--force' => true, '--backup-dir' => $this->backup]))->toBe(0);
 
@@ -168,8 +170,11 @@ it('leaves the home row alone unless --home is given, then deletes it too', func
 });
 
 it('really deletes, so a restored backup can use the same slug again', function () {
-    File::ensureDirectoryExists($this->site.'/service-one');
-    File::put($this->site.'/service-one/index.html', '<html><body>file</body></html>');
+    // A file for each, or the command keeps the row (a published page with no file has no other copy).
+    foreach (['service-one', 'city-one', 'area-one', 'project-one'] as $folder) {
+        File::ensureDirectoryExists($this->site.'/'.$folder);
+        File::put($this->site.'/'.$folder.'/index.html', '<html><body>file</body></html>');
+    }
 
     $this->artisan('website:retire-shadow-pages', ['--force' => true, '--backup-dir' => $this->backup]);
 

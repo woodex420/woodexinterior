@@ -9,11 +9,8 @@ use App\Domain\Website\Models\Redirect;
 use App\Livewire\Admin\Website\MediaLibrary;
 use App\Livewire\Admin\Website\PagesIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
-use App\Livewire\Admin\Website\WebsiteSettings;
 use App\Models\User;
-use App\Settings\SiteSettings;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\Concerns\InteractsWithPublicWebsite;
@@ -135,27 +132,6 @@ it('uploads an image, requires alt text and serves it from the media library', f
     expect($media->fresh()->alt)->toBe('Living room with timber panelling and linen seating');
 });
 
-it('shows the new alt text on a published page at once', function () {
-    Storage::fake('public');
-    $image = Media::factory()->create(['alt' => 'A living room']);
-    $page = Page::factory()->published()->withSlug('/interior-design/')->create(['title' => 'Interior Design']);
-    PageBlock::factory()->for($page)->asType(BlockType::Hero, ['heading' => 'Interiors', 'image_id' => $image->id])->create(['position' => 0]);
-
-    // The page is read once, so it sits in the page cache.
-    expect($this->siteGet('/interior-design/')->assertOk()->getContent())->toContain('alt="A living room"');
-
-    $this->actingAs($this->editor);
-
-    Livewire::test(MediaLibrary::class)
-        ->set('alt.'.$image->id, 'Living room with timber panelling and linen seating')
-        ->call('updateMeta', $image->id);
-
-    // Alt text is printed by the page, not kept in a drawer: the cached copy must not be served any more.
-    expect($this->siteGet('/interior-design/')->assertOk()->getContent())
-        ->toContain('alt="Living room with timber panelling and linen seating"')
-        ->and($this->siteGet('/interior-design/')->getContent())->not->toContain('alt="A living room"');
-});
-
 it('refuses to delete an image that a page uses', function () {
     $image = Media::factory()->create();
     $page = Page::factory()->published()->withSlug('/fit-out/')->create();
@@ -199,43 +175,4 @@ it('exports the redirect map as a CSV', function () {
         ->assertFileDownloaded();
 
     $this->get(route('admin.website.redirects'))->assertOk()->assertSee('/old-page/');
-});
-
-it('takes the tracking IDs the owner pastes and loads nothing until they are filled in', function () {
-    $owner = $this->userWithRole('owner');
-    $this->actingAs($owner);
-
-    Livewire::test(WebsiteSettings::class)
-        ->set('ga4_id', 'G-ABC1234567')
-        ->set('gtm_id', 'GTM-WX8ZQ2')
-        ->call('save')
-        ->assertHasNoErrors();
-
-    $settings = app(SiteSettings::class);
-
-    expect($settings->ga4_id)->toBe('G-ABC1234567')
-        ->and($settings->gtm_id)->toBe('GTM-WX8ZQ2');
-
-    // Visitors get the scripts; signed-in staff do not (below), so the check runs as a visitor.
-    Auth::guard('web')->logout();
-
-    $this->publishHomePage();
-    $body = $this->siteGet('/')->assertOk()->getContent();
-    expect($body)->toContain('GTM-WX8ZQ2')->toContain('googletagmanager.com/gtm.js');
-
-    // Signed-in staff are not visitors: no tracking for them.
-    expect($this->siteGet('/', $owner)->assertOk()->getContent())->not->toContain('googletagmanager.com/gtm.js');
-
-    // A wrong ID is refused.
-    Livewire::test(WebsiteSettings::class)->set('gtm_id', 'UA-123')->call('save')->assertHasErrors('gtm_id');
-});
-
-it('leaves the analytics out while tracking is switched off', function () {
-    $settings = app(SiteSettings::class);
-    $settings->ga4_id = 'G-ABC1234567';
-    $settings->tracking_enabled = false;
-    $settings->save();
-
-    $this->publishHomePage();
-    $this->siteGet('/')->assertOk()->assertDontSee('G-ABC1234567');
 });
