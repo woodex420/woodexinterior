@@ -1068,8 +1068,22 @@ Verified in the preview: `#` slider has 6 slides and works (next → WORKPLACE, 
 network errors, title/description/canonical unchanged. Gates: `tests/Feature/Website` **210 passed (2138)**,
 `P10SidebarHubsTest` **42 passed** — 252, unchanged.
 
-**Still new design:** `/furniture/`. It has no v1 original — it was created as a CMS page while the site was
-being ported — and it is **live today** (`https://woodex.com.pk/furniture/`, 200, its own title, media and
-FAQ). It is reachable from no v1 page (only the old home linked to it), and its body is largely the same
-wardrobe copy as `/wardrobe-design/` in v1. Deleting it would 404 a live, indexed URL; that decision is the
-owner's.
+**`/furniture/` is deleted — owner's answer, 21 Oct 2026: delete it outright.** It had no v1 original (it was
+created as a CMS page while the site was ported), no v1 page linked to it, and its body was largely the same
+wardrobe copy as `/wardrobe-design/`. It went in three places, because one is not enough:
+
+- **the file** — `platform/public/furniture/index.html`, deleted with `git rm`;
+- **the row** — migration `2026_10_21_090000_remove_the_furniture_page` force-deletes slug `/furniture/` (blocks
+  and versions cascade). Without it the SiteRouter would render the row — in the CMS design — the moment the
+  file was gone, which is exactly the page the owner asked to remove;
+- **the deploy** — `tools/deploy/after-composer.php` now unlinks the stale file on the server, because Hostinger
+  keeps files the repository deleted (D-56). The same hook used to **delete `public/index.html` on every
+  deploy** (the old Phase 3 cutover): that block is removed, or the next deploy would have taken the restored
+  home away again.
+
+The words are not lost: `database/data/website-bundle/pages.json` is the 17 Oct export and still holds the page
+(it is only loaded on a fresh install or by an explicit `woodex:import-website`). Reviving it takes a deliberate
+act, not a deploy.
+
+Verified: `/furniture/` **404**, `/furniture` 301 to it, `/wardrobe-design/` 200, sitemap **142 URLs**, Pages and
+Site health **142**, no console errors on the pages that remain. Gates: **252 passed (2247)**.

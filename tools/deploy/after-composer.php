@@ -32,12 +32,17 @@ if (is_file($themeStub)) {
     @unlink($themeStub);
 }
 
-// Phase 3 cutover of the home page (docs/11 §14): the v1 home page now lives at
-// platform/resources/legacy/home-v1.html, and a copy left in public/ would keep answering `/` through
-// DirectoryIndex. Rolling the cutover back means reverting this block together with the file move.
-$homeStub = $platform.'/public/index.html';
-if (is_file($homeStub)) {
-    @unlink($homeStub);
+// The Phase 3 cutover of the home page is rolled back (owner, 21 Oct 2026): public/index.html is the v1 page
+// the owner approved, and the CMS is not the home. The block that deleted that file on every deploy is gone
+// with it — leaving it would have removed the home again the first time this hook ran.
+
+// `/furniture/` was deleted with the CMS design (21 Oct 2026, migration `remove_the_furniture_page`). Hostinger
+// never deletes a file the repository removed (D-56), so the copy left in public/ would keep answering the URL
+// the row no longer backs. Deleting it here is what makes the removal true on the server.
+$furnitureStub = $platform.'/public/furniture/index.html';
+if (is_file($furnitureStub)) {
+    @unlink($furnitureStub);
+    @rmdir(dirname($furnitureStub));
 }
 
 $ok = is_file($platform.'/vendor/autoload.php');
