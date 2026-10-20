@@ -1,60 +1,9 @@
 <div>
-    <x-admin.page-header title="Website settings" description="The header button, the social profiles, the footer's words and switches, and the website's analytics. Nothing analytics is loaded until an ID is filled in here, and nothing is loaded for signed-in staff."
+    <x-admin.page-header title="Website settings" description="The website's analytics, the chat widget and what is live. Nothing is loaded until an ID is filled in here, and nothing is loaded for signed-in staff."
                          :breadcrumbs="['Website' => null, 'Settings' => null]" />
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <form wire:submit="save" class="contents">
-            <x-admin.card title="Header & social" class="xl:col-span-2">
-                <div class="space-y-4">
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <x-admin.field label="Header button text" for="header_cta_label" hint="Empty keeps “Start your project”.">
-                            <input id="header_cta_label" type="text" wire:model="header_cta_label" class="wx-input" placeholder="Start your project">
-                        </x-admin.field>
-                        <x-admin.field label="Header button link" for="header_cta_url" hint="Where it points. Empty keeps the enquiry form on the same page.">
-                            <input id="header_cta_url" type="text" wire:model="header_cta_url" class="wx-input" placeholder="/contact/">
-                        </x-admin.field>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        @foreach (['facebook' => 'Facebook', 'instagram' => 'Instagram', 'linkedin' => 'LinkedIn', 'youtube' => 'YouTube', 'tiktok' => 'TikTok'] as $key => $name)
-                            <x-admin.field label="{{ $name }} profile" for="social_{{ $key }}" hint="Full https address — empty hides the icon.">
-                                <input id="social_{{ $key }}" type="url" wire:model="social_{{ $key }}" class="wx-input" placeholder="https://{{ $key }}.com/woodexinterior">
-                            </x-admin.field>
-                        @endforeach
-                    </div>
-                </div>
-            </x-admin.card>
-
-            <x-admin.card title="Footer">
-                <div class="space-y-4">
-                    <x-admin.field label="Footer tagline" for="footer_tagline" hint="Overrides the tagline under the logo. Empty keeps the one from Settings → Business.">
-                        <input id="footer_tagline" type="text" wire:model="footer_tagline" class="wx-input" placeholder="Interior design, fit-out and furniture by one team.">
-                    </x-admin.field>
-
-                    <div class="space-y-2">
-                        <label class="flex items-center gap-2 text-theme-sm text-gray-700 dark:text-gray-300">
-                            <input type="checkbox" wire:model="footer_show_services" class="rounded border-gray-300"> “What we do” column
-                        </label>
-                        <label class="flex items-center gap-2 text-theme-sm text-gray-700 dark:text-gray-300">
-                            <input type="checkbox" wire:model="footer_show_contact" class="rounded border-gray-300"> Address &amp; phone column
-                        </label>
-                        <label class="flex items-center gap-2 text-theme-sm text-gray-700 dark:text-gray-300">
-                            <input type="checkbox" wire:model="footer_show_cities" class="rounded border-gray-300"> “Where we work” row
-                        </label>
-                    </div>
-
-                    <x-admin.field label="Copyright line" for="footer_copyright" hint="Overrides the bottom line. Empty keeps “© year Legal name. All rights reserved.”.">
-                        <input id="footer_copyright" type="text" wire:model="footer_copyright" class="wx-input" placeholder="© {{ date('Y') }} Woodex Interior (Pvt) Ltd.">
-                    </x-admin.field>
-
-                    <p class="text-theme-xs text-gray-500">
-                        These words and switches no longer reach the site: every page is a file under public/ and
-                        carries its own header and footer, which the page builder edits. The CMS layout that read
-                        this card is gone (21 Oct 2026), so the fields are kept for the record only.
-                    </p>
-                </div>
-            </x-admin.card>
-
             <x-admin.card title="Tracking" class="xl:col-span-2">
                 <div class="space-y-4">
                     <x-admin.field label="Google Analytics 4 measurement ID" for="ga4_id" hint="Analytics → Admin → Data streams. Looks like G-XXXXXXXXXX. Only used when Tag Manager is empty.">
