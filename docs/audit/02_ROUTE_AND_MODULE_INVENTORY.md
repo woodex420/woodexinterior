@@ -90,7 +90,7 @@ component guard was spot-checked in this phase: Contacts ✓, Tasks ✓, Leads (
 | Website | Hero slides | admin.website.heroes | admin/website/heroes | HeroSlidesIndex | website.edit | — | PageBuilderLiveTest |
 | Website | Redirects | admin.website.redirects | admin/website/redirects | RedirectsIndex | website.edit | — | WebsiteAdminTest |
 | Website | Media | admin.website.media | admin/website/media | MediaLibrary | website.edit | — | WebsiteAdminTest |
-| Website | Content library | admin.website.content | admin/website/content | ContentLibraryIndex | website.edit | — | ContentLibraryTest |
+| Website | ~~Content library~~ | — | — | — | — | retired 21 Oct 2026 (step 22) | WebsiteAdminParityTest |
 | Website | Team | admin.website.team | admin/website/team | TeamMembersIndex | website.edit | — | TeamSectionTest |
 | Website | SEO | admin.website.seo.overview | admin/website/seo-overview | SeoOverviewIndex | website.edit | — | WebsiteAdminParityTest |
 | Website | SEO agent | admin.website.seo | admin/website/seo | SeoAgentIndex | website.edit | — | SeoAgentTest |

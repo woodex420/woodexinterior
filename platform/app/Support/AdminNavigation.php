@@ -75,7 +75,7 @@ final class AdminNavigation
             ]),
             // The Website section is the v2.1 front, grouped the way it is worked on (docs/16 §16.8):
             // build a page, fill it with content, then tune the site. The Content library left the nav on
-            // 20 Oct — its records are the same pages and blocks the screens below edit, so nothing is lost.
+            // 20 Oct and the screen itself was retired on 21 Oct (step 22): it held rows no page file read.
             self::group('Pages & builder', [
                 self::item('All pages', 'layout', 'admin.website.pages', 'website.edit'),
                 self::item('Page builder', 'panel', 'admin.website.builder', 'website.edit'),

@@ -81,7 +81,7 @@ it('refuses the actions that made a page row for a screen the OS does not keep',
     ])->assertOk()
         ->assertJsonPath('ok', false)
         ->assertJsonPath('error', fn (string $error): bool => str_contains($error, 'Service pages')
-            && str_contains($error, 'Pages are the site'));
+            && str_contains($error, 'All pages and Page builder'));
 
     $this->postJson(route('admin.website.studio.api'), ['action' => 'cms_page_duplicate', 'id' => 1])
         ->assertOk()
@@ -89,6 +89,27 @@ it('refuses the actions that made a page row for a screen the OS does not keep',
 
     expect(Page::query()->count())->toBe($before)
         ->and(Page::query()->where('slug', '/a-service-page/')->exists())->toBeFalse();
+});
+
+it('refuses the content-library actions too, and the screen is gone', function () {
+    // Step 22: the FAQs / Testimonials / Client logos screens wrote `content_entries` rows, and the Content
+    // library screen that managed them was out of the sidebar but still answering. The rows were read by
+    // nothing in the file world, so the screen is retired and every action behind it refuses by name.
+    foreach ([
+        'cms_faqs' => 'FAQs',
+        'cms_faq_save' => 'FAQs',
+        'cms_testimonials' => 'Testimonials',
+        'cms_testimonial_order' => 'Testimonials',
+        'logos_get' => 'Client logos',
+        'logos_save' => 'Client logos',
+    ] as $action => $screen) {
+        $this->postJson(route('admin.website.studio.api'), ['action' => $action])
+            ->assertOk()
+            ->assertJsonPath('ok', false)
+            ->assertJsonPath('error', fn (string $error): bool => str_contains($error, $screen));
+    }
+
+    $this->get('/admin/website/content')->assertNotFound();
 });
 
 it('refuses an upload that is not an image', function () {

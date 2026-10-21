@@ -1513,3 +1513,39 @@ Tests: `SiteBackupTest` (2) — the archive holds `index.html`, `about/index.htm
 `insights/a-post/index.html` and **not** `assets/index.html` or `media/index.html`; `--keep=1` prunes the
 older dated copy. Gates: `tests/Feature/Website` **215 passed (1921)**; full suite **1229 passed, 1 skipped
 (6694)**; Pint clean; PHPStan no errors.
+
+### Step 22 — the Content library is retired, not hidden (21 Oct 2026)
+
+The last open decision in the Content band (docs/audit/20 §5.2). On 20 Oct the Content library
+(`/admin/website/content`) came out of the sidebar because its records are the same pages and blocks the
+screens below edit — but the **route still answered**, the Livewire screen still rendered, and its two forms
+still wrote `content_entries` rows. Those rows are read by `ContentLibrary`, which only `StudioApi` called;
+nothing that writes a page file ever read them. It was a screen that could accept an edit and change nothing
+a visitor sees — the exact trap steps 15–21 have been closing. It held **0 rows**.
+
+Retired outright, per the recommendation:
+
+- **Gone:** the route (`admin.website.content`), `ContentLibraryIndex`, its Blade view, `ContentLibrary`
+  (the only reader), its test, and the twelve `StudioApi` actions behind the old FAQs / Testimonials / Client
+  logos screens (`cms_faqs`, `cms_faq_save`, `cms_faq_delete`, `cms_faq_order`, `cms_testimonials`,
+  `cms_testimonial_save`, `cms_testimonial_delete`, `cms_testimonial_order`, `logos_get`, `logos_save`).
+  `StudioApi` is **641 lines shorter**.
+- **Refused by name, not silently:** every one of those actions now answers from one `RETIRED` map with the
+  screen and where that work is done — *"“FAQs” is the old admin’s screen: it changed database rows, and the
+  website is its page files. That work is done in the FAQ section of the page, in Page builder now."* Same
+  mechanism step 20 added for Service pages, widened to carry the destination per screen.
+- **Kept:** the `content_entries` table, the `ContentEntry` model and its migration. Deleting them is a
+  schema change and was not asked for; with no screen, no reader and no action left, the table is inert, and
+  the data (if any ever arrives) is still there. Also kept: the FAQ, Reviews and Clients **sections** in the
+  page builder, which are what a page actually renders.
+
+Verified live: `/admin/website/content` → **404**; each retired action → `ok:false` with its own sentence
+(the six checked: FAQs, Testimonials, Client logos, plus Service pages); `cms_list` still answers normally
+with its items; `/` and `/sitemap.xml` unchanged at **142** URLs.
+`/home/user/content-library-retired-2026-10-21.png`.
+
+Tests: `WebsiteAdminParityTest` — the nav has no Content library, `Route::has('admin.website.content')` is
+false, and the URL is 404 (it used to assert the screen answered); `StudioSeamTest` — six of the retired
+actions answer `ok:false` naming their screen, and the screen itself is 404. Gates: `tests/Feature/Website`
+**215 passed (1931)**; full suite **1229 passed, 1 skipped (6704)**; Pint applied (1 style fix); PHPStan no
+errors.

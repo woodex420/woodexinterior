@@ -7,6 +7,7 @@ use App\Livewire\Admin\Website\SiteHealthIndex;
 use App\Models\User;
 use App\Support\AdminNavigation;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Tests\Concerns\InteractsWithPublicWebsite;
 
@@ -61,7 +62,7 @@ it('groups the Website section the way it is worked on', function () {
     expect($planned)->toBe([]);
 });
 
-it('retires the Content library from the sidebar but keeps its records', function () {
+it('retires the Content library completely', function () {
     $owner = User::factory()->create();
     $owner->givePermissionTo(['website.edit']);
 
@@ -69,11 +70,11 @@ it('retires the Content library from the sidebar but keeps its records', functio
 
     expect($all)->not->toContain('Content library');
 
-    // The screen itself still answers: nothing was deleted, it simply is not a separate destination
-    // any more — the pages and blocks it listed are edited by the screens above.
-    expect(route('admin.website.content', absolute: false))->toBe('/admin/website/content');
+    // Step 22: the screen was out of the sidebar on 20 Oct but its route still answered and its forms still
+    // saved rows — none of which any page file read. It is gone now, not merely hidden: no route, no route name.
+    expect(Route::has('admin.website.content'))->toBeFalse();
 
-    $this->actingAs($owner)->get('/admin/website/content')->assertOk();
+    $this->actingAs($owner)->get('/admin/website/content')->assertNotFound();
 });
 
 it('shows every page\'s search listing on the SEO screen, read from the files', function () {

@@ -20,10 +20,9 @@ final class WebsiteStudioController
     /**
      * Screens that are ported and switched on. A screen is added here only when its actions work.
      *
-     * Service pages, City pages, FAQs, Testimonials and Client logos are retired (Woodex OS 1, §16.19):
-     * they only wrote database rows, and the site is the v1 HTML files now. Their work is done in the page
-     * builder; the logos themselves stay in the content library (ContentLibraryIndex), where they are kept
-     * as records for the section and the builder's media panel.
+     * Service pages, City pages, FAQs, Testimonials and Client logos are retired (Woodex OS 1, §16.19): they
+     * only wrote database rows, and the site is the v1 HTML files now. Their work is done in the page builder,
+     * and the logos live in the home page's clients section and in Media.
      */
     public const array SCREENS = [
         'blog' => ['title' => 'Blog & insights', 'view' => 'blog'],

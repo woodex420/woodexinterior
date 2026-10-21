@@ -53,7 +53,6 @@ use App\Livewire\Admin\System\RecycleBin;
 use App\Livewire\Admin\System\SettingsPage;
 use App\Livewire\Admin\System\UsersIndex;
 use App\Livewire\Admin\System\WhatsAppTemplates;
-use App\Livewire\Admin\Website\ContentLibraryIndex;
 use App\Livewire\Admin\Website\MediaLibrary;
 use App\Livewire\Admin\Website\PagesIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
@@ -158,7 +157,6 @@ Route::post('/website/builder/api', [WebsiteBuilderController::class, 'api'])->n
 Route::livewire('/website/seo-overview', SeoOverviewIndex::class)->name('website.seo.overview')->middleware('can:website.edit');
 Route::livewire('/website/health', SiteHealthIndex::class)->name('website.health')->middleware('can:website.edit');
 Route::livewire('/website/media', MediaLibrary::class)->name('website.media')->middleware('can:website.edit');
-Route::livewire('/website/content', ContentLibraryIndex::class)->name('website.content')->middleware('can:website.edit');
 Route::livewire('/website/redirects', RedirectsIndex::class)->name('website.redirects')->middleware('can:website.edit');
 Route::livewire('/website/seo', SeoAgentIndex::class)->name('website.seo')->middleware('can:website.edit');
 Route::livewire('/website/speed', SpeedIndex::class)->name('website.speed')->middleware('can:website.edit');
