@@ -1456,3 +1456,27 @@ Tests: `ArticleFileTest` (9) — a shell that names itself gets the new page's a
 `og:type`, with the tag appearing once; a shell with neither gets both, `website` for a study. Gates:
 `tests/Feature/Website` **212 passed (1904)**; full suite **1226 passed, 1 skipped (6677)**; Pint clean;
 PHPStan no errors.
+
+### Step 20 — nothing can make a page row that is not a page (21 Oct 2026)
+
+The last item of the Blog/Portfolio rewire list — *"decide the `page_new` type"* — turned out to have a
+better answer than a type. `cms_page_new` ("New service page") created a **`PageType::Service` row and no
+file**, and `cms_page_duplicate` copied one; both belonged to the old admin's **Service pages** screen, which
+step 18 already put behind the door. A row is not a page since the renderer was retired, so each was a
+doorway behind a locked door: an old bookmark's script, or any raw POST, could still add a page that answers
+404 and appears in no list.
+
+Both actions are gone from the seam and now answer by name: *"“Service pages” is the old admin’s screen: it
+made a page row, and a row is not a page any more. Pages are the site’s files — make and edit them in All
+pages and Page builder."* No type had to be chosen, because the OS never creates a page row for a page: the
+builder's own **New page** / **Duplicate page** (`BuilderApi::pageNew`, from the builder menu) writes
+`public/<folder>/<slug>/index.html` directly, and All pages lists files, which is what the screen already
+says in its own note.
+
+Verified live: both actions refuse with that message and the pages table stayed at **142 rows** with
+`/a-service-page/` absent. The read-only pair (`pages`, `cms_page_kinds`) is left alone — it reads rows for
+a screen that no longer opens, and claims nothing.
+
+Tests: `StudioSeamTest` (8) — `cms_page_new` and `cms_page_duplicate` answer `ok:false` naming Service pages
+and the files, and the row count does not move. Gates: `tests/Feature/Website` **213 passed (1911)**; full
+suite **1227 passed, 1 skipped (6684)**; Pint clean; PHPStan no errors.

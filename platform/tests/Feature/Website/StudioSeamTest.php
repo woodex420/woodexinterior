@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Domain\Website\Models\Page;
+
 /*
 | The ported v2.1 admin talks to Woodex OS through one seam: `{action}` in, `{ok, ...}` out. These tests
 | hold the two promises that seam makes — the OS session and the OS permission decide who may call it, and
@@ -65,6 +67,28 @@ it('says so when an action has not been ported, instead of pretending', function
         ->assertOk()
         ->assertJsonPath('ok', false)
         ->assertJsonPath('error', fn (string $error): bool => str_contains($error, 'not ported yet'));
+});
+
+it('refuses the actions that made a page row for a screen the OS does not keep', function () {
+    // "New service page" and "Duplicate" wrote a `pages` row. Since the renderer was retired a row is not a
+    // page, and the screen itself is behind the door (step 18) — so the action must refuse too, by name.
+    $before = Page::query()->count();
+
+    $this->postJson(route('admin.website.studio.api'), [
+        'action' => 'cms_page_new',
+        'title' => 'A service page',
+        'slug' => '/a-service-page/',
+    ])->assertOk()
+        ->assertJsonPath('ok', false)
+        ->assertJsonPath('error', fn (string $error): bool => str_contains($error, 'Service pages')
+            && str_contains($error, 'Pages are the site'));
+
+    $this->postJson(route('admin.website.studio.api'), ['action' => 'cms_page_duplicate', 'id' => 1])
+        ->assertOk()
+        ->assertJsonPath('ok', false);
+
+    expect(Page::query()->count())->toBe($before)
+        ->and(Page::query()->where('slug', '/a-service-page/')->exists())->toBeFalse();
 });
 
 it('refuses an upload that is not an image', function () {

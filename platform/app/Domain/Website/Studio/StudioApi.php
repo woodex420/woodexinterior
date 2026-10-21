@@ -62,8 +62,6 @@ final class StudioApi
         // service page is made — from an existing layout, or by duplicating a row.
         'pages' => 'pagesList',
         'cms_page_kinds' => 'pageKinds',
-        'cms_page_new' => 'pageNew',
-        'cms_page_duplicate' => 'pageDuplicate',
         // City pages: a new city is a draft copied from a template city, one at a time or several at once.
         'cms_city_new' => 'cityNew',
         'cms_city_bulk' => 'cityBulk',
@@ -90,6 +88,16 @@ final class StudioApi
         'bapi_media' => 'builderMedia',
     ];
 
+    /**
+     * Actions the v2.1 admin had for screens Woodex OS 1 does not keep (step 18). They created or copied a
+     * `pages` row, and a row stopped being a page when the renderer was retired (step 8) — the screen is
+     * behind the door, so the action behind it refuses too, by name, and says where the work lives now.
+     */
+    private const array RETIRED = [
+        'cms_page_new' => 'Service pages',
+        'cms_page_duplicate' => 'Service pages',
+    ];
+
     public function __construct(private readonly User $user) {}
 
     /**
@@ -100,6 +108,15 @@ final class StudioApi
     {
         if ($action === '') {
             throw new RuntimeException('No action was sent.');
+        }
+
+        $screen = self::RETIRED[$action] ?? null;
+
+        if ($screen !== null) {
+            throw new RuntimeException(
+                "“{$screen}” is the old admin’s screen: it made a page row, and a row is not a page any more. "
+                .'Pages are the site’s files — make and edit them in All pages and Page builder.'
+            );
         }
 
         $method = self::ACTIONS[$action] ?? null;
@@ -234,69 +251,6 @@ final class StudioApi
         }
 
         return ['kinds' => $kinds];
-    }
-
-    /**
-     * “New service page”: a draft carrying the chosen page's sections, or a blank service page.
-     *
-     * @param  array<string, mixed>  $payload
-     * @return array{item: array{id: int, title: string, url: string, status: string}}
-     */
-    private function pageNew(array $payload): array
-    {
-        $title = trim((string) ($payload['title'] ?? ''));
-        $slug = trim((string) ($payload['slug'] ?? ''));
-
-        if ($title === '' || $slug === '') {
-            throw new RuntimeException('A title and an address are both needed.');
-        }
-
-        $slug = Page::normalizeSlug($slug);
-
-        if (Page::query()->where('slug', $slug)->exists()) {
-            throw new RuntimeException('Another page already uses that address.');
-        }
-
-        $from = (int) ($payload['from'] ?? 0);
-        $source = $from > 0 ? Page::query()->find($from) : null;
-        $copier = app(PageCopier::class);
-
-        $page = $source !== null
-            ? $copier->copy($source, $title, $slug)
-            : Page::query()->create([
-                'type' => PageType::Service,
-                'slug' => $slug,
-                'title' => $title,
-                'status' => PageStatus::Draft,
-                'author_id' => $this->user->id,
-            ]);
-
-        PageCache::invalidate($page);
-        Menus::flush();
-
-        return ['item' => $this->pageItem($page)];
-    }
-
-    /**
-     * `Duplicate` on a row: the same page as a fresh draft, address “-copy”, numbered if that is taken.
-     *
-     * @param  array<string, mixed>  $payload
-     * @return array{item: array{id: int, title: string, url: string, status: string}}
-     */
-    private function pageDuplicate(array $payload): array
-    {
-        $page = Page::query()->find((int) ($payload['id'] ?? 0));
-
-        if ($page === null) {
-            throw new RuntimeException('That page no longer exists.');
-        }
-
-        $copy = app(PageCopier::class)->copy($page);
-
-        PageCache::invalidate($copy);
-        Menus::flush();
-
-        return ['item' => $this->pageItem($copy)];
     }
 
     /** @return array{id: int, title: string, url: string, status: string} */
