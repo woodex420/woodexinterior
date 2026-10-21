@@ -1,7 +1,6 @@
 <div>
-    <x-admin.page-header :title="$title" :description="$description" :breadcrumbs="$breadcrumbs">
-    </x-admin.page-header>
-
+    {{-- The active tab renders its own page header (title, description, breadcrumbs and actions), so the hub
+         adds only the tab bar above it — never a second copy of the same heading (deep QA, duplicate header). --}}
     <div class="mb-6 overflow-x-auto" role="tablist" aria-label="{{ $title }} views">
         <div class="flex w-max min-w-full items-center gap-1 rounded-xl border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900/60">
             @foreach ($tabs as $tab)

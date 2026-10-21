@@ -1790,3 +1790,44 @@ Change requests · Alert rules · Recycle bin); `/admin/chat-bot` lands on Setti
 
 **Found on the way:** `System\LeadRulesSettings` has no route and is only used by a test — the live screen is
 `Crm\AssignmentRules`. Remove it with its test in the hygiene slice.
+
+### Step 28 — one pricing path: the estimate comes first (Slice C, 21 Oct 2026)
+
+**Why.** `CreateQuoteFromEstimate` priced a quotation straight from the enquiry's meta and never wrote an
+`Estimate` row. Every quotation therefore had `estimate_id = null`, and Sales → Estimations stayed empty while
+estimator enquiries were arriving — the estimate was optional. That was finding **B6** in
+`docs/audit/31_DEEP_QA_2026-10-21.md`.
+
+**What changed.**
+
+* `Sales\Services\EstimatorLeadDetails` — the single reader for what an estimator enquiry said: service, area,
+  finish and the range the site showed. It reads the bridge's `meta.fields` and the importer's `meta.estimate`,
+  and falls back to the lead's own `service`/`area_sqft` columns **only** for estimator-sourced rows with no
+  meta. A form enquiry, or an estimator form with a blank area, stays unpriced — never a guessed rate.
+* `Sales\Actions\DraftEstimateFromEstimatorLead` — writes the rate-book draft for an enquiry, attributed to the
+  lead owner (or the first active person with `estimates.manage`), idempotent per lead.
+* `Sales\Listeners\RecordEstimatorEstimate` — wired to `LeadCaptured` in `AppServiceProvider`, so the draft is
+  written when the enquiry arrives, not when somebody remembers to click. The v1 site's own
+  `POST /api/forms.php` goes through `CaptureLead`, so it is covered without touching the page.
+* `CreateQuoteFromEstimate` — converts the enquiry's existing draft when it still matches, otherwise writes one,
+  links `quote.estimate_id` and `estimate.quote_id` in the same transaction. A quotation can no longer exist
+  without its estimate.
+* `estimates:backfill {--dry-run}` — catch-up for estimator enquiries captured before this slice; safe to re-run.
+* The hub Blade no longer renders its own page header above the active screen — `/admin/leads` used to show
+  "Leads" twice, with two different descriptions. One heading per page now.
+* Estimations shows the rate book's label ("Interior Design") instead of the stored key.
+
+**Tests.** `tests/Feature/Sales/EstimatorEnquiryEstimateTest.php` (5): the draft is written on capture with the
+rate-book snapshot; a repeat submission keeps one draft; form enquiries and unknown services get none; the
+quotation converts the existing draft rather than writing a second one.
+`tests/Feature/Sales/BackfillEstimatesTest.php` (4): backfill writes from lead columns, dry-run writes nothing,
+running twice is safe, an unlisted service is left for a person. `EstimateToQuoteTest` gained the two-way link
+assertion, and `P10SidebarHubsTest` the single-heading assertion. Full suite **1,307 passed · 1 skipped · 7,044 assertions**; Pint clean;
+PHPStan 0.
+
+**Proof on 33143.** `POST /api/forms.php` with `form=estimator`, `area=1200`, `finish=premium` → `L-2026-000002`
+and `EST-2026-0007` (draft, Rs 480,000) in one request. `estimates:backfill` → `EST-2026-0003…0006` for the four
+estimator enquiries already present. QA rows deleted after the proof; screenshots
+`/tmp/woodex-run/shots/slice-c-estimations.png`, `slice-c-leads-hub.png`.
+
+**Still open.** D (Overview control view), E (invoice automation), F (marketing live proof), G (hygiene).

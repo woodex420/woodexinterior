@@ -6,6 +6,7 @@ namespace App\Livewire\Admin\Sales;
 
 use App\Domain\Sales\Enums\EstimateStatus;
 use App\Domain\Sales\Models\Estimate;
+use App\Domain\Sales\Models\EstimatorRate;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
@@ -36,6 +37,8 @@ class EstimationsIndex extends Component
         return view('livewire.admin.sales.estimations-index', [
             'estimates' => $estimates,
             'statuses' => EstimateStatus::cases(),
+            // The rate book's label, so the list reads "Interior Design" rather than the stored key.
+            'services' => EstimatorRate::query()->pluck('label', 'key')->all(),
         ]);
     }
 }

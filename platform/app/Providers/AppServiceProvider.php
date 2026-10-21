@@ -23,6 +23,7 @@ use App\Domain\Crm\Policies\LeadPolicy;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectUpdate;
 use App\Domain\Projects\Policies\ProjectPolicy;
+use App\Domain\Sales\Listeners\RecordEstimatorEstimate;
 use App\Domain\Sales\Models\DescriptionTemplate;
 use App\Domain\Sales\Models\DocumentDesign;
 use App\Domain\Sales\Models\Estimate;
@@ -158,6 +159,9 @@ class AppServiceProvider extends ServiceProvider
         Livewire::addPersistentMiddleware([EnsureUserIsActive::class]);
 
         Event::listen(LeadCaptured::class, SendNewLeadAlerts::class);
+        // Slice C: an estimator enquiry arrives with the three facts the rate book needs, so its draft
+        // estimate is written now instead of waiting for somebody to open the lead.
+        Event::listen(LeadCaptured::class, RecordEstimatorEstimate::class);
         Event::listen(LeadCaptured::class, AskForMissingNumber::class);
 
         // AUT-001: the sequences' event-driven triggers.

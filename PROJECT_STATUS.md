@@ -36,12 +36,14 @@
 
 **Slice B (same day).** Client Portal and Handovers stopped being `P4b` badges and became real screens (signed portal links; handover progress), Chat Bot opens its live switches on Settings, the duplicate Alert Rules is gone, the eleven System entries became four pages with tabs, and the rate book moved to Sales as **Estimator rates**. 12 more tests; suite **1,296 passed / 1 skipped**.
 
+**Slice C (same day).** One pricing path. An estimator enquiry now writes its draft estimate the moment it arrives (listener on `LeadCaptured`), the quotation started from an enquiry converts that draft and links both sides (`quotes.estimate_id` ↔ `estimates.quote_id`), and `estimates:backfill` catches up enquiries captured before this slice. The Estimations screen is the real pipeline, not an empty room; the duplicate hub heading is gone. 11 more tests; suite **1,307 passed · 1 skipped · 7,044 assertions**.
+
 ## What is next (agreed order, from the audit)
 
 | Slice | Work | Why it matters |
 |---|---|---|
 | ~~B~~ | ~~Sidebar truth~~ | **Done 21 Oct** — Client portal, Handovers and Chat Bot are live pages, System is 4 pages with tabs, Alert Rules de-duplicated, Estimator rates sits under Sales |
-| **C** | One pricing path: a quotation must always come from an estimate record | Estimate history is currently optional |
+| ~~C~~ | ~~One pricing path~~ | **Done 21 Oct** — estimator enquiries write their draft estimate at capture; every new quotation carries an estimate; backfill command for older enquiries |
 | **D** | Overview as a control view: six live KPIs + "needs attention" with one-click actions; reports as filters on the same queries | The owner asked for control, not report prose |
 | **E** | Invoice automation: milestone/recurring invoices and an overdue reminder ladder, visible in Automation | "Invoice automation" has no live runtime today |
 | **F** | Marketing live proof once Meta/LinkedIn approve the app | Composer + publisher are real; only the platform key is missing |

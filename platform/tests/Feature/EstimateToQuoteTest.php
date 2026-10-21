@@ -2,7 +2,9 @@
 
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Sales\Actions\CreateQuoteFromEstimate;
+use App\Domain\Sales\Enums\EstimateStatus;
 use App\Domain\Sales\Enums\QuoteStatus;
+use App\Domain\Sales\Models\Estimate;
 use App\Domain\Sales\Models\EstimatorRate;
 use App\Domain\Sales\Models\Quote;
 use App\Livewire\Admin\Crm\LeadShow;
@@ -79,6 +81,25 @@ it('opens a draft quotation priced from the rate book, not from the range the we
     // Whoever picks it up sees both numbers and knows why they differ.
     expect($quote->internal_notes)->toContain('PKR 2,160,000 to 5,040,000')
         ->and($quote->internal_notes)->toContain('Rate from the rate book');
+});
+
+it('writes the estimate behind the quotation and links both sides', function () {
+    $lead = estimatorLead();
+
+    $quote = app(CreateQuoteFromEstimate::class)->handle($lead, $this->sales);
+    $estimate = Estimate::query()->sole();
+
+    expect($estimate->lead_id)->toBe($lead->id)
+        ->and($estimate->contact_id)->toBe($lead->contact_id)
+        ->and($estimate->quote_id)->toBe($quote->id)
+        ->and($estimate->status)->toBe(EstimateStatus::Converted)
+        ->and($estimate->inputs['quantity'])->toBe('1200')
+        ->and($estimate->inputs['finish'])->toBe('standard')
+        ->and($quote->refresh()->estimate_id)->toBe($estimate->id)
+        // The website's range is kept on the estimate as its assumption, not invented into the price.
+        ->and($estimate->assumptions)->toContain('PKR 2,160,000 to 5,040,000')
+        // The quotation still tells the salesperson what they are holding.
+        ->and($quote->internal_notes)->toContain($estimate->number);
 });
 
 it('prices the finish the client chose', function () {

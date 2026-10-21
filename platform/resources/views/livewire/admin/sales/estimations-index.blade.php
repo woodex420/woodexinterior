@@ -43,7 +43,7 @@
                                     </p>
                                 @endif
                             </td>
-                            <td class="px-3 py-2.5">{{ $estimate->service_key }}</td>
+                            <td class="px-3 py-2.5">{{ $services[$estimate->service_key] ?? $estimate->service_key }}</td>
                             <td class="px-3 py-2.5">{{ $estimate->contact?->name ?? '—' }}</td>
                             <td class="px-3 py-2.5 text-right">
                                 {{ \App\Support\Money::ofMinor((int) $estimate->computed['range_low_minor'] ?? 0)->format() }} –

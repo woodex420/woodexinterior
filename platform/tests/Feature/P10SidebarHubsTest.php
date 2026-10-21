@@ -207,3 +207,12 @@ it('renders the tracking tab through the hub for the owner', function () {
         ->assertOk()
         ->assertSee('Lead tracking');
 });
+
+it('renders one page heading per hub screen instead of stacking the hub header above it', function () {
+    $this->actingAs($this->owner)
+        ->get('/admin/leads')
+        ->assertOk()
+        // The hub's own description is gone; the screen's description is the one on the page.
+        ->assertDontSee('Every enquiry, three working views')
+        ->assertSee('Every enquiry from every channel');
+});
