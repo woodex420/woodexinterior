@@ -21,6 +21,22 @@ it('opens a ported screen inside the OS session', function () {
         ->assertSee('/assets/admin-v21/admin-forms.js', false);
 });
 
+it('lets only the four ported screens be reached by their hash', function () {
+    // The copied v2.1 app still carries its own screens (Service pages, FAQs, Header & footer, Section library…)
+    // and its router reads the URL hash. Those screens edit rows, and rows are not the website any more — so the
+    // seam admits the four screens that are ported and nothing else. This is the list the adapter enforces.
+    $source = (string) file_get_contents(public_path('assets/admin-v21/wx-embed.js'));
+
+    expect($source)->toContain('var ALLOWED = ["blog", "portfolio", "forms", "estimator"];')
+        ->and($source)->toContain('wx21-blocked')
+        ->and($source)->toContain('its edits would not reach the website');
+
+    // Each allowed screen renders; the old ones answer 404 from the server, so a bookmark cannot open them either.
+    foreach (['blog', 'portfolio', 'forms', 'estimator'] as $screen) {
+        $this->get(route('admin.website.'.$screen))->assertOk();
+    }
+});
+
 it('does not open a screen that is not switched on', function () {
     $this->get('/admin/website/studio/media')->assertNotFound();
 });

@@ -1351,3 +1351,40 @@ PHPStan no errors.
 
 Waiting on the owner: the **36 rows** — paste the export into the import box (`old, new, code, note`, or the SQL
 result as TSV) and the screen will tell you exactly which old URLs are still pages.
+
+### Step 18 — the ported admin's other screens are behind a door that says no (21 Oct 2026)
+
+Found while checking the Content band against the files (step 15) and closed here: the copied v2.1 app in
+`assets/admin-v21/` still carries **its own screens** — Service pages, City pages, Page templates, FAQs,
+Testimonials, Team, Client logos, Header & footer, Section library, Hero slides — and its router reads the URL
+hash. The OS sidebar hides them, but a typed hash or a saved bookmark reached them, and several rendered live
+editors (`FAQ groups`, `Testimonials`, `Service & site pages`, `City pages`, `Page templates`, `Team`,
+`Header & footer`, `Section library`, `Hero slides`). Every one of them edits **rows**, and rows are not the
+website (docs/audit/20) — so each was a screen that could appear to save something and change nothing a visitor
+sees.
+
+**What the seam does now** (`wx-embed.js`, which loads before their router):
+
+- Only the four ported screens are reachable — **Blog, Portfolio, Forms, Estimator**. A hash naming any other
+  screen is put back *before* their router sees it, and the person is told, in the OS strip, exactly why:
+  *"“FAQs” is the old admin’s screen: its edits would not reach the website, which is its page files. What it
+  did lives in All pages and Page builder in Woodex OS."*
+- The message is a **line of its own** under the strip: the screen is pushed down by its height, so nothing is
+  covered (a first version floated over the page and hid the h1; fixed and re-checked).
+- The article editor inside Blog (`#/post/<id>`) and the study editor inside Portfolio (`#/study/<id>`) still
+  open — they are the ported screens' own detail views, not separate screens.
+- A bookmark that names a refused screen boots on the screen whose OS URL it is, not on Blog.
+
+Verified in the preview: `#/faqs` typed on the Blog page → hash back to `#/blog`, banner naming FAQs, heading
+still visible; `#/global` likewise; `#/post/229` opens the article; Portfolio, Forms and Estimator answer as
+themselves.
+
+Also fixed on the way: the Blog and Portfolio lists drew **an empty grey square for all 48 imported articles**
+because they have a hero block (`image_id`) but no `featured_image_id`. The card now falls back to the hero, so
+the list shows the article's own artwork (`/media/150/…`), and the editor's hero carries the **alt from the
+Media row** instead of an empty string.
+
+Tests: `StudioSeamTest` — only the four screens are named as reachable, the refusal message exists, and each of
+the four renders; `StudioContentTest` — the list card is the hero's media URL and the editor's hero alt is the
+library's. Gates: `tests/Feature/Website` **207 passed (1879)**; full suite **1221 passed, 1 skipped (6652)**;
+Pint clean (844 files); PHPStan no errors.

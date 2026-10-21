@@ -15,7 +15,6 @@ use App\Domain\Website\Services\ListingIndex;
 use App\Domain\Website\Services\Menus;
 use App\Domain\Website\Services\PageCache;
 use App\Models\User;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -67,8 +66,6 @@ final class StudioContent
             ->orderByDesc('updated_at')
             ->orderByDesc('id')
             ->get();
-
-        $media = $this->mediaFor($pages);
 
         return [
             'items' => $pages->map(function (Page $page) use ($definition): array {
@@ -401,18 +398,24 @@ final class StudioContent
         }
 
         $heroId = (int) ($hero?->data['image_id'] ?? 0);
+        $heroSrc = $heroId > 0 ? $this->urlFor($heroId) : '';
+        $featured = (int) $page->featured_image_id > 0 ? $this->urlFor((int) $page->featured_image_id) : '';
 
         return [
             'kicker' => (string) ($hero?->data['eyebrow'] ?? ''),
             'dek' => (string) ($page->excerpt ?? $hero?->data['text'] ?? ''),
-            'hero' => ['src' => $heroId > 0 ? $this->urlFor($heroId) : '', 'alt' => ''],
+            // The hero block keeps the artwork of every imported article; the alt is the one in the library, so
+            // the editor shows (and the page keeps) the words the Media screen holds.
+            'hero' => ['src' => $heroSrc, 'alt' => $heroId > 0 ? (string) Media::query()->whereKey($heroId)->value('alt') : ''],
             'meta' => $meta,
             'blocks' => $blocks,
             'summary' => [],
             'faqs' => [],
             'quote' => '',
             'related' => [],
-            'card' => ['src' => (int) $page->featured_image_id > 0 ? $this->urlFor((int) $page->featured_image_id) : ''],
+            // The listing card falls back to the hero: an imported article has no separate card image, and an
+            // empty grey square on every row in the list is not a picture of anything.
+            'card' => ['src' => $featured !== '' ? $featured : $heroSrc],
         ];
     }
 
@@ -429,16 +432,5 @@ final class StudioContent
     private function mediaId(string $url): ?int
     {
         return preg_match('~/media/(\d+)/~', $url, $matches) === 1 ? (int) $matches[1] : null;
-    }
-
-    /**
-     * @param  Collection<int, Page>  $pages
-     * @return array<int, Media>
-     */
-    private function mediaFor($pages): array
-    {
-        $ids = $pages->pluck('featured_image_id')->filter()->map(fn ($id): int => (int) $id)->all();
-
-        return $ids === [] ? [] : Media::query()->whereIn('id', $ids)->get()->keyBy('id')->all();
     }
 }

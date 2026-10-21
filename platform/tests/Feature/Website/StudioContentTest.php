@@ -131,6 +131,36 @@ it('opens an imported article with its own words', function () {
         ->and($item['data']['blocks'][2]['text'])->toBe('Second paragraph.');
 });
 
+it('shows the article’s own artwork in the list, through the library row that holds the alt', function () {
+    // An imported article keeps its hero as a block (image_id), not as featured_image_id; the list used to draw
+    // an empty grey square for all 48 of them. The card now falls back to that hero, and the URL is the media
+    // route, which serves the row's file and its alt.
+    $page = Page::query()->create([
+        'type' => PageType::Insight,
+        'slug' => '/insights/with-artwork/',
+        'title' => 'With artwork',
+        'status' => PageStatus::Published,
+    ]);
+
+    $page->blocks()->create([
+        'type' => 'hero',
+        'block_key' => 'bhero777',
+        'data' => ['eyebrow' => 'Joinery', 'heading' => 'With artwork', 'image_id' => $this->media->id],
+        'visible' => true,
+        'position' => 0,
+    ]);
+
+    $item = studioApi(['action' => 'cms_list', 'type' => 'post'])->assertOk()->json('items.0');
+
+    expect($item['data']['card']['src'])->toContain('/media/'.$this->media->id.'/');
+
+    // The alt the Media screen holds travels with the hero into the editor, not an empty string.
+    $opened = studioApi(['action' => 'cms_get', 'id' => $page->id, 'type' => 'post'])->assertOk()->json('item.data');
+
+    expect($opened['hero']['alt'])->toBe('Hero')
+        ->and($opened['card']['src'])->toContain('/media/'.$this->media->id.'/');
+});
+
 it('creates a draft article as an insight page under /insights/', function () {
     studioApi([
         'action' => 'cms_save',
