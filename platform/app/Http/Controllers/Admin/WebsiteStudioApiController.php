@@ -8,6 +8,7 @@ use App\Domain\Website\Studio\StudioApi;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
@@ -39,6 +40,13 @@ final class WebsiteStudioApiController
             // A permission check inside an action is an HTTP answer, not a message on the screen.
             // (This must come before RuntimeException: Symfony's HttpException extends it.)
             throw $exception;
+        } catch (ValidationException $exception) {
+            // A guard said why in words meant for the screen ("That address belongs to the system", "the folder
+            // could not be created"); show those instead of the generic line, which reads like a crash.
+            return response()->json([
+                'ok' => false,
+                'error' => $exception->validator->errors()->first() ?: 'That change was not accepted.',
+            ]);
         } catch (RuntimeException $exception) {
             return response()->json(['ok' => false, 'error' => $exception->getMessage()]);
         } catch (Throwable $exception) {

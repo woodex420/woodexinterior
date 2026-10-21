@@ -253,6 +253,58 @@ it('publishes an article and puts its card on the index', function () {
         ->and($items[0]['url'])->toBe('/insights/to-publish/');
 });
 
+it('leaves the page a draft when its file cannot be written', function () {
+    // A file where the folder should be: mkdir() cannot make the folder, so the page cannot exist.
+    file_put_contents($this->site.'/insights/blocked-address', 'not a folder');
+
+    $page = Page::query()->create([
+        'type' => PageType::Insight,
+        'slug' => '/insights/blocked-address/',
+        'title' => 'Blocked address',
+        'status' => PageStatus::Draft,
+    ]);
+
+    studioApi(['action' => 'cms_published', 'id' => $page->id, 'type' => 'post'])
+        ->assertOk()
+        ->assertJsonPath('ok', false);
+
+    expect($page->refresh()->status)->toBe(PageStatus::Draft)
+        ->and($page->published_at)->toBeNull()
+        ->and(is_file($this->site.'/insights/blocked-address/index.html'))->toBeFalse();
+});
+
+it('publishes the same page twice without failing on the folder it already made', function () {
+    $page = Page::query()->create([
+        'type' => PageType::Insight,
+        'slug' => '/insights/twice/',
+        'title' => 'Twice',
+        'status' => PageStatus::Draft,
+    ]);
+
+    studioApi(['action' => 'cms_published', 'id' => $page->id, 'type' => 'post'])->assertOk()->assertJsonPath('ok', true);
+    studioApi(['action' => 'cms_published', 'id' => $page->id, 'type' => 'post'])->assertOk()->assertJsonPath('ok', true);
+
+    expect(is_file($this->site.'/insights/twice/index.html'))->toBeTrue();
+});
+
+it('tells the editor which file a published page lives in', function () {
+    $page = Page::query()->create([
+        'type' => PageType::Insight,
+        'slug' => '/insights/has-a-file/',
+        'title' => 'Has a file',
+        'status' => PageStatus::Draft,
+    ]);
+
+    // A draft has no file, so the editor keeps offering Publish now (and a draft action).
+    expect(studioApi(['action' => 'cms_get', 'id' => $page->id, 'type' => 'post'])->json('item.rel'))->toBeNull();
+
+    studioApi(['action' => 'cms_published', 'id' => $page->id, 'type' => 'post'])->assertOk()->assertJsonPath('ok', true);
+
+    // After publishing the editor must see the file: that is what turns Publish now into Publish changes.
+    expect(studioApi(['action' => 'cms_get', 'id' => $page->id, 'type' => 'post'])->json('item.rel'))
+        ->toBe('insights/has-a-file/index.html');
+});
+
 it('refuses to publish without website.publish', function () {
     $editor = $this->userWithRole('editor');
     $this->actingAs($editor);

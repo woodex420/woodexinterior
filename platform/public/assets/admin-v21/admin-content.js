@@ -448,17 +448,23 @@
         d.kicker = $("#ce-kicker").value.trim(); d.dek = $("#ce-dek").value.trim(); d.hero = { src: imgVal("ce-hero") };
         d.meta = $$("#ce-meta .kvr").map(function (r) { return { k: $("[data-k=k]", r).value.trim(), v: $("[data-k=v]", r).value.trim() }; });
         if (type === "study") { d.factsTitle = $("#ce-ft").value.trim(); d.factsNote = $("#ce-fn").value.trim(); d.facts = $$("#ce-facts .kvr").map(function (r) { return { k: $("[data-k=k]", r).value.trim(), v: $("[data-k=v]", r).value.trim() }; }); }
+        var src = d.blocks || [];
         d.blocks = $$("#ce-blocks .bk").map(function (b) {
-          var o = d.blocks[+b.dataset.i] || {}, x = { t: o.t };
-          if (o.t === "list") x.items = $("[data-f=items]", b).value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean); if (o.t === "list" && $("[data-f=ol]", b) && $("[data-f=ol]", b).checked) x.ol = true;
-          else if (o.t === "img") { x.src = o.src || ""; x.alt = $("[data-f=alt]", b).value.trim(); x.caption = $("[data-f=caption]", b).value.trim(); }
-          else if (o.t === "ba") { x.before = o.before || ""; x.after = o.after || ""; x.caption = $("[data-f=caption]", b).value.trim(); }
-          else if (o.t === "gallery") { x.imgs = (o.imgs || []).slice(); x.caption = $("[data-f=caption]", b).value.trim(); }
-          else if (o.t === "cta") { ["title", "text", "label", "href"].forEach(function (k) { x[k] = $("[data-f=" + k + "]", b).value.trim(); }); }
-          else x.text = $("[data-f=text]", b).value.trim();
+          /* Read what the block is, not what the data says it was: a block the data has no entry for (or a
+             type whose field is missing from the form) used to throw here, which killed save() and publish()
+             with no message at all. A block we cannot read is dropped instead of losing the whole save. */
+          var o = src[+b.dataset.i] || {}, x = o.t ? { t: o.t } : null;
+          function f(k) { var el = $("[data-f=" + k + "]", b); return el ? el.value.trim() : ""; }
+          if (!x) return null;
+          if (o.t === "list") x.items = f("items").split("\n").map(function (s) { return s.trim(); }).filter(Boolean); if (o.t === "list" && $("[data-f=ol]", b) && $("[data-f=ol]", b).checked) x.ol = true;
+          else if (o.t === "img") { x.src = o.src || ""; x.alt = f("alt"); x.caption = f("caption"); }
+          else if (o.t === "ba") { x.before = o.before || ""; x.after = o.after || ""; x.caption = f("caption"); }
+          else if (o.t === "gallery") { x.imgs = (o.imgs || []).slice(); x.caption = f("caption"); }
+          else if (o.t === "cta") { [["title", f("title")], ["text", f("text")], ["label", f("label")], ["href", f("href")]].forEach(function (pair) { x[pair[0]] = pair[1]; }); }
+          else x.text = f("text") || o.text || "";
           if (o.hint) x.hint = o.hint;
           return x;
-        });
+        }).filter(Boolean);
         if (type === "post") { d.summary = $("#ce-sum").value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean); d.faqs = $$("#ce-faqs .fq").map(function (r) { return { q: $("[data-k=q]", r).value.trim(), a: $("[data-k=a]", r).value.trim() }; }).filter(function (f) { return f.q || f.a; }); }
         d.quote = $("#ce-quote").value.trim(); d.ctaTitle = $("#ce-cta").value.trim();
         d.related = $$(".rel-l input:checked").map(function (c) { return c.value; }).slice(0, 3);
@@ -567,7 +573,10 @@
         // actions
         if ($("#ce-seo-an")) $("#ce-seo-an").onclick = seoCheck;
         $("#ce-prev").onclick = function () { collect(); build().then(function (h) { preview(h); }).catch(function (e) { toast(e.message, true); }); };
-        $("#ce-save").onclick = function () { save({}).then(function (ok) { if (ok) toast("Saved"); }); };
+        $("#ce-save").onclick = function () {
+          var b = this, label = b.innerHTML; busy(b, true); b.innerHTML = ic("save") + "Saving…";
+          save({}).then(function (ok) { if (ok) toast("Saved"); }).then(function () { b.innerHTML = label; busy(b, false); });
+        };
         $("#ce-pub").onclick = function () { publish(this); };
         if ($("#ce-sch")) $("#ce-sch").onclick = function () {
           var v = $("#ce-at").value; if (!v) return toast("Pick a date and time", true); var at = localToUtc(v); if (new Date(v) < new Date()) return toast("Pick a time in the future", true);
@@ -585,7 +594,8 @@
         return true;
       }
       function save(extra) {
-        collect(); if (!it.title) { toast("Add a title", true); return Promise.resolve(false); }
+        try { collect(); } catch (e) { toast("A field could not be read. Reload the editor and try again.", true); return Promise.resolve(false); }
+        if (!it.title) { toast("Add a title", true); return Promise.resolve(false); }
         if (!it.slug) it.slug = slugify(it.title);
         return api("cms_save", Object.assign({ id: it.id || 0, type: type, title: it.title, slug: it.slug, data: d, seo: it.seo }, extra)).then(function (r) {
           if (!r.ok) { toast(r.error, true); return false; }
@@ -605,20 +615,27 @@
       }
 
       function publish(btn) {
-        collect(); if (!check()) return;
+        try { collect(); } catch (e) { toast("A field could not be read. Reload the editor and try again.", true); return; }
+        if (!check()) return;
         /* Woodex OS (wx-embed.js): the server writes the page file from what the editor saved — there is no
            HTML to build in the browser. The save below stores the item; publishing writes
            /<folder>/<slug>/index.html and flips the status.
            The v2.1 behaviour is untouched when the flag is absent (the standalone admin). */
         if (window.WX_STUDIO && window.WX_STUDIO.staticPublish === false) {
-          busy(btn, true);
+          var label = btn ? btn.innerHTML : "", done = function () { if (btn) btn.innerHTML = label; busy(btn, false); };
+          /* The write is two calls and can take a while (the save queues behind other work), so the button says
+             what it is doing instead of only dimming: a publish that just dims reads as "stuck". */
+          busy(btn, true); if (btn) btn.innerHTML = ic("send") + "Publishing…";
           save({}).then(function (ok) {
             if (!ok) throw 0;
             return api("cms_published", { id: it.id, type: type });
           }).then(function (r) {
             if (!r.ok) throw new Error(r.error);
             Object.assign(it, r.item); toast("Published: /" + t.folder + "/" + it.slug + "/"); draw();
-          }).catch(function (e) { if (e) toast(e.message || String(e), true); }).then(function () { busy(btn, false); });
+          }).catch(function (e) {
+            /* save() has already said why it failed; only a real exception needs a message here. */
+            var msg = e ? (e.message || String(e)) : ""; if (msg) toast(msg, true);
+          }).then(done, done);
           return;
         }
         if (it.rel && it.imported && !it.republished && !confirm("This rebuilds the live page from the form fields. Did you check Preview?")) return;

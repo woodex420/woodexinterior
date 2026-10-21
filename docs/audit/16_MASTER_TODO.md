@@ -1388,3 +1388,53 @@ Tests: `StudioSeamTest` — only the four screens are named as reachable, the re
 the four renders; `StudioContentTest` — the list card is the hero's media URL and the editor's hero alt is the
 library's. Gates: `tests/Feature/Website` **207 passed (1879)**; full suite **1221 passed, 1 skipped (6652)**;
 Pint clean (844 files); PHPStan no errors.
+
+### Step 19 — Publish now publishes, and a page never says Live over a 404 (21 Oct 2026)
+
+The open question from step 18's session: clicking **Publish now** in the article editor sent `cms_save`
+and nothing else, left the button disabled and the article a draft. Three separate faults were stacked
+behind that one silent button; all three are closed here.
+
+**1. The wait was real, the silence was the bug.** In the preview runtime a publish is *two* server calls,
+and the first one queues behind whatever else is running. Measured: with the image picker open, ~105 tiles
+load at once and the save queued for **~26 s** before it even reached PHP. The write itself answers in
+~300 ms. The editor only dimmed the button, so it read as dead. The button now says **"Publishing…"** from
+the click and always comes back, and a failed publish says why instead of vanishing.
+
+**2. `cms_published` was classified as a read.** `admin.js` drops a read-only reply when the screen changed
+while it was in flight (P16 3.9) — correct for a list, wrong for a call that writes the page file and flips
+the row. Publish clicked just before leaving the screen kept its promise forever, so the button never came
+back. `cms_published` (and the two `*_order` calls, which write a position) are now writes.
+
+**3. The row could turn Live when the file was not written.** `publish()` flipped the status, *then* wrote
+`public/<folder>/<slug>/index.html`. When the write failed, the badge said **Live** over a **404** — the one
+thing this admin must never show. The file is now written first; a page whose file cannot be written stays a
+draft and the editor is told why. `mkdir` in the page writer is also warning-free: two publishes of the same
+page (a double click, a retry) can reach it together, and "File exists" must not become an exception.
+
+**4. The editor was not told the file it published.** `cms_get`/`cms_list` returned `rel: null` for every
+item, and the editor reads a non-empty `rel` as "this is live". A just-published article therefore still
+offered **Publish now**, **Delete draft** and an editable address, and never showed **View live**. The
+server now returns the page file when it is on disk.
+
+Verified live on a real draft (row 288, deleted afterwards): Edit → "Publish now" / Delete draft →
+click → **"Publishing…"** → toast **"Published: /insights/zz-publish-check/"**, `/insights/zz-publish-check/`
+**200**, 69,958-byte file, button now **"Publish changes"**, **View live** shown, Delete draft gone.
+`/home/user/publish-fixed-2026-10-21.png`. The failure path was exercised too, by putting a file where the
+folder should be: the API answered *"The folder for that page could not be created."* and the row stayed a
+**draft** with no `published_at`.
+
+A guard was also made honest in passing: a `ValidationException` from a screen-level check used to be
+reported as *"The server could not complete that action"*. Those messages were written for the person
+("That address belongs to the system", "The folder for that page could not be created"), so the API now
+returns them.
+
+Tests: `StudioContentTest` (13) — a page whose file cannot be written stays a draft with no `published_at`;
+the same page publishes twice without failing on the folder it already made; `cms_get` reports
+`insights/<slug>/index.html` after publishing and null before. Gates: `tests/Feature/Website` **210 passed
+(1893)**; full suite **1224 passed, 1 skipped (6666)**; Pint clean; PHPStan no errors.
+
+Note for the preview only: a page folder deleted from the shell while the preview server is running stays as
+a stale entry in the PHP worker's filesystem view (`file_exists` true, `is_dir` false, `mkdir` → "File
+exists"). Restart `tools/sandbox/server.mjs` after deleting a page folder by hand; production has no such
+layer.

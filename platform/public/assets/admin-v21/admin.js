@@ -13,7 +13,9 @@
   function toast(m, bad) { var t = $("#toast"); t.textContent = m; t.className = "toast on" + (bad ? " bad" : ""); clearTimeout(toast.t); toast.t = setTimeout(function () { t.className = "toast"; }, bad ? 8000 : 3200); }
   // P16 3.9: a late reply to a read-only request for a screen the user already left is dropped, so it can't write into a
   // screen that no longer exists ("Cannot set properties of null"). Saves/sends/deletes and background polls always complete.
-  var WRITE = /^(save|delete|del|remove|send|set|add|update|upload|publish|login|logout|clear|import|restore|create|approve|convert|pay|payment|reset|test|run|reply|take|close|assign|move|merge|mark|read|toggle|revoke|rotate|connect|disconnect|generate|ai|write|apply|fix|seed|plan|invite|verify|poll|count|badges?|status|notif|cron|2fa|sync|push|new|duplicate|copy|bulk|rename|archive|lock|unlock|sign|share|email|wa|meta)$/i;
+  // A write that is mistaken for a read never comes back: `cms_published` and the two `*_order` calls write a file and a
+  // position, so a Publish clicked just before leaving the screen would leave its button disabled for good.
+  var WRITE = /^(save|delete|del|remove|send|set|add|update|upload|publish(?:ed)?|order|login|logout|clear|import|restore|create|approve|convert|pay|payment|reset|test|run|reply|take|close|assign|move|merge|mark|read|toggle|revoke|rotate|connect|disconnect|generate|ai|write|apply|fix|seed|plan|invite|verify|poll|count|badges?|status|notif|cron|2fa|sync|push|new|duplicate|copy|bulk|rename|archive|lock|unlock|sign|share|email|wa|meta)$/i;
   function isWrite(a) { var g = String(a).toLowerCase().split(/[_\-]/); if (/^(get|list|load|view|info|stats|data|all|one|search|history|preview|page|pages)$/.test(g[g.length - 1])) return false; return g.some(function (x) { return WRITE.test(x); }); }
   function scr() { return (location.hash.replace(/^#\/?/, "").split(/[\/?]/)[0]) || "dashboard"; }
   function fresh(action, p) { var h = scr(); if (isWrite(action)) return p; return p.then(function (j) { return scr() !== h ? new Promise(function () {}) : j; }); }

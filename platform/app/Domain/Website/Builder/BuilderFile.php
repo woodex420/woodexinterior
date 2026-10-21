@@ -165,7 +165,10 @@ final class BuilderFile
         $absolute = self::resolve($path);
         $directory = dirname($absolute);
 
-        if (! is_dir($directory) && ! mkdir($directory, 0o775, true) && ! is_dir($directory)) {
+        // `@` because two publishes of the same page (a double click, or a retry after a slow save) can reach this
+        // line together: one creates the folder, the other's mkdir says "File exists". The check after it is the
+        // real answer — a warning must not become an exception that hides the page.
+        if (! is_dir($directory) && ! @mkdir($directory, 0o775, true) && ! is_dir($directory)) {
             throw ValidationException::withMessages(['path' => 'The folder for that page could not be created.']);
         }
 

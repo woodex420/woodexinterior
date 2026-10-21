@@ -79,7 +79,7 @@ final class StudioContent
                     'status' => $page->status === PageStatus::Published ? 'published' : 'draft',
                     'updated_at' => $page->updated_at?->toIso8601String(),
                     'updated_by' => '',
-                    'rel' => null,
+                    'rel' => $this->relFor($page, array_search($definition, self::TYPES, true) ?: 'post'),
                     'data' => [
                         'kicker' => $data['kicker'] ?? '',
                         'card' => $data['card'] ?? [],
@@ -306,6 +306,15 @@ final class StudioContent
             throw new RuntimeException('That item is not in the list.');
         }
 
+        // The file is the live result, so it is written first: a row flipped to Live before a write that fails
+        // leaves a "Live" badge over a 404, which is the one thing this admin must never show (step 19). A page
+        // whose file cannot be written stays whatever it was, and the editor is told why.
+        $path = ArticleFile::publish($page, $type);
+
+        if ($path === null) {
+            throw new RuntimeException('This item has no page to write — give it a page address first.');
+        }
+
         $page->forceFill(['status' => PageStatus::Published, 'published_at' => $page->published_at ?? now()])->save();
 
         // The index pages (/insights/, /projects/) carry a hand-curated card list; a published article that
@@ -314,9 +323,6 @@ final class StudioContent
 
         PageCache::invalidate($page);
         Menus::flush();
-
-        // Publishing is what makes the URL exist: the row alone answers 404 since the renderer was retired.
-        ArticleFile::publish($page, $type);
 
         return ['item' => $this->item($page->refresh(), $type)];
     }
@@ -327,6 +333,14 @@ final class StudioContent
     private function definition(string $type): array
     {
         return self::TYPES[$type] ?? throw new RuntimeException('That content type is not ported yet.');
+    }
+
+    /** The page's file, when it is on disk — null for a draft or a page whose file is missing. */
+    private function relFor(Page $page, string $type): ?string
+    {
+        $path = ArticleFile::pathFor($page, $type);
+
+        return $path !== null && is_file(ArticleFile::root().'/'.$path) ? $path : null;
     }
 
     /**
@@ -343,6 +357,10 @@ final class StudioContent
             'slug' => $this->shortSlug($page),
             'status' => $page->status === PageStatus::Published ? 'published' : 'draft',
             'data' => $this->payload($page),
+            // The file the page is. The editor reads a non-empty `rel` as "this is live": it then offers
+            // Publish changes and View live instead of Publish now and Delete draft, and locks the address.
+            // It used to be null here, so a just-published article still looked like a draft (step 19).
+            'rel' => $this->relFor($page, $type),
             'seo' => [
                 'title' => (string) ($page->seo['title'] ?? ''),
                 'description' => (string) ($page->seo['description'] ?? ''),
