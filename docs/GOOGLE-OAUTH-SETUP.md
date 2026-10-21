@@ -41,6 +41,11 @@ staff sign-in does not request offline access.
    `https://woodex.com.pk/admin/google/callback`.
    A different `ADMIN_DOMAIN` or `ADMIN_PATH` changes that route. Never register a wildcard or an Arena preview
    URL for production. Use a separate development client/project for local testing.
+
+   **Workspace data is a second redirect URI on the same client** (added 2026-10-21): register
+   `https://woodex.com.pk/admin/integrations/oauth/google/callback` as well. The Workspace connector asks for
+   Drive metadata, Sheets, Gmail and Calendar **read** scopes on a separate consent; it never widens the
+   identity connection. Google may require restricted-scope verification before an External app can grant them.
 3. While the app is in Testing, add the owner and intended staff as test users. Review Google's current testing,
    refresh-token lifetime, consent and publication policies; do not promise that a testing grant lasts forever.
 4. Add **only these new settings** to the application's existing, privately selected server environment. Do not
@@ -51,6 +56,9 @@ staff sign-in does not request offline access.
    GOOGLE_CLIENT_SECRET=
    GOOGLE_REDIRECT_URI=https://woodex.com.pk/admin/google/callback
    GOOGLE_SIGN_IN_ENABLED=false
+   # Optional: Workspace data connector (Drive, Sheets, Gmail, Calendar — read only)
+   GOOGLE_WORKSPACE_REDIRECT_URI=https://woodex.com.pk/admin/integrations/oauth/google/callback
+   GOOGLE_WORKSPACE_SCOPES="openid email https://www.googleapis.com/auth/drive.metadata.readonly https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.readonly"
    ```
 
    Fill the ID and secret privately from Google Cloud. `.env.example` contains empty placeholders only.

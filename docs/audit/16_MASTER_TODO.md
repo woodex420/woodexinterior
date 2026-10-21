@@ -1664,3 +1664,61 @@ refused, import cleaning and skip counting, a damaged file refused through the e
 `{ok:false}` shape, the marker placement, and the nesting/quote-aware range scan. Gates:
 `tests/Feature/Website` **283 passed (2162)**; full suite **1255 passed, 1 skipped (6830)**; Pint clean;
 PHPStan no errors.
+
+### Step 25 — integrations are connectors now; MCP answers over HTTPS (21 Oct 2026)
+
+The owner's correction of the same day: *"integration just open to document… there is no solution of real
+integration system and MCP is just dummy… change document to real login system with any connector."*
+Two things were true. The hub's planned cards opened a modal that ended at **"Provider documentation"** — a
+dead end, not a connection. And the MCP bridge, though real, needed a Node adapter on the owner's laptop and
+could not read a single page of the 142-file website.
+
+**The document modal is gone.** In its place is a connector engine: `integration_connections` (one encrypted
+row per authorised provider), `Connector` + `ConnectorManager` + three drivers, and a signed OAuth callback.
+The rule is the same one the rest of this codebase runs on: *the provider is asked before anything is stored,
+and asked again every time the screen says "Connected".*
+
+* **GitHub** — a personal access token; `GET /user` proves it, records the account and rate limit, and refuses
+  a rejected token without writing a row.
+* **Google Workspace** — Drive metadata, Sheets, Gmail and Calendar read scopes, on a consent separate from the
+  identity sign-in (`openid email profile` stays identity-only). The stored scopes are the ones `tokeninfo`
+  reports, not the ones we asked for.
+* **Custom API** — any public https endpoint and bearer token, with an SSRF guard (https only, no localhost,
+  link-local or private ranges). A provider that answers `200 {"ok":false}` is a failure, not a connection.
+* **Connected apps** — the v2.1 strip (Gmail · Drive · GitHub · WhatsApp · Telegram) is back at the top of
+  `/admin/integrations`, with four states. "Connected" requires a successful real call in the last 15 minutes;
+  a configured-but-unproven channel says **Needs check**, not Connected.
+
+**MCP stopped needing a laptop.** `POST /api/mcp` is a JSON-RPC 2.0 MCP server on the site itself: paste the URL
+and a `wx_mcp_` bearer key into Claude, Cursor or any client. Seven read tools — `woodex_status`,
+`woodex_site_status`, `woodex_list_pages`, `woodex_get_page`, `woodex_seo_report`, `woodex_list_leads`,
+`woodex_list_quotes` — with new scopes `site.read` / `pages.read`. The tools read the same `FileAudit` and
+`BuilderFile` the admin screens read, so "142 pages, 0 broken links" is the website, not a copy of it. Every
+call is audited with the key id; a key never exceeds its scopes or its issuing user's live permissions. The
+stdio adapter and `/api/bridge/v1/*` still work for older clients.
+
+**Verified live on 33143**
+
+```
+GET  /admin/integrations         200 · Connected apps · "Connectors you can authorise now" · /api/mcp
+Custom API  https://registry.npmjs.org/-/whoami  401 → "The service answered 401. The token was refused."
+                                                  no row stored, modal stays open
+Custom API  https://registry.npmjs.org/          200 → Connected · checked 0 seconds ago · Disconnect → gone
+GitHub      gh token → woodex420 · 13 repos · "checked 0 seconds ago" from the screen; disconnected after
+MCP         initialize → serverInfo woodex/2.0.0, protocol 2025-06-18
+            tools/list → status, site_status, list_pages, get_page, seo_report (key with pages.read)
+            woodex_site_status → 142 pages · 142 sitemap URLs · 0 broken links · 0 without alt
+            woodex_get_page /about/ → about/index.html · 814 words · one H1
+            woodex_list_pages?query=wardrobe → 3 real URLs
+```
+
+The sandbox's egress proxy replaces GitHub credentials, so a rejected GitHub token cannot be shown here; the
+401 path is covered by `ConnectorTest` with `Http::fake`. Every other state above is a real request.
+
+**Owner-side, unchanged:** the Google OAuth client and the second redirect URI
+(`/admin/integrations/oauth/google/callback`), a GitHub token, and a production **System → Database update**
+for `integration_connections`. Google Workspace, Notion, Slack, Zoom, Meta and LinkedIn still cannot be
+connected without their apps — their cards now say exactly what is missing and collect nothing.
+
+Tests: `ConnectorTest` (14) and `McpHttpTest` (9); `McpBridgeTest` **18**; integrations-adjacent suites
+**163** green; Pint clean; PHPStan no errors. Screenshot `/home/user/integrations-rebuilt-2026-10-21.png`.

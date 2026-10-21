@@ -1,6 +1,15 @@
-# Woodex local MCP bridge
+# Woodex MCP — remote endpoint (preferred) and local stdio adapter
 
-A read-only **stdio MCP server on your computer**, backed by three authenticated JSON endpoints on Woodex. Node is **not** installed or run on Hostinger. This is not a remote Streamable HTTP/SSE MCP endpoint and is not an OAuth proxy to Google or Notion.
+**Use the remote endpoint first.** Woodex serves MCP itself at `POST https://woodex.com.pk/api/mcp`
+(JSON-RPC 2.0 over HTTPS). Paste that URL and a `wx_mcp_` bearer key into any MCP client — Claude, Cursor, Codex —
+with no local install. It exposes seven read-only tools: `woodex_status`, `woodex_site_status`,
+`woodex_list_pages`, `woodex_get_page`, `woodex_seo_report`, `woodex_list_leads`, `woodex_list_quotes`.
+Scopes are `status.read`, `site.read`, `pages.read`, `leads.read`, `quotes.read`; a key never exceeds its scopes
+or the issuing user's live permissions. Read-only in both transports.
+
+**This folder** is the optional stdio adapter for clients that cannot speak HTTP MCP. It is a **stdio MCP server
+on your computer**, backed by three authenticated JSON endpoints on Woodex (`/api/bridge/v1/*`). Node is **not**
+installed or run on Hostinger. It is not an OAuth proxy to Google or Notion.
 
 ## Before connecting
 

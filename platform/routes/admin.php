@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ClientStatementController;
+use App\Http\Controllers\Admin\ConnectorOAuthController;
 use App\Http\Controllers\Admin\ContactDataExportController;
 use App\Http\Controllers\Admin\ConversationMediaController;
 use App\Http\Controllers\Admin\InvoicePdfController;
@@ -193,5 +194,8 @@ Route::post('/system/updates', [SystemUpdateController::class, 'apply'])->name('
     ->middleware('can:system.health')->withoutMiddleware(['db-current', 'two-factor']);
 Route::livewire('/recycle-bin', RecycleBin::class)->name('recycle-bin')->middleware('can:leads.delete');
 Route::livewire('/integrations', Integrations::class)->name('integrations')->middleware('can:integrations.manage');
+// Real connector authorisation: the browser round trip for OAuth providers (Google Workspace).
+Route::get('/integrations/oauth/{provider}/start', [ConnectorOAuthController::class, 'start'])->name('integrations.oauth.start')->middleware('can:integrations.manage');
+Route::get('/integrations/oauth/{provider}/callback', [ConnectorOAuthController::class, 'callback'])->name('integrations.oauth.callback')->middleware('can:integrations.manage');
 Route::livewire('/integrations/whatsapp-templates', WhatsAppTemplates::class)->name('whatsapp.templates')->middleware('can:integrations.manage');
 Route::livewire('/data-import', DataImport::class)->name('data-import')->middleware('can:system.import');

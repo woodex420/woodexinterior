@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 
 final class IssueMcpToken
 {
-    public const ABILITIES = ['status.read', 'leads.read', 'quotes.read'];
+    public const ABILITIES = ['status.read', 'site.read', 'pages.read', 'leads.read', 'quotes.read'];
 
     /** @param list<string> $abilities */
     public function handle(User $user, string $password, string $name, array $abilities, int $days): string

@@ -13,6 +13,8 @@ use App\Domain\System\Models\IntegrationLog;
 use App\Domain\System\Models\TelegramLink;
 use App\Domain\System\Models\WebhookEvent;
 use App\Domain\System\Models\WhatsAppTemplate;
+use App\Integrations\Connectors\ConnectorManager;
+use App\Integrations\Connectors\IntegrationConnection;
 use App\Integrations\Google\GoogleConnection;
 use App\Integrations\Google\GoogleOAuth;
 use App\Integrations\Mcp\IntegrationCatalog;
@@ -30,6 +32,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
@@ -64,6 +67,19 @@ class Integrations extends Component
 
     #[Locked]
     public bool $showTelegramConfiguration = false;
+
+    /** Real connector authorisation, not a roadmap dialog. */
+    public bool $showConnectorModal = false;
+
+    #[Locked]
+    public string $connectorKey = '';
+
+    /** @var array<string, string> */
+    public array $connectorInput = [];
+
+    /** @var array<string, mixed>|null */
+    #[Locked]
+    public ?array $connectorResult = null;
 
     public function checkTelegramConfiguration(): void
     {
@@ -119,17 +135,11 @@ class Integrations extends Component
 
     public string $appCategory = 'all';
 
-    public bool $showIntegrationDetails = false;
-
-    #[Locked]
-    public string $detailsKey = '';
-
     public bool $showGoogleSetup = false;
 
     public function openGoogleSetup(): void
     {
         abort_unless($this->user()->can('integrations.manage'), 403);
-        $this->showIntegrationDetails = false;
         $this->showGoogleSetup = true;
     }
 
@@ -153,12 +163,87 @@ class Integrations extends Component
         $this->newBridgeToken = null;
     }
 
-    public function openIntegrationDetails(string $key): void
+    public function openConnector(string $key, ConnectorManager $manager): void
     {
         abort_unless($this->user()->can('integrations.manage'), 403);
-        abort_unless(collect(IntegrationCatalog::planned())->contains('key', $key), 404);
-        $this->detailsKey = $key;
-        $this->showIntegrationDetails = true;
+        abort_unless($this->user()->hasRole('owner'), 403);
+        $connector = $manager->connector($key);
+
+        // An OAuth provider is a browser round trip; a token provider is one field and a real test.
+        if ($connector->mode() === 'oauth') {
+            $this->redirectRoute('admin.integrations.oauth.start', ['provider' => $key], navigate: true);
+
+            return;
+        }
+
+        $this->connectorKey = $key;
+        $this->connectorInput = [];
+        $this->connectorResult = null;
+        $this->resetErrorBag();
+        $this->showConnectorModal = true;
+    }
+
+    public function connectConnector(ConnectorManager $manager): void
+    {
+        abort_unless($this->user()->hasRole('owner') && $this->user()->can('integrations.manage'), 403);
+        abort_unless($manager->connector($this->connectorKey)->mode() === 'token', 404);
+
+        try {
+            $connection = $manager->connectWithToken($this->connectorKey, $this->connectorInput, $this->user());
+        } catch (ValidationException $exception) {
+            $this->toastValidation($exception);
+            $this->addError('connectorInput', (string) collect($exception->errors())->flatten()->first());
+
+            return;
+        }
+
+        $this->showConnectorModal = false;
+        $this->connectorInput = [];
+        $this->toast('Connected '.$connection->account.' — the provider proved it.');
+    }
+
+    public function checkConnector(string $key, ConnectorManager $manager): void
+    {
+        abort_unless($this->user()->can('integrations.manage'), 403);
+        $result = $manager->check($key);
+        $this->connectorResult = ['key' => $key, ...$result];
+        $this->toast($result['ok']
+            ? 'Checked now: '.($result['account'] ?? 'connected').'.'
+            : 'Check failed: '.$result['error'], $result['ok'] ? 'success' : 'error');
+    }
+
+    public function checkAllConnectors(ConnectorManager $manager): void
+    {
+        abort_unless($this->user()->can('integrations.manage'), 403);
+        $checked = 0;
+        $failed = 0;
+
+        foreach ($manager->connectors() as $connector) {
+            if ($manager->connection($connector->key()) === null) {
+                continue;
+            }
+
+            $checked++;
+            $failed += $manager->check($connector->key())['ok'] ? 0 : 1;
+        }
+
+        if ($checked === 0) {
+            $this->toast('No connector is authorised yet, so there is nothing to check.', 'warning');
+
+            return;
+        }
+
+        $this->toast($failed === 0
+            ? $checked.' connection'.($checked === 1 ? '' : 's').' answered just now.'
+            : $failed.' of '.$checked.' connections did not answer. See the log.', $failed === 0 ? 'success' : 'error');
+    }
+
+    public function disconnectConnector(string $key, ConnectorManager $manager): void
+    {
+        abort_unless($this->user()->hasRole('owner') && $this->user()->can('integrations.manage'), 403);
+        abort_unless($manager->disconnect($key), 404);
+        $this->connectorResult = null;
+        $this->toast('Disconnected. The stored credential was deleted.');
     }
 
     public function openMcpSetup(): void
@@ -448,8 +533,72 @@ class Integrations extends Component
             ->latest('id')
             ->paginate(20);
 
+        $connectorManager = app(ConnectorManager::class);
+        $connectors = [];
+        $connections = [];
+
+        foreach ($connectorManager->connectors() as $connector) {
+            $connection = $connectorManager->connection($connector->key());
+            $connections[$connector->key()] = $connection;
+            $scopes = $connection instanceof IntegrationConnection ? ($connection->scopes ?? []) : [];
+            $meta = $connection instanceof IntegrationConnection ? ($connection->meta ?? []) : [];
+            $connectors[] = [
+                'key' => $connector->key(), 'name' => $connector->name(), 'icon' => $connector->icon(),
+                'mode' => $connector->mode(), 'detail' => $connector->detail(),
+                'missing' => $connector->missingRequirement(), 'fields' => $connector->fields(),
+                'status' => $connection?->status, 'account' => $connection?->account,
+                'last_checked' => $connection?->last_checked_at, 'last_error' => $connection?->last_error,
+                'scopes' => $scopes, 'meta' => $meta,
+                'connected_at' => $connection?->connected_at,
+            ];
+        }
+
+        $recent = fn (string $integration): bool => IntegrationLog::query()->where('integration', $integration)
+            ->where('ok', true)->where('created_at', '>', now()->subDays(7))->exists();
+        $workspace = $connections['google_workspace'] ?? null;
+        $githubConn = $connections['github'] ?? null;
+        $granted = $workspace instanceof IntegrationConnection ? ($workspace->scopes ?? []) : [];
+        $fresh = fn (?IntegrationConnection $connection): bool => $connection?->last_checked_at !== null
+            && $connection->last_checked_at->gt(now()->subMinutes(15));
+        $appState = function (?string $connectionStatus, bool $scopeOrProof, bool $isFresh): string {
+            if ($connectionStatus === 'error') {
+                return 'error';
+            }
+
+            if ($connectionStatus === null && ! $scopeOrProof) {
+                return 'off';
+            }
+
+            return $scopeOrProof ? ($isFresh ? 'connected' : 'check') : 'setup';
+        };
+
+        $connectedApps = [
+            ['name' => 'Gmail', 'icon' => 'mail', 'state' => $appState($workspace?->status, in_array('https://www.googleapis.com/auth/gmail.readonly', $granted, true), $fresh($workspace)),
+                'hint' => in_array('https://www.googleapis.com/auth/gmail.readonly', $granted, true) ? 'Read scope granted' : 'Connect Google Workspace'],
+            ['name' => 'Google Drive', 'icon' => 'folder', 'state' => $appState($workspace?->status, in_array('https://www.googleapis.com/auth/drive.metadata.readonly', $granted, true), $fresh($workspace)),
+                'hint' => in_array('https://www.googleapis.com/auth/drive.metadata.readonly', $granted, true) ? 'Read scope granted' : 'Connect Google Workspace'],
+            ['name' => 'GitHub', 'icon' => 'merge', 'state' => $appState($githubConn?->status, $githubConn?->status === 'connected', $fresh($githubConn)),
+                'hint' => $githubConn instanceof IntegrationConnection ? $githubConn->account : 'Add a personal access token'],
+            ['name' => 'WhatsApp', 'icon' => 'whatsapp', 'state' => $appState(null, $credentials->isConfigured() && $recent('whatsapp'), $recent('whatsapp')),
+                'hint' => $credentials->isConfigured() ? 'Cloud API credentials present' : 'No Meta credentials'],
+            ['name' => 'Telegram', 'icon' => 'send', 'state' => $appState(null, filled(config('services.telegram.bot_token')) && $recent('telegram'), $recent('telegram')),
+                'hint' => filled(config('services.telegram.bot_token')) ? 'Bot token present' : 'No bot token'],
+        ];
+
+        if (is_string(session('connector_status'))) {
+            $this->toast((string) session('connector_status'));
+        }
+
+        if (is_string(session('connector_error'))) {
+            $this->toast((string) session('connector_error'), 'error');
+        }
+
         return view('livewire.admin.system.integrations', [
             'cards' => $cards,
+            'connectors' => $connectors,
+            'connectorForm' => collect($connectors)->firstWhere('key', $this->connectorKey),
+            'connections' => $connections,
+            'connectedApps' => $connectedApps,
             'whatsappSource' => $credentials->source(),
             'googleConnection' => $googleConnection,
             'googleConfigured' => GoogleOAuth::configured(),
@@ -458,7 +607,6 @@ class Integrations extends Component
             'plannedCount' => $plannedCount,
             'bridgeKeys' => $bridgeKeys,
             'activeBridgeCount' => McpAccessToken::query()->whereNull('revoked_at')->where('expires_at', '>', now())->count(),
-            'details' => collect(IntegrationCatalog::planned())->firstWhere('key', $this->detailsKey),
             'telegramConfiguration' => $this->showTelegramConfiguration && $this->user()->hasRole('owner')
                 ? app(TelegramConfiguration::class)->inspect() : null,
             'logs' => $logs,

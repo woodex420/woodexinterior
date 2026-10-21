@@ -62,6 +62,11 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect_uri' => env('GOOGLE_REDIRECT_URI'),
         'sign_in_enabled' => env('GOOGLE_SIGN_IN_ENABLED', false),
+        // Workspace data access is a separate consent and a separate connection (App\Integrations\Connectors).
+        'workspace_redirect_uri' => env('GOOGLE_WORKSPACE_REDIRECT_URI', rtrim((string) env('APP_URL', ''), '/').'/admin/integrations/oauth/google/callback'),
+        'workspace_scopes' => array_values(array_filter(array_map('trim', explode(' ', (string) env('GOOGLE_WORKSPACE_SCOPES',
+            'openid email https://www.googleapis.com/auth/drive.metadata.readonly https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.readonly'
+        ))))),
     ],
 
     'turnstile' => [

@@ -47,7 +47,7 @@ No external MCP-server consumption, arbitrary URL proxying, shell execution, rem
 
 ## Deployment and acceptance
 
-This session is closed after the previous deployment PR merged. These additional files are local changes only. A new coding session is needed to publish them; no push, PR or production deployment is attempted here.
+**2026-10-21 update:** these files are no longer local-only. The bridge, the remote MCP endpoint (`POST /api/mcp`) and the connector engine are committed on the working branch and open in a PR. Production still needs **System → Database update** for the migrations (`mcp_access_tokens`, `integration_connections`) before anything can be created there.
 
 After a future deployment, apply **System → Database update** (new `mcp_access_tokens` migration), confirm owner access, create a minimum-scope key, install the adapter **locally** with Node.js 22+ and `npm ci`, discover tools, verify status and scoped reads, and verify revocation immediately denies the next request. Keep all real keys out of screenshots, prompts, repositories and support reports.
 

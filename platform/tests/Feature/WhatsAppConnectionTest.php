@@ -179,7 +179,7 @@ it('shows whatsapp as configured on the card and connected after a live test', f
 
     // The card itself only ever claims "Configured" — a delivery check is what proves the connection.
     $component = Livewire::actingAs($this->userWithRole('admin'))->test(Integrations::class);
-    $component->assertSee('Configured')->assertDontSee('Not connected');
+    $component->assertSee('Configured')->assertSee('Cloud API credentials present');
 
     $gateway = (new FakeWhatsAppGateway)->configured(true);
     $this->app->instance(WhatsAppGateway::class, $gateway);

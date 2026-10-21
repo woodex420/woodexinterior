@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Bridge\BridgeController;
+use App\Http\Controllers\Api\Bridge\McpHttpController;
 use App\Http\Controllers\Api\Public\ChatWidgetController;
 use App\Http\Controllers\Api\Public\LeadController;
 use App\Http\Controllers\Website\LegacySiteBridgeController;
@@ -48,7 +49,14 @@ Route::match(['get', 'post'], '/chat.php', [LegacySiteBridgeController::class, '
     ->middleware('throttle:public-site')
     ->name('legacy.chat');
 
-// Read-only REST backing for the local stdio MCP adapter. This is not a public remote MCP endpoint.
+// Remote MCP (JSON-RPC 2.0 over HTTPS) for any MCP client: URL + `wx_mcp_` bearer key. Read-only tools only.
+Route::post('/mcp', McpHttpController::class)
+    ->middleware(['throttle:120,1', AuthenticateMcpBridge::class])
+    ->name('api.mcp');
+// Streamable HTTP clients may probe with GET; this endpoint answers JSON-RPC over POST only.
+Route::get('/mcp', fn () => response()->json(['error' => 'Use POST with a JSON-RPC body.'], 405)->header('Allow', 'POST'));
+
+// Read-only REST backing for the local stdio MCP adapter. Kept for older clients; /api/mcp is the same tools.
 Route::prefix('bridge/v1')->name('api.bridge.')->middleware([
     'throttle:120,1',
     AuthenticateMcpBridge::class,

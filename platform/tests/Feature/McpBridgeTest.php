@@ -125,12 +125,14 @@ it('rejects write scopes instead of silently widening a key', function () {
     expect(McpAccessToken::query()->count())->toBe(0);
 });
 
-it('supports search categories and honest roadmap requirement details', function () {
+it('shows the connected-apps strip, real connectors and honest prerequisites', function () {
     $this->actingAs($this->userWithRole('owner'));
-    Livewire::test(Integrations::class)->assertSee('Google Drive')->assertSee('Google Sheets')->assertSee('Notion')
-        ->set('appCategory', 'workspace')->assertDontSee('Telegram bot')->assertSee('Google Meet')
-        ->set('appSearch', 'Notion')->assertSee('Notion')->assertDontSee('Google Drive')
-        ->call('openIntegrationDetails', 'notion')->assertSee('Roadmap')->assertSee('explicitly shared pages');
+    Livewire::test(Integrations::class)
+        ->assertSee('Connected apps')->assertSee('Google Drive')->assertSee('GitHub')
+        ->assertSee('Connectors you can authorise now')->assertSee('Google Workspace')->assertSee('Custom API')
+        ->assertSee('Notion')->assertSee('Other connections')
+        ->set('appCategory', 'social')->assertSee('LinkedIn')->assertDontSee('Telegram bot')
+        ->set('appCategory', 'all')->set('appSearch', 'Notion')->assertSee('Notion')->assertDontSee('Facebook');
 });
 
 it('rechecks visibility after the issuing owner is demoted', function () {

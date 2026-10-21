@@ -223,37 +223,65 @@ is the two things the old screen was built for after launch: **watch what visito
 **turn a miss into a rule in one press**. Both need a hits table, which is the schema approval already listed
 in §7 item 4. The cheap ones that need no table are the **On/Off toggle**, the **410 path**, and **Load plan**.
 
-## 11. Integrations and MCP: what is actually there, and what to update
+## 11. Integrations and MCP — rebuilt as real connectors (2026-10-21)
 
-This is **not** a v2.1 screen to port. The MCP bridge is an OS feature that already shipped
-(`docs/INTEGRATIONS-MCP-PLAN.md`, `platform/STATE.md`), and the v2.1 admin only had labels for it
-(`conn_list`, `crm_wa_status`, `gdata_status`, `tg_get` — the 22 retired actions in §4).
+v2.1's Integrations screen was **not** among the 21 Website modules copied into this repository
+(`platform/public/assets/admin-v21/PORT-NOTES.md`). Its feature set was reconstructed from the calls it made —
+`conn_list` (connector registry with `connected / error`), `gdata_status` (Google data access),
+`crm_wa_status`, `tg_get` — and from the dashboard widget "Connected apps": Gmail, Google Drive, GitHub,
+WhatsApp and Telegram with *Connected / Needs setup / Error / Not connected*.
 
-**What exists today**
+The owner's correction of 21 Oct: **"no document page, a real integration system, MCP not dummy."**
+The rebuild therefore removed the "View requirements → provider documentation" dialog and replaced it with
+connectors that authorise and prove a credential.
+
+**Built**
 
 | Piece | Where | State |
 |---|---|---|
-| Hub with 12 services, search, requirements dialogs | `/admin/settings/integrations` (`Livewire/Admin/System/Integrations.php`) | live; every service is labelled **Planned**, no fake connect toggles |
-| Bridge keys | same screen, owner-only | live — password-confirmed, hashed, 1–90 days, scopes `status.read`, `leads.read`, `quotes.read`, revocable, one-time plaintext |
-| Read-only JSON bridge | `POST/GET /api/bridge/v1/{status,leads,quotes}` | live, rate-limited 120/min, every successful read audited in `integration_logs` |
-| Local stdio MCP adapter | `tools/mcp-bridge/` (Node 22+, `@modelcontextprotocol/server`) | 3 tools: `woodex_status`, `woodex_list_leads`, `woodex_list_quotes`; 15 bridge tests |
-| Google identity | `App\Integrations\Google` | basic sign-in only, explicitly **not** Workspace data |
-| Telegram | `App\Integrations\Telegram` | configured by file, test message + webhook check |
+| Connection registry | `integration_connections` (migration `2026_10_21_140000`) | one row per authorised provider; credentials encrypted with the app key, hidden from every array/JSON |
+| Connector engine | `App\Integrations\Connectors` (`Connector`, `ConnectorManager`, `ConnectorRegistry`) | connect → provider asked → store; check → provider asked again; disconnect → revoke + delete |
+| GitHub | `GithubConnector` (personal access token) | real `GET /user` before storage; account, repositories, rate limit; 401 refuses and stores nothing |
+| Google Workspace | `GoogleWorkspaceConnector` (authorization-code flow with the client secret) | Drive metadata, Sheets, Gmail, Calendar read scopes on a separate consent from identity sign-in; token proved against `tokeninfo`; scopes stored as Google reports them |
+| Custom API | `CustomApiConnector` | any public https endpoint + bearer token; SSRF guard (no http, localhost, private ranges); provider-reported `ok:false` counts as failure |
+| Browser callback | `/admin/integrations/oauth/{provider}/{start,callback}` | signed, 10-minute state; owner-only; nothing stored before consent |
+| Connected apps strip | `/admin/integrations` | Gmail · Drive · GitHub · WhatsApp · Telegram, four states, each backed by a real call in the last 15 minutes (or "Needs check") |
+| Remote MCP | `POST /api/mcp` (`McpHttpController`) | JSON-RPC 2.0 over HTTPS with the same `wx_mcp_` keys; `initialize`, `tools/list`, `tools/call`, `ping`; no local Node adapter needed |
+| Website + SEO tools | `App\Integrations\Mcp\McpTools` | `woodex_site_status`, `woodex_list_pages`, `woodex_get_page`, `woodex_seo_report` (from `FileAudit`, the 142 files) plus `woodex_status`, `woodex_list_leads`, `woodex_list_quotes` |
+| Scopes | `IssueMcpToken::ABILITIES` | `status.read`, `site.read`, `pages.read`, `leads.read`, `quotes.read`; the key's scopes **and** the issuing user's live permissions both apply |
+| Audit | `integration_logs` | connect, probe/check, disconnect and every `tools/call` (key id, not the key) |
 
-**What should change, and what should not**
+**Verified on the preview (33143)**
 
-1. **Add website tools — the real gap.** The bridge can read leads and quotes, but not a single **page**, and
-   the website is now 142 files. Three read tools make the bridge match the system it fronts:
-   `woodex_list_pages` (path, url, title, size, mtime), `woodex_get_page` (title, description, headings,
-   images without alt, internal links) and `woodex_site_status` (page count, sitemap count, redirects,
-   "not firing", missing alt). Scopes `pages.read` / `site.read`, same key, same audit. **Read-only stays.**
-2. **Do not add write tools.** A write tool would be a second way to edit files beside the builder and
-   Find & replace. The plan already says write tools wait for a separate approval; that still holds.
-3. **Do not add the 12 "Planned" connectors.** Every one needs OAuth credentials the owner has not supplied;
-   the cards are honest today and would become dishonest with a switch that cannot work.
-4. **Publish the bridge before promising it.** `INTEGRATIONS-MCP-PLAN.md` still says *"local changes only… a
-   new coding session is needed to publish them"*. The migration (`mcp_access_tokens`) and the routes are in
-   the repository, but the production database has to run **System → Database update** before a key can be
-   created there. That is the one deploy step this section adds.
+* `woodex_site_status` → 142 pages, 142 sitemap URLs, 0 broken links, 0 images without alt.
+* `woodex_get_page /about/` → `about/index.html`, "About Woodex Interior | Design & Build Lahore", 814 words, one H1.
+* `woodex_list_pages?query=wardrobe` → 3 real URLs.
+* Custom API: `401` refused with "The service answered 401. The token was refused." and no row stored; a `200`
+  endpoint connected, was checked, and disconnected from the screen.
+* GitHub: a connection made with the sandbox's own `gh` token was re-checked from the screen
+  ("checked 0 seconds ago") and disconnected from the screen. **Caveat:** this sandbox's egress proxy
+  substitutes its own GitHub credential, so a *rejected* GitHub token cannot be demonstrated here; the 401
+  path is covered by `ConnectorTest` with `Http::fake`.
 
-None of §10–§11 has been implemented. §11 items 1–2 are proposed, not built.
+**Still owner-side**
+
+1. **Google Workspace consent.** Add `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` (already used for identity) and
+   register `https://woodex.com.pk/admin/integrations/oauth/google/callback` as a second redirect URI. Until then
+   the card says exactly that and offers no button that cannot work.
+2. **GitHub token.** Paste a fine-grained token on the card; nothing else is needed.
+3. **Provider apps for Notion, Slack, Zoom, Meta and LinkedIn.** They remain listed with the exact missing
+   prerequisite and no credential field. That is deliberate: a switch that cannot work would be a lie. Slack,
+   Notion and Zoom can already be reached through **Custom API** when the owner has a token.
+4. **Database update.** Production must run **System → Database update** once for `mcp_access_tokens` (existing)
+   and `integration_connections` (new) before either screen can store anything there.
+
+**Not done, on purpose**
+
+* No write tools. The builder and Find & replace stay the only ways to edit files; MCP is read-only.
+* No credential is collected for a provider that cannot complete a connection.
+* No token is logged, returned in JSON, or shown after it is saved. Only the account name and the provider's answer.
+
+## 12. Status of §10–§11
+
+§11 is **built and verified** (above). §10 redirects — the 36-redirect export and the On/Off, 410 and Load plan
+extras — is still waiting on the owner's export and a decision, so it remains a proposal.
