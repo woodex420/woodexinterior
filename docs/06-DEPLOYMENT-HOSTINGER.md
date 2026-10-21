@@ -53,6 +53,36 @@ there. It runs no build step except Composer. The repository is prepared for exa
         └── vendor/                       ← installed by Hostinger's Composer step
 ```
 
+### 2.1a Woodex OS 1: `platform/public/` is the live site (read before deploying)
+
+Since Woodex OS 1 the website **is** the files in `platform/public/`. The v1 pages ship in the repository, and
+every page published from the admin — an article, a study, a page made in Page builder — is a **new file on
+that server that is not in git**. hPanel's Git step updates tracked files and leaves untracked ones alone, so
+an ordinary deploy is safe; these are the three things that are not:
+
+| Never | Why |
+|---|---|
+| `git clean -fd` (or any deploy that deletes untracked files) inside the site folder | It deletes every page the owner published from the admin. |
+| Replacing the folder with a fresh clone/upload "to be safe" | Same effect: the pages only exist on that server. |
+| Restoring an old `public/` over the current one | Older pages come back and newer ones vanish. |
+
+What protects the pages:
+
+- **`woodex:site-backup`** — zips every page file under `public/` into
+  `storage/app/private/site-backups/site-<date>.zip` in the data folder (outside every `public_html`), keeps the
+  last **7**. It runs on the scheduler daily at **02:45** (`routes/console.php`), on top of the weekly full
+  `spatie/laravel-backup` run that already includes the application folder. 142 pages ≈ 2.5 MB per copy.
+- **Builder versions** — every save in Page builder keeps up to 40 previous HTML versions per page in
+  `storage/app/private/builder/<hash>/`, and a retired page moves to `storage/app/private/site-retired/…`.
+  Neither is in the deploy's way.
+
+To restore a page, unzip the dated archive over `platform/public/`:
+
+```bash
+cd ~/apps/woodexinterior/platform/public
+unzip -o ~/woodex-os/<site>/storage/app/private/site-backups/site-20261021-061746.zip insights/a-post/index.html
+```
+
 ### 2.2 First setup on `interior.woodex.com.pk`
 
 1. **Find the subdomain folder.** hPanel → Domains → Subdomains shows it, for example

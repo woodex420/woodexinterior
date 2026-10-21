@@ -1480,3 +1480,36 @@ a screen that no longer opens, and claims nothing.
 Tests: `StudioSeamTest` (8) — `cms_page_new` and `cms_page_duplicate` answer `ok:false` naming Service pages
 and the files, and the row count does not move. Gates: `tests/Feature/Website` **213 passed (1911)**; full
 suite **1227 passed, 1 skipped (6684)**; Pint clean; PHPStan no errors.
+
+### Step 21 — the pages the owner writes have a copy the deploy cannot touch (21 Oct 2026)
+
+Now that Publish really publishes (step 19), the site grows on the server: an article, a study or a builder
+page is a **file under `platform/public/` that is not in git**. The v1 pages ship in the repository, so a
+deploy puts those back — but the deploy only knows about them. Anything the owner published after go-live
+exists on that one machine, and the deployment document still described the site folder as "replaced on
+every deploy", which invites exactly the operation that would erase it.
+
+The safety net that existed: `spatie/laravel-backup` already runs `backup:run --only-db` daily and a full
+`backup:run` (which includes `base_path()`, so `public/` too) **weekly**, at 02:30. One week of publishing is
+a lot to lose, and restoring it means restoring the whole application folder.
+
+Added:
+
+- **`woodex:site-backup`** (`app/Console/Commands/SiteBackup.php`) — zips every `index.html` under `public/`
+  into `storage/app/private/site-backups/site-<date>.zip`, which lives in the data folder outside every
+  `public_html` (deploys never touch it). `--keep=7` by default; `assets/`, `build/`, `media/`, `admin/`,
+  `api/`, `builder/` and the rest of the application's folders are skipped, so a copy is the size of the
+  pages, not the theme. Measured on the real site: **142 page files → 2.5 MB**.
+- **Scheduled daily at 02:45** (`routes/console.php`), after the database backup.
+- **`docs/06-DEPLOYMENT-HOSTINGER.md` §2.1a** — "`platform/public/` is the live site": the three things a
+  deploy must never do (`git clean -fd`, a fresh clone/upload over the folder, restoring an old `public/`),
+  what protects the pages (this archive, the builder's 40 versions per page, retired pages in storage), and
+  the one-line restore.
+
+Verified in the preview: `php artisan woodex:site-backup` → *"Backed up 142 page file(s) … 2.5 MB"*; the
+archive is not in the repository and not under any web root.
+
+Tests: `SiteBackupTest` (2) — the archive holds `index.html`, `about/index.html` and
+`insights/a-post/index.html` and **not** `assets/index.html` or `media/index.html`; `--keep=1` prunes the
+older dated copy. Gates: `tests/Feature/Website` **215 passed (1921)**; full suite **1229 passed, 1 skipped
+(6694)**; Pint clean; PHPStan no errors.

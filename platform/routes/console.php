@@ -78,6 +78,9 @@ Schedule::command('woodex:social-agent')->weeklyOn(1, '09:30')
 // Backups (spatie/laravel-backup) and housekeeping.
 Schedule::command('backup:run --only-db')->dailyAt('02:30');
 Schedule::command('backup:run')->weeklyOn(0, '03:00');
+// Woodex OS 1: the site is `public/`. Pages published from the OS are new files on this server only, so they
+// get their own daily copy inside storage (the deployment's data folder), on top of the weekly full backup.
+Schedule::command('woodex:site-backup')->dailyAt('02:45');
 Schedule::command('backup:clean')->dailyAt('03:30');
 Schedule::command('backup:monitor')->dailyAt('04:00');
 Schedule::command('queue:prune-failed --hours=720')->dailyAt('04:15');
