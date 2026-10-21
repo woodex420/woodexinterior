@@ -117,6 +117,19 @@ final class BuilderFile
         return is_file(self::resolve($path));
     }
 
+    /**
+     * Does a page file answer this public URL? The website is the files, and the web server answers a file
+     * before the app runs — so a redirect from a URL that still has one would never fire.
+     */
+    public static function answers(string $url): bool
+    {
+        try {
+            return is_file(self::resolve(self::pathForUrl($url)));
+        } catch (ValidationException) {
+            return false;
+        }
+    }
+
     public static function read(string $path): string
     {
         $absolute = self::resolve($path);

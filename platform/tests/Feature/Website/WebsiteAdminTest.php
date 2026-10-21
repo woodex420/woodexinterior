@@ -214,6 +214,83 @@ it('imports the redirect map from a CSV and answers each old URL with one 301', 
         ->and(Redirect::query()->where('from_path', '/old-flat-design/')->first()->to_path)->toBe('/architecture/');
 });
 
+it('refuses a redirect from an address that is still a page, because the file answers first', function () {
+    // The website is the files and the web server answers a file before the app runs: a redirect from a URL
+    // that is still a page would never fire, so it is refused with the reason instead of stored as a dead row.
+    $site = sys_get_temp_dir().'/woodex-redirect-file-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($site.'/about');
+    File::put($site.'/index.html', '<html><head><title>Home</title></head><body></body></html>');
+    File::put($site.'/about/index.html', '<html><head><title>About</title></head><body></body></html>');
+    $this->app->usePublicPath($site);
+
+    $this->actingAs($this->editor);
+
+    Livewire::test(RedirectsIndex::class)
+        ->set('fromPath', '/about/')
+        ->set('toPath', '/contact/')
+        ->call('add')
+        ->assertDispatched('toast', type: 'error')
+        ->assertSee('still a page');
+
+    expect(Redirect::query()->where('from_path', '/about/')->exists())->toBeFalse();
+
+    // An address with no file is the one that can be redirected, and the screen says when the target is missing.
+    Livewire::test(RedirectsIndex::class)
+        ->set('fromPath', '/old-about/')
+        ->set('toPath', '/about/')
+        ->call('add')
+        ->assertDispatched('toast', type: 'success')
+        ->assertSee('It is live.');
+
+    expect(Redirect::query()->where('from_path', '/old-about/')->exists())->toBeTrue();
+
+    File::deleteDirectory($site);
+});
+
+it('skips imported rows whose old URL is still a page, and reads a spreadsheet paste', function () {
+    $site = sys_get_temp_dir().'/woodex-redirect-import-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($site.'/about');
+    File::put($site.'/index.html', '<html><head><title>Home</title></head><body></body></html>');
+    File::put($site.'/about/index.html', '<html><head><title>About</title></head><body></body></html>');
+    $this->app->usePublicPath($site);
+
+    $this->actingAs($this->editor);
+    $before = Redirect::query()->count();
+
+    Livewire::test(RedirectsIndex::class)
+        ->set('csv', "/about/,/contact/,301,still a page\n/old-tab/\t/about/\t301\tfrom a spreadsheet")
+        ->call('importCsv')
+        ->assertSee('1 redirect(s) imported')
+        ->assertSee('1 skipped because the old URL is still a page');
+
+    expect(Redirect::query()->count())->toBe($before + 1)
+        ->and(Redirect::query()->where('from_path', '/about/')->exists())->toBeFalse()
+        ->and(Redirect::query()->where('from_path', '/old-tab/')->first()?->note)->toBe('from a spreadsheet');
+
+    File::deleteDirectory($site);
+});
+
+it('marks redirects that cannot fire, so the screen never counts a dead row as a working 301', function () {
+    $site = sys_get_temp_dir().'/woodex-redirect-inert-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($site.'/about');
+    File::put($site.'/index.html', '<html><head><title>Home</title></head><body></body></html>');
+    File::put($site.'/about/index.html', '<html><head><title>About</title></head><body></body></html>');
+    $this->app->usePublicPath($site);
+
+    // A row that got in some other way (a SQL import, a page file added later) is shown as not firing.
+    Redirect::query()->create(['from_path' => '/about/', 'to_path' => '/contact/', 'code' => 301]);
+    Redirect::query()->create(['from_path' => '/old-page/', 'to_path' => '/about/', 'code' => 301]);
+
+    $this->actingAs($this->editor);
+
+    Livewire::test(RedirectsIndex::class)
+        ->assertSee('1 redirect(s) cannot fire')
+        ->assertSee('not firing')
+        ->assertSee('/old-page/');
+
+    File::deleteDirectory($site);
+});
+
 it('exports the redirect map as a CSV', function () {
     Redirect::factory()->create(['from_path' => '/old-page/', 'to_path' => '/interior-design/']);
     $this->actingAs($this->editor);

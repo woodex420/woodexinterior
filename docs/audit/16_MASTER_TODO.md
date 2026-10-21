@@ -1319,3 +1319,35 @@ Waiting on the owner: the same question for **Content library** (0 rows, no read
 reader. And the **36 redirects** still need the owner's export before a DB deploy.
 
 ---
+
+### Step 17 — the Redirects screen tells the truth (21 Oct 2026)
+
+The last launch-critical screen that could claim a result it cannot produce was **Redirects**. The site is its
+files and the web server answers a file **before** the app runs, so a redirect whose old URL is still a page
+never fires — and the screen used to store it and say "Redirect added." anyway. Its third stat was also stale:
+"Old URLs to map = 143 − total", a number from the row-rendering days.
+
+- **A redirect whose old URL is still a page is refused**, with the reason and the way forward: *"…is still a
+  page: its file answers first, so a redirect from it would never fire. Delete the page in All pages, then add
+  the redirect."* The row is not written.
+- **Rows that cannot fire are marked.** A row that reached the table another way (an SQL import, a page file
+  added later) is counted in a new **Not firing** stat, shown in a warning banner and tagged *not firing* in the
+  list — the screen never counts a dead row as a working 301.
+- **The import says what it skipped.** Old URLs that are still pages are skipped and named (up to three);
+  unreadable lines are counted; rows whose new URL has no page file are imported but flagged as worth checking.
+  A **spreadsheet paste (tabs)** is read as well as a CSV — that is how the 36 old rows will most likely arrive.
+- **A missing target is called out** after adding: *"Redirect added, but there is no page file at /… — check the
+  new URL."* The redirect is still stored, because the target may be an app page and a typo is the owner's call.
+
+Verified in the sandbox: `/zz-old-page/` (no file) → **301 → /about/**, hits counted; `/about/` still answers
+**200** from its file, and the screen showed *Not firing: 1* with the row tagged (both test rows removed
+afterwards; 0 rows, `/zz-old-page/` back to 404).
+
+Tests: `WebsiteAdminTest` — refuses a redirect from a live page and names the reason; an address with no file is
+stored and the screen reports the target state; an import skips the still-a-page line, reads a tab-separated
+line and keeps its note; a row that cannot fire is counted and tagged. **12 passed (59 assertions)** in that
+file; `tests/Feature/Website` **205 passed (1867)**; full suite **1219 passed, 1 skipped (6640)**; Pint clean;
+PHPStan no errors.
+
+Waiting on the owner: the **36 rows** — paste the export into the import box (`old, new, code, note`, or the SQL
+result as TSV) and the screen will tell you exactly which old URLs are still pages.

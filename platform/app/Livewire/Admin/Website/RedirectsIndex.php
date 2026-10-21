@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Website;
 
+use App\Domain\Website\Builder\BuilderFile;
 use App\Domain\Website\Models\Page;
 use App\Domain\Website\Models\Redirect;
 use App\Livewire\Concerns\InteractsWithAdmin;
@@ -54,11 +55,34 @@ class RedirectsIndex extends Component
             'code' => ['required', 'in:301,302'],
         ], [], ['fromPath' => 'old URL', 'toPath' => 'new URL']);
 
-        $this->store($this->fromPath, $this->toPath, $this->code, $this->note);
+        $from = Redirect::normalize($this->fromPath);
+        $to = Redirect::normalize($this->toPath);
+
+        if ($from === $to || $from === '/') {
+            $this->result = 'That redirect would point at itself — nothing to add.';
+            $this->toast($this->result, 'error');
+
+            return;
+        }
+
+        // A file answers before the app does: a redirect from a URL that is still a page would never fire, so
+        // the row is not stored and the screen says why instead of claiming a redirect that does nothing.
+        if (BuilderFile::answers($from)) {
+            $this->result = $from.' is still a page: its file answers first, so a redirect from it would never '
+                .'fire. Delete the page in All pages, then add the redirect.';
+            $this->toast($this->result, 'error');
+
+            return;
+        }
+
+        $this->store($from, $to, $this->code, $this->note);
 
         $this->fromPath = '';
         $this->toPath = '';
         $this->note = '';
+        $this->result = BuilderFile::answers($to)
+            ? 'Redirect added. It is live.'
+            : 'Redirect added, but there is no page file at '.$to.' — check the new URL.';
         $this->toast('Redirect added.');
     }
 
@@ -81,9 +105,12 @@ class RedirectsIndex extends Component
         $lines = preg_split('/\r\n|\r|\n/', trim($this->csv)) ?: [];
         $added = 0;
         $skipped = 0;
+        $dangling = 0;
+        $stillPages = [];
 
         foreach ($lines as $line) {
-            $row = str_getcsv(trim($line));
+            // A spreadsheet copy is tab-separated, a CSV is comma-separated; both are accepted.
+            $row = str_getcsv(trim($line), str_contains($line, "\t") ? "\t" : ',');
 
             if (count($row) < 2) {
                 $skipped++;
@@ -105,13 +132,48 @@ class RedirectsIndex extends Component
                 continue;
             }
 
+            $from = Redirect::normalize($from);
+            $to = Redirect::normalize($to);
+
+            if ($from === $to || $from === '/') {
+                $skipped++;
+
+                continue;
+            }
+
+            // The old URL is still a page: its file answers first, so this row would never fire.
+            if (BuilderFile::answers($from)) {
+                $skipped++;
+                $stillPages[] = $from;
+
+                continue;
+            }
+
+            if (! BuilderFile::answers($to)) {
+                $dangling++;
+            }
+
             $code = isset($row[2]) && (int) $row[2] === 302 ? 302 : 301;
             $this->store($from, $to, $code, $row[3] ?? null);
             $added++;
         }
 
         $this->csv = '';
-        $this->result = $added.' redirect(s) imported'.($skipped > 0 ? ', '.$skipped.' line(s) skipped.' : '.');
+        $this->result = $added.' redirect(s) imported.';
+
+        if ($stillPages !== []) {
+            $this->result .= ' '.count($stillPages).' skipped because the old URL is still a page ('
+                .implode(', ', array_slice($stillPages, 0, 3)).(count($stillPages) > 3 ? '…' : '').').';
+        }
+
+        if ($skipped > count($stillPages)) {
+            $this->result .= ' '.($skipped - count($stillPages)).' line(s) unreadable.';
+        }
+
+        if ($dangling > 0) {
+            $this->result .= ' '.$dangling.' point at an address with no page file — check them.';
+        }
+
         $this->toast($this->result);
     }
 
@@ -135,6 +197,12 @@ class RedirectsIndex extends Component
 
     public function render(): View
     {
+        // Rows that predate the file check (or were imported straight into the table) can name a URL that is
+        // still a page; those never fire, and the screen says so rather than counting them as working 301s.
+        $notFiring = Redirect::query()->get(['from_path'])->filter(
+            fn (Redirect $redirect): bool => BuilderFile::answers((string) $redirect->from_path),
+        );
+
         return view('livewire.admin.website.redirects-index', [
             'redirects' => Redirect::query()
                 ->when($this->search !== '', fn ($query) => $query->where(fn ($q) => $q
@@ -146,15 +214,14 @@ class RedirectsIndex extends Component
                 ->get(),
             'total' => Redirect::query()->count(),
             'visits' => (int) Redirect::query()->sum('hits'),
+            'notFiring' => $notFiring->count(),
+            'inert' => $notFiring->map(fn (Redirect $redirect): string => (string) $redirect->from_path)->all(),
             'pages' => Page::query()->orderBy('slug')->get(['id', 'slug', 'title']),
         ]);
     }
 
     private function store(string $from, string $to, int $code, ?string $note): void
     {
-        $from = Redirect::normalize($from);
-        $to = Redirect::normalize($to);
-
         if ($from === $to || $from === '/') {
             return;
         }
