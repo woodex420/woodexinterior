@@ -9,7 +9,7 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,284 passed · 1 skipped · 6,976 assertions** · Pint clean · PHPStan 0 errors |
+| Tests | **1,307 passed · 1 skipped · 7,044 assertions** · Pint clean · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
