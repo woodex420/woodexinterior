@@ -15,6 +15,15 @@
     <livewire:admin.global-search />
 
     <div class="ml-auto flex items-center gap-2">
+        {{-- Honesty marker: a local install is seeded with demo contacts, leads, quotations and tasks.
+             They must never be read as client data, so every admin page says so where the team looks. --}}
+        @if (app()->isLocal())
+            <span class="flex items-center gap-1.5 rounded-full border border-warning-500/30 bg-warning-50 px-3 py-1 text-theme-xs font-medium text-warning-700 dark:bg-warning-500/10 dark:text-warning-400"
+                  title="APP_ENV=local: contacts, leads, quotations and tasks may be demo records created by DemoSeeder. Production installs start empty.">
+                <x-icon name="alert" class="size-4" /> Demo data
+            </span>
+        @endif
+
         <button type="button" @click="$store.theme.toggle()"
                 class="flex size-10 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5"
                 aria-label="Toggle dark mode">

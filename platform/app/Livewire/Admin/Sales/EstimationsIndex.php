@@ -27,7 +27,7 @@ class EstimationsIndex extends Component
     public function render(): View
     {
         $estimates = Estimate::query()
-            ->with(['contact:id,name', 'quote:id,number,status', 'creator:id,name'])
+            ->with(['contact:id,name', 'quote:id,number,status', 'creator:id,name', 'lead:id,ref'])
             ->when($this->status !== '', fn ($query) => $query->where('status', $this->status))
             ->orderByDesc('id')
             ->limit(60)

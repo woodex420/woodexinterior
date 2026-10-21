@@ -37,6 +37,11 @@
                             <td class="px-3 py-2.5">
                                 <a href="{{ route('admin.estimations.show', $estimate) }}" class="font-medium text-brand-600 hover:underline dark:text-brand-400">{{ $estimate->number }}</a>
                                 <p class="text-gray-500 dark:text-gray-400">{{ $estimate->title }}</p>
+                                @if ($estimate->lead !== null)
+                                    <p class="text-theme-xs text-gray-400">
+                                        Enquiry <a href="{{ route('admin.leads.show', $estimate->lead) }}" class="hover:underline">{{ $estimate->lead->ref }}</a>
+                                    </p>
+                                @endif
                             </td>
                             <td class="px-3 py-2.5">{{ $estimate->service_key }}</td>
                             <td class="px-3 py-2.5">{{ $estimate->contact?->name ?? '—' }}</td>
@@ -63,7 +68,18 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="px-3 py-8 text-center text-gray-500 dark:text-gray-400">No estimates yet — start one for a website enquiry or a phone call.</td></tr>
+                        <tr>
+                            <td colspan="7" class="px-3 py-10 text-center">
+                                <p class="text-gray-500 dark:text-gray-400">No estimates yet — every enquiry carries the service and the size, so an estimate starts from the lead.</p>
+                                <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
+                                    <a href="{{ route('admin.leads.index') }}"><x-admin.button variant="secondary" icon="users">Start from an enquiry</x-admin.button></a>
+                                    @can('estimates.manage')
+                                        <a href="{{ route('admin.estimations.create') }}"><x-admin.button icon="plus">New estimate</x-admin.button></a>
+                                    @endcan
+                                </div>
+                                <p class="mt-2 text-theme-xs text-gray-400">A phone call with no lead yet? Create the lead first — one timeline, one source of truth.</p>
+                            </td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>

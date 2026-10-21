@@ -21,6 +21,7 @@ use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Models\PipelineStage;
 use App\Domain\Crm\Models\SiteVisit;
 use App\Domain\Sales\Actions\CreateQuoteFromEstimate;
+use App\Domain\Sales\Models\Estimate;
 use App\Domain\Sales\Models\EstimatorRate;
 use App\Livewire\Concerns\BooksSiteVisits;
 use App\Livewire\Concerns\InteractsWithAdmin;
@@ -444,6 +445,9 @@ class LeadShow extends Component
             'lines' => BusinessLine::options(),
             'priorities' => LeadPriority::options(),
             'estimate' => $this->estimate(),
+            'estimates' => $this->user()->can('estimates.view')
+                ? Estimate::query()->where('lead_id', $lead->id)->with('quote:id,number,status')->latest('id')->get()
+                : collect(),
             'lakh' => $sales->lakh_grouping,
         ])->title($lead->contact->name.' · '.$lead->ref);
     }

@@ -8,6 +8,19 @@
         </x-slot:actions>
     </x-admin.page-header>
 
+    @if ($lead)
+        <div class="mb-5 flex items-start gap-3 rounded-xl border border-brand-500/20 bg-brand-50/60 px-4 py-3 text-theme-sm dark:bg-white/5">
+            <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400">
+                <x-icon name="users" class="size-4" />
+            </span>
+            <p class="min-w-0 flex-1 text-gray-600 dark:text-gray-300">
+                Started from enquiry
+                <a href="{{ route('admin.leads.show', $lead) }}" class="font-medium text-brand-600 hover:underline dark:text-brand-400">{{ $lead->ref }}</a>
+                — the estimate and the quotation it becomes stay linked to it. The service and size came from the enquiry; check them against the brief before saving.
+            </p>
+        </div>
+    @endif
+
     <div class="grid gap-6 lg:grid-cols-3">
         <div class="lg:col-span-2 space-y-6">
             <x-admin.card title="The job">

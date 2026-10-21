@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Admin\Sales;
 
 use App\Domain\Crm\Models\Contact;
+use App\Domain\Crm\Models\Lead;
 use App\Domain\Sales\Actions\ComputeEstimate;
 use App\Domain\Sales\Actions\ConvertEstimateToQuote;
 use App\Domain\Sales\Actions\ReviewEstimate;
@@ -35,6 +36,9 @@ class EstimateBuilder extends Component
 
     public ?int $estimateId = null;
 
+    /** The enquiry this estimate is being built for (?lead=…), so the quotation keeps the thread. */
+    public ?int $leadId = null;
+
     public string $number = '';
 
     public string $title = '';
@@ -58,15 +62,28 @@ class EstimateBuilder extends Component
 
     public string $status = 'draft';
 
-    public function mount(?int $estimate = null): void
+    public function mount(?int $estimate = null, ?int $lead = null): void
     {
         abort_unless($this->user()->can('estimates.view'), 403);
 
+        // Full-page Livewire routes get route parameters, not the query string: the lead-page
+        // button links to ?lead=…, so read it here.
+        if ($lead === null) {
+            $lead = request()->integer('lead') ?: null;
+        }
+
         if ($estimate === null) {
+            if ($lead === null) {
+                return;
+            }
+
+            $this->startFromLead(Lead::query()->with('contact:id,name')->findOrFail($lead));
+
             return;
         }
 
         $model = Estimate::query()->findOrFail($estimate);
+        $this->leadId = $model->lead_id;
 
         $this->estimateId = $model->id;
         $this->number = $model->number;
@@ -85,6 +102,33 @@ class EstimateBuilder extends Component
         $this->status = $model->status->value;
     }
 
+    /**
+     * A phone call or a website enquiry already told us the service and the size; the builder opens
+     * with those fields filled and the enquiry linked, so the estimate is not typed twice. If the
+     * enquiry's service is not in the rate book (an old label, a bespoke job) the service stays
+     * unset and the person picks the right line — never a guessed rate.
+     */
+    private function startFromLead(Lead $lead): void
+    {
+        $this->leadId = $lead->id;
+        $this->contactId = (string) ($lead->contact_id ?? '');
+
+        if ($lead->area_sqft !== null && $lead->area_sqft > 0) {
+            $this->quantity = (string) $lead->area_sqft;
+        }
+
+        $rate = null;
+
+        if ($lead->service !== null) {
+            $rate = EstimatorRate::query()->where('key', $lead->service)->where('is_active', true)->first();
+        }
+
+        $this->serviceKey = $rate instanceof EstimatorRate ? $rate->key : '';
+        $this->title = $rate !== null
+            ? $rate->label.' — '.$lead->contact->name
+            : 'Estimate for '.$lead->contact->name.' ('.$lead->ref.')';
+    }
+
     public function render(): View
     {
         return view('livewire.admin.sales.estimate-builder', [
@@ -93,6 +137,7 @@ class EstimateBuilder extends Component
             'catalogItems' => CatalogItem::query()->where('is_active', true)->orderBy('title')->get(['id', 'title', 'unit', 'rate_minor', 'business_line']),
             'summary' => $this->summary(),
             'estimate' => $this->estimateId !== null ? Estimate::query()->with('quote:id,number,status')->find($this->estimateId) : null,
+            'lead' => $this->leadId !== null ? Lead::query()->find($this->leadId, ['id', 'ref', 'contact_id', 'service', 'area_sqft']) : null,
         ]);
     }
 
@@ -183,6 +228,7 @@ class EstimateBuilder extends Component
             'title' => $this->title,
             'service_key' => $this->serviceKey,
             'contact_id' => $this->contactId !== '' ? (int) $this->contactId : null,
+            'lead_id' => $this->leadId,
             'quantity' => $this->quantity,
             'finish' => $this->finish,
             'contingency_bp' => (int) $this->contingencyBp,

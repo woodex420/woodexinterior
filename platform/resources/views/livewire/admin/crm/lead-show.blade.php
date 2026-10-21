@@ -134,6 +134,30 @@
                 </x-admin.card>
             @endif
 
+            {{-- Estimations (P8.3): the enquiry's own priced record, linked both ways --}}
+            @can('estimates.view')
+                <x-admin.card title="Estimations">
+                    <x-slot:actions>
+                        @can('estimates.manage')
+                            <x-admin.button size="sm" icon="calculator" :href="route('admin.estimations.create', ['lead' => $lead->id])">Start estimate</x-admin.button>
+                        @endcan
+                    </x-slot:actions>
+                    @forelse ($estimates as $est)
+                        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 py-2.5 last:border-0 dark:border-gray-800">
+                            <div>
+                                <a href="{{ route('admin.estimations.show', $est) }}" class="font-medium text-brand-600 hover:underline dark:text-brand-400">{{ $est->number }}</a>
+                                <p class="text-theme-xs text-gray-500 dark:text-gray-400">{{ ucfirst($est->status->value) }} · {{ \App\Support\Money::ofMinor((int) ($est->computed['total_minor'] ?? 0))->format() }}</p>
+                            </div>
+                            @if ($est->quote !== null)
+                                <a href="{{ route('admin.quotes.show', $est->quote) }}" class="text-theme-sm text-brand-600 hover:underline dark:text-brand-400">{{ $est->quote->number }}</a>
+                            @endif
+                        </div>
+                    @empty
+                        <p class="text-theme-sm text-gray-500 dark:text-gray-400">No estimate for this enquiry yet. Starting one fills the service and the size from the enquiry — check them, add the contingency, and the estimate is priced from the rate book.</p>
+                    @endforelse
+                </x-admin.card>
+            @endcan
+
             {{-- Quotations (QUO-003/016) --}}
             @can('viewAny', \App\Domain\Sales\Models\Quote::class)
                 <x-admin.card title="Quotations">

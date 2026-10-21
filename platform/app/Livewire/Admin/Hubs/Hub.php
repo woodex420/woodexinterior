@@ -80,7 +80,7 @@ abstract class Hub extends Component
             'tabs' => $tabs,
             'active' => $active,
             'activeAlias' => $this->alias($active['component']),
-        ]);
+        ])->title($config['title']);
     }
 
     /**

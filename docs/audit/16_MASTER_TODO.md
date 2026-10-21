@@ -1722,3 +1722,36 @@ connected without their apps — their cards now say exactly what is missing and
 
 Tests: `ConnectorTest` (14) and `McpHttpTest` (9); `McpBridgeTest` **18**; integrations-adjacent suites
 **163** green; Pint clean; PHPStan no errors. Screenshot `/home/user/integrations-rebuilt-2026-10-21.png`.
+
+### Step 26 — deep QA: an enquiry can become an estimate, and the sidebar stops lying (21 Oct 2026)
+
+**The finding.** 45 admin routes answered 200, the modules were real, and the database was almost empty:
+`estimates`, `invoices`, `payments`, `projects`, `conversations`, `journal_entries` all had zero rows while
+26 enquiries sat in CRM. The reason was structural, not cosmetic — the only link from a lead jumped straight
+to a quotation (`CreateQuoteFromEstimate`), which never writes an `estimates` row. The Estimations screen was
+therefore *guaranteed* to stay empty no matter how much real work the studio did.
+
+**What changed (Slice A).**
+
+* The estimate builder opens from an enquiry (`/admin/estimations/new?lead=…`), fills the service, size and
+  client from real lead fields, keeps `lead_id` on the saved estimate and shows the enquiry on both sides.
+  A service the rate book does not price (e.g. an old `kitchen-design` enquiry) leaves the service **unset** —
+  never a guessed rate.
+* The Estimations list shows the enquiry reference and its empty state now has two real actions instead of
+  one line of prose.
+* Eight workflow hubs (`Leads`, `Contacts`, `Tasks & Visits`, `Quotations`, `Invoices`, `Payments`,
+  `Documents`, `Reports`) finally set the browser title through `Hub::render()->title()`.
+* The admin header shows a **Demo data** pill when `APP_ENV=local`, because the preview is seeded with demo
+  contacts, leads and quotations and nothing said so. Production installs never render it.
+* Six regression tests in `tests/Feature/Sales/EstimateFromLeadTest.php`.
+
+**Verified live on 33143.** Lead `L-2026-6KJYZ8` (Architecture, 1,350 sq ft) → *Start estimate* → prefilled
+`architecture / 1350 / contact 26` with the enquiry banner → *Save* → `EST-2026-0002 saved with today's rates.`
+→ present in Estimations with its enquiry reference → visible on the lead page. QA rows were then
+force-deleted; the database is left as found.
+
+**Tests.** Full suite **1,284 passed · 1 skipped · 6,976 assertions**; Pint clean; PHPStan 0 errors.
+
+**Audit + plan:** `docs/audit/31_DEEP_QA_2026-10-21.md`. Next slices: B navigation truth (enable Client Portal,
+Handovers, Chat Bot; remove the duplicate Alert Rules; System's 11 entries → 4 pages), C one pricing path,
+D Overview control view, E invoice automation runtime, F marketing live proof, G hygiene.
