@@ -177,7 +177,7 @@ it('lists Estimator as a live destination in the sidebar', function () {
         ->flatMap(fn (array $group): array => $group['items'])
         ->keyBy('label');
 
-    expect($items['Estimator']['route'])->toBe('admin.website.estimator')
+    expect($items['Estimator rates']['route'])->toBe('admin.website.estimator')
         // FAQs and Testimonials are live too; no Website screen is listed as planned any more.
         ->and($items->filter(fn (array $i): bool => ($i['phase'] ?? null) === 'soon'))->toHaveCount(0);
 });

@@ -28,6 +28,9 @@ use App\Livewire\Admin\Hubs\DashboardHub;
 use App\Livewire\Admin\Hubs\DocumentsHub;
 use App\Livewire\Admin\Hubs\InvoicesHub;
 use App\Livewire\Admin\Hubs\LeadsHub;
+use App\Livewire\Admin\Hubs\SystemAccessHub;
+use App\Livewire\Admin\Hubs\SystemConnectionsHub;
+use App\Livewire\Admin\Hubs\SystemPlatformHub;
 use App\Livewire\Admin\Hubs\PaymentsHub;
 use App\Livewire\Admin\Hubs\QuotationsHub;
 use App\Livewire\Admin\Hubs\ReportsHub;
@@ -36,6 +39,8 @@ use App\Livewire\Admin\Marketing\SocialPlannerIndex;
 use App\Livewire\Admin\NotificationsPage;
 use App\Livewire\Admin\Profile\Security;
 use App\Livewire\Admin\Projects\ProjectBoard;
+use App\Livewire\Admin\Projects\ClientPortalIndex;
+use App\Livewire\Admin\Projects\HandoversIndex;
 use App\Livewire\Admin\Projects\ProjectShow;
 use App\Livewire\Admin\Projects\ProjectsIndex;
 use App\Livewire\Admin\Sales\Approvals;
@@ -117,6 +122,10 @@ Route::get('/document-design', fn () => redirect()->route('admin.sales.documents
 // Projects (P4, PRJ-001…PRJ-005)
 Route::livewire('/projects', ProjectsIndex::class)->name('projects.index')->middleware('can:projects.view');
 Route::livewire('/projects/board', ProjectBoard::class)->name('projects.board')->middleware('can:projects.view');
+// The two screens the sidebar used to advertise as "P4b" while the feature was live: the client's
+// signed door on every job, and the handover list (deep QA 21 Oct, slice B).
+Route::livewire('/projects/portal', ClientPortalIndex::class)->name('projects.portal')->middleware('can:projects.view');
+Route::livewire('/projects/handovers', HandoversIndex::class)->name('projects.handovers')->middleware('can:projects.view');
 Route::livewire('/projects/{project}', ProjectShow::class)->name('projects.show')->middleware('can:projects.view')->whereNumber('project');
 
 // Conversations (P4, CNV-001/CNV-002, WAP-001…WAP-004): one inbox for WhatsApp and the website chat widget.
@@ -175,7 +184,13 @@ Route::get('/reports/sales-funnel', fn () => redirect()->route('admin.reports.in
 Route::get('/reports/revenue-collections', fn () => redirect()->route('admin.reports.index', ['tab' => 'revenue'], 301))->name('reports.revenue')->middleware('can:reports.view');
 Route::get('/receivables', fn () => redirect()->route('admin.payments.index', ['tab' => 'receivables'], 301))->name('reports.receivables')->middleware('can:invoices.view');
 
-// System
+// System — four pages with their buttons inside (deep QA 21 Oct, slice B). The individual routes
+// below stay: bookmarks, Telegram buttons and notifications still point at them.
+Route::livewire('/system/access', SystemAccessHub::class)->name('system.access');
+Route::livewire('/system/connections', SystemConnectionsHub::class)->name('system.connections');
+Route::livewire('/system/platform', SystemPlatformHub::class)->name('system.platform');
+// The chat bot has no screen of its own: its knobs are a tab of Settings. The sidebar entry opens it.
+Route::get('/chat-bot', fn () => redirect()->route('admin.settings', ['tab' => 'bot']))->name('chat-bot')->middleware('can:settings.manage');
 Route::livewire('/settings', SettingsPage::class)->name('settings')->middleware('can:settings.manage');
 Route::livewire('/settings/canned-replies', CannedRepliesIndex::class)->name('canned-replies')->middleware('can:settings.manage');
 Route::livewire('/settings/lead-assignment', AssignmentRules::class)->name('assignment-rules')->middleware('can:settings.manage');

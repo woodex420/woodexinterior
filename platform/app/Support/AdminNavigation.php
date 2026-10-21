@@ -42,6 +42,9 @@ final class AdminNavigation
             ]),
             self::group('Sales', [
                 self::item('Estimations', 'calculator', 'admin.estimations.index', 'estimates.view'),
+                // The website's rate book is a pricing screen, not content: it sits beside the estimates
+                // it prices (deep QA 21 Oct, slice B). The screen itself is unchanged.
+                self::item('Estimator rates', 'percent', 'admin.website.estimator', 'website.edit'),
                 self::item('Quotations', 'quote', 'admin.quotes.index', 'quotes.view'),
                 self::item('Invoices', 'invoice', 'admin.invoices.index', 'invoices.view'),
                 self::item('Payments', 'wallet', 'admin.payments.index', 'invoices.view'),
@@ -56,18 +59,18 @@ final class AdminNavigation
             self::group('Projects', [
                 self::item('Projects', 'hammer', 'admin.projects.index', 'projects.view'),
                 self::item('Board', 'kanban', 'admin.projects.board', 'projects.view'),
-                self::item('Client Portal', 'link', null, null, 'P4b'),
-                self::item('Handovers', 'check-circle', null, null, 'P4b'),
+                self::item('Client portal', 'link', 'admin.projects.portal', 'projects.view'),
+                self::item('Handovers', 'check-circle', 'admin.projects.handovers', 'projects.view'),
             ]),
             self::group('Inbox', [
                 self::item('Conversations', 'inbox', 'admin.inbox', 'inbox.view'),
-                self::item('Chat Bot', 'bot', null, null, 'P4'),
+                // The assistant is live; its switches are a Settings tab. No more "P4" badge over shipped code.
+                self::item('Chat Bot', 'bot', 'admin.chat-bot', 'settings.manage'),
             ]),
             self::group('Automation', [
                 self::item('Automations', 'zap', 'admin.automation.index', 'automation.manage'),
                 self::item('Sequences', 'refresh', 'admin.automation.sequences', 'automation.manage'),
                 self::item('WhatsApp Templates', 'whatsapp', 'admin.whatsapp.templates', 'integrations.manage'),
-                self::item('Alert Rules', 'bell', null, null, 'P5'),
             ]),
             self::group('Marketing', [
                 self::item('Social Planner', 'megaphone', 'admin.marketing.social', 'social.manage'),
@@ -90,7 +93,6 @@ final class AdminNavigation
                 // The six screens still to port; listed now so the section matches the target, disabled
                 // until their actions are switched on in WebsiteStudioController::SCREENS.
                 self::item('Forms', 'file', 'admin.website.forms', 'website.edit'),
-                self::item('Estimator', 'calculator', 'admin.website.estimator', 'website.edit'),
             ]),
             // Tools for the whole site, not for one page: no heading, the way the owner asked for them.
             self::group(null, [
@@ -102,18 +104,13 @@ final class AdminNavigation
                 self::item('Theme', 'palette', 'admin.website.theme', 'theme.manage'),
                 self::item('Website Settings', 'settings', 'admin.website.settings', 'settings.manage'),
             ]),
+            // 11 entries became 4 pages with their buttons inside (deep QA 21 Oct, slice B). Every
+            // original route still answers; the hub is the front door, the route is the bookmark.
             self::group('System', [
                 self::item('Settings', 'settings', 'admin.settings', 'settings.manage'),
-                self::item('Users & Roles', 'shield', 'admin.users.index', 'users.manage'),
-                self::item('Lead Assignment', 'users', 'admin.assignment-rules', 'settings.manage'),
-                self::item('Canned replies', 'message', 'admin.canned-replies', 'settings.manage'),
-                self::item('Integrations', 'link', 'admin.integrations', 'integrations.manage'),
-                self::item('Data Import', 'database', 'admin.data-import', 'system.import'),
-                self::item('Recycle Bin', 'archive', 'admin.recycle-bin', 'leads.delete'),
-                self::item('Health', 'health', 'admin.system.health', 'system.health'),
-                self::item('Audit log', 'activity', 'admin.system.audit', 'audit.view'),
-                self::item('Change Requests', 'lightbulb', 'admin.system.change-requests', 'system.change_requests'),
-                self::item('Alert Rules', 'bell', 'admin.system.alert-rules', 'settings.manage'),
+                self::item('Access & team', 'shield', 'admin.system.access', 'users.manage'),
+                self::item('Connections', 'link', 'admin.system.connections', 'integrations.manage'),
+                self::item('Platform', 'activity', 'admin.system.platform', 'system.health'),
             ]),
         ];
     }

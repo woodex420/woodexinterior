@@ -55,17 +55,16 @@ it('consolidates the sidebar to the confirmed P10.1 map', function () {
         ->and(collect($groups['Overview']['items'])->pluck('label')->all())->toBe(['Dashboard', 'Approvals', 'Reports'])
         ->and($groups['CRM']['items'])->toHaveCount(3)
         ->and(collect($groups['CRM']['items'])->pluck('label')->all())->toBe(['Leads', 'Contacts', 'Tasks & Visits'])
-        ->and($groups['Sales']['items'])->toHaveCount(5)
-        ->and(collect($groups['Sales']['items'])->pluck('label')->all())->toBe(['Estimations', 'Quotations', 'Invoices', 'Payments', 'Documents']);
+        ->and($groups['Sales']['items'])->toHaveCount(6)
+        ->and(collect($groups['Sales']['items'])->pluck('label')->all())->toBe(['Estimations', 'Estimator rates', 'Quotations', 'Invoices', 'Payments', 'Documents']);
 
     $live = collect(AdminNavigation::for($this->owner))->flatMap(fn (array $g): array => $g['items'])->filter(fn (array $item): bool => $item['route'] !== null);
-    // 48 live destinations today: the P10.1 map plus the Website screens still switched on for OS 1
-    // (Service pages, City pages, FAQs, Testimonials, Hero slides and Client logos were retired; the home
-    // page and its sections are files, edited in the page builder)
-    // (docs/audit/16 §16.8), less the Content library, retired from the nav on 20 Oct, plus Find & replace,
-    // which changes a word across every page file (docs/audit/21 §5.1). The exact number is asserted on
-    // purpose — a screen cannot join the sidebar without a test saying so.
-    expect($live)->toHaveCount(48);
+    // 44 live destinations: the P10.1 map plus the Website screens still switched on for OS 1, plus the
+    // three screens that were shipped but advertised as future work — Client portal, Handovers and Chat
+    // Bot — with the eleven System entries folded into Settings + three hubs (deep QA 21 Oct, slice B:
+    // Access & team, Connections, Platform: -7) and the duplicate Alert Rules placeholder removed. The
+    // exact number is asserted on purpose — a screen cannot join or leave the sidebar without a test.
+    expect($live)->toHaveCount(44);
 });
 
 it('renders every hub tab for the owner', function (string $path, string $marker) {

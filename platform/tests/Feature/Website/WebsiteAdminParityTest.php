@@ -47,7 +47,7 @@ it('groups the Website section the way it is worked on', function () {
     expect($labels('Pages & builder'))->toBe([
         'All pages', 'Page builder', 'Find & replace', 'Redirects',
     ])->and($labels('Content'))->toBe([
-        'Blog', 'Portfolio', 'Forms', 'Estimator',
+        'Blog', 'Portfolio', 'Forms',
     ])->and($labels(null))->toBe([
         'Media', 'SEO', 'SEO agent', 'Speed', 'Site health', 'Theme', 'Website Settings',
     ]);

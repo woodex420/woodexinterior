@@ -34,11 +34,13 @@
 4. **Demo data is labelled** in every admin header on local installs.
 5. **6 regression tests**; full suite green.
 
+**Slice B (same day).** Client Portal and Handovers stopped being `P4b` badges and became real screens (signed portal links; handover progress), Chat Bot opens its live switches on Settings, the duplicate Alert Rules is gone, the eleven System entries became four pages with tabs, and the rate book moved to Sales as **Estimator rates**. 12 more tests; suite **1,296 passed / 1 skipped**.
+
 ## What is next (agreed order, from the audit)
 
 | Slice | Work | Why it matters |
 |---|---|---|
-| **B** | Sidebar truth: enable Client Portal / Handovers / Chat Bot, remove the duplicate Alert Rules, fold System's 11 entries into 4 pages with inner buttons, rename Content → "Website estimator (rates)" | The sidebar still calls shipped features "P4/P4b/P5" and splits one page group across two sections |
+| ~~B~~ | ~~Sidebar truth~~ | **Done 21 Oct** — Client portal, Handovers and Chat Bot are live pages, System is 4 pages with tabs, Alert Rules de-duplicated, Estimator rates sits under Sales |
 | **C** | One pricing path: a quotation must always come from an estimate record | Estimate history is currently optional |
 | **D** | Overview as a control view: six live KPIs + "needs attention" with one-click actions; reports as filters on the same queries | The owner asked for control, not report prose |
 | **E** | Invoice automation: milestone/recurring invoices and an overdue reminder ladder, visible in Automation | "Invoice automation" has no live runtime today |

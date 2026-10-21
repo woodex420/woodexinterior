@@ -1755,3 +1755,38 @@ force-deleted; the database is left as found.
 **Audit + plan:** `docs/audit/31_DEEP_QA_2026-10-21.md`. Next slices: B navigation truth (enable Client Portal,
 Handovers, Chat Bot; remove the duplicate Alert Rules; System's 11 entries → 4 pages), C one pricing path,
 D Overview control view, E invoice automation runtime, F marketing live proof, G hygiene.
+
+### Step 27 — the sidebar stops lying; shipped screens come out of "P4" (21 Oct 2026)
+
+**The finding.** The nav advertised four features as future work while they were live: Client Portal and
+Handovers carried a `P4b` badge, Chat Bot `P4`, Alert Rules `P5`. "Alert Rules" was also listed twice — a live
+screen under System and a disabled placeholder under Automation. System listed eleven screens; the owner
+asked for three or four pages with their buttons inside.
+
+**What changed (Slice B).**
+
+* **Client portal** is a real page: every job's signed link (120 days), with copy / open / WhatsApp, and an
+  honest empty state that points at quotations and projects. **Handovers** is a real page: jobs at finishing
+  or handover with checklist progress and the client-signature state. Links open the project for the detail.
+* **Chat Bot** opens `/admin/settings?tab=bot`, where the assistant's switches already lived.
+* The **duplicate Alert Rules** placeholder is gone; the live screen stays under Platform.
+* **System: 11 → 4** — Settings, **Access & team** (users & roles · lead assignment · canned replies),
+  **Connections** (integrations · data import), **Platform** (health · audit log · change requests · alert
+  rules · recycle bin). Every original route still answers, so bookmarks, Telegram buttons and notifications
+  keep working.
+* **Estimator rates** moved from Content to Sales, beside the estimates it prices. The Content group is back
+  to Blog / Portfolio / Forms, and the Estimator/Estimations confusion is gone from the sidebar.
+
+**Tests.** New `SystemNavigationTest` (12 tests) asserts the four System pages open for the owner and 403 for
+support, the portal/handover screens render, `/admin/chat-bot` redirects to the Bot tab, and only **Lead Ads**
+remains a planned entry. Nav parity tests updated deliberately: the live-destination count is now **44**
+(11 System entries → 4 is −7; Client portal, Handovers, Chat Bot are +3). Full suite
+**1,296 passed · 1 skipped · 7,002 assertions**; Pint clean; PHPStan 0 errors.
+
+**Live on 33143.** Sidebar shows no `P4b`/`P5`; all four Projects entries are live; the three hubs open with
+their tabs (Users & roles · Lead assignment · Canned replies / Integrations · Data import / Health · Audit log ·
+Change requests · Alert rules · Recycle bin); `/admin/chat-bot` lands on Settings → Bot. Screenshots:
+`/tmp/woodex-run/shots/slice-b-sidebar.png`, `slice-b-access.png`, `slice-b-platform.png`, `slice-b-portal.png`.
+
+**Found on the way:** `System\LeadRulesSettings` has no route and is only used by a test — the live screen is
+`Crm\AssignmentRules`. Remove it with its test in the hygiene slice.
