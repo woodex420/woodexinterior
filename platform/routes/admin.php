@@ -53,6 +53,7 @@ use App\Livewire\Admin\System\RecycleBin;
 use App\Livewire\Admin\System\SettingsPage;
 use App\Livewire\Admin\System\UsersIndex;
 use App\Livewire\Admin\System\WhatsAppTemplates;
+use App\Livewire\Admin\Website\FindReplaceIndex;
 use App\Livewire\Admin\Website\MediaLibrary;
 use App\Livewire\Admin\Website\PagesIndex;
 use App\Livewire\Admin\Website\RedirectsIndex;
@@ -128,6 +129,7 @@ Route::get('/media/{media}/{conversion?}', MediaController::class)->name('media.
 Route::livewire('/marketing/social', SocialPlannerIndex::class)->name('marketing.social')->middleware('can:social.manage');
 
 Route::livewire('/website/pages', PagesIndex::class)->name('website.pages')->middleware('can:website.edit');
+Route::livewire('/website/find-replace', FindReplaceIndex::class)->name('website.find-replace')->middleware('can:website.edit');
 
 /*
  * The ported v2.1 admin screens (docs/audit/16.8). Full document: they bring their own stylesheet and

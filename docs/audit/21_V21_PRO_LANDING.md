@@ -154,7 +154,7 @@ Ordered by *value to the owner per unit of risk*, not by how the v2.1 menu was l
 
 | # | Slice | Why first | Effort | Risk |
 |---|---|---|---|---|
-| 1 | **Global find & replace** | 142 pages carry the phone, email and address as literal text. Nothing else in the OS can change them together. Highest value, and it is one screen + one action. | 1 slice | Low — dry-run first, backup each file, same write path as the builder |
+| 1 | **Global find & replace** — ✅ **built 21 Oct (step 23)** | 142 pages carry the phone, email and address as literal text. Nothing else in the OS can change them together. Highest value, and it is one screen + one action. | 1 slice | Low — dry-run first, backup each file, same write path as the builder |
 | 2 | **Section library "My sections"** | Removes the only panel in the builder that is visibly lying. Turns one-off sections into reusable ones, and gives hero/team/global bands a home. | 1–2 slices | Medium — `global` blocks are a new concept (live link, not copy) |
 | 3 | **Media replace** | Same principle the owner already approved for alt: the row and the files both move. Solves "this photo is wrong on 20 pages". | ½ slice | Low–medium — must rewrite every page that uses the file |
 | 4 | **404 log** (then redirect plan) | Makes redirects proactive. Needs a new table → **schema approval**. Only meaningful after the 36-redirect export. | 1 slice + approval | Medium — new table, traffic-dependent |
@@ -193,3 +193,67 @@ Builder library rendered in the live admin: **All 70** tiles (50 sections + 20 e
 Database facts (live): `page_templates` **50** rows across 11 page types; `content_entries` **0** rows; `pages` 142.
 
 File facts (`/home/user/woodexinterior/platform/public`, 142 `index.html`): `+92 322 4000768` in 142 files / 399 occurrences; `info@woodex.com.pk` in 142; `Model Town` in 142; `NTN` in 0.
+
+---
+
+## 10. The redirect screen, side by side (owner's question, 21 Oct)
+
+The v2.1 screen (`admin-redirects.js`, 122 lines) is a **redirect manager plus a 404 monitor**. Woodex OS has
+`RedirectsIndex` (234 + 112 lines), which does the rows but not the misses. Compared feature by feature:
+
+| v2.1 "Redirects" screen | Woodex OS today |
+|---|---|
+| Rules table, search | **yes** — search, old/new URL, type, visitors, note |
+| Add a rule (301/302) | **yes** — and it refuses a rule that can never fire because the old URL is still a page |
+| Import CSV | **yes** — pasted, tab or comma, re-runnable |
+| Export CSV | **yes** — `woodex-redirects-YYYY-MM-DD.csv` |
+| Per-rule **On/Off** | **no** — only Remove. A rule is either deleted or live |
+| **410 Gone** rules (hack spam, old WordPress `?p=123`) | **no** — the code field accepts 301/302 only, and the `redirects` table stores an int code with no 410 path in `SiteRouter` |
+| Match type (exact / prefix) | **no** — exact match only |
+| **Load plan** — add every verified rule from the shipped plan in one press | **no** — `redirects_plan` is one of the 30 missing actions |
+| "Check" column — target missing, chains, hidden live page | **partly** — "not firing" (old URL is still a file) is computed and shown as a badge plus a warning banner. A **missing target** is not shown on this screen (the SEO screen's `FileAudit` does flag redirects pointing at nothing); **chains** are not checked |
+| Filter tabs (All / Redirects / Gone / Problems / Off) | **no** |
+| **404 monitor** with per-row *Redirect this* / *410* and *Clear list* | **no** — needs a hits table, which is a schema change |
+| www ↔ non-www canonical switch | **no** — nothing in `public/.htaccess`, nothing in code; both hosts serve the site today |
+| Save & publish | **not needed** — a row is live the moment it is saved, because the file answers first and `SiteRouter` reads the table |
+
+**What that means.** For the *first* job — keep the 36 old URLs working — the OS screen is already enough:
+import the CSV, and the "not firing" check stops a rule that a leftover file would shadow. What it cannot do
+is the two things the old screen was built for after launch: **watch what visitors miss** (the 404 monitor) and
+**turn a miss into a rule in one press**. Both need a hits table, which is the schema approval already listed
+in §7 item 4. The cheap ones that need no table are the **On/Off toggle**, the **410 path**, and **Load plan**.
+
+## 11. Integrations and MCP: what is actually there, and what to update
+
+This is **not** a v2.1 screen to port. The MCP bridge is an OS feature that already shipped
+(`docs/INTEGRATIONS-MCP-PLAN.md`, `platform/STATE.md`), and the v2.1 admin only had labels for it
+(`conn_list`, `crm_wa_status`, `gdata_status`, `tg_get` — the 22 retired actions in §4).
+
+**What exists today**
+
+| Piece | Where | State |
+|---|---|---|
+| Hub with 12 services, search, requirements dialogs | `/admin/settings/integrations` (`Livewire/Admin/System/Integrations.php`) | live; every service is labelled **Planned**, no fake connect toggles |
+| Bridge keys | same screen, owner-only | live — password-confirmed, hashed, 1–90 days, scopes `status.read`, `leads.read`, `quotes.read`, revocable, one-time plaintext |
+| Read-only JSON bridge | `POST/GET /api/bridge/v1/{status,leads,quotes}` | live, rate-limited 120/min, every successful read audited in `integration_logs` |
+| Local stdio MCP adapter | `tools/mcp-bridge/` (Node 22+, `@modelcontextprotocol/server`) | 3 tools: `woodex_status`, `woodex_list_leads`, `woodex_list_quotes`; 15 bridge tests |
+| Google identity | `App\Integrations\Google` | basic sign-in only, explicitly **not** Workspace data |
+| Telegram | `App\Integrations\Telegram` | configured by file, test message + webhook check |
+
+**What should change, and what should not**
+
+1. **Add website tools — the real gap.** The bridge can read leads and quotes, but not a single **page**, and
+   the website is now 142 files. Three read tools make the bridge match the system it fronts:
+   `woodex_list_pages` (path, url, title, size, mtime), `woodex_get_page` (title, description, headings,
+   images without alt, internal links) and `woodex_site_status` (page count, sitemap count, redirects,
+   "not firing", missing alt). Scopes `pages.read` / `site.read`, same key, same audit. **Read-only stays.**
+2. **Do not add write tools.** A write tool would be a second way to edit files beside the builder and
+   Find & replace. The plan already says write tools wait for a separate approval; that still holds.
+3. **Do not add the 12 "Planned" connectors.** Every one needs OAuth credentials the owner has not supplied;
+   the cards are honest today and would become dishonest with a switch that cannot work.
+4. **Publish the bridge before promising it.** `INTEGRATIONS-MCP-PLAN.md` still says *"local changes only… a
+   new coding session is needed to publish them"*. The migration (`mcp_access_tokens`) and the routes are in
+   the repository, but the production database has to run **System → Database update** before a key can be
+   created there. That is the one deploy step this section adds.
+
+None of §10–§11 has been implemented. §11 items 1–2 are proposed, not built.

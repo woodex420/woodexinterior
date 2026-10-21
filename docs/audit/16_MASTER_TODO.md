@@ -1549,3 +1549,51 @@ false, and the URL is 404 (it used to assert the screen answered); `StudioSeamTe
 actions answer `ok:false` naming their screen, and the screen itself is 404. Gates: `tests/Feature/Website`
 **215 passed (1931)**; full suite **1229 passed, 1 skipped (6704)**; Pint applied (1 style fix); PHPStan no
 errors.
+
+### Step 23 — one word, every page: Find & replace (21 Oct 2026)
+
+The first slice of docs/audit/21 §7, and the one the measurement made unavoidable: the phone number
+`+92 322 4000768` is written into **all 142 page files** as plain text (399 occurrences), and so are the
+email and the address. The builder edits one file at a time, so a new number meant 142 opens. Nothing in the
+OS could change a word across the site — the v2.1 `global_replace` action was one of the 30 missing ones.
+
+Added — `SiteWideReplace` plus the **Find & replace** screen (Website → Pages & builder → Find & replace):
+
+- **Plain text, not a pattern.** `str_replace`/`str_ireplace` semantics, so nobody escapes anything. It
+  changes every occurrence in the document — visible text, `tel:`/`mailto:` links, meta tags and the
+  JSON-LD — because a phone number that changes in one of those and not the others is worse than one that
+  did not change at all.
+- **Preview writes nothing.** Every page and its match count, plus a readable snippet of the first match
+  taken from the page's *text* (the first cut showed a window of raw HTML and landed inside the structured
+  data — useless), falling back to the raw document only when the text is in an attribute.
+- **A stale preview cannot authorise a write.** The preview is stored with a signature of the exact search,
+  replacement, case rule and areas; changing any of them disables Replace. On top of that the counts are
+  recounted at write time, so a builder save in another tab makes the run refuse rather than write.
+- **The whole run, or nothing.** Every page is planned in memory first; `HtmlGuard::assertNoNewCode()` runs
+  the same rule as a builder save (an editor changes words, not code — owners with `website.raw_html` are
+  exempt, exactly as there).
+- **Undo is one press.** Each touched page keeps a before-image in `storage/app/private/find-replace/<run>/`
+  and a normal builder version (`…-find-replace.html`). The last **10 runs** are kept; Undo restores every
+  page of a run, and a second Undo is refused by name.
+
+Navigation: the entry sits under **Pages & builder**, beside the builder, because it changes the same files.
+`P10SidebarHubsTest` now asserts **48** live destinations (was 47) and `WebsiteAdminParityTest` names the new
+item — a screen cannot join the sidebar without a test saying so.
+
+Measured live (preview 33143), a deliberately-marked change limited to **Lahore areas**:
+
+```
+/lahore/              9 matches
+/lahore/model-town/   8
+/lahore/bahria-town/  5   … 9 pages, 52 matches in total
+→ Replaced 52 match(es) in 9 page(s). Every page was kept as a version.
+→ Undo → Restored 9 page(s).
+```
+
+After the undo the 142-page tree is **byte-identical** to before the run (`sha1` over every `index.html`),
+and `/sitemap.xml` still answers **142** URLs. `/home/user/find-replace-2026-10-21.png`.
+
+Tests: `FindReplaceTest` (8) — preview counts without writing, area scoping, case rule, no-match writes
+nothing, before-image + builder version kept, undo restores every page and refuses a second undo, and the
+screen previews/replaces/undoes while refusing a stale preview; plus a permission test. Gates:
+`tests/Feature/Website` **265 passed (2083)** including `P10SidebarHubsTest`; Pint clean; PHPStan no errors.

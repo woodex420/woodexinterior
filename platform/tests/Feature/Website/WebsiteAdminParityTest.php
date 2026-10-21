@@ -45,7 +45,7 @@ it('groups the Website section the way it is worked on', function () {
     // Section library and Page templates left the sidebar with the block editor (step 6): they fed a
     // screen that wrote rows, and the files never read them.
     expect($labels('Pages & builder'))->toBe([
-        'All pages', 'Page builder', 'Redirects',
+        'All pages', 'Page builder', 'Find & replace', 'Redirects',
     ])->and($labels('Content'))->toBe([
         'Blog', 'Portfolio', 'Forms', 'Estimator',
     ])->and($labels(null))->toBe([

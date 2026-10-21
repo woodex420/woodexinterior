@@ -79,6 +79,9 @@ final class AdminNavigation
             self::group('Pages & builder', [
                 self::item('All pages', 'layout', 'admin.website.pages', 'website.edit'),
                 self::item('Page builder', 'panel', 'admin.website.builder', 'website.edit'),
+                // The site-wide edit the files made necessary: the phone number is in all 142 pages
+                // (docs/audit/21 §5.1). It sits beside the builder because it changes the same files.
+                self::item('Find & replace', 'search', 'admin.website.find-replace', 'website.edit'),
                 self::item('Redirects', 'globe', 'admin.website.redirects', 'website.edit'),
             ]),
             self::group('Content', [
