@@ -48,11 +48,24 @@ final class BuilderApi
             'theme' => $this->saveTheme($in, $user),
             'logout' => ['ok' => true],
             'login', 'setup', 'password' => ['ok' => false, 'error' => 'Sign in through Woodex OS — the builder has no password of its own.'],
-            'media_delete', 'blocks_save', 'blocks_delete', 'blocks_import',
-            'blocks_usage', 'blocks_sync', 'import_url', 'fetch_page', 'appr_apply' => $this->later($action),
-            'blocks_list' => ['ok' => true, 'blocks' => []],
+            'media_delete', 'import_url', 'fetch_page', 'appr_apply' => $this->later($action),
+            // The owner's own sections (docs/audit/21 §5.2): the builder's "My sections" panel is the screen,
+            // and this is the server it has been asking for. A global section stays linked to every page that
+            // carries its `data-wx-global` marker, and `blocks_sync` replaces those copies at once.
+            'blocks_list' => ['ok' => true, 'blocks' => $this->library($user)->all()],
+            'blocks_usage' => ['ok' => true, 'usage' => $this->library($user)->usage()],
+            'blocks_save' => $this->library($user)->save($in),
+            'blocks_delete' => $this->library($user)->delete((int) ($in['id'] ?? 0), (bool) ($in['force'] ?? false)),
+            'blocks_sync' => $this->library($user)->sync((int) ($in['id'] ?? 0)),
+            'blocks_import' => $this->library($user)->import(array_values((array) ($in['blocks'] ?? []))),
             default => ['ok' => false, 'error' => 'Unknown builder action: '.$action],
         };
+    }
+
+    /** The section library, acting as the staff member who is signed in (for the page snapshots it makes). */
+    private function library(?User $user): BlockLibrary
+    {
+        return new BlockLibrary($this->save, $user);
     }
 
     /**

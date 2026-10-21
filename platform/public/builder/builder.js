@@ -1185,10 +1185,21 @@
       if (!r.ok) return; var box = $("#lib-mine");
       if (!r.blocks.length) { box.innerHTML = "<p class='hint'>Save any section or element with 💾 in the toolbar.</p>"; return; }
       var cats = {}; r.blocks.forEach(function (b) { (cats[b.cat || "Custom"] = cats[b.cat || "Custom"] || []).push(b); });
-      box.innerHTML = Object.keys(cats).sort().map(function (c) { return '<div class="lib-cat">' + esc(c) + "</div>" + cats[c].map(function (b) { return '<button draggable="true" data-cat="' + esc(b.cat || "Custom") + '" data-tags="' + esc((b.tags || []).join(" ")) + '" data-id="' + b.id + '"' + (b.global ? ' title="Global section: stays in sync on every page"' : "") + "><span>" + (b.global ? "🔗" : b.kind === "section" ? "▤" : "✚") + "</span>" + esc(b.name) + (b.global ? ' <small style="color:#b8924c">global</small>' : "") + '<i class="del" data-del="' + b.id + '" title="Delete">✕ delete</i></button>'; }).join(""); }).join("");
+      box.innerHTML = Object.keys(cats).sort().map(function (c) { return '<div class="lib-cat">' + esc(c) + "</div>" + cats[c].map(function (b) { return '<button draggable="true" data-cat="' + esc(b.cat || "Custom") + '" data-tags="' + esc((b.tags || []).join(" ")) + '" data-id="' + b.id + '"' + (b.global ? ' title="Global section: stays in sync on every page"' : "") + "><span>" + (b.global ? "🔗" : b.kind === "section" ? "▤" : "✚") + "</span>" + esc(b.name) + (b.global ? ' <small style="color:#b8924c">global</small>' : "") + (b.global ? '<i class="sync" data-sync="' + b.id + '" title="Update every page that uses this section">⟳ sync</i>' : "") + '<i class="del" data-del="' + b.id + '" title="Delete">✕ delete</i></button>'; }).join(""); }).join("");
       $$("button", box).forEach(function (btn) {
-        var b = r.blocks.find(function (x) { return x.id === btn.dataset.id; });
+        // The server sends the id as a number and `dataset.id` is always a string (v2.1 used string ids).
+        var b = r.blocks.find(function (x) { return String(x.id) === btn.dataset.id; });
         btn.onclick = function (e) {
+          if (e.target.dataset.sync) {
+            e.stopPropagation();
+            if (!confirm('Update "' + b.name + '" on every page that uses it? Each page is backed up first.')) return;
+            api("blocks_sync", { id: b.id }).then(function (x) {
+              if (!x.ok) return toast(x.error, true);
+              toast(x.changed ? "Updated on " + x.changed + " page(s) ✓" : "Every page already has this version", !x.changed);
+              if (x.duplicates && x.duplicates.length) toast("More than one copy on " + x.duplicates.join(", ") + " — open those pages and remove the extra", true);
+            });
+            return;
+          }
           if (e.target.dataset.del) { e.stopPropagation(); if (confirm("Delete block \"" + b.name + "\"?")) api("blocks_delete", { id: b.id }).then(function (x) { if (!x.ok && x.used) { if (confirm(x.error + ". Delete anyway? The copies on those pages stay, but stop syncing.")) return api("blocks_delete", { id: b.id, force: true }).then(renderMine); return; } renderMine(); }); return; }
           var h = blockHtml(b); b.kind === "section" ? insertSection(h) : insertElement(h);
         };
@@ -1198,7 +1209,12 @@
       if (window.__wx17mine) window.__wx17mine(r.blocks);
     });
   }
-  function blockHtml(b) { return b.global ? b.html.trim().replace(/^<([a-z][a-z0-9-]*)/i, '<$1 data-wx-global="' + b.id + '"') : b.html; }
+  function blockHtml(b) {
+    var h = b.html.trim(); if (!b.global) return h;
+    var m = /^<([a-z][a-z0-9-]*)([^>]*)>/i.exec(h); if (!m) return h;
+    var attrs = m[2].replace(/\s+data-wx-global\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/i, "");
+    return "<" + m[1] + attrs + ' data-wx-global="' + b.id + '">' + h.slice(m[0].length);
+  }
   var BLOCK_CATS = ["Hero", "Services", "Features", "Projects", "Testimonials", "CTA", "FAQ", "Contact", "Content", "Process", "Stats", "Pricing", "Team", "Gallery", "Footer", "Custom"];
   function saveBlock() {
     if (!S.sel) return; var el = S.sel, sec = isSection(el);

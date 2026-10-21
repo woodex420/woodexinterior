@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 /**
  * The Visual Page Builder (v2.1 front-end, Woodex OS back-end).
@@ -57,6 +58,12 @@ final class WebsiteBuilderController
             return response()->json(['ok' => false, 'error' => 'Page not found.'], 404);
         } catch (AuthorizationException $e) {
             return response()->json(['ok' => false, 'error' => $e->getMessage()], 403);
+        } catch (RuntimeException $e) {
+            // Storage the builder cannot work with — a damaged section library, an unwritable folder. The
+            // message says what happened and what was not changed; an HTML error page would not reach the panel.
+            report($e);
+
+            return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
         }
 
         return response()->json($out);

@@ -155,7 +155,7 @@ Ordered by *value to the owner per unit of risk*, not by how the v2.1 menu was l
 | # | Slice | Why first | Effort | Risk |
 |---|---|---|---|---|
 | 1 | **Global find & replace** — ✅ **built 21 Oct (step 23)** | 142 pages carry the phone, email and address as literal text. Nothing else in the OS can change them together. Highest value, and it is one screen + one action. | 1 slice | Low — dry-run first, backup each file, same write path as the builder |
-| 2 | **Section library "My sections"** | Removes the only panel in the builder that is visibly lying. Turns one-off sections into reusable ones, and gives hero/team/global bands a home. | 1–2 slices | Medium — `global` blocks are a new concept (live link, not copy) |
+| 2 | **Section library "My sections"** — ✅ **built 21 Oct (step 24)** | Removes the only panel in the builder that is visibly lying. Turns one-off sections into reusable ones, and gives hero/team/global bands a home. | 1–2 slices | Medium — `global` blocks are a new concept (live link, not copy) |
 | 3 | **Media replace** | Same principle the owner already approved for alt: the row and the files both move. Solves "this photo is wrong on 20 pages". | ½ slice | Low–medium — must rewrite every page that uses the file |
 | 4 | **404 log** (then redirect plan) | Makes redirects proactive. Needs a new table → **schema approval**. Only meaningful after the 36-redirect export. | 1 slice + approval | Medium — new table, traffic-dependent |
 | 5 | **Page templates, file-shaped** | Real value, but only after #2 (it is "save/apply a layout" on top of sections). The 50 v2 rows are not importable. | 1–2 slices | Medium |

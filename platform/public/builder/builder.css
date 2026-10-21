@@ -202,6 +202,7 @@ h2{font-size:15px;margin:0 0 6px}h2 small{color:var(--mut);font-weight:400;font-
 .lib-q{display:block;width:100%;height:32px;border:1px solid var(--line2);border-radius:7px;padding:0 10px;margin-bottom:10px;background:#fff}
 .lib-h{display:flex;justify-content:space-between;align-items:center;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:18px 0 8px}
 .lib button .del{margin-left:auto;align-self:flex-end;color:var(--danger);font-size:11px}
+.lib button .sync{margin-left:auto;align-self:flex-end;color:var(--gold,#b8924c);font-size:12px;padding:0 5px}
 .ly mark{background:#fde68a;color:inherit}
 .menu hr,.ctx hr{border:0;border-top:1px solid var(--line);margin:4px 0}
 .ctx{position:fixed;z-index:65;background:#fff;border:1px solid var(--line);border-radius:10px;padding:5px;min-width:220px;box-shadow:0 16px 40px rgba(0,0,0,.18);display:grid}

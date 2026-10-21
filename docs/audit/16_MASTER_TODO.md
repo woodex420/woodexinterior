@@ -1597,3 +1597,70 @@ Tests: `FindReplaceTest` (8) — preview counts without writing, area scoping, c
 nothing, before-image + builder version kept, undo restores every page and refuses a second undo, and the
 screen previews/replaces/undoes while refusing a stale preview; plus a permission test. Gates:
 `tests/Feature/Website` **265 passed (2083)** including `P10SidebarHubsTest`; Pint clean; PHPStan no errors.
+
+### Step 24 — the section library answers (21 Oct 2026)
+
+The second slice of `docs/audit/21` §7, and the most visible broken promise left in the admin: the builder's
+**My sections** panel was fully built — the save dialog with category, tags and a *Global section* switch, the
+usage warning, drag-to-insert — against a server that answered `blocks_list` with `{"ok":true,"blocks":[]}` and
+refused all five writes with *"… arrives with the section-library slice."* A screen that offers to save and
+cannot.
+
+**The library is a file.** `storage/app/private/section-library.json` holds the saved sections, for the same
+reason the pages are files: a library of sections belongs beside the site it feeds, and there is no second
+content model to reconcile. `BlockLibrary` owns it; a damaged file is **refused**, never replaced with an empty
+one — the message says the library was not changed and to move the file aside.
+
+**Global sections actually stay linked.** That is the one thing a copy inside a page file cannot do alone. The
+builder stamps the section's root element with `data-wx-global="<id>"`, and `blocks_sync` puts the library's
+current version onto every page that carries that marker, through `SaveHtmlFile` — so each page is snapshotted
+first and the script guard runs, exactly like any other page write. `blocks_usage` reads the 142 page files to
+say *which* pages, before anything is touched.
+
+**Two defects in the shipped builder code, found by running it:**
+
+1. **The marker was written into the middle of the opening tag** — `'<section class="x">'` became
+   `<section class="x" data-wx-global="1">` correctly only when the tag had no other attributes; the old
+   `replace(/^<([a-z]+)/, '<$1 data-wx-global="id">')` inserted `>` after the tag *name*, leaving
+   `class="x"` outside the tag. The attribute now goes at the end of the opening tag and any old marker is
+   removed first.
+2. **Clicking a saved section did nothing.** `renderMine()` found the block with `x.id === btn.dataset.id` —
+   a number against a string. It worked while ids were strings; the server sends ints. Now `String(x.id)`.
+   The same mismatch would have made ⟳ and ✕ dead, so the panel would have looked alive and ignored every
+   click.
+
+**Added to the panel:** the **⟳ sync** control a global section needs (it was implied by the dialog's promise
+and did not exist), and `.lib button .sync` styling.
+
+**Import is cleaned before it is stored.** A library file comes from outside this site: scripts, inline
+handlers, `javascript:` links and frames are removed in PHP (`sanitise()`), and a section that is not one
+element is refused rather than stored broken. The starter-pack path in v2.1 imported the built-in sections the
+same way.
+
+Navigation is unchanged — the library lives in the builder, which is where it is used, not as a separate
+screen. `blocks_*` are no longer in the "arrives later" list.
+
+Verified live on the preview (33143), as the owner:
+
+```
+panel (empty)   "Save any section or element with 💾 in the toolbar."
+blocks_save     ok · id 1 · "LIVE CHECK band" · global · tags [live, check]
+panel           "Hero · 🔗 LIVE CHECK band · global · ⟳ sync · ✕ delete"
+insert          <section class="live-check" … data-wx-global="1">  (one tag, marker inside)
+save page       file carries the marker; the broken `data-wx-global="1"> class=` form: absent
+blocks_usage    {"1": ["index.html"]}
+⟳ sync          "Updated on 1 page(s) ✓" · file now says "Live check v2", v1 gone, one marker
+blocks_delete   ok:false, used:true — "“LIVE CHECK band” is on 1 page(s): /. Deleting it leaves those
+                copies on the pages, unsynced."
+```
+
+The home page was restored byte-for-byte afterwards (`sha1`), the test library file removed, and
+`/sitemap.xml` still answers **142**. `/home/user/section-library-2026-10-21.png`.
+
+Tests: `SectionLibraryTest` (18) — save/list/update ordering, code refusal (script, handler, `javascript:`,
+iframe) and multi-root refusal, delete-with-usage and forced delete that never reuses an id, sync onto two
+pages with the rest of the page untouched and a version kept, a second sync changing nothing, non-global sync
+refused, import cleaning and skip counting, a damaged file refused through the endpoint in the panel's own
+`{ok:false}` shape, the marker placement, and the nesting/quote-aware range scan. Gates:
+`tests/Feature/Website` **283 passed (2162)**; full suite **1255 passed, 1 skipped (6830)**; Pint clean;
+PHPStan no errors.
