@@ -129,6 +129,52 @@ it('publishes an article into its page file, in the design shell', function () {
         ->and($html)->toContain('Read time');
 });
 
+it('names the new page in the sharing tags, not the shell it was built from', function () {
+    // A real shell names itself in canonical and og:url; the copy must name the new article instead.
+    $shell = $this->site.'/insights/template/index.html';
+    file_put_contents($shell, str_replace(
+        '</head>',
+        '<meta property="og:url" content="https://woodex.com.pk/insights/template/" />'
+        .'<meta property="og:type" content="article" /></head>',
+        (string) file_get_contents($shell),
+    ));
+
+    $page = Page::query()->create([
+        'type' => PageType::Insight,
+        'slug' => '/insights/its-own-address/',
+        'title' => 'Its own address',
+        'status' => PageStatus::Draft,
+    ]);
+
+    articleApi(['action' => 'cms_published', 'id' => $page->id, 'type' => 'post'])->assertOk()->assertJsonPath('ok', true);
+
+    $html = (string) file_get_contents($this->site.'/insights/its-own-address/index.html');
+
+    expect($html)->toContain('<meta property="og:url" content="https://woodex.com.pk/insights/its-own-address/" />')
+        ->and($html)->toContain('<meta property="og:type" content="article" />')
+        ->and(substr_count($html, 'og:url'))->toBe(1)
+        ->and($html)->not->toContain('og:url" content="https://woodex.com.pk/insights/template/');
+});
+
+it('adds a sharing address and type when the shell has neither', function () {
+    // The test shell carries canonical and og:title but no og:url/og:type — a page must still name itself.
+    $page = Page::query()->create([
+        'type' => PageType::Project,
+        'slug' => '/projects/no-tags/',
+        'title' => 'No tags',
+        'status' => PageStatus::Draft,
+    ]);
+
+    articleApi(['action' => 'cms_published', 'id' => $page->id, 'type' => 'study'])->assertOk()->assertJsonPath('ok', true);
+
+    $html = (string) file_get_contents($this->site.'/projects/no-tags/index.html');
+
+    // v1 numbers a project page as a website page, not an article (checked across all six live projects).
+    expect($html)->toContain('<meta property="og:url" content="https://woodex.com.pk/projects/no-tags/" />')
+        ->and($html)->toContain('<meta property="og:type" content="website" />')
+        ->and(substr_count($html, '</head>'))->toBe(1);
+});
+
 it('writes the file when a published article is saved again', function () {
     $page = Page::query()->create([
         'type' => PageType::Insight,

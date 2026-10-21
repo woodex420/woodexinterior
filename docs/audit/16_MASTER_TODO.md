@@ -1438,3 +1438,21 @@ Note for the preview only: a page folder deleted from the shell while the previe
 a stale entry in the PHP worker's filesystem view (`file_exists` true, `is_dir` false, `mkdir` → "File
 exists"). Restart `tools/sandbox/server.mjs` after deleting a page folder by hand; production has no such
 layer.
+
+**Step 19b — the page names itself in its sharing tags.** The last item left over from the Blog/Portfolio
+rewire: `ArticleFile` replaced the shell's canonical through a string swap, so `og:url` came right only
+because every v1 shell happens to write the same URL in both tags — and a shell without `og:url` (or
+`og:type`) produced a page with neither, leaving a shared link nothing to name it with. The head now sets
+both explicitly: `og:url` is the page's own address, and `og:type` follows the design's rule — **article**
+for insights, **website** for projects (checked across all six live project pages; the project shell is the
+one that writes `website`). A tag that exists is replaced, never duplicated; a tag that is missing is added
+before `</head>`.
+
+Live: published `/insights/zz-head-check/` → canonical and `og:url` both
+`https://woodex.com.pk/insights/zz-head-check/`, `og:type=article`, `og:title` the article's, and **0**
+references to the shell page it was built from (row and file removed after the check).
+
+Tests: `ArticleFileTest` (9) — a shell that names itself gets the new page's address in `og:url` and keeps its
+`og:type`, with the tag appearing once; a shell with neither gets both, `website` for a study. Gates:
+`tests/Feature/Website` **212 passed (1904)**; full suite **1226 passed, 1 skipped (6677)**; Pint clean;
+PHPStan no errors.

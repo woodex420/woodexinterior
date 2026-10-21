@@ -137,6 +137,12 @@ final class ArticleFile
         $html = self::replaceMeta($html, 'name', 'twitter:title', $title);
         $html = self::replaceMeta($html, 'name', 'twitter:description', $description);
 
+        // The page's own address, not the shell's: a shared link that points at the template sends the reader
+        // to someone else's article. og:type is the design's own choice per kind — insights are articles,
+        // projects are website pages — so a shell that has it keeps it and a new page follows the same rule.
+        $html = self::ensureMeta($html, 'property', 'og:url', $url);
+        $html = self::ensureMeta($html, 'property', 'og:type', $type === 'post' ? 'article' : 'website');
+
         if ($hero !== '') {
             $absolute = str_starts_with($hero, 'http') ? $hero : rtrim((string) config('woodex.public_site_url'), '/').'/'.ltrim($hero, '/');
             $html = self::replaceMeta($html, 'property', 'og:image', $absolute);
@@ -149,6 +155,22 @@ final class ArticleFile
     private static function canonical(string $html): string
     {
         return preg_match('~<link rel="canonical" href="([^"]+)"~', $html, $match) === 1 ? $match[1] : '';
+    }
+
+    /**
+     * Replace a meta tag, or add it to the head when the shell has none. `replaceMeta` alone leaves a page
+     * without og:url (or og:type) when its shell happens not to carry the tag, and a shared link then has
+     * nothing to name the page with.
+     */
+    private static function ensureMeta(string $html, string $attribute, string $key, string $value): string
+    {
+        $tag = '<meta '.$attribute.'="'.$key.'" content="'.e($value).'" />';
+
+        if (preg_match('~<meta\s+'.$attribute.'="'.preg_quote($key, '~').'"\s+content="[^"]*"\s*/?>~i', $html) === 1) {
+            return (string) preg_replace('~<meta\s+'.$attribute.'="'.preg_quote($key, '~').'"\s+content="[^"]*"\s*/?>~i', $tag, $html, 1);
+        }
+
+        return (string) preg_replace('~</head>~i', $tag.'</head>', $html, 1);
     }
 
     private static function replaceTag(string $html, string $tag, string $value): string
