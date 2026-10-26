@@ -9,7 +9,7 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,432 passed · 1 skipped · 7,712 assertions** · Pint clean on touched files · PHPStan 0 errors |
+| Tests | **1,447 passed · 1 skipped · 7,780 assertions** · Pint clean on touched files · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
@@ -43,6 +43,8 @@ only on the real bot token in the server `.env`.
 **Slice B (same day).** Client Portal and Handovers stopped being `P4b` badges and became real screens (signed portal links; handover progress), Chat Bot opens its live switches on Settings, the duplicate Alert Rules is gone, the eleven System entries became four pages with tabs, and the rate book moved to Sales as **Estimator rates**. 12 more tests; suite **1,296 passed / 1 skipped**.
 
 **Slice E (26 October).** Invoices now raise themselves. `woodex:invoice-milestones` bills every milestone an accepted quotation has reached — hourly, once per milestone, with the same number, tax, PDF and ledger posting as the advance invoice — and `woodex:invoice-reminders` runs the 7/14/30-day ladder, one rung per invoice, messaging the client on WhatsApp only with consent and telling the studio why when it cannot. Both are on the Automation screen with their cadence and switches. 10 more tests; suite **1,332 passed · 1 skipped · 7,165 assertions**.
+
+**Slice O — the PDF design system (26 October).** Quotation and invoice PDFs are now restyled per brand without code: three themes (Classic, Minimal, Premium) and blocks — Scope, Items/BOQ, Totals & words, Payment schedule, Terms, Notes, Payment details, Signatures (invoice: Particulars, Totals & words, Pay to, Notes, Terms) — that reorder and hide from Document design, frozen into each new document so sent PDFs never change; Items and Totals always print. Quote templates travel as `.woodex-template.json` files (export/import, create-only), and the builder has a Signed-by picker. 15 more tests; suite **1,447 passed · 1 skipped · 7,780 assertions**. Live proof on 33143: Premium + signatures-first on draft WI-10101 produced a real 46.6 KB PDF in the new order, untouched WI-10102 kept the classic look, and everything was restored afterwards.
 
 **Slice M — the assistant drawer and marketing attribution (26 October).** A drawer on every admin page answers nine fixed questions (overdue, due this week, collected this month, bills to pay, follow-ups, new enquiries, quotes waiting, overdue tasks, milestones due) from the **same queries their screens use**, citing the records — keyless and deterministic, refusing anything outside the whitelist or the asker's permissions by name, because there is no AI key and invented numbers are worse than none. Marketing became a hub with **Attribution**: source → enquiry → quoted → won value, cohort-based, with ad spend honestly absent until Meta is approved. 11 more tests; suite **1,432 passed · 1 skipped · 7,712 assertions**. Live proof: the assistant's overdue answer matched the tracking page rupee for rupee (Rs 243,750), flipped to *Nothing is overdue* after real collection, and attribution showed *Phone Call 6 · 1 won · Rs 325,000*.
 

@@ -116,6 +116,17 @@
                           x-on:input="$el.style.height = 'auto'; $el.style.height = Math.max($el.scrollHeight, 76) + 'px'"
                           class="wx-input h-auto min-h-[76px] py-2.5" placeholder="- Site measurement and drawings&#10;- Supply and installation as per BOQ"></textarea>
                 @error('details.scope')<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+                <div class="mt-4 max-w-sm border-t border-gray-100 pt-4 dark:border-gray-800">
+                    <x-admin.field label="Signed by" for="details-signed_by" hint="Printed on the quotation PDF. The company signatories are set in Sales settings.">
+                        <select id="details-signed_by" wire:model.live="details.signed_by" @disabled($ro) class="wx-input">
+                            <option value="">Company signatories (from Settings)</option>
+                            @foreach ($signatoryOptions as $index => $signatory)
+                                <option value="{{ $index }}">{{ $signatory['name'] }}@if ($signatory['title'] !== '') — {{ $signatory['title'] }}@endif</option>
+                            @endforeach
+                        </select>
+                    </x-admin.field>
+                    @error('details.signed_by')<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+                </div>
             </x-admin.card>
 
             <div class="space-y-5" data-quote-sections>

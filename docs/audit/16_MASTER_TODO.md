@@ -2345,3 +2345,46 @@ the assertion now pins the real reference. (3) Preview cleanup scripts must chec
 **Next.** Slice N — Search Console over MCP — which stays **blocked on the owner's Google key**. With I–M shipped,
 the open list is: N (key), "Estimates Received" (schema approval), Slice F live proof (Meta/LinkedIn), the
 36 imported redirects (owner's export), and the Telegram bot token in the server `.env`.
+
+### Step 39 — the PDF design system: blocks, themes, template files, signed-by (Slice O, 26 Oct 2026)
+
+v2.1 Pro parity slice 1 of 3 (plan `33_V21_PRO_PARITY_PLAN_2026-10-26.md`; the owner picked O first). The
+per-brand document design now carries a **PDF theme** — Classic (today's look), Minimal (black-and-white, no
+shading), Premium (solid accent heading/section bands) — and **ordered, hideable PDF blocks** edited on the
+Document design screen with move arrows and visibility ticks: quotations get Scope, Items/BOQ, Totals & words,
+Payment schedule, Terms, Notes, Payment details, Signatures; invoices get Particulars, Totals & words, Pay to,
+Notes, Terms. Items and Totals can move but **never hide** — a quote without its price is not a document.
+Theme and blocks ride the existing value-copy (`DocumentStyles::copy`, frozen into each new quote; invoices
+inherit), so sent documents cannot change under a client. Snapshots frozen before this slice carry no
+theme/block keys and render the original order and look — Classic emits **zero** extra CSS. Both PDF blades
+were split into per-block partials (`pdf/partials/quote-blocks/*`, `pdf/partials/invoice-blocks/*`) by a
+script that asserted only whitespace sits between blocks, so nothing could be dropped silently.
+
+Also in the slice: quote templates **export/import as `.woodex-template.json` files** (catalog-manager only;
+import always creates a new template, validates the shape, unlinks catalog items this install cannot resolve,
+never overwrites), and a **Signed by** picker in the quote builder (one Settings signatory for this quote, or
+the company default the snapshot already honoured).
+
+**Schema (approved with the slice).** `document_designs.pdf_theme` (default `classic`), `quote_blocks`,
+`invoice_blocks` (nullable JSON) — migration `2026_10_26_160000`.
+
+**Proof.** 15 new tests (`PdfDesignBlocksTest`): block normalization (unknown dropped, missing appended,
+duplicates once, locked forced visible), action validation, reordered/hidden renders asserted on rendered
+HTML (PDF bytes carry dompdf metadata, so freeze-identity is asserted at HTML level and a real `%PDF-` render
+separately), legacy keyless snapshots in the original order, a sent quote identical after the master changed,
+invoice blocks against a real bank account with a control render, designer save + locked ticks + reset,
+template file round trip + invalid-file refusal + unknown-catalog unlink + 403s, signed-by persistence and
+settings fallback. Suite **1,447 passed · 1 skipped · 7,780 assertions**; Pint clean; PHPStan 0. Live on
+33143: Premium + signatures-first applied to draft WI-10101 rendered in the new order with a real 46.6 KB PDF;
+untouched WI-10102 kept the classic order; Payment-details hide/show re-proved with a temporary bank account
+(the preview database has none configured, so that block prints nothing there); design restored to
+Classic/default and the temporary account deleted afterwards.
+
+**Bugs the build caught.** (1) `Validator::validated()` strips unruled nested keys — template import
+silently lost blueprint section names (every section became "Section"); import now reads the
+validated-but-whole payload. (2) Parallel edits to the *same* file raced and clobbered each other (only the
+last write survived, in six files) — caught by grepping for every intended hunk after the first red run,
+repaired with atomic rewrites and sequential edits. Tooling rule from here: never parallel-edit one file.
+
+**Next.** The owner re-ordered the parity plan: **Slice P** (manual New Invoice + tracking year/line filters
++ invoice CSV export) next, then Slice Q (Facebook Pages). Slice N stays blocked on the Google key.

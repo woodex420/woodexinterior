@@ -100,68 +100,8 @@
     </tr>
 </table>
 
-<h2>Particulars</h2>
-<table class="lines">
-    <thead>
-        <tr>
-            <th style="width: 60%;">Description</th>
-            <th class="right" style="width: 12%;">Qty</th>
-            <th class="right" style="width: 14%;">Rate</th>
-            <th class="right" style="width: 14%;">Amount</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach ($s['items'] as $item)
-            <tr>
-                <td>{{ $item['description'] }}</td>
-                <td class="right">{{ rtrim(rtrim(number_format((float) $item['qty'], 3, '.', ','), '0'), '.') }}{{ $item['unit'] ? ' '.$item['unit'] : '' }}</td>
-                <td class="right">{{ $item['rate'] }}</td>
-                <td class="right">{{ $item['line_total'] }}</td>
-            </tr>
-        @endforeach
-    </tbody>
-</table>
-
-<table class="totals" style="margin-top: 10px; width: 46%; margin-left: 54%;">
-    <tr><td class="muted">Subtotal</td><td class="right">{{ $s['subtotal'] }}</td></tr>
-    @if ((int) filter_var($s['discount'], FILTER_SANITIZE_NUMBER_INT) !== 0)
-        <tr><td class="muted">Discount</td><td class="right">{{ $s['discount'] }}</td></tr>
-    @endif
-    <tr><td class="muted">Tax @if (! empty($s['tax_bp']))({{ $s['tax_bp'] / 100 }}%)@endif</td><td class="right">{{ $s['tax'] }}</td></tr>
-    <tr><td class="muted">Paid</td><td class="right">{{ $s['paid'] }}</td></tr>
-    <tr class="grand"><td>Balance due</td><td class="right">{{ $s['balance'] }}</td></tr>
-</table>
-<div class="words">{{ $s['total_in_words'] }}</div>
-
-@if ($bank)
-    <div class="avoid">
-        <h2>Pay to</h2>
-        <table class="box">
-            <tr>
-                <td style="width: 34%;"><span class="muted">Title</span><br><strong>{{ $bank['title'] }}</strong></td>
-                <td style="width: 33%;"><span class="muted">Bank</span><br>{{ $bank['bank_name'] }}@if (! empty($bank['branch']))<br><span class="muted">{{ $bank['branch'] }}</span>@endif</td>
-                <td style="width: 33%;">
-                    <span class="muted">{{ ! empty($bank['iban']) ? 'IBAN' : 'Account no.' }}</span><br>
-                    <strong>{{ $bank['iban'] ?: $bank['account_number'] }}</strong>
-                    @if (! empty($bank['wallet_provider']))<br><span class="muted">{{ $bank['wallet_provider'] }}</span>@endif
-                </td>
-            </tr>
-        </table>
-    </div>
-@endif
-
-@if (! empty($s['notes']))
-    <div class="avoid">
-        <h2>Notes</h2>
-        {{ $s['notes'] }}
-    </div>
-@endif
-
-@if (! empty($s['terms']))
-    <div class="avoid">
-        <h2>Terms</h2>
-        {{ $s['terms'] }}
-    </div>
-@endif
+@foreach (\App\Domain\Sales\Services\DocumentStyles::visibleBlocks('invoice', $design) as $block)
+    @include('pdf.partials.invoice-blocks.'.$block)
+@endforeach
 </body>
 </html>

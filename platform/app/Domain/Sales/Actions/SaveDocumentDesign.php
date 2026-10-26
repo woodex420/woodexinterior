@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Sales\Actions;
 
 use App\Domain\Sales\Models\DocumentDesign;
+use App\Domain\Sales\Services\DocumentStyles;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -32,8 +33,21 @@ final class SaveDocumentDesign
             'header_text' => ['present', 'string', 'max:100'],
             'footer_text' => ['present', 'string', 'max:120'],
             'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:96', 'dimensions:min_width=8,min_height=8,max_width=600,max_height=240'],
+            'pdf_theme' => ['sometimes', Rule::in(array_keys(DocumentStyles::THEMES))],
+            'quote_blocks' => ['sometimes', 'array', 'max:20'],
+            'quote_blocks.*.key' => ['required', 'string', Rule::in(array_keys(DocumentStyles::QUOTE_BLOCKS))],
+            'quote_blocks.*.visible' => ['required', 'boolean'],
+            'invoice_blocks' => ['sometimes', 'array', 'max:20'],
+            'invoice_blocks.*.key' => ['required', 'string', Rule::in(array_keys(DocumentStyles::INVOICE_BLOCKS))],
+            'invoice_blocks.*.visible' => ['required', 'boolean'],
         ])->validate();
         unset($data['logo'], $data['business_line']);
+        if (array_key_exists('quote_blocks', $data)) {
+            $data['quote_blocks'] = DocumentStyles::blocks('quote', $data['quote_blocks']);
+        }
+        if (array_key_exists('invoice_blocks', $data)) {
+            $data['invoice_blocks'] = DocumentStyles::blocks('invoice', $data['invoice_blocks']);
+        }
         if ($logo !== null) {
             $bytes = $logo->get();
             $data['logo_data_uri'] = 'data:'.$logo->getMimeType().';base64,'.base64_encode($bytes);

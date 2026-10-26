@@ -14,6 +14,6 @@ final class DocumentDesign extends Model
     /** @return array<string, string> */
     protected function casts(): array
     {
-        return ['business_line' => BusinessLine::class, 'revision' => 'integer'];
+        return ['business_line' => BusinessLine::class, 'revision' => 'integer', 'quote_blocks' => 'array', 'invoice_blocks' => 'array'];
     }
 }

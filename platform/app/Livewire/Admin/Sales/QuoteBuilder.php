@@ -540,6 +540,7 @@ class QuoteBuilder extends Component
             // State first: the owner passes every permission check (Gate::before), but a sent quote stays locked.
             'editable' => $quote->isEditable() && $this->user()->can('update', $quote),
             'lakh' => $settings->lakh_grouping,
+            'signatoryOptions' => $this->signatoryOptions(),
             'units' => Unit::options(),
             'plans' => MilestonePlanKey::options(),
             'lineCount' => $items->count(),
@@ -703,6 +704,7 @@ class QuoteBuilder extends Component
                 'notes' => ['notes' => $raw !== '' ? mb_substr($raw, 0, 5000) : null],
                 'internal_notes' => ['internal_notes' => $raw !== '' ? mb_substr($raw, 0, 5000) : null],
                 'scope' => ['scope_html' => Html::fromPlainText(mb_substr($raw, 0, 20000))],
+                'signed_by' => ['signatories' => $this->pickedSignatories($raw)],
                 default => throw new InvalidArgumentException('Unknown field.'),
             });
         });
@@ -876,7 +878,57 @@ class QuoteBuilder extends Component
             'notes' => (string) $quote->notes,
             'internal_notes' => (string) $quote->internal_notes,
             'scope' => Html::toPlainText($quote->scope_html),
+            'signed_by' => $this->signedByIndex($quote),
         ];
+    }
+
+    /**
+     * The signatories staff can pick for this quotation (Sales settings).
+     *
+     * @return list<array{name: string, title: string}>
+     */
+    private function signatoryOptions(): array
+    {
+        $options = [];
+
+        foreach (app(SalesSettings::class)->signatories as $signatory) {
+            if (is_array($signatory) && trim((string) ($signatory['name'] ?? '')) !== '') {
+                $options[] = ['name' => trim((string) $signatory['name']), 'title' => trim((string) ($signatory['title'] ?? ''))];
+            }
+        }
+
+        return $options;
+    }
+
+    private function signedByIndex(Quote $quote): string
+    {
+        $current = is_array($quote->signatories) ? array_values($quote->signatories) : [];
+
+        if (count($current) === 1 && is_array($current[0])) {
+            foreach ($this->signatoryOptions() as $index => $option) {
+                if ((string) ($current[0]['name'] ?? '') === $option['name'] && (string) ($current[0]['title'] ?? '') === $option['title']) {
+                    return (string) $index;
+                }
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * One picked signatory for this quote, or null = use the company signatories at snapshot time.
+     *
+     * @return list<array{name: string, title: string}>|null
+     */
+    private function pickedSignatories(string $raw): ?array
+    {
+        if ($raw === '' || ! ctype_digit($raw)) {
+            return null;
+        }
+
+        $options = $this->signatoryOptions();
+
+        return isset($options[(int) $raw]) ? [$options[(int) $raw]] : null;
     }
 
     // ----- Lookups (always scoped to this quote) ------------------------------------------------------------

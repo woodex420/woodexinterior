@@ -30,7 +30,7 @@ final class QuoteEditor
     /** @var list<string> */
     private const DETAIL_FIELDS = [
         'title', 'valid_until', 'discount_type', 'discount_value', 'other_charges_label', 'other_charges_minor',
-        'tax_bp', 'terms', 'notes', 'internal_notes', 'scope_html',
+        'tax_bp', 'terms', 'notes', 'internal_notes', 'scope_html', 'signatories',
     ];
 
     /** @var list<string> */

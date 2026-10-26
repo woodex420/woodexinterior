@@ -22,6 +22,20 @@
         </label>
     </div>
 
+    @if ($canEdit)
+        <x-admin.card class="mb-4">
+            <form wire:submit="importTemplate" class="flex flex-wrap items-end gap-3">
+                <div class="min-w-64 flex-1">
+                    <x-admin.field label="Import template file" for="importFile" hint="A .woodex-template.json exported from Woodex OS. It is added as a new template — existing templates are never overwritten.">
+                        <input id="importFile" type="file" wire:model="importFile" accept=".json,application/json" class="wx-input">
+                    </x-admin.field>
+                </div>
+                <x-admin.button type="submit" variant="secondary" wire:loading.attr="disabled" wire:target="importTemplate,importFile">Import</x-admin.button>
+            </form>
+            @error('importFile')<p class="mt-2 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+        </x-admin.card>
+    @endif
+
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
         @forelse ($templates as $template)
             <x-admin.card wire:key="template-{{ $template->id }}" @class(['flex flex-col', 'opacity-60' => ! $template->is_active])>
@@ -46,6 +60,7 @@
                     <x-admin.button size="sm" variant="secondary" wire:click="preview({{ $template->id }})">View lines</x-admin.button>
                     @if ($canEdit)
                         <x-admin.button size="sm" variant="ghost" icon="pencil" wire:click="openEdit({{ $template->id }})">Edit</x-admin.button>
+                        <x-admin.button size="sm" variant="ghost" wire:click="exportTemplate({{ $template->id }})">Export</x-admin.button>
                         <x-admin.button size="sm" variant="ghost" wire:click="toggleActive({{ $template->id }})">{{ $template->is_active ? 'Hide' : 'Show' }}</x-admin.button>
                     @endif
                 </div>

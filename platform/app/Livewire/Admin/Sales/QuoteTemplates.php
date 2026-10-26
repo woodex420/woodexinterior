@@ -8,6 +8,7 @@ use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Sales\Data\QuoteBlueprint;
 use App\Domain\Sales\Enums\MilestonePlanKey;
 use App\Domain\Sales\Enums\TemplateKind;
+use App\Domain\Sales\Models\CatalogItem;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteTemplate;
 use App\Livewire\Concerns\InteractsWithAdmin;
@@ -15,12 +16,19 @@ use App\Settings\SalesSettings;
 use App\Support\Html;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use JsonException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Quote templates (QUO-002): the 16 Woodex templates and any saved from quotations. Details are edited here;
@@ -30,7 +38,9 @@ use Livewire\Component;
 #[Title('Quote templates')]
 class QuoteTemplates extends Component
 {
-    use InteractsWithAdmin;
+    use InteractsWithAdmin, WithFileUploads;
+
+    public ?TemporaryUploadedFile $importFile = null;
 
     #[Url(except: '')]
     public string $kind = '';
@@ -133,6 +143,117 @@ class QuoteTemplates extends Component
     {
         $this->previewId = QuoteTemplate::query()->findOrFail($id)->id;
         $this->showPreview = true;
+    }
+
+    public function exportTemplate(int $id): StreamedResponse
+    {
+        $this->authorize('manageCatalog', Quote::class);
+        $template = QuoteTemplate::query()->findOrFail($id);
+
+        $json = json_encode([
+            'format' => 'woodex-quote-template',
+            'version' => 1,
+            'name' => $template->name,
+            'description' => $template->description,
+            'business_line' => $template->business_line->value,
+            'kind' => $template->kind->value,
+            'milestone_plan' => $template->milestone_plan->value,
+            'terms' => $template->terms,
+            'notes' => $template->notes,
+            'scope_html' => $template->scope_html,
+            'blueprint' => $template->blueprint,
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+
+        return response()->streamDownload(static function () use ($json): void {
+            echo $json;
+        }, $template->slug.'.woodex-template.json', ['Content-Type' => 'application/json']);
+    }
+
+    public function importTemplate(): void
+    {
+        $this->authorize('manageCatalog', Quote::class);
+        $this->validate(['importFile' => ['required', 'file', 'max:512']], [], ['importFile' => 'template file']);
+
+        try {
+            $decoded = json_decode((string) file_get_contents((string) $this->importFile->getRealPath()), true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            $decoded = null;
+        }
+
+        if (! is_array($decoded)) {
+            $this->addError('importFile', 'That file is not valid JSON.');
+
+            return;
+        }
+
+        $validator = Validator::make($decoded, [
+            'format' => ['required', 'in:woodex-quote-template'],
+            'version' => ['required', 'integer', 'in:1'],
+            'name' => ['required', 'string', 'max:120'],
+            'description' => ['nullable', 'string', 'max:500'],
+            'business_line' => ['required', Rule::enum(BusinessLine::class)],
+            'kind' => ['required', Rule::enum(TemplateKind::class)],
+            'milestone_plan' => ['required', Rule::enum(MilestonePlanKey::class)],
+            'terms' => ['nullable', 'string', 'max:10000'],
+            'notes' => ['nullable', 'string', 'max:5000'],
+            'scope_html' => ['nullable', 'string', 'max:20000'],
+            'blueprint' => ['required', 'array'],
+            'blueprint.sections' => ['present', 'array', 'max:50'],
+            'blueprint.sections.*.items' => ['present', 'array', 'max:200'],
+        ]);
+
+        if ($validator->fails()) {
+            $this->addError('importFile', 'Not a Woodex template file: '.$validator->errors()->first());
+
+            return;
+        }
+
+        // validated() would strip unruled blueprint sub-keys (section names/notes); the payload passed validation, so use it whole.
+        $data = $decoded;
+
+        // Normalize through the same reader quotations use, and drop catalog links this install cannot resolve.
+        $sections = QuoteBlueprint::sections($data['blueprint']);
+        $catalogIds = [];
+        foreach ($sections as $section) {
+            foreach ($section['items'] as $item) {
+                if ($item['catalog_item_id'] !== null) {
+                    $catalogIds[] = $item['catalog_item_id'];
+                }
+            }
+        }
+        $known = $catalogIds === [] ? [] : CatalogItem::query()->whereIn('id', array_unique($catalogIds))->pluck('id')->all();
+        foreach ($sections as $si => $section) {
+            foreach ($section['items'] as $ii => $item) {
+                if ($item['catalog_item_id'] !== null && ! in_array($item['catalog_item_id'], $known, true)) {
+                    $sections[$si]['items'][$ii]['catalog_item_id'] = null;
+                }
+            }
+        }
+
+        $base = Str::slug((string) $data['name']) ?: 'template';
+        $slug = $base;
+        $n = 2;
+        while (QuoteTemplate::query()->where('slug', $slug)->exists()) {
+            $slug = $base.'-'.$n++;
+        }
+
+        $template = DB::transaction(fn (): QuoteTemplate => QuoteTemplate::query()->create([
+            'name' => trim((string) $data['name']),
+            'slug' => $slug,
+            'description' => trim((string) ($data['description'] ?? '')) !== '' ? trim((string) $data['description']) : null,
+            'business_line' => $data['business_line'],
+            'kind' => $data['kind'],
+            'milestone_plan' => $data['milestone_plan'],
+            'terms' => trim((string) ($data['terms'] ?? '')) !== '' ? trim((string) $data['terms']) : null,
+            'notes' => trim((string) ($data['notes'] ?? '')) !== '' ? trim((string) $data['notes']) : null,
+            'scope_html' => Html::sanitize(isset($data['scope_html']) ? (string) $data['scope_html'] : null),
+            'blueprint' => ['sections' => $sections],
+            'is_active' => true,
+            'position' => (int) QuoteTemplate::query()->max('position') + 1,
+        ]));
+
+        $this->importFile = null;
+        $this->toast("\"{$template->name}\" imported as a new template.");
     }
 
     public function render(): View
