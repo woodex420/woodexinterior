@@ -129,6 +129,22 @@ class Automation extends Model
                 'toggleable' => true,
             ],
             [
+                'key' => 'woodex:invoice-milestones',
+                'scheduled' => true,
+                'name' => 'Milestone invoices',
+                'description' => 'When a project reaches a milestone on an accepted quotation, its invoice is raised — number, tax, PDF, ledger and sequence, exactly as if Accounts had clicked it. A milestone is billed once.',
+                'cadence' => 'Hourly at :15',
+                'toggleable' => true,
+            ],
+            [
+                'key' => 'woodex:invoice-reminders',
+                'scheduled' => true,
+                'name' => 'Overdue payment ladder',
+                'description' => 'Nudges an invoice 7, 14 and 30 days after it falls due — once per rung. The client sees it on WhatsApp only when they have consented; the studio is always told, with the reason when nothing could be sent.',
+                'cadence' => 'Daily 10:00',
+                'toggleable' => true,
+            ],
+            [
                 'key' => 'woodex:review-requests',
                 'scheduled' => true,
                 'name' => 'Review requests',

@@ -30,8 +30,11 @@ final class SendPaymentReminder
         private readonly SendConversationMessage $send,
     ) {}
 
-    /** @return array{sent: bool, reason: string} */
-    public function handle(Invoice $invoice, User $by): array
+    /**
+     * @param  User|null  $by  the person sending; null when the reminder ladder sends on the studio's behalf
+     * @return array{sent: bool, reason: string}
+     */
+    public function handle(Invoice $invoice, ?User $by = null): array
     {
         $contact = $invoice->contact;
 
@@ -91,7 +94,7 @@ final class SendPaymentReminder
     }
 
     /** @return array{sent: bool, reason: string} */
-    private function record(Invoice $invoice, User $by, bool $sent, string $reason): array
+    private function record(Invoice $invoice, ?User $by, bool $sent, string $reason): array
     {
         activity('billing')
             ->causedBy($by)

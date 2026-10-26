@@ -61,6 +61,14 @@ Schedule::command('woodex:monthly-report')->monthlyOn(1, '09:00')
 Schedule::command('woodex:quote-follow-ups')->dailyAt('09:00')->withoutOverlapping(30)
     ->when(fn (): bool => Automation::enabled('woodex:quote-follow-ups'));
 
+// Slice E: money follows the job — a reached milestone on an accepted quotation becomes its invoice.
+Schedule::command('woodex:invoice-milestones')->hourlyAt(15)->withoutOverlapping(30)
+    ->when(fn (): bool => Automation::enabled('woodex:invoice-milestones'));
+
+// Slice E: the overdue ladder — 7, 14 and 30 days past due, once per rung, consent-gated.
+Schedule::command('woodex:invoice-reminders')->dailyAt('10:00')->withoutOverlapping(30)
+    ->when(fn (): bool => Automation::enabled('woodex:invoice-reminders'));
+
 // Review requests a few days after a handover was signed (PRJ-007).
 Schedule::command('woodex:review-requests')->dailyAt('10:30')
     ->when(fn (): bool => Automation::enabled('woodex:review-requests'));

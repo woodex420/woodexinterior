@@ -86,6 +86,16 @@ class SalesSettings extends Settings
 
     public string $invoice_terms;
 
+    /**
+     * The overdue ladder's rungs, in days past due (slice E). One reminder per rung, never twice.
+     *
+     * @phpstan-var list<int>
+     */
+    public array $invoice_reminder_rungs = [7, 14, 30];
+
+    /** Let the ladder message the client on WhatsApp (still consent-gated); off means the studio is told only. */
+    public bool $invoice_reminder_send_client = true;
+
     /** Announce a project's stage change to the client by email (PRJ-002). */
     public bool $project_stage_notifies_client;
 

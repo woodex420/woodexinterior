@@ -1876,3 +1876,47 @@ was clean"). This turn's workspace reset removed the browser kit's NSS libraries
 HTTP against the live preview with a real owner session — no screenshot is claimed.
 
 **Still open.** E (invoice automation that runs), F (marketing live proof, owner-blocked), G (hygiene).
+
+### Step 30 — invoice automation that actually runs (Slice E, 26 Oct 2026)
+
+**Why.** The advance invoice was the only one the OS raised by itself; every later milestone waited for a person to
+remember, and overdue money had no ladder at all — each reminder was a manual click on the invoice. Finding **B11**
+in `docs/audit/31_DEEP_QA_2026-10-21.md`.
+
+**What changed.**
+
+* `Sales\Actions\RaiseMilestoneInvoice` — one raiser for any project milestone: number series, tax slice from the
+  quotation, frozen PDF/snapshot, ledger posting and sequence trigger. A milestone is billed once; raising again
+  returns the existing invoice, and an archived one refuses instead of duplicating.
+* `Sales\Actions\RaiseAdvanceInvoice` — keeps only the acceptance rules (accepted quotation → the `on_acceptance`
+  milestone) and delegates the raising, so acceptance and the scheduler cannot drift apart.
+* `woodex:invoice-milestones` — hourly at :15, `--dry-run`. Bills every reached milestone on an accepted quotation,
+  which also catches up projects accepted before this slice or whose acceptance job failed.
+* `Sales\Actions\InvoiceReminderLadder` + `woodex:invoice-reminders` — daily 10:00. Rungs 7/14/30 days past due from
+  `sales.invoice_reminder_rungs`; the rung already fired is read back from the audit trail (`event = invoice_reminder`
+  carrying `rung`), so no new table was needed and the same record is what Audit shows.
+* `Sales\Notifications\OverdueInvoiceNotification` — bell + Telegram to whoever may verify payments, carrying the
+  rung, the days late, and the reason when the client was not messaged.
+* Client messages still go through `SendPaymentReminder` (consent, opt-out, WhatsApp connection). The ladder sends as
+  the invoice's creator, else the first active person who may verify payments, because conversation sends authorise a
+  real staff member; `SendPaymentReminder` now accepts a nullable sender.
+* Automation catalog + scheduler — **Milestone invoices** (hourly :15) and **Overdue payment ladder** (daily 10:00),
+  both toggleable; pausing the ladder stops every client message at once.
+* Settings migration `2026_10_26_100000_add_invoice_automation_settings` — `invoice_reminder_rungs = [7,14,30]`,
+  `invoice_reminder_send_client = true`.
+
+**Tests.** `tests/Feature/Sales/InvoiceAutomationTest.php` (10): a reached milestone is billed once and the second
+run adds nothing; an unreached milestone is left alone; `--dry-run` writes nothing; one rung per day-period with the
+consenting client messaged; rungs advance 7 → 14 → 30 with age; no consent records the rung with the reason; paid,
+void, draft and not-yet-due invoices are skipped; the Automation screen lists both jobs; the switch is honoured.
+Full suite **1,332 passed · 1 skipped · 7,165 assertions**; Pint clean; PHPStan 0.
+
+**Proof on 33143.** `schedule:list` → `woodex:invoice-milestones` 15 * * * *, `woodex:invoice-reminders` 0 10 * * *.
+`/admin/automation` lists both with cadence. QA invoice `INV-QA-0001` (Rs 50,000, 8 days late) → exactly one rung,
+audit text *"7-day reminder for INV-QA-0001 (8 days overdue): client not messaged — WhatsApp is not connected in
+Settings yet."*; a second run fired 0. QA rows deleted afterwards.
+
+**Deliberately not built.** Recurring invoices (a schedule per client) need a new table — a schema change waiting for
+the owner's yes. Milestone invoices cover the project billing that produces most of the money.
+
+**Still open.** F (marketing live proof, blocked on Meta/LinkedIn), G (hygiene).
