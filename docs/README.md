@@ -29,6 +29,6 @@
 
 ## Historical (kept for traceability, do not follow as instructions)
 
-`00-DEEP-ANALYSIS`, `08-V21-IMPORT-RUNBOOK`, `10-WEBSITE-LAUNCH-AUDIT`, `11-FRONTEND-V2-PLAN`, `12-FRONTEND-V2-MASTER-PLAN`, `13-V1-TO-V2-CONVERSION-PLAN`, `14-PENDING-TASKS`, `18`–`30`, `docs/audit/00`–`30`, `docs/audit-evidence/`, `docs/ci/`.
+`00-DEEP-ANALYSIS`, `08-V21-IMPORT-RUNBOOK`, `10-WEBSITE-LAUNCH-AUDIT`, `11-FRONTEND-V2-PLAN`, `12-FRONTEND-V2-MASTER-PLAN`, `13-V1-TO-V2-CONVERSION-PLAN`, `14-PENDING-TASKS`, `15`–`30`, `docs/audit/00`–`15` and `17`–`30` (the audits and plans those steps replaced), `docs/audit-evidence/`, `docs/ci/`. `docs/audit/16_MASTER_TODO.md` and `docs/audit/31_DEEP_QA_2026-10-21.md` are **not** history — they are rows 2 and 3 above.
 
-`docs/audit/evidence/` holds screenshots and captures used as proof at the time; it is reference material, not a spec. It can be pruned when the corresponding step is no longer in living memory.
+`docs/audit/evidence/` holds screenshots and captures used as proof at the time; it is reference material, not a spec. The 33 screenshots were re-encoded from PNG to JPEG (quality 88) on 26 Oct 2026 in Slice G — same pixels at 100%, 13 MB → 5.6 MB — and every reference in these docs was repointed to the new extension. It can be pruned when the corresponding step is no longer in living memory.

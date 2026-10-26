@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Website\Services\SiteRouter;
+use App\Http\Middleware\EnsureAnyPermission;
 use App\Http\Middleware\EnsureDatabaseIsCurrent;
 use App\Http\Middleware\EnsureTwoFactorIsEnabled;
 use App\Http\Middleware\EnsureUserIsActive;
@@ -32,6 +33,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'active' => EnsureUserIsActive::class,
             'two-factor' => EnsureTwoFactorIsEnabled::class,
             'db-current' => EnsureDatabaseIsCurrent::class,
+            'can-any' => EnsureAnyPermission::class,
         ]);
 
         // Authenticate before actor throttling even after Laravel sorts route middleware by priority.

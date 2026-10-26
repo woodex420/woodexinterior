@@ -36,14 +36,14 @@ Committed with this document.
 | “Fix live website error” | **Needs evidence** | `/`, `/about/?preview=1`, `/3d-visualization/?preview=1`, `/1-kanal-house-design/?preview=1` all return 200 in the sandbox. The message quoted is the builder's, not the public site's. A URL/screenshot of the failing page is required. Defensive fix planned: an `html` page with empty `canvas_html` must fall back to the block renderer or 404, never a blank document |
 | “Update missing frontend v1” | **Partial** | The Website menu already has all 15 items the owner listed (Verified in `AdminNavigation`). What is missing is the v2.1 **Content** group below |
 | Content: Service pages ★, City pages ★ | **Missing** | 61 service and 12 city pages exist as pages, but there is no manager for them. v2.1 has **Service & site pages** (New page → Start from: Blank / Service / Sector / Landing / About & team / Packages / Case study, or copy an existing layout) and **City pages** (city picker, “Edit content”, `Bulk create with AI`, city-localised copy) |
-| Content: Blog ★ | **Partial (first pass)** | A post **is** a page of type `insight` — one content model, kept. The list, create, duplicate, unpublish and the `/insights/` index card work (`6c22e99`, evidence `docs/audit/evidence/blog.png`). **What the owner is missing:** v2.1's article editor — template picker, kicker, standfirst, hero, details strip, category/tags, listing card, SEO panel with live preview, FAQ link, AI drafting. Rebuilt on the shared content editor in P1A–P1B |
-| Content: Portfolio ★ | **Partial (first pass)** | The 6 project pages list with the project link (`projects.case_study_page_id`, consent), index card, duplicate and unpublish work (`ec7613e`, evidence `docs/audit/evidence/portfolio.png`). **Missing:** v2.1's project editor — template picker, hero, details strip (project type, setting, year, size), facts box (scope, key move, materials, note), listing card, AI drafting |
-| Content: Page templates ★ | **Partial (first pass)** | 50 layouts with search, type filter, default per type, duplicate and retire are live (`5c164ae`, evidence `docs/audit/evidence/page-templates.png`). **Wrong shape:** it is a standalone screen that also creates pages, while v2.1 offers templates inside “New page → Start from”, inside “New article”, and in a Template library. Being folded into the create flows in P1B; the builder edits one page, so a template must never create a builder page |
+| Content: Blog ★ | **Partial (first pass)** | A post **is** a page of type `insight` — one content model, kept. The list, create, duplicate, unpublish and the `/insights/` index card work (`6c22e99`, evidence `docs/audit/evidence/blog.jpg`). **What the owner is missing:** v2.1's article editor — template picker, kicker, standfirst, hero, details strip, category/tags, listing card, SEO panel with live preview, FAQ link, AI drafting. Rebuilt on the shared content editor in P1A–P1B |
+| Content: Portfolio ★ | **Partial (first pass)** | The 6 project pages list with the project link (`projects.case_study_page_id`, consent), index card, duplicate and unpublish work (`ec7613e`, evidence `docs/audit/evidence/portfolio.jpg`). **Missing:** v2.1's project editor — template picker, hero, details strip (project type, setting, year, size), facts box (scope, key move, materials, note), listing card, AI drafting |
+| Content: Page templates ★ | **Partial (first pass)** | 50 layouts with search, type filter, default per type, duplicate and retire are live (`5c164ae`, evidence `docs/audit/evidence/page-templates.jpg`). **Wrong shape:** it is a standalone screen that also creates pages, while v2.1 offers templates inside “New page → Start from”, inside “New article”, and in a Template library. Being folded into the create flows in P1B; the builder edits one page, so a template must never create a builder page |
 | Content: Forms ★ | **Done (16.13)** | `/admin/website/forms` lists the seven site forms with counts from `leads`, the field names actually received, and the one real alert-routing rule. No per-form routing store — see 16.13 |
 | Content: FAQs ★ | **Done (16.16)** | `/admin/website/faqs` edits the shared FAQ library every page's FAQ section picks from, shows which pages use each answer, and re-renders them on save. Rename/reorder/add/delete; no second store |
 | Content: Testimonials ★ | **Done (16.17)** | `/admin/website/testimonials` edits the shared review library; reviews are quoted verbatim, “Used on” is the switch, and there is no per-review rating or photo because the site's section shows neither |
 | Content: Estimator ★ | **Done (16.15)** | `/admin/website/estimator` edits the file the public page reads and mirrors the rates into `EstimatorRate`; template pack (14 ready-made services), saved rate books, “adjust all rates %”, finish names, quotation terms and the live preview are all in |
-| Content: Client logos ★ | **Partial** | Client logos are ported separately (`admin-logos.js`, evidence `studio-logos.png`). **Missing from the v2.1 screen:** the display settings on the home Clients section (small title, heading, grid vs sliding row, speed, grey-on-hover) — those are section fields, not library rows |
+| Content: Client logos ★ | **Partial** | Client logos are ported separately (`admin-logos.js`, evidence `studio-logos.jpg`). **Missing from the v2.1 screen:** the display settings on the home Clients section (small title, heading, grid vs sliding row, speed, grey-on-hover) — those are section fields, not library rows |
 | Content: Team ★, Media ★ | **Partial** | `TeamMembersIndex` and `MediaLibrary` (upload, alt text, filters) exist. **Missing:** team — starter roles, department, portrait ratio, Featured, “Pages & heading” tick-list, reorder, Live; media — Trash, Optimise large images, Make responsive (480/960 WebP), used-on list, replace picture, crop/resize, Save alt text with “add it to pages where this image has no alt text” |
 | Redirects | **Exists** | `RedirectsIndex`; needs the v2.1 bulk/redirect-chain tools |
 | Header & footer, Hero slides, Section library, SEO/AI, Speed, Site health, Theme, Settings | **Exists** | All routed; Theme now shares one token store |
@@ -170,7 +170,7 @@ of Blog, Portfolio and Page templates no longer exist.
 ### P3 — Leads, pipeline, alerting (5–7 sessions)
 
 1. **Lead drawer** — *done 2026-10-20*: clicking a client name opens the lead over the list; stage and owner
-   save in place (the Won rule still applies). Evidence: `docs/audit/evidence/lead-drawer.png`.
+   save in place (the Won rule still applies). Evidence: `docs/audit/evidence/lead-drawer.jpg`.
    Known issue found while testing: the hub renders its own page header **and** the tab component renders
    one, so "Leads" appears twice above the tab bar. Pre-existing on every hub screen; fix next pass.
 2. **Multiple pipelines**: `pipelines` table + stage FK (schema change — needs approval), board switcher,
@@ -432,7 +432,7 @@ Answered “yes” to 1 and 3 and named a choice on 2 and 4, the port starts at 
 | Screens 2–3 — Blog, Portfolio | **Live** (`175b7b4`). The real v2.1 editor inside the OS: 48 imported articles open with their words, a new article creates a `Page` draft, takes a hero from the media picker, publishes through `cms_published` and renders at `/insights/<slug>/` with kicker, h1, dek, meta and hero. `StudioContent` keeps the editor JSON in one `text` block and a `PageVersion` before every save; publish requires `website.publish` and adds the `/insights/` index card. The OS-native `BlogIndex`/`PortfolioIndex` (Livewire, views, tests) are **deleted**. 19 tests |
 | The rest | Screens are switched on one at a time in `WebsiteStudioController::SCREENS`, each after its actions are ported |
 
-Evidence: `docs/audit/evidence/studio-logos.png` (the ported screen inside the OS), and the browser run that
+Evidence: `docs/audit/evidence/studio-logos.jpg` (the ported screen inside the OS), and the browser run that
 uploaded a logo, saved, and then found the new heading on `/`.
 
 ---
@@ -484,8 +484,8 @@ Two bugs surfaced while checking it in the browser:
 2. The Website settings card printed “Header &amp; social” (an escaped entity inside an escaped title);
    now “Header & social”.
 
-Evidence: `docs/audit/evidence/studio-sidebar.png` (Pages & builder / Content, with the disabled pills)
-and `studio-sidebar-tools.png` (the heading-less tools band).
+Evidence: `docs/audit/evidence/studio-sidebar.jpg` (Pages & builder / Content, with the disabled pills)
+and `studio-sidebar-tools.jpg` (the heading-less tools band).
 
 Pint PASS 850, PHPStan 0 errors.
 
@@ -493,7 +493,7 @@ Pint PASS 850, PHPStan 0 errors.
 
 ## 16.11 Screen 4 — Service pages, ported (20 Oct 2026)
 
-`/admin/website/services` is live in the studio shell (`docs/audit/evidence/studio-services.png`). It is the
+`/admin/website/services` is live in the studio shell (`docs/audit/evidence/studio-services.jpg`). It is the
 v2.1 screen's job, carried over honestly: v2.1 listed **built HTML files** and edited a page by rewriting the
 file; the OS renders every page from blocks, so this screen lists the OS page table (77 pages: services, areas,
 about, home, booking, contact…) with the same columns and sends **Edit content** to the OS section editor.
@@ -520,7 +520,7 @@ Next screens in the band: City pages, Forms, Estimator, FAQs, Testimonials.
 
 ## 16.12 Screen 5 — City pages, ported (20 Oct 2026)
 
-`/admin/website/cities` is live (`docs/audit/evidence/studio-cities.png`). v2.1 kept city pages as **content
+`/admin/website/cities` is live (`docs/audit/evidence/studio-cities.jpg`). v2.1 kept city pages as **content
 drafts** and published them by writing HTML; the OS has one kind of page, so a city draft is a page of type
 `city` with draft status — it appears in this list, opens in the section editor, and goes live from Pages.
 
@@ -552,7 +552,7 @@ Sidebar count assertion moved to 53.
 
 ## 16.13 Screen 6 — Forms, ported (20 Oct 2026)
 
-`/admin/website/forms` is live (`docs/audit/evidence/studio-forms.png`). The screen answers two questions the
+`/admin/website/forms` is live (`docs/audit/evidence/studio-forms.jpg`). The screen answers two questions the
 v2.1 screen asked: **what came in through each form**, and **where a new enquiry goes**.
 
 What came in is read from the OS, not from a new table: the public pages already post to the site bridge,
@@ -619,7 +619,7 @@ Open question for the owner (not blocking; default is to keep): **saved rate boo
 
 ## 16.15 Screen 7 — Estimator, ported (20 Oct 2026)
 
-`/admin/website/estimator` is live (`docs/audit/evidence/studio-estimator.png`). This screen is not like the
+`/admin/website/estimator` is live (`docs/audit/evidence/studio-estimator.jpg`). This screen is not like the
 others: **the public estimator does not read the database.** `/estimator/` is the v1 page and it builds the
 calculator from `assets/js/estimator-rates.js` — six services with three rates each, three finish levels with
 a name and a description, 22 catalogue add-ons, and three quotation terms. The file is the live price list.
@@ -667,7 +667,7 @@ Pint PASS 857; PHPStan 0.
 
 ## 16.16 Screen 8 — FAQs, ported (20 Oct 2026)
 
-`/admin/website/faqs` is live (`docs/audit/evidence/studio-faqs.png`, editor `studio-faqs-editor.png`).
+`/admin/website/faqs` is live (`docs/audit/evidence/studio-faqs.jpg`, editor `studio-faqs-editor.jpg`).
 
 v2.1 called these **FAQ groups**: a named set of questions, reused on pages, by the chat agent, and in Google's
 FAQ results. The OS already has the same idea with one store — `content_entries` of kind `faq`, the shared
@@ -700,8 +700,8 @@ public page shows the new wording; **0 console errors**. Tests: `StudioFaqsTest`
 
 ## 16.17 Screen 9 — Testimonials, ported (20 Oct 2026)
 
-`/admin/website/testimonials` is live (`docs/audit/evidence/studio-testimonials.png`, editor
-`studio-testimonials-editor.png`). **This closes the Content band: nothing in the Website sidebar is on “soon”.**
+`/admin/website/testimonials` is live (`docs/audit/evidence/studio-testimonials.jpg`, editor
+`studio-testimonials-editor.jpg`). **This closes the Content band: nothing in the Website sidebar is on “soon”.**
 
 v2.1 kept testimonials in its content store with a per-card **Live** switch, a star rating, a photo and a
 “Pages & heading” dialog that rewrote pages' HTML. The OS keeps one shared review library
@@ -733,12 +733,12 @@ and City pages, were later retired in §16.19 — the table keeps their build re
 
 | Screen | Route | Evidence | Test |
 |---|---|---|---|
-| Service pages | `/admin/website/services` | `studio-services.png` | `StudioServicePagesTest` 9 |
-| City pages | `/admin/website/cities` | `studio-cities.png` | `StudioCityPagesTest` 6 |
-| Forms | `/admin/website/forms` | `studio-forms.png` | `StudioFormsTest` 6 |
-| Estimator | `/admin/website/estimator` | `studio-estimator.png` | `StudioEstimatorTest` 8 |
-| FAQs | `/admin/website/faqs` | `studio-faqs.png` | `StudioFaqsTest` 11 |
-| Testimonials | `/admin/website/testimonials` | `studio-testimonials.png` | `StudioTestimonialsTest` 8 |
+| Service pages | `/admin/website/services` | `studio-services.jpg` | `StudioServicePagesTest` 9 |
+| City pages | `/admin/website/cities` | `studio-cities.jpg` | `StudioCityPagesTest` 6 |
+| Forms | `/admin/website/forms` | `studio-forms.jpg` | `StudioFormsTest` 6 |
+| Estimator | `/admin/website/estimator` | `studio-estimator.jpg` | `StudioEstimatorTest` 8 |
+| FAQs | `/admin/website/faqs` | `studio-faqs.jpg` | `StudioFaqsTest` 11 |
+| Testimonials | `/admin/website/testimonials` | `studio-testimonials.jpg` | `StudioTestimonialsTest` 8 |
 
 **Nothing in the Website sidebar is disabled any more.** `WebsiteAdminParityTest` now asserts that every
 Content item has a route, so a screen cannot go back to being listed before it works.
@@ -841,8 +841,8 @@ that version is byte-identical to the old file: true
 /about/ now serves the edit: true
 ```
 
-Screenshots: `docs/audit/evidence/os1-builder-edit.png` (the heading editable in the canvas) and
-`os1-builder-saved.png` (after Save, live). The edit was reverted afterwards by re-syncing the demo, so the
+Screenshots: `docs/audit/evidence/os1-builder-edit.jpg` (the heading editable in the canvas) and
+`os1-builder-saved.jpg` (after Save, live). The edit was reverted afterwards by re-syncing the demo, so the
 shipped v1 pages are untouched (`git status` clean for `platform/public/**/index.html`).
 
 ### Tests and gates
@@ -1977,3 +1977,47 @@ schedule(s)."*; the real run printed *"QA monthly retainer · Hamza Khan → RI-
 invoice list showed `RI-2026-0001`. The QA schedule, invoice, items, ledger entry and number were then deleted.
 
 **Still open.** F (marketing live proof, blocked on Meta/LinkedIn), G (hygiene).
+
+### Step 32 — hygiene: no third-party font host, System hubs gated, evidence trimmed (Slice G, 26 Oct 2026)
+
+Slice G was the small, safe cleanup the audit listed last: two font families off a CDN, 13 MB of historical
+screenshots, an authority index, and hub routes that opened for anybody signed in. What the audit *assumed* about
+the fonts was wrong, and finding that out changed the work.
+
+**Fonts — more than two families.** The v1 site was already self-hosted (`/assets/fonts/*.woff2` linked from
+`v1-p21.css`); the leak was the **page builder**. Its typography picker offers 26 families, and both the picker and
+the theme panel built a `fonts.googleapis.com` stylesheet at runtime — and the builder saves the whole document, so a
+page edited that way shipped with an external stylesheet on every visit. Three facts decided the fix:
+* The families are not two, they are 26, so hand-copying files was not the job — `@fontsource` packages were fetched
+  with `npm pack` (the sandbox reaches the npm registry) and the latin `wght` files were extracted.
+* **87 woff2 faces** now live in `platform/public/assets/fonts/` (91 files for 27 families in total, counting the
+  site's own), and `platform/public/builder/fonts.css` declares them all with relative
+  `url("/assets/fonts/<family>-<weight>.woff2")` — no host, no protocol-relative URL
+  (`/tmp/getfonts.py` regenerates it; the file is committed).
+* `builder.js` line 551 (picker `href`) and line 1618 (exported theme `@import`) both point at `/builder/fonts.css`.
+
+**System hubs — the page, not just the tabs.** Each tab of `/admin/system/{access,connections,platform}` filtered by
+permission, but the route itself only required *a* login. A support colleague could open a shell of tabs their role
+could never use. New `Http\Middleware\EnsureAnyPermission` (alias `can-any`) opens a hub when the person may use
+**any** of its tabs: access → `users.manage,settings.manage`; connections → `integrations.manage,system.import`;
+platform → `system.health,audit.view,system.change_requests,settings.manage,leads.delete`.
+
+**Evidence.** All 33 PNG screenshots in `docs/audit/evidence/` were re-encoded to JPEG quality 88 — 13 MB → 5.6 MB,
+same pixels at 100% — and every reference was repointed (`11_PHASE2_PAGE_BUILDER.md`, this file). `docs/` went from
+15 MB to 6.8 MB. `docs/README.md` was corrected at the same time: its "historical" list started at `18` and
+`audit/00`, which swept up the three documents it tells the reader to read first (`audit/16` and `audit/31`); the list
+now starts at `15` and `audit/17`, and says plainly that 16 and 31 are the current set.
+
+**Proof on 33143.** `/builder/fonts.css` → **200 `text/css`, 13,281 bytes, 87 `@font-face`**; `/assets/fonts/poppins-400.woff2`
+→ **200 `font/woff2`, 7,884 bytes**; the served `builder.js` contains **0** occurrences of the font CDN and **2** of
+`"/builder/fonts.css"`; `/admin/website/builder?path=/about/` → 200. A QA support user (`support-qa@woodex.test`,
+deleted afterwards) logged in at `/admin/login` and got **403** on all three System hubs while `/admin` and
+`/admin/leads` stayed **200**; the owner got **200** on all three.
+
+**Tests.** `tests/Feature/System/HubAccessTest.php` (4) — support and accountant refused on every hub, owner opens
+them, and one extra permission opens exactly its own hub and no other. `tests/Feature/Website/BuilderFontsTest.php`
+(3) — no font-CDN string and no absolute URL in `builder.js` or `fonts.css`, the local stylesheet is linked, and
+every family parsed out of the picker's own `GFONTS` table has a face and an existing woff2 file.
+Full suite **1,348 passed · 1 skipped · 7,354 assertions**; Pint clean; PHPStan 0 (598 files).
+
+**Not done in G.** Nothing from the audit's list. F (marketing live proof) stays blocked on Meta/LinkedIn approval.

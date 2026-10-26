@@ -321,7 +321,7 @@ receives a v2.1 font code, the store always receives a complete CSS stack
 * `tests/Feature/Website/ThemeBridgeTest.php` — **10 passed / 58 assertions**; `Feature/Website` —
   **235 passed / 3,859 assertions**; `ThemeTokensTest` + `ThemePresetsTest` — 10 passed. Pint 834
   files PASS, PHPStan 0 errors.
-* Screenshot: `docs/audit/evidence/phase2-theme-panel.png`.
+* Screenshot: `docs/audit/evidence/phase2-theme-panel.jpg`.
 
 ### 12.4 Known limits
 
@@ -363,7 +363,7 @@ upload folder, no second list.
 * `tests/Feature/Website/BuilderMediaTest.php` — **5 passed / 22 assertions** (list order, upload row
   + dimensions + stored file, PDF refused, >5 MB refused, permission enforced).
 * `Feature/Website` — **240 passed / 3,881 assertions**. Pint 836 files PASS, PHPStan 0 errors.
-* Screenshot: `docs/audit/evidence/phase2-builder-media.png`.
+* Screenshot: `docs/audit/evidence/phase2-builder-media.jpg`.
 
 ### 13.3 Known limits
 
@@ -411,7 +411,7 @@ compare, only a delivery path to switch.
   PHPStan 0 errors.
 * `php artisan woodex:conversion-status` now reports `8 · Home | 1 | 0 | 1 | CMS serves this group` and
   “163 of 166 published pages are still served by v1 files; 3 by the CMS.”
-* Evidence: `docs/audit/evidence/home-before.png`, `home-after.png` (same page height, 10,017 px).
+* Evidence: `docs/audit/evidence/home-before.jpg`, `home-after.jpg` (same page height, 10,017 px).
 
 ### 14.3 Guards added
 

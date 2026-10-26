@@ -548,7 +548,9 @@
     data.textContent = JSON.stringify(used);
     var fam = Object.keys(fonts);
     if (fam.length) {
-      var href = "https://fonts.googleapis.com/css2?" + fam.map(function (f) { return "family=" + f.replace(/ /g, "+") + (GFONTS[f] ? ":wght@" + GFONTS[f] : ""); }).join("&") + "&display=swap";
+      // Self-hosted: public/builder/fonts.css carries every family this picker offers, so a saved page
+      // loads no third-party font host at runtime.
+      var href = "/builder/fonts.css";
       if (!gl) { gl = S.doc.createElement("link"); gl.id = "wx-gfonts"; gl.rel = "stylesheet"; head.insertBefore(gl, st); }
       if (gl.getAttribute("href") !== href) gl.setAttribute("href", href);
     } else if (gl) gl.remove();
@@ -1613,7 +1615,7 @@
   applyTheme = function () {
     if (!S.doc) return; var el = S.doc.getElementById("wx-theme-live"); if (!el) return; var v = readTheme(), css = "", imp = [];
     ["--wx-font", "--wx-font-head"].forEach(function (k) { var m = /^g:([^:]+):(.*)$/.exec(v[k] || ""); if (m) imp.push("family=" + m[1].replace(/ /g, "+") + (m[2] ? ":wght@" + m[2] : "")); });
-    if (imp.length) css += '@import url("https://fonts.googleapis.com/css2?' + imp.join("&") + '&display=swap");';
+    if (imp.length) css += '@import url("/builder/fonts.css");';
     css += ":root{"; Object.keys(v).forEach(function (k) { css += k + ":" + (/font/.test(k) ? fontCss(v[k]) : v[k]) + ";"; });
     css += "--navy:var(--wx-navy);--navy-2:var(--wx-navy);--ink:var(--wx-ink);--muted:var(--wx-muted)}html{font-size:var(--wx-base-size)}body,button,input,select,textarea{font-family:var(--wx-font)!important}main h1,main h2,main h3{font-family:var(--wx-font-head)}";
     ["h1", "h2", "h3"].forEach(function (h) { if (v["--wx-" + h]) css += "main " + h + "{font-size:var(--wx-" + h + ")!important}"; });

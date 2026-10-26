@@ -28,19 +28,19 @@ use App\Livewire\Admin\Hubs\DashboardHub;
 use App\Livewire\Admin\Hubs\DocumentsHub;
 use App\Livewire\Admin\Hubs\InvoicesHub;
 use App\Livewire\Admin\Hubs\LeadsHub;
-use App\Livewire\Admin\Hubs\SystemAccessHub;
-use App\Livewire\Admin\Hubs\SystemConnectionsHub;
-use App\Livewire\Admin\Hubs\SystemPlatformHub;
 use App\Livewire\Admin\Hubs\PaymentsHub;
 use App\Livewire\Admin\Hubs\QuotationsHub;
 use App\Livewire\Admin\Hubs\ReportsHub;
+use App\Livewire\Admin\Hubs\SystemAccessHub;
+use App\Livewire\Admin\Hubs\SystemConnectionsHub;
+use App\Livewire\Admin\Hubs\SystemPlatformHub;
 use App\Livewire\Admin\Hubs\TasksHub;
 use App\Livewire\Admin\Marketing\SocialPlannerIndex;
 use App\Livewire\Admin\NotificationsPage;
 use App\Livewire\Admin\Profile\Security;
-use App\Livewire\Admin\Projects\ProjectBoard;
 use App\Livewire\Admin\Projects\ClientPortalIndex;
 use App\Livewire\Admin\Projects\HandoversIndex;
+use App\Livewire\Admin\Projects\ProjectBoard;
 use App\Livewire\Admin\Projects\ProjectShow;
 use App\Livewire\Admin\Projects\ProjectsIndex;
 use App\Livewire\Admin\Sales\Approvals;
@@ -186,9 +186,9 @@ Route::get('/receivables', fn () => redirect()->route('admin.payments.index', ['
 
 // System — four pages with their buttons inside (deep QA 21 Oct, slice B). The individual routes
 // below stay: bookmarks, Telegram buttons and notifications still point at them.
-Route::livewire('/system/access', SystemAccessHub::class)->name('system.access');
-Route::livewire('/system/connections', SystemConnectionsHub::class)->name('system.connections');
-Route::livewire('/system/platform', SystemPlatformHub::class)->name('system.platform');
+Route::livewire('/system/access', SystemAccessHub::class)->name('system.access')->middleware('can-any:users.manage,settings.manage');
+Route::livewire('/system/connections', SystemConnectionsHub::class)->name('system.connections')->middleware('can-any:integrations.manage,system.import');
+Route::livewire('/system/platform', SystemPlatformHub::class)->name('system.platform')->middleware('can-any:system.health,audit.view,system.change_requests,settings.manage,leads.delete');
 // The chat bot has no screen of its own: its knobs are a tab of Settings. The sidebar entry opens it.
 Route::get('/chat-bot', fn () => redirect()->route('admin.settings', ['tab' => 'bot']))->name('chat-bot')->middleware('can:settings.manage');
 Route::livewire('/settings', SettingsPage::class)->name('settings')->middleware('can:settings.manage');

@@ -9,7 +9,7 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,341 passed · 1 skipped · 7,210 assertions** · Pint clean · PHPStan 0 errors |
+| Tests | **1,348 passed · 1 skipped · 7,354 assertions** · Pint clean · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
@@ -38,6 +38,8 @@
 
 **Slice E (26 October).** Invoices now raise themselves. `woodex:invoice-milestones` bills every milestone an accepted quotation has reached — hourly, once per milestone, with the same number, tax, PDF and ledger posting as the advance invoice — and `woodex:invoice-reminders` runs the 7/14/30-day ladder, one rung per invoice, messaging the client on WhatsApp only with consent and telling the studio why when it cannot. Both are on the Automation screen with their cadence and switches. 10 more tests; suite **1,332 passed · 1 skipped · 7,165 assertions**.
 
+**Slice G — hygiene (26 October).** The page builder stopped asking a font CDN for glyphs: all 26 families in its typography picker (87 woff2 faces) ship in `public/assets/fonts/` with one local `public/builder/fonts.css`, in both the picker and the theme export — a saved page now loads no external host. The three System hubs gained `can-any` on their routes, so they open only for someone who may use one of their tabs (support and accountant: 403). The 33 historical screenshots were re-encoded PNG → JPEG (13 MB → 5.6 MB) with every reference repointed, and `docs/README.md` now names the right current set. 7 more tests; suite **1,348 passed · 1 skipped · 7,354 assertions**.
+
 **Slice E2 — recurring invoices (26 October).** A retainer now bills itself. The owner approved one new table: `recurring_invoices` holds the client, the standing line, the frequency (monthly / quarterly / yearly), tax, due days and the next run; `woodex:invoice-recurring` runs daily at 09:20 behind the Automation switch and raises one invoice per period under its own `RI-2026-0001` series — same frozen PDF and ledger posting as every other invoice — then advances the schedule. Paused and ended schedules bill nothing, a schedule that missed periods catches up with one invoice rather than a backlog, and `/admin/invoices?tab=recurring` creates, pauses, resumes, bills immediately and deletes. The freeze step moved into `Sales\Services\InvoiceFreezer`, shared with the milestone raiser. 9 more tests; suite **1,341 passed · 1 skipped · 7,210 assertions**. Live on 33143: a QA retainer produced `RI-2026-0001` (Rs 25,000 + 15% = Rs 28,750), a second run produced nothing, QA rows deleted.
 
 **Slice D (26 October).** The Overview is a control view. One `ControlPanel` answers the six numbers the studio runs on — enquiries today, follow-ups overdue, quotations awaiting approval, money due (and how much of it is late), jobs running, automations failing — and every tile links to the list that filters to the same rows (`/admin/leads?due=overdue`, `?created=today`, `/admin/approvals`, `/admin/payments?tab=receivables`, `/admin/projects?status=active`). The "needs attention" list's button *is* the action, the five most overdue enquiries keep their WhatsApp and call links, the Reports page carries the same six numbers above its tabs with a new **Today** preset, and the tracking board's column is URL state. 15 more tests; suite **1,322 passed · 1 skipped · 7,116 assertions**.
@@ -53,7 +55,7 @@
 | ~~D~~ | ~~Overview as a control view~~ | **Done 26 Oct** — six tiles from one `ControlPanel`, each linked to its filtered list; needs-attention actions; Reports strip + Today preset; `?due=overdue` / `?created=today` on Leads |
 | ~~E~~ | ~~Invoice automation~~ | **Done 26 Oct** — milestone invoices raised hourly for reached milestones, 7/14/30 overdue ladder with consent-gated WhatsApp and an audit record per rung; **E2** recurring retainers raise `RI-…` invoices daily at 09:20 from `/admin/invoices?tab=recurring` |
 | **F** | Marketing live proof once Meta/LinkedIn approve the app | Composer + publisher are real; only the platform key is missing |
-| **G** | Hygiene: self-host fonts, trim historical screenshots, docs authority index | Small, safe, keeps the repo honest |
+| ~~G~~ | ~~Hygiene~~ | **Done 26 Oct** — builder fonts self-hosted (26 families, 87 faces), System hubs gated by `can-any`, evidence 13 MB → 5.6 MB with references repointed, `docs/README.md` corrected |
 
 ## Owner-side blockers (unchanged)
 
