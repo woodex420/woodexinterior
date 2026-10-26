@@ -28,6 +28,8 @@ use App\Domain\Crm\Policies\LeadPolicy;
 use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectUpdate;
 use App\Domain\Projects\Policies\ProjectPolicy;
+use App\Domain\Sales\Events\InvoicePaid;
+use App\Domain\Sales\Events\QuoteSent;
 use App\Domain\Sales\Listeners\RecordEstimatorEstimate;
 use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\DescriptionTemplate;
@@ -46,6 +48,7 @@ use App\Integrations\Google\Contracts\GoogleGateway;
 use App\Integrations\Google\GoogleClient;
 use App\Integrations\Telegram\Clients\TelegramBotApi;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
+use App\Integrations\Webhooks\WebhookEventListener;
 use App\Integrations\WhatsApp\Clients\WhatsAppCloudApi;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Integrations\WhatsApp\WhatsAppCredentials;
@@ -181,6 +184,11 @@ class AppServiceProvider extends ServiceProvider
         // AUT-001: the sequences' event-driven triggers.
         Event::listen(LeadCaptured::class, [EnrollTriggeredLeads::class, 'handleLeadCaptured']);
         Event::listen(LeadStageChanged::class, [EnrollTriggeredLeads::class, 'handleStageChanged']);
+
+        // INT: the owner's own apps (Zapier, Make, any HTTPS endpoint) hear the same moments.
+        Event::listen(LeadCaptured::class, [WebhookEventListener::class, 'handleLeadCaptured']);
+        Event::listen(QuoteSent::class, [WebhookEventListener::class, 'handleQuoteSent']);
+        Event::listen(InvoicePaid::class, [WebhookEventListener::class, 'handleInvoicePaid']);
 
         Event::listen(Login::class, function (Login $event): void {
             if ($event->user instanceof User) {

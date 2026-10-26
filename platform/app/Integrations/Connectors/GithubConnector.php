@@ -49,6 +49,11 @@ final class GithubConnector extends Connector
         return null;
     }
 
+    public function help(): string
+    {
+        return 'GitHub → Settings → Developer settings → Personal access tokens. A fine-grained token with read-only repository access is enough — Woodex never writes to GitHub.';
+    }
+
     /** @return list<array{name: string, label: string, type: string, placeholder: string, required: bool}> */
     public function fields(): array
     {

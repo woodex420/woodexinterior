@@ -2622,3 +2622,49 @@ APP_URL, the exact context that blocked the old drawer: both panes render the do
 typed line, totals and DRAFT stamp), PDF framing headers verified live.
 
 **Next.** Resume Slice INT (audit done, webhook tables approved) — owner's pick stands.
+
+
+### Step 47 — integrations redevelopment (INT, 27 Oct 2026)
+
+Owner selected INT, approved **full_grid_webhooks** and two tables; after the live-preview
+fix (Step 46), explicitly chose Resume INT. No other schema was changed.
+
+**UI:** one TailAdmin-style grid replaces the connected-app strip, separate connector list,
+roadmap cards and MCP banner. Fourteen unique cards, grouped and searchable across all
+providers; real status from provider checks/traffic, Details and applicable connection/test/
+removal controls. Gmail/Drive share Workspace consent (clearly labelled), while staff Google
+identity stays separate. Existing Telegram configuration/QR workflow, live diagnostics,
+WhatsApp test/templates, mail test, data import and MCP keys remain accessible. Fixed the
+working WhatsApp card incorrectly stamped Planned; removed the unused IntegrationCatalog.
+
+**Facebook:** Page ID + write-only token proved against Graph API before encrypted storage,
+then live retest/removal. Per-provider credential help in Details. **Page identity only**;
+publishing was not quietly claimed implemented or authorised.
+
+**Runtime:** outbound_webhooks + webhook_deliveries (approved). LeadCaptured (new enquiries
+only), QuoteSent (frozen version) and InvoicePaid (verified allocation reaches zero balance)
+fan out to subscribed endpoints after commit. Historical imports stay quiet. Jobs use the
+dedicated database/webhooks queue even when the default driver is sync; a dedicated
+scheduled worker drains it every minute. Three attempts with backoff, stable delivery ID,
+HMAC-SHA256 over the exact POST body, metadata-only integration log and visible delivery
+history. Owner-only create/pause/resume/rotate/remove; integration managers can inspect/test.
+Secret is encrypted, hidden from model JSON, shown once on creation/rotation. Every attempt
+rechecks the endpoint: paused/deleted destinations are skipped, hostnames resolve to public
+IPs only, cURL pins the vetted address (no DNS rebinding), redirects/proxies refused. The
+same guard closes the old Custom API hostname-to-private-address gap. Network exceptions
+are sanitised rather than displaying secret-bearing transport diagnostics.
+
+**Proof:** 25 new tests across IntegrationGridTest + OutboundWebhooksTest (encryption,
+one-time secret, owner-only mutations, filters/status, Facebook proof/rejection, signed
+body, subscriptions, dedicated queue, retries/exhaustion, pause/remove, DNS safety and
+real business-event dispatch points). Updated obsolete MCP/WhatsApp UI expectations,
+without weakening credential tests. Final full suite **1,531 passed · 1 skipped · 8,180
+assertions**; Pint clean on touched files; PHPStan 0. Headless Chromium on 33143: the
+14-card grid and Add any app panel rendered with no page errors; screenshot inspected.
+No proof records or credentials were added to the preview database.
+
+**Not claimed:** real Facebook/Zapier/Make success (owner credentials/receiver needed),
+Facebook publishing, Google Sheets append or Drive/GitHub off-site backup. The owner
+explicitly deferred the latter two from this slice. Plan 35 records the refreshed boundary.
+
+**Next recommendation:** Slice W — the native Estimations hub; ask before starting.

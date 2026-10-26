@@ -13,17 +13,22 @@ use App\Domain\System\Models\IntegrationLog;
 use App\Domain\System\Models\TelegramLink;
 use App\Domain\System\Models\WebhookEvent;
 use App\Domain\System\Models\WhatsAppTemplate;
+use App\Integrations\Connectors\Connector;
 use App\Integrations\Connectors\ConnectorManager;
 use App\Integrations\Connectors\IntegrationConnection;
 use App\Integrations\Google\GoogleConnection;
 use App\Integrations\Google\GoogleOAuth;
-use App\Integrations\Mcp\IntegrationCatalog;
 use App\Integrations\Mcp\IssueMcpToken;
 use App\Integrations\Mcp\McpAccessToken;
 use App\Integrations\Mcp\RevokeMcpToken;
+use App\Integrations\Support\PublicUrlGuard;
 use App\Integrations\Telegram\Contracts\TelegramGateway;
 use App\Integrations\Telegram\TelegramConfiguration;
 use App\Integrations\Telegram\TelegramMessage;
+use App\Integrations\Webhooks\OutboundWebhook;
+use App\Integrations\Webhooks\WebhookDelivery;
+use App\Integrations\Webhooks\WebhookDispatcher;
+use App\Integrations\Webhooks\WebhookEvents;
 use App\Integrations\WhatsApp\Actions\TestWhatsAppConnection;
 use App\Integrations\WhatsApp\WhatsAppCredentials;
 use App\Livewire\Concerns\InteractsWithAdmin;
@@ -50,6 +55,15 @@ use Throwable;
 class Integrations extends Component
 {
     use InteractsWithAdmin, WithPagination;
+
+    /** Grid groups (INT), in display order. @var array<string, string> */
+    private const GROUPS = [
+        'communication' => 'Communication',
+        'google' => 'Google',
+        'social' => 'Social',
+        'data' => 'Data',
+        'automation' => 'Automation',
+    ];
 
     #[Url(except: '')]
     public string $logIntegration = '';
@@ -157,10 +171,30 @@ class Integrations extends Component
     #[Locked]
     public ?string $newBridgeToken = null;
 
+    /** The provider whose Details panel is open (INT grid). */
+    #[Locked]
+    public ?string $detailKey = null;
+
+    public bool $showDetails = false;
+
+    public bool $showWebhooks = false;
+
+    public string $webhookName = '';
+
+    public string $webhookUrl = '';
+
+    /** @var list<string> */
+    public array $webhookEvents = ['lead.created'];
+
+    /** Shown once, at creation or rotation; hydrate() never restores it. */
+    #[Locked]
+    public ?string $newWebhookSecret = null;
+
     public function hydrate(): void
     {
-        // The plain key is only shown in its creation response, never restored from storage.
+        // Plain secrets are only shown in their creation response, never restored from storage.
         $this->newBridgeToken = null;
+        $this->newWebhookSecret = null;
     }
 
     public function openConnector(string $key, ConnectorManager $manager): void
@@ -268,6 +302,94 @@ class Integrations extends Component
     {
         $revoke->handle($this->user(), $id);
         $this->toast('Bridge key revoked. The adapter can no longer use it.');
+    }
+
+    public function openDetails(string $key): void
+    {
+        abort_unless($this->user()->can('integrations.manage'), 403);
+        $this->detailKey = $key;
+        $this->showDetails = true;
+    }
+
+    public function openWebhooks(): void
+    {
+        abort_unless($this->user()->can('integrations.manage'), 403);
+        $this->showWebhooks = true;
+    }
+
+    public function closeWebhooks(): void
+    {
+        $this->showWebhooks = false;
+    }
+
+    public function createWebhook(): void
+    {
+        abort_unless($this->user()->hasRole('owner') && $this->user()->can('integrations.manage'), 403);
+
+        $this->validate([
+            'webhookName' => ['required', 'string', 'max:80'],
+            'webhookUrl' => ['required', 'string', 'max:500'],
+            'webhookEvents' => ['required', 'array', 'min:1'],
+            'webhookEvents.*' => ['in:'.implode(',', WebhookEvents::keys())],
+        ], [], ['webhookName' => 'name', 'webhookUrl' => 'endpoint URL', 'webhookEvents' => 'events']);
+
+        if (! PublicUrlGuard::isSafe(trim($this->webhookUrl))) {
+            $this->addError('webhookUrl', 'Use an https URL on a public host. Local and private addresses are refused.');
+
+            return;
+        }
+
+        $secret = OutboundWebhook::generateSecret();
+        OutboundWebhook::query()->create([
+            'name' => trim($this->webhookName),
+            'url' => trim($this->webhookUrl),
+            'secret' => $secret,
+            'events' => array_values($this->webhookEvents),
+            'is_active' => true,
+            'created_by' => $this->user()->id,
+        ]);
+
+        $this->reset('webhookName', 'webhookUrl', 'webhookEvents');
+        $this->newWebhookSecret = $secret;
+        $this->toast('Webhook added. Save the signing secret now — it will not be shown again.');
+    }
+
+    public function toggleWebhook(int $id): void
+    {
+        abort_unless($this->user()->hasRole('owner') && $this->user()->can('integrations.manage'), 403);
+
+        $webhook = OutboundWebhook::query()->findOrFail($id);
+        $webhook->forceFill(['is_active' => ! $webhook->is_active])->save();
+        $this->toast($webhook->is_active ? "{$webhook->name} is listening again." : "{$webhook->name} is paused — Woodex will not call it.");
+    }
+
+    public function rotateWebhookSecret(int $id): void
+    {
+        abort_unless($this->user()->hasRole('owner') && $this->user()->can('integrations.manage'), 403);
+
+        $webhook = OutboundWebhook::query()->findOrFail($id);
+        $this->newWebhookSecret = OutboundWebhook::generateSecret();
+        $webhook->forceFill(['secret' => $this->newWebhookSecret])->save();
+        $this->toast("New signing secret for {$webhook->name}. Update it in your app now; the old one stops working immediately.");
+    }
+
+    public function deleteWebhook(int $id): void
+    {
+        abort_unless($this->user()->hasRole('owner') && $this->user()->can('integrations.manage'), 403);
+
+        $webhook = OutboundWebhook::query()->findOrFail($id);
+        $name = $webhook->name;
+        $webhook->delete();
+        $this->toast("{$name} removed. Woodex will not call it again.");
+    }
+
+    public function testWebhook(int $id, WebhookDispatcher $dispatcher): void
+    {
+        abort_unless($this->user()->can('integrations.manage'), 403);
+
+        $webhook = OutboundWebhook::query()->findOrFail($id);
+        $dispatcher->ping($webhook);
+        $this->toast("Test delivery queued for {$webhook->name} — watch the delivery history below.");
     }
 
     public function mount(): void
@@ -457,159 +579,259 @@ class Integrations extends Component
         return ['messages' => (int) $counts->sum(), 'cost' => $cost];
     }
 
-    public function render(): View
+    /**
+     * Every integration exactly once, normalised for the grid: one honest state, one action set.
+     * States are measurements, never saved flags — connectors carry their last probe, server
+     * channels read the outbound log, and "configured" alone never reads as "connected".
+     *
+     * @param  array<string, IntegrationConnection|null>  $connections
+     * @return list<array{key: string, name: string, icon: string, group: string, kind: string, benefit: string, detail: string, state: string, state_note: string, account: ?string, scopes: list<string>, missing: ?string, help: ?string, last_error: ?string, log_key: ?string, lines: list<array{0: string, 1: string}>}>
+     */
+    private function providers(ConnectorManager $manager, WhatsAppCredentials $credentials, array $connections, ?GoogleConnection $googleConnection, int $activeBridgeCount): array
     {
-        $last = fn (string $integration, bool $ok) => IntegrationLog::query()->where('integration', $integration)->where('ok', $ok)->latest('id')->value('created_at');
-        $webSources = array_map(fn (LeadSource $source): string => $source->value, LeadSource::publicSources());
+        $lastRow = fn (string $key, bool $ok): ?IntegrationLog => IntegrationLog::query()->where('integration', $key)->where('ok', $ok)->latest('id')->first(['created_at', 'error']);
 
-        $credentials = app(WhatsAppCredentials::class);
-        $whatsapp = [
-            'key' => 'whatsapp', 'name' => 'WhatsApp Cloud API', 'icon' => 'whatsapp', 'phase' => null,
-            'configured' => $credentials->isConfigured(),
+        $server = function (array $entry, bool $configured, ?string $logKey, string $checkNote = 'Configured · nothing recorded yet') use ($lastRow): array {
+            $ok = $logKey !== null ? $lastRow($logKey, true) : null;
+            $error = $logKey !== null ? $lastRow($logKey, false) : null;
+            [$state, $note] = $this->serverState($configured, $ok, $error);
+
+            return [...$entry,
+                'kind' => 'server', 'state' => $state, 'state_note' => $state === 'check' && $ok === null ? $checkNote : $note,
+                'account' => null, 'scopes' => [], 'missing' => null,
+                'last_error' => $state === 'error' ? $error?->error : null, 'log_key' => $logKey,
+            ];
+        };
+
+        $providers = [];
+
+        // Communication — server channels whose secrets live in the server .env.
+        $providers[] = $server([
+            'key' => 'telegram', 'name' => 'Telegram bot', 'icon' => 'send', 'group' => 'communication',
+            'benefit' => 'Team alerts, commands and the daily summary in Telegram.',
+            'detail' => TelegramLink::query()->where('is_active', true)->whereNotNull('chat_id')->count().' staff linked · webhook secret '.(filled(config('services.telegram.webhook_secret')) ? 'set' : 'missing'),
+            'help' => 'Create the bot with @BotFather, put TELEGRAM_BOT_TOKEN and a long TELEGRAM_WEBHOOK_SECRET you invent into the server .env, then press Connect webhook.',
+            'lines' => [['Credentials', 'Server .env — TELEGRAM_BOT_TOKEN · TELEGRAM_WEBHOOK_SECRET']],
+        ], filled(config('services.telegram.bot_token')), 'telegram');
+
+        $providers[] = $server([
+            'key' => 'whatsapp', 'name' => 'WhatsApp Cloud API', 'icon' => 'whatsapp', 'group' => 'communication',
+            'benefit' => 'Inbox, quotation links and follow-ups on WhatsApp.',
             'detail' => $this->whatsappDetail($credentials),
-            'last_ok' => $last('whatsapp', true), 'last_error' => $last('whatsapp', false),
-        ];
+            'help' => 'Meta for Developers → your app → WhatsApp → API setup gives the token and phone number ID. Saving them in Settings → WhatsApp is easiest; the .env values are the fallback.',
+            'lines' => [['Credentials', in_array($credentials->source(), ['database', 'mixed'], true) ? 'Saved in Settings → WhatsApp (encrypted)' : 'Server .env — WHATSAPP_TOKEN · WHATSAPP_PHONE_NUMBER_ID']],
+        ], $credentials->isConfigured(), 'whatsapp');
 
-        $cards = [
-            [
-                'key' => 'telegram', 'name' => 'Telegram bot', 'icon' => 'send', 'phase' => null,
-                'configured' => filled(config('services.telegram.bot_token')),
-                'detail' => TelegramLink::query()->where('is_active', true)->whereNotNull('chat_id')->count().' staff linked · webhook secret '.(filled(config('services.telegram.webhook_secret')) ? 'set' : 'missing'),
-                'last_ok' => $last('telegram', true), 'last_error' => $last('telegram', false),
-            ],
-            [
-                'key' => 'mail', 'name' => 'Email (SMTP)', 'icon' => 'mail', 'phase' => null,
-                'configured' => ! in_array(config('mail.default'), ['log', 'array'], true),
-                'detail' => 'Mailer: '.config('mail.default').' · from '.config('mail.from.address'),
-                'last_ok' => $last('mail', true), 'last_error' => $last('mail', false),
-            ],
-            [
-                'key' => 'website', 'name' => 'Website lead forms', 'icon' => 'globe', 'phase' => null,
-                'configured' => config('woodex.public_leads.allowed_origins') !== [],
-                'detail' => 'POST '.url('/api/public/leads').' · bridge key '.(filled(config('woodex.public_leads.bridge_key')) ? 'set' : 'not set'),
-                'last_ok' => Lead::query()->whereIn('source', $webSources)->latest('id')->value('created_at'), 'last_error' => null,
-            ],
-            [
-                'key' => 'turnstile', 'name' => 'Cloudflare Turnstile', 'icon' => 'shield', 'phase' => null,
-                'configured' => filled(config('services.turnstile.secret_key')),
-                'detail' => 'Spam protection on public forms', 'last_ok' => null, 'last_error' => null,
-            ],
-            [
-                'key' => 'legacy', 'name' => 'Woodex v2.1 database', 'icon' => 'database', 'phase' => null,
-                'configured' => filled(config('database.connections.legacy.database')),
-                'detail' => 'Read-only source for the data import', 'last_ok' => null, 'last_error' => null,
-            ],
-            $whatsapp,
-            ['key' => 'meta', 'name' => 'Facebook & Instagram', 'icon' => 'megaphone', 'phase' => 'P7', 'configured' => false, 'detail' => 'Messenger, DMs, comments, Lead Ads, scheduler', 'last_ok' => null, 'last_error' => null],
-            ['key' => 'linkedin', 'name' => 'LinkedIn', 'icon' => 'users', 'phase' => 'P7', 'configured' => false, 'detail' => 'Lead Gen forms and page posts', 'last_ok' => null, 'last_error' => null],
-        ];
+        $providers[] = $server([
+            'key' => 'mail', 'name' => 'Email (SMTP)', 'icon' => 'mail', 'group' => 'communication',
+            'benefit' => 'Quotation emails, receipts and login alerts.',
+            'detail' => 'Mailer: '.config('mail.default').' · from '.config('mail.from.address'),
+            'help' => 'Any SMTP account works — set MAIL_MAILER=smtp with host, port, username and password in the server .env.',
+            'lines' => [['Credentials', 'Server .env — MAIL_* keys']],
+        ], ! in_array(config('mail.default'), ['log', 'array'], true), 'mail');
 
-        // Keep working server integrations; replace old marketing placeholders with an explicit roadmap.
-        $cards = array_values(array_filter($cards, fn (array $card): bool => $card['phase'] === null));
-        foreach ($cards as &$card) {
-            $card['category'] = in_array($card['key'], ['telegram', 'mail', 'whatsapp'], true) ? 'communication' : 'system';
-            if ($card['key'] === 'whatsapp') {
-                $card['phase'] = 'Planned';
-            }
-        }
-        unset($card);
-        $googleConnection = GoogleConnection::query()->find(1, ['id', 'email', 'scopes', 'status', 'connected_at', 'last_checked_at']);
-        array_unshift($cards, ['key' => 'google_account', 'name' => 'Google account', 'icon' => 'globe',
-            'phase' => null, 'configured' => $googleConnection?->status === 'active', 'category' => 'workspace',
+        // Google — staff identity, plus the Workspace apps its scopes unlock.
+        $providers[] = [
+            'key' => 'google_account', 'name' => 'Google account', 'icon' => 'globe', 'group' => 'google', 'kind' => 'google',
+            'benefit' => 'Staff sign-in with Google — identity only, no mailbox access.',
             'detail' => $googleConnection->email ?? 'Authorize a company account securely with Google. Basic identity access only.',
-            'last_ok' => $googleConnection?->last_checked_at, 'last_error' => null]);
-        $cards = array_merge($cards, IntegrationCatalog::planned());
-        $availableCount = count(array_filter($cards, fn (array $card): bool => $card['phase'] === null));
-        $plannedCount = count($cards) - $availableCount;
-        $cards = array_values(array_filter($cards, fn (array $card): bool => ($this->appCategory === 'all' || $card['category'] === $this->appCategory)
-            && ($this->appSearch === '' || str_contains(strtolower($card['name'].' '.$card['detail']), strtolower($this->appSearch)))
-        ));
-        $bridgeKeys = $this->user()->hasRole('owner')
-            ? McpAccessToken::query()->with('user:id,name')->latest('id')->limit(30)->get() : collect();
+            'state' => $googleConnection?->status === 'active' ? 'connected' : ($googleConnection ? 'error' : 'off'),
+            'state_note' => $googleConnection?->status === 'active' ? 'Connected · identity only' : ($googleConnection ? 'Action required' : (GoogleOAuth::configured() ? 'Not connected' : 'Setup required')),
+            'account' => $googleConnection?->email, 'scopes' => [], 'missing' => null, 'last_error' => null, 'log_key' => null,
+            'help' => 'Google Cloud console → OAuth client (GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in the server .env), then Connect.',
+            'lines' => array_values(array_filter([
+                ['Email', $googleConnection?->email],
+                ['Status', $googleConnection?->status],
+                ['Last checked', $googleConnection?->last_checked_at?->diffForHumans()],
+            ], fn (array $line): bool => filled($line[1] ?? null))),
+        ];
 
-        $logs = IntegrationLog::query()
-            ->when($this->logIntegration !== '', fn ($q) => $q->where('integration', $this->logIntegration))
-            ->when($this->failedOnly, fn ($q) => $q->where('ok', false))
-            ->latest('id')
-            ->paginate(20);
+        $workspace = $connections['google_workspace'] ?? null;
+        $granted = $workspace instanceof IntegrationConnection ? ($workspace->scopes ?? []) : [];
+        $workspaceConnector = $manager->connector('google_workspace');
+        $fresh = $workspace?->last_checked_at !== null && $workspace->last_checked_at->gt(now()->subMinutes(15));
 
-        $connectorManager = app(ConnectorManager::class);
-        $connectors = [];
-        $connections = [];
-
-        foreach ($connectorManager->connectors() as $connector) {
-            $connection = $connectorManager->connection($connector->key());
-            $connections[$connector->key()] = $connection;
-            $scopes = $connection instanceof IntegrationConnection ? ($connection->scopes ?? []) : [];
-            $meta = $connection instanceof IntegrationConnection ? ($connection->meta ?? []) : [];
-            $connectors[] = [
-                'key' => $connector->key(), 'name' => $connector->name(), 'icon' => $connector->icon(),
-                'mode' => $connector->mode(), 'detail' => $connector->detail(),
-                'missing' => $connector->missingRequirement(), 'fields' => $connector->fields(),
-                'status' => $connection?->status, 'account' => $connection?->account,
-                'last_checked' => $connection?->last_checked_at, 'last_error' => $connection?->last_error,
-                'scopes' => $scopes, 'meta' => $meta,
-                'connected_at' => $connection?->connected_at,
+        foreach ([
+            ['gmail', 'Gmail', 'mail', 'https://www.googleapis.com/auth/gmail.readonly', 'Company Gmail, read-only — client context for the AI bridge.'],
+            ['google_drive', 'Google Drive', 'folder', 'https://www.googleapis.com/auth/drive.metadata.readonly', 'Company Drive files, read-only — for the AI bridge.'],
+        ] as [$appKey, $appName, $appIcon, $scope, $benefit]) {
+            $hasScope = in_array($scope, $granted, true);
+            $providers[] = [
+                'key' => $appKey, 'name' => $appName, 'icon' => $appIcon, 'group' => 'google', 'kind' => 'workspace_app',
+                'benefit' => $benefit,
+                'detail' => $hasScope ? 'Read scope granted' : 'Part of the Google Workspace connection.',
+                'state' => $workspace?->status === 'error' ? 'error' : ($hasScope ? ($fresh ? 'connected' : 'check') : 'off'),
+                'state_note' => $workspace?->status === 'error' ? 'Workspace check failed' : ($hasScope ? 'Read scope granted' : 'Connect Google Workspace'),
+                'account' => $workspace?->account, 'scopes' => $granted,
+                'missing' => $workspaceConnector->missingRequirement(),
+                'help' => $workspaceConnector->help(),
+                'log_key' => 'google_workspace', 'last_error' => $workspace?->last_error,
+                'lines' => array_values(array_filter([
+                    ['Connection', 'Shared Google Workspace authorisation — Gmail and Drive connect and disconnect together'],
+                    ['Account', $workspace?->account],
+                    ['This app needs', $scope],
+                    ['Last checked', $workspace?->last_checked_at?->diffForHumans()],
+                ], fn (array $line): bool => filled($line[1] ?? null))),
             ];
         }
 
-        $recent = fn (string $integration): bool => IntegrationLog::query()->where('integration', $integration)
-            ->where('ok', true)->where('created_at', '>', now()->subDays(7))->exists();
-        $workspace = $connections['google_workspace'] ?? null;
-        $githubConn = $connections['github'] ?? null;
-        $granted = $workspace instanceof IntegrationConnection ? ($workspace->scopes ?? []) : [];
-        $fresh = fn (?IntegrationConnection $connection): bool => $connection?->last_checked_at !== null
-            && $connection->last_checked_at->gt(now()->subMinutes(15));
-        $appState = function (?string $connectionStatus, bool $scopeOrProof, bool $isFresh): string {
-            if ($connectionStatus === 'error') {
-                return 'error';
-            }
+        // Social — real connectors only; a network earns a card the day it can be proved.
+        $providers[] = $this->connectorProvider($manager->connector('facebook_page'), $connections['facebook_page'] ?? null, 'social');
 
-            if ($connectionStatus === null && ! $scopeOrProof) {
-                return 'off';
-            }
-
-            return $scopeOrProof ? ($isFresh ? 'connected' : 'check') : 'setup';
-        };
-
-        $connectedApps = [
-            ['name' => 'Gmail', 'icon' => 'mail', 'state' => $appState($workspace?->status, in_array('https://www.googleapis.com/auth/gmail.readonly', $granted, true), $fresh($workspace)),
-                'hint' => in_array('https://www.googleapis.com/auth/gmail.readonly', $granted, true) ? 'Read scope granted' : 'Connect Google Workspace'],
-            ['name' => 'Google Drive', 'icon' => 'folder', 'state' => $appState($workspace?->status, in_array('https://www.googleapis.com/auth/drive.metadata.readonly', $granted, true), $fresh($workspace)),
-                'hint' => in_array('https://www.googleapis.com/auth/drive.metadata.readonly', $granted, true) ? 'Read scope granted' : 'Connect Google Workspace'],
-            ['name' => 'GitHub', 'icon' => 'merge', 'state' => $appState($githubConn?->status, $githubConn?->status === 'connected', $fresh($githubConn)),
-                'hint' => $githubConn instanceof IntegrationConnection ? $githubConn->account : 'Add a personal access token'],
-            ['name' => 'WhatsApp', 'icon' => 'whatsapp', 'state' => $appState(null, $credentials->isConfigured() && $recent('whatsapp'), $recent('whatsapp')),
-                'hint' => $credentials->isConfigured() ? 'Cloud API credentials present' : 'No Meta credentials'],
-            ['name' => 'Telegram', 'icon' => 'send', 'state' => $appState(null, filled(config('services.telegram.bot_token')) && $recent('telegram'), $recent('telegram')),
-                'hint' => filled(config('services.telegram.bot_token')) ? 'Bot token present' : 'No bot token'],
+        // Data.
+        $webSources = array_map(fn (LeadSource $source): string => $source->value, LeadSource::publicSources());
+        $websiteLast = Lead::query()->whereIn('source', $webSources)->latest('id')->value('created_at');
+        $websiteConfigured = config('woodex.public_leads.allowed_origins') !== [];
+        $providers[] = [
+            'key' => 'website', 'name' => 'Website lead forms', 'icon' => 'globe', 'group' => 'data', 'kind' => 'server',
+            'benefit' => 'Enquiries from woodex.com.pk land straight in Leads.',
+            'detail' => 'POST '.url('/api/public/leads').' · bridge key '.(filled(config('woodex.public_leads.bridge_key')) ? 'set' : 'not set'),
+            'state' => ! $websiteConfigured ? 'off' : ($websiteLast !== null ? 'connected' : 'check'),
+            'state_note' => $websiteLast !== null ? 'Last enquiry '.$websiteLast->diffForHumans() : 'Configured · no enquiries yet',
+            'account' => null, 'scopes' => [], 'missing' => null, 'last_error' => null, 'log_key' => null,
+            'help' => 'Forms POST to the endpoint from origins in PUBLIC_LEADS_ALLOWED_ORIGINS; server-to-server calls send the X-Woodex-Key bridge header (PUBLIC_LEADS_BRIDGE_KEY).',
+            'lines' => [['Credentials', 'Server .env — PUBLIC_LEADS_ALLOWED_ORIGINS · PUBLIC_LEADS_BRIDGE_KEY']],
         ];
 
-        if (is_string(session('connector_status'))) {
-            $this->toast((string) session('connector_status'));
+        $providers[] = $server([
+            'key' => 'turnstile', 'name' => 'Cloudflare Turnstile', 'icon' => 'shield', 'group' => 'data',
+            'benefit' => 'Invisible spam protection on the public forms.',
+            'detail' => 'Spam protection on public forms',
+            'help' => 'Cloudflare dashboard → Turnstile → add the site; copy the site key and secret into the server .env.',
+            'lines' => [['Credentials', 'Server .env — TURNSTILE_SITE_KEY · TURNSTILE_SECRET_KEY']],
+        ], filled(config('services.turnstile.secret_key')), null, 'Configured · verified on each form submit');
+
+        $providers[] = $this->connectorProvider($manager->connector('github'), $connections['github'] ?? null, 'data');
+
+        $providers[] = $server([
+            'key' => 'legacy', 'name' => 'Woodex v2.1 database', 'icon' => 'database', 'group' => 'data',
+            'benefit' => 'Read-only window into the old admin for the data import.',
+            'detail' => 'Read-only source for the data import',
+            'help' => 'A read-only MySQL user for the v2.1 database, in the server .env (legacy connection). Used only by the data import.',
+            'lines' => [['Credentials', 'Server .env — legacy database connection']],
+        ], filled(config('database.connections.legacy.database')), null, 'Configured · press Test to prove it');
+
+        // Automation.
+        $webhookTotal = OutboundWebhook::query()->count();
+        $webhookActive = OutboundWebhook::query()->active()->count();
+        $lastDelivery = WebhookDelivery::query()->latest('id')->first(['status', 'created_at', 'error']);
+        $providers[] = [
+            'key' => 'webhooks', 'name' => 'Webhooks', 'icon' => 'zap', 'group' => 'automation', 'kind' => 'webhooks',
+            'benefit' => 'Tell Zapier, Make or your own app the moment a lead, quotation or payment lands.',
+            'detail' => $webhookTotal === 0 ? 'No endpoints yet — add your first app.' : $webhookActive.' of '.$webhookTotal.' endpoints listening',
+            'state' => $webhookActive === 0 ? 'off' : ($lastDelivery === null ? 'check' : ($lastDelivery->status === 'sent' ? 'connected' : ($lastDelivery->status === 'failed' ? 'error' : 'check'))),
+            'state_note' => $lastDelivery === null ? 'Nothing delivered yet' : 'Last delivery '.$lastDelivery->created_at?->diffForHumans().' · '.$lastDelivery->status,
+            'account' => null, 'scopes' => [], 'missing' => null,
+            'last_error' => $lastDelivery !== null && $lastDelivery->status === 'failed' ? $lastDelivery->error : null,
+            'log_key' => 'webhooks',
+            'help' => 'Paste the https URL your app gives you (Zapier: Webhooks by Zapier → Catch Hook; Make: Webhooks → Custom webhook). Every delivery is signed — verify the X-Woodex-Signature header (HMAC-SHA256 of the body) if your app supports it.',
+            'lines' => [
+                ['Signing', 'HMAC-SHA256 in the X-Woodex-Signature header'],
+                ['Events', implode(' · ', WebhookEvents::keys())],
+            ],
+        ];
+
+        $providers[] = $this->connectorProvider($manager->connector('custom_api'), $connections['custom_api'] ?? null, 'automation');
+
+        $providers[] = [
+            'key' => 'mcp', 'name' => 'AI bridge (MCP)', 'icon' => 'command', 'group' => 'automation', 'kind' => 'mcp',
+            'benefit' => 'Claude, Cursor and other MCP clients read pages, health, leads and quotes — read-only, expiring keys.',
+            'detail' => $activeBridgeCount.' active '.($activeBridgeCount === 1 ? 'key' : 'keys').' · '.url('/api/mcp'),
+            'state' => $activeBridgeCount > 0 ? 'check' : 'off',
+            'state_note' => $activeBridgeCount > 0 ? 'Active keys issued · not a client connectivity test' : 'No active keys',
+            'account' => null, 'scopes' => [], 'missing' => null, 'last_error' => null, 'log_key' => null, 'help' => null,
+            'lines' => [['Endpoint', url('/api/mcp')], ['Access', 'Read-only · Bearer key · JSON-RPC over HTTPS']],
+        ];
+
+        return $providers;
+    }
+
+    /** @return array{0: string, 1: string} */
+    private function serverState(bool $configured, ?IntegrationLog $lastOk, ?IntegrationLog $lastError): array
+    {
+        if (! $configured) {
+            return ['off', 'Not connected'];
         }
 
-        if (is_string(session('connector_error'))) {
-            $this->toast((string) session('connector_error'), 'error');
+        if ($lastError !== null && ($lastOk === null || $lastError->created_at->gte($lastOk->created_at))) {
+            return ['error', 'Error '.$lastError->created_at->diffForHumans()];
         }
+
+        if ($lastOk !== null) {
+            return [$lastOk->created_at->gt(now()->subMinutes(15)) ? 'connected' : 'check', 'Last OK '.$lastOk->created_at->diffForHumans()];
+        }
+
+        return ['check', 'Configured · nothing recorded yet'];
+    }
+
+    /** @return array<string, mixed> */
+    private function connectorProvider(Connector $connector, ?IntegrationConnection $connection, string $group): array
+    {
+        $state = $connection === null ? 'off' : ($connection->status === 'error' ? 'error'
+            : ($connection->last_checked_at !== null && $connection->last_checked_at->gt(now()->subMinutes(15)) ? 'connected' : 'check'));
+
+        return [
+            'key' => $connector->key(), 'name' => $connector->name(), 'icon' => $connector->icon(),
+            'group' => $group, 'kind' => 'connector',
+            'benefit' => $connector->detail(), 'detail' => $connector->detail(),
+            'state' => $state,
+            'state_note' => $connection === null
+                ? ($connector->missingRequirement() ?? 'Not connected')
+                : ($state === 'error' ? 'Last check failed' : 'Checked '.($connection->last_checked_at?->diffForHumans() ?? 'just now')),
+            'account' => $connection?->account,
+            'scopes' => $connection->scopes ?? [],
+            'missing' => $connector->missingRequirement(),
+            'help' => $connector->help(),
+            'last_error' => $connection?->last_error,
+            'log_key' => $connector->key(),
+            'lines' => array_values(array_filter([
+                ['Account', $connection?->account],
+                ['Connected', $connection?->connected_at?->format('j M Y')],
+                ['Last checked', $connection?->last_checked_at?->diffForHumans()],
+                ['Last error', $connection?->last_error],
+                ['Credentials', 'Encrypted at rest · '.($connection->meta['credential_hint'] ?? 'hidden').' — Remove deletes them'],
+            ], fn (array $line): bool => filled($line[1] ?? null))),
+        ];
+    }
+
+    public function render(): View
+    {
+        $manager = app(ConnectorManager::class);
+        $credentials = app(WhatsAppCredentials::class);
+        $connections = [];
+        $connectors = [];
+        foreach ($manager->connectors() as $connector) {
+            $connection = $manager->connection($connector->key());
+            $connections[$connector->key()] = $connection;
+            $connectors[] = ['key' => $connector->key(), 'name' => $connector->name(),
+                'fields' => $connector->fields(), 'help' => $connector->help()];
+        }
+        $googleConnection = GoogleConnection::query()->find(1);
+        $activeBridgeCount = McpAccessToken::query()->whereNull('revoked_at')->where('expires_at', '>', now())->count();
+        $providers = $this->providers($manager, $credentials, $connections, $googleConnection, $activeBridgeCount);
+        $detail = collect($providers)->firstWhere('key', $this->detailKey);
+        $filtered = array_values(array_filter($providers, fn (array $provider): bool => ($this->appCategory === 'all' || $provider['group'] === $this->appCategory)
+            && ($this->appSearch === '' || str_contains(strtolower($provider['name'].' '.$provider['benefit']), strtolower($this->appSearch)))));
 
         return view('livewire.admin.system.integrations', [
-            'cards' => $cards,
-            'connectors' => $connectors,
+            'providers' => $filtered,
+            'groups' => self::GROUPS,
+            'detail' => $detail,
             'connectorForm' => collect($connectors)->firstWhere('key', $this->connectorKey),
-            'connections' => $connections,
-            'connectedApps' => $connectedApps,
-            'whatsappSource' => $credentials->source(),
             'googleConnection' => $googleConnection,
             'googleConfigured' => GoogleOAuth::configured(),
             'googleLoginEnabled' => GoogleOAuth::loginEnabled(),
-            'availableCount' => $availableCount,
-            'plannedCount' => $plannedCount,
-            'bridgeKeys' => $bridgeKeys,
-            'activeBridgeCount' => McpAccessToken::query()->whereNull('revoked_at')->where('expires_at', '>', now())->count(),
+            'bridgeKeys' => $this->user()->hasRole('owner')
+                ? McpAccessToken::query()->with('user:id,name')->latest('id')->limit(30)->get() : collect(),
+            'activeBridgeCount' => $activeBridgeCount,
             'telegramConfiguration' => $this->showTelegramConfiguration && $this->user()->hasRole('owner')
                 ? app(TelegramConfiguration::class)->inspect() : null,
-            'logs' => $logs,
+            'webhooks' => $this->showWebhooks ? OutboundWebhook::query()->withCount('deliveries')->latest('id')->get() : collect(),
+            'deliveries' => $this->showWebhooks ? WebhookDelivery::query()->with('webhook')->latest('id')->limit(30)->get() : collect(),
+            'eventOptions' => WebhookEvents::options(),
+            'logs' => IntegrationLog::query()
+                ->when($this->logIntegration !== '', fn ($q) => $q->where('integration', $this->logIntegration))
+                ->when($this->failedOnly, fn ($q) => $q->where('ok', false))->latest('id')->paginate(20),
             'integrations' => IntegrationLog::query()->distinct()->orderBy('integration')->pluck('integration'),
         ]);
     }

@@ -125,14 +125,14 @@ it('rejects write scopes instead of silently widening a key', function () {
     expect(McpAccessToken::query()->count())->toBe(0);
 });
 
-it('shows the connected-apps strip, real connectors and honest prerequisites', function () {
+it('shows one grid of real integrations without roadmap cards', function () {
     $this->actingAs($this->userWithRole('owner'));
     Livewire::test(Integrations::class)
-        ->assertSee('Connected apps')->assertSee('Google Drive')->assertSee('GitHub')
-        ->assertSee('Connectors you can authorise now')->assertSee('Google Workspace')->assertSee('Custom API')
-        ->assertSee('Notion')->assertSee('Other connections')
-        ->set('appCategory', 'social')->assertSee('LinkedIn')->assertDontSee('Telegram bot')
-        ->set('appCategory', 'all')->set('appSearch', 'Notion')->assertSee('Notion')->assertDontSee('Facebook');
+        ->assertSee('Google Drive')->assertSee('GitHub')->assertSee('Custom API')
+        ->assertDontSee('Other connections')->assertDontSee('Planned')
+        ->set('appCategory', 'social')->assertSee('Facebook Page')->assertDontSee('Telegram bot')
+        ->set('appCategory', 'all')->set('appSearch', 'Notion')
+        ->assertSee('No integrations match your search');
 });
 
 it('rechecks visibility after the issuing owner is demoted', function () {

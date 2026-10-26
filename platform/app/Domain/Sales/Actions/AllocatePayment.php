@@ -8,6 +8,7 @@ use App\Domain\Projects\Models\Project;
 use App\Domain\Sales\Enums\InvoiceKind;
 use App\Domain\Sales\Enums\InvoiceStatus;
 use App\Domain\Sales\Enums\PaymentStatus;
+use App\Domain\Sales\Events\InvoicePaid;
 use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\Payment;
@@ -126,5 +127,9 @@ final class AllocatePayment
             'payment_id' => $payment->id, 'invoice_id' => $invoice->id, 'amount_minor' => $amount,
         ]);
         $invoice->applyPayment($amount);
+
+        if ($invoice->status === InvoiceStatus::Paid) {
+            InvoicePaid::dispatch($invoice, $payment);
+        }
     }
 }

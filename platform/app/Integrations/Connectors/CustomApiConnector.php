@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Integrations\Connectors;
 
+use App\Integrations\Support\PublicUrlGuard;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\ValidationException;
@@ -111,9 +112,9 @@ final class CustomApiConnector extends Connector
 
         try {
             $response = Http::withToken($token)->acceptJson()->timeout(10)->connectTimeout(5)
-                ->withoutRedirecting()->get($url);
+                ->withoutRedirecting()->withOptions(PublicUrlGuard::requestOptions($url))->get($url);
         } catch (\Throwable $exception) {
-            return [...$empty, 'error' => 'Could not reach the service: '.str($exception->getMessage())->limit(120)];
+            return [...$empty, 'error' => 'Could not reach the service or its destination was refused by the public-address guard.'];
         }
 
         $ms = (int) round((microtime(true) - $started) * 1000);
@@ -152,26 +153,6 @@ final class CustomApiConnector extends Connector
     /** Only public https hosts: a connector must never become an SSRF probe into the private network. */
     private function safeUrl(string $url): bool
     {
-        if (filter_var($url, FILTER_VALIDATE_URL) === false) {
-            return false;
-        }
-
-        $parts = parse_url($url);
-
-        if (! is_array($parts) || ($parts['scheme'] ?? '') !== 'https' || isset($parts['user']) || isset($parts['pass'])) {
-            return false;
-        }
-
-        $host = strtolower((string) ($parts['host'] ?? ''));
-
-        if ($host === '' || $host === 'localhost' || str_ends_with($host, '.local') || str_ends_with($host, '.internal')) {
-            return false;
-        }
-
-        if (filter_var($host, FILTER_VALIDATE_IP) !== false) {
-            return filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
-        }
-
-        return str_contains($host, '.');
+        return PublicUrlGuard::isSafe($url);
     }
 }

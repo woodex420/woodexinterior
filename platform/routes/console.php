@@ -23,6 +23,12 @@ Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3')
     ->withoutOverlapping(5)
     ->runInBackground();
 
+// External endpoints must not delay the staff-alert queue or use the preview's sync connection.
+Schedule::command('queue:work database --queue=webhooks --stop-when-empty --max-time=50 --tries=3')
+    ->everyMinute()
+    ->withoutOverlapping(5)
+    ->runInBackground();
+
 // Cron heartbeat for System → Health.
 Schedule::command('woodex:heartbeat')->everyMinute();
 

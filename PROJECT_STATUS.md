@@ -1,6 +1,6 @@
 # Woodex OS — Project Status
 
-**Updated:** 26 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (`owner@woodex.test` / `Woodex-Preview-2026`)
+**Updated:** 27 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (`owner@woodex.test` / `Woodex-Preview-2026`)
 
 **One line:** the OS is real and database-backed; the gap QA found was the path *between* screens — an enquiry could become a lead but never an estimate, and the Overview showed counts you could not open. Both paths are now closed and tested. Everything else that looks empty is either honestly empty (no data yet) or blocked on a key the owner must approve.
 
@@ -9,7 +9,7 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,506 passed · 1 skipped · 8,083 assertions** · Pint clean on touched files · PHPStan 0 errors |
+| Tests | **1,531 passed · 1 skipped · 8,184 assertions** · Pint clean on touched files · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
@@ -96,7 +96,7 @@ the owner picks the next slice from it.
 | ~~44~~ | ~~v2.1 template source import + design verify~~ | **Done 26 Oct** — the owner's own 16 starter templates import from the UI in one click; quote/invoice PDFs verified block-by-block against `admin-print17.js` (palettes, boxes, payments + stamp, signatures) |
 | ~~V~~ | ~~Leads redevelopment (sheet import screen, drawer tabs)~~ | **Done 26 Oct** — owner-only `/leads/import` (column matching → privacy-safe dry run → idempotent apply over the existing importer), drawer Details/Log activity/Timeline tabs with quick chips that never erase a planned next action, business-line tabs + month filter on the list |
 | ~~46~~ | ~~Live preview rebuilt, v2.1-style~~ | **Done 26 Oct** — quotation (interior + furniture) and invoice builders preview the document itself as you edit (the same HTML the PDF prints from), replacing the Chrome-blocked framed PDF; PDFs now frame only inside the admin |
-| **INT** | Integrations redevelopment (TailAdmin-style cards, real connect/test, custom webhooks; placeholders removed) | **Next** — audit done, webhook tables approved 26 Oct; design in plan 35 |
+| ~~INT~~ | ~~Integrations redevelopment~~ | **Done 27 Oct (Step 47)** — one 14-card grid, shared Details, real Facebook Page identity check, no roadmap cards, signed outgoing webhooks with queue/retries/history; external live proof still needs owner credentials |
 | **W · T · U · X** | Estimations hub · template cards · invoice fields (needs the owner's sample invoice PDFs) · marketing remainder | Queue + blockers in plan 35 |
 | ~~G~~ | ~~Hygiene~~ | **Done 26 Oct** — builder fonts self-hosted (26 families, 87 faces), System hubs gated by `can-any`, evidence 13 MB → 5.6 MB with references repointed, `docs/README.md` corrected |
 

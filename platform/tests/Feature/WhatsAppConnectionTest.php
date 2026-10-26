@@ -177,9 +177,9 @@ it('verifies meta\'s webhook handshake with the token saved in the dashboard', f
 it('shows whatsapp as configured on the card and connected after a live test', function () {
     $this->actingAs($this->userWithRole('admin'))->get(route('admin.integrations'))->assertOk()->assertSee('WhatsApp Cloud API');
 
-    // The card itself only ever claims "Configured" — a delivery check is what proves the connection.
+    // A configured credential without traffic now reads Needs check in the unified grid.
     $component = Livewire::actingAs($this->userWithRole('admin'))->test(Integrations::class);
-    $component->assertSee('Configured')->assertSee('Cloud API credentials present');
+    $component->assertSee('Needs check')->assertViewHas('providers', fn ($providers) => collect($providers)->firstWhere('key', 'whatsapp')['state'] === 'check');
 
     $gateway = (new FakeWhatsAppGateway)->configured(true);
     $this->app->instance(WhatsAppGateway::class, $gateway);

@@ -120,6 +120,12 @@ final class ConnectorManager
      */
     private function store(Connector $connector, array $result, User $user, string $action): IntegrationConnection
     {
+        // A recognition hint only; the complete credential remains encrypted and hidden.
+        $token = $result['credentials']['token'] ?? null;
+        if (is_string($token) && strlen($token) >= 8) {
+            $result['meta']['credential_hint'] = '••••'.substr($token, -4);
+        }
+
         $connection = DB::transaction(fn (): IntegrationConnection => IntegrationConnection::query()->updateOrCreate(
             ['provider' => $connector->key()],
             [
@@ -152,7 +158,7 @@ final class ConnectorManager
             $result = $connector->probe($credentials);
         } catch (Throwable $exception) {
             $result = ['ok' => false, 'account' => null, 'detail' => '', 'scopes' => null, 'meta' => [],
-                'error' => 'The check failed: '.$exception->getMessage()];
+                'error' => 'The provider could not be reached. Check the service status and try again.'];
         }
 
         IntegrationLog::query()->create([

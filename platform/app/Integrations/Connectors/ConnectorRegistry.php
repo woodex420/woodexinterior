@@ -12,7 +12,7 @@ final class ConnectorRegistry
 
     public function __construct()
     {
-        $connectors = [new GithubConnector, new GoogleWorkspaceConnector, new CustomApiConnector];
+        $connectors = [new GithubConnector, new GoogleWorkspaceConnector, new FacebookPageConnector, new CustomApiConnector];
 
         $this->connectors = [];
 

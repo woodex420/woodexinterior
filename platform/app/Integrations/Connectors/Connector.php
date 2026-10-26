@@ -32,6 +32,12 @@ abstract class Connector
     /** What the company needs before this connector can work, or null when it is ready. */
     abstract public function missingRequirement(): ?string;
 
+    /** Where the owner gets this credential, in their words. Shown in the hub's Details. */
+    public function help(): ?string
+    {
+        return null;
+    }
+
     /**
      * The input fields for `token` connectors.
      *

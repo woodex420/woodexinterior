@@ -4,10 +4,21 @@ use App\Domain\System\Models\IntegrationLog;
 use App\Integrations\Connectors\ConnectorManager;
 use App\Integrations\Connectors\IntegrationConnection;
 use App\Integrations\Connectors\OAuthState;
+use App\Integrations\Support\PublicHostResolver;
 use App\Livewire\Admin\System\Integrations;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
+
+beforeEach(function () {
+    $this->app->instance(PublicHostResolver::class, new class extends PublicHostResolver
+    {
+        public function addresses(string $host): array
+        {
+            return ['8.8.8.8'];
+        }
+    });
+});
 
 function githubOk(): void
 {

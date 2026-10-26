@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Sales\Actions;
 
 use App\Domain\Sales\Enums\QuoteStatus;
+use App\Domain\Sales\Events\QuoteSent;
 use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Mail\QuoteSentMail;
 use App\Domain\Sales\Models\Quote;
@@ -135,6 +136,8 @@ final class SendQuote
         });
 
         $quote = $original->refresh();
+
+        QuoteSent::dispatch($quote, $version, $channel);
 
         if ($email && filled($quote->contact->email)) {
             Mail::to((string) $quote->contact->email)->queue(new QuoteSentMail($quote->id, $version->id));

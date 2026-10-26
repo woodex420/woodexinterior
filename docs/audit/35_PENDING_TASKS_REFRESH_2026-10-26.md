@@ -48,7 +48,7 @@ the gap report + the refreshed queue.
    `/leads/import` screen over the tested `LeadCsvImporter` (column matching → dry run →
    apply), drawer tabs (Details / Log activity / Timeline), month + business-line tabs.
    Shipped without a schema change; see `16_MASTER_TODO.md` Step 45.
-2. **Slice INT — Integrations redevelopment** *(new, owner 26 Oct)*. Design below.
+2. ~~**Slice INT — Integrations redevelopment**~~ — **Done 27 Oct (Step 47).** Owner chose the unified grid + signed webhooks and approved two tables. Delivered scope and remaining connector work below.
 3. **Slice W — Estimations hub**. Merge Website-studio rates + Sales estimates into one
    native hub. No new tables expected; verify at design time.
 4. **Slice T remainder — quotation types & template cards.** Data half superseded by
@@ -98,3 +98,41 @@ Rotated secrets · GitHub `workflows` permission · AI/PageSpeed/OAuth keys · M
 approval · real Telegram token in server `.env` · Google key (N) · FB Page ID + token
 (Q/X proof) · **furniture + interior invoice sample PDFs (Slice U)** · bank/wallet live
 data entry in admin.
+
+
+## INT delivery update — 27 Oct 2026 (Step 47)
+
+Owner chose **full_grid_webhooks**, approving the two endpoint/delivery tables, deferring
+Sheets append and Drive/GitHub off-site backups. The live-preview correction (Step 46)
+interposed; INT resumed afterwards on the owner's explicit selection.
+
+Shipped: one searchable/filterable 14-card grid (Communication / Google / Social / Data /
+Automation), provider Details, preserved Google OAuth, Telegram pairing/diagnostics,
+WhatsApp tests/templates, SMTP, legacy import and MCP-key controls. The duplicated strips
+and all documentation-only roadmap cards are gone; working WhatsApp is no longer marked
+Planned. Gmail/Drive share one Workspace authorisation and their Details explicitly say
+that removing it removes access for both. A saved credential without a successful check
+reads Needs check, not Connected. MCP keys being issued also do not prove a client connected.
+
+Facebook Page is a real Page ID + token identity check, encrypted and provider-proved before
+storage, with live retest/removal. **It does not publish posts**: Meta identity verification
+is not publishing permission or a social publishing transport. That remains separate work.
+
+"Add any app" now creates signed outgoing HTTPS webhooks for lead.created, quote.sent,
+invoice.paid. The two approved tables hold encrypted signing secrets and delivery history.
+Jobs queue after commit on database/webhooks; a separate every-minute worker drains that
+queue (three attempts) without delaying staff alerts. Paused/deleted endpoints cannot
+receive queued requests. Stable delivery IDs let receivers deduplicate retries; signing
+uses HMAC-SHA256 of the exact body. Only the owner can create, pause, rotate or remove;
+integration managers can inspect and send tests. The last 30 delivery outcomes update in
+the endpoint panel; integration logs contain metadata, never payloads or signing secrets.
+The public-address guard resolves and pins DNS for each arbitrary outbound request and
+refuses private/reserved destinations, redirects and proxies (also applied to Custom API).
+
+**Evidence boundary:** Chromium proved the grid and endpoint panel on port 33143. HTTP-fake
+integration tests proved provider responses, queueing, HMAC and retry outcomes. No owner
+Facebook token or real Zapier/Make endpoint was supplied, so no external account or webhook
+receiver is claimed connected. Sheets append/off-site backups are deferred, not shipped.
+
+**Next recommended:** W — native Estimations hub. T remainder and U remain pending as
+listed above; U still needs the owner's invoice sample PDFs.
