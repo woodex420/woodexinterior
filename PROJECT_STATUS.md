@@ -14,6 +14,15 @@
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
 
+## Next: the 26 October master plan
+
+`docs/audit/32_MASTER_PLAN_2026-10-26.md` sets the forward order. The short version: **Accounts has no money-out
+side** — no vendors, no bills ("invoices received"), no expense or other-income entry, no P&L — and project costs are
+recorded but never posted to the ledger, so job profit cannot be true. Slice I (vendors → bills → expenses →
+recurring expenses → project-cost posting → P&L + AP aging) is the recommended first bite. Then Telegram QR pairing
+(Slice L), the contact ladder (J), proposals + forecast (K), the assistant drawer (M), and Search Console over MCP
+(N, blocked on the Google key).
+
 ## What is live today (verified this pass)
 
 * **CRM** — leads, pipeline, tracking board, contacts, companies, tasks, visits, assignment rules, Telegram alerts.

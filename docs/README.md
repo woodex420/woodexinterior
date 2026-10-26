@@ -7,6 +7,7 @@
 | 1 | [`../PROJECT_STATUS.md`](../PROJECT_STATUS.md) | What the system is today, what works, what is blocked, and the next slices |
 | 2 | [`audit/31_DEEP_QA_2026-10-21.md`](audit/31_DEEP_QA_2026-10-21.md) | The 21 Oct deep QA: findings, evidence, fixed items, ordered improvement plan |
 | 3 | [`audit/16_MASTER_TODO.md`](audit/16_MASTER_TODO.md) | Append-only build log — what was done in each step and how it was verified |
+| 4 | [`audit/32_MASTER_PLAN_2026-10-26.md`](audit/32_MASTER_PLAN_2026-10-26.md) | The forward plan (26 Oct): the gap matrix per module, what is taken from Gauzy / mcp-gsc / awesome-llm-apps, and slices I–N |
 
 ## Rules of authority
 
