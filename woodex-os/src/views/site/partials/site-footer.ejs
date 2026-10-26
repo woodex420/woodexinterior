@@ -1,0 +1,43 @@
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-intro">
+        <a class="brand" href="/" aria-label="<%= config['site.name'] %> home">
+          <svg class="brand-symbol" viewBox="0 0 40 40" aria-hidden="true"><path d="m3 6 8 28 9-20 9 20 8-28M11 6l9 28L29 6"/></svg>
+          <span class="brand-type"><%= config['site.logo_text'] %><small><%= config['site.logo_sub'] %></small></span>
+        </a>
+        <p>Thoughtful interiors. Natural materials.<br>Spaces that feel unmistakably yours.</p>
+      </div>
+      <div>
+        <h3 class="footer-heading">Explore</h3>
+        <ul>
+          <% config.nav.footer_explore.forEach(function (item) { %><li><a href="<%= item.href %>"><%= item.label %></a></li><% }); %>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-heading">What we do</h3>
+        <ul>
+          <% config.nav.footer_services.forEach(function (item) { %><li><a href="<%= item.href %>"><%= item.label %></a></li><% }); %>
+        </ul>
+      </div>
+      <div>
+        <h3 class="footer-heading">Begin a conversation</h3>
+        <p>Have a space in mind?<br>We’d love to hear your ideas.</p>
+        <a class="text-link" href="/contact">Let’s talk<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></a>
+        <ul class="footer-contact">
+          <li><a href="mailto:<%= config['contact.email'] %>"><%= config['contact.email'] %></a></li>
+          <li><a href="tel:<%= String(config['contact.phone']).replace(/[^\d+]/g, '') %>"><%= config['contact.phone'] %></a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-word" aria-hidden="true"><%= config['site.logo_text'] %></div>
+    <div class="footer-bottom">
+      <span>© <%= years %> <%= config['site.name'] %>. All rights reserved.</span>
+      <div>
+        <% config.nav.footer_legal.forEach(function (item) { %><a href="<%= item.href %>"><%= item.label %></a><% }); %>
+        <% config.socials.forEach(function (pair) { %><a href="<%= pair[1] %>" rel="noopener" target="_blank"><%= pair[0] %></a><% }); %>
+        <a class="back-top" href="#top">Back to top <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>

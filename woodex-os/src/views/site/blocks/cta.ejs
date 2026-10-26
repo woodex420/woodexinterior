@@ -1,0 +1,10 @@
+<section class="cta">
+  <% if (block.image) { %><img src="<%= asset(block.image) %>" alt="" loading="lazy" decoding="async" width="1200" height="800"><% } %>
+  <div class="container cta-inner">
+    <div>
+      <% if (block.eyebrow) { %><div class="eyebrow"><%= block.eyebrow %></div><% } %>
+      <% if (block.title) { %><h2><%- block.title %></h2><% } %>
+    </div>
+    <a class="btn" href="<%= block.href || '/contact' %>"><%= block.label || 'Start your project' %><span class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a>
+  </div>
+</section>

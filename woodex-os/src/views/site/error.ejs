@@ -1,0 +1,16 @@
+<%- include('partials/site-head') %>
+<%- include('partials/site-header') %>
+<main id="main">
+  <section class="page-hero">
+    <div class="container">
+      <div class="eyebrow">Please try again</div>
+      <div class="page-hero-bottom">
+        <h1><%= page && page.title ? page.title : 'Something went wrong' %></h1>
+        <p>The studio website hit an unexpected problem. Please retry in a moment.</p>
+      </div>
+    </div>
+  </section>
+  <section class="section"><div class="container"><a class="btn dark" href="/">Back to home<span class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a></div></section>
+</main>
+<%- include('partials/site-footer') %>
+<%- include('partials/site-foot') %>

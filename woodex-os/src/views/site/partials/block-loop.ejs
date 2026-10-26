@@ -1,0 +1,4 @@
+<% var knownBlocks = ['hero','pageHero','richText','imageText','serviceCards','projectGrid','journalGrid','processSteps','accordion','faq','cardGrid','cta','stats','contactForm']; %>
+<% (page.blocks || []).forEach(function (block) { if (knownBlocks.indexOf(block.type) === -1) return; %>
+<%- include('../blocks/' + block.type, { block: block }) %>
+<% }); %>

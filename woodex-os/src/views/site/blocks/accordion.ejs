@@ -1,0 +1,16 @@
+<section class="split-feature navy">
+  <div class="feature-copy">
+    <% if (block.eyebrow) { %><div class="eyebrow"><%= block.eyebrow %></div><% } %>
+    <% if (block.title) { %><h2><%- block.title %></h2><% } %>
+    <% if (block.intro) { %><p><%= block.intro %></p><% } %>
+    <div class="service-accordion">
+      <% block.items.forEach(function (item, i) { %>
+      <details<%= i === 0 ? ' open' : '' %>><summary><%= item.title %></summary><p><%= item.text %></p></details>
+      <% }); %>
+    </div>
+    <% if (block.ctaLabel) { %><a class="btn" href="<%= block.ctaHref || '/services' %>"><%= block.ctaLabel %><span class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a><% } %>
+  </div>
+  <div class="feature-image">
+    <% if (block.image) { %><img src="<%= asset(block.image) %>" alt="<%= block.alt %>" loading="lazy" decoding="async" width="1000" height="1000"><% } %>
+  </div>
+</section>

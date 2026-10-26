@@ -1,0 +1,25 @@
+<%- include('../partials/head') %>
+<div class="card">
+  <div class="card-head"><h2>Service pages</h2><% if (can('content:write')) { %><a class="btn" href="/admin/services/new">New service</a><% } %></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Service</th><th>Number</th><th>Deliverables</th><th>Status</th><th class="actions">Actions</th></tr></thead>
+      <tbody>
+        <% services.forEach(function (service) { %>
+        <tr>
+          <td><a href="/admin/services/<%= service.id %>"><strong><%= service.title %></strong></a><div class="small muted">/services#<%= service.slug %></div></td>
+          <td class="small"><%= service.number || '—' %></td>
+          <td class="small"><%= service.deliverables.length %></td>
+          <td><span class="badge <%= service.status %>"><%= service.status %></span></td>
+          <td class="actions">
+            <a class="btn secondary small" href="/admin/services/<%= service.id %>">Edit</a>
+            <a class="btn secondary small" href="/services#<%= service.slug %>" target="_blank" rel="noopener">View</a>
+          </td>
+        </tr>
+        <% }); %>
+        <% if (!services.length) { %><tr><td colspan="5" class="muted">No services yet.</td></tr><% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('../partials/foot') %>

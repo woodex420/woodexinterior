@@ -1,0 +1,23 @@
+<%- include('partials/head') %>
+<div class="card">
+  <div class="card-head"><h2>Audit trail</h2><span class="small muted">Newest first · <%= activity.length %> entries</span></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Entity</th><th>IP</th><th>Details</th></tr></thead>
+      <tbody>
+        <% activity.forEach(function (entry) { %>
+        <tr>
+          <td class="small nowrap"><%= formatDate(entry.created_at, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) %></td>
+          <td class="small"><%= entry.user_email %></td>
+          <td class="small"><strong><%= entry.action %></strong></td>
+          <td class="small"><%= entry.entity || '—' %><%= entry.entity_id ? ' #' + entry.entity_id : '' %></td>
+          <td class="small"><%= entry.ip || '—' %></td>
+          <td class="small muted" style="max-width:320px;overflow-wrap:anywhere"><%= entry.meta || '' %></td>
+        </tr>
+        <% }); %>
+        <% if (!activity.length) { %><tr><td colspan="6" class="muted">No activity yet.</td></tr><% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('partials/foot') %>

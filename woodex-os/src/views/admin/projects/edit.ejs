@@ -1,0 +1,102 @@
+<%- include('../partials/head') %>
+<% var isNew = !project; var v = values || {}; %>
+<form method="post" action="<%= isNew ? '/admin/projects' : '/admin/projects/' + project.id %>" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="split">
+    <div>
+      <div class="card">
+        <div class="card-head"><h2>Project</h2><a class="btn secondary small" href="/admin/projects">Back to list</a></div>
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" name="title" required maxlength="200" value="<%= v.title || '' %>"<%- errors.title ? ' aria-invalid="true"' : '' %>>
+          <% if (errors.title) { %><span class="field-error"><%= errors.title %></span><% } %>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="slug">URL slug</label>
+            <input id="slug" name="slug" maxlength="120" value="<%= v.slug || '' %>" placeholder="the-arched-residence">
+            <% if (errors.slug) { %><span class="field-error"><%= errors.slug %></span><% } %>
+          </div>
+          <div class="field">
+            <label for="category">Category</label>
+            <select id="category" name="category">
+              <% ['residential','commercial','bespoke','styling','renovation'].forEach(function (option) { %>
+              <option value="<%= option %>"<%- (v.category || 'residential') === option ? ' selected' : '' %>><%= option %></option>
+              <% }); %>
+            </select>
+          </div>
+        </div>
+        <div class="form-row three">
+          <div class="field"><label for="location">Location</label><input id="location" name="location" maxlength="160" value="<%= v.location || '' %>"></div>
+          <div class="field"><label for="year">Year</label><input id="year" name="year" maxlength="20" value="<%= v.year || '' %>"></div>
+          <div class="field"><label for="area">Area</label><input id="area" name="area" maxlength="80" value="<%= v.area || '' %>"></div>
+        </div>
+        <div class="field">
+          <label for="summary">Short summary</label>
+          <input id="summary" name="summary" maxlength="600" value="<%= v.summary || '' %>" placeholder="Natural textures · Quiet luxury">
+        </div>
+        <div class="field">
+          <label for="cover_image">Cover image</label>
+          <input id="cover_image" name="cover_image" maxlength="500" value="<%= v.cover_image || '' %>" placeholder="/assets/detail.jpg" list="media-options">
+        </div>
+        <div class="field">
+          <label for="body">Project story (HTML)</label>
+          <textarea id="body" name="body" class="mono tall"><%= v.body || '' %></textarea>
+          <span class="hint">Use &lt;h2&gt; for section headings and &lt;p&gt; for paragraphs.</span>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="facts">Facts (JSON list)</label>
+            <textarea id="facts" name="facts" class="mono" rows="6" data-json><%= JSON.stringify(v.facts || [], null, 2) %></textarea>
+            <span class="hint">[{"label":"Scope","value":"Whole-home concept"}]</span>
+            <% if (errors.facts) { %><span class="field-error"><%= errors.facts %></span><% } %>
+          </div>
+          <div class="field">
+            <label for="gallery">Gallery (JSON list)</label>
+            <textarea id="gallery" name="gallery" class="mono" rows="6" data-json><%= JSON.stringify(v.gallery || [], null, 2) %></textarea>
+            <span class="hint">[{"src":"/uploads/a.jpg","alt":"Description"}]</span>
+            <% if (errors.gallery) { %><span class="field-error"><%= errors.gallery %></span><% } %>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="seo_title">SEO title</label>
+            <input id="seo_title" name="seo_title" maxlength="70" value="<%= v.seo_title || '' %>">
+            <% if (errors.seo_title) { %><span class="field-error"><%= errors.seo_title %></span><% } %>
+          </div>
+          <div class="field">
+            <label for="seo_description">Meta description</label>
+            <textarea id="seo_description" name="seo_description" maxlength="320" rows="3"><%= v.seo_description || '' %></textarea>
+            <% if (errors.seo_description) { %><span class="field-error"><%= errors.seo_description %></span><% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside>
+      <div class="card">
+        <div class="card-head"><h2>Publish</h2></div>
+        <div class="field">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="draft"<%- (v.status || 'draft') === 'draft' ? ' selected' : '' %>>Draft</option>
+            <option value="published"<%- v.status === 'published' ? ' selected' : '' %>>Published</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="field"><label for="sort_order">Order</label><input id="sort_order" name="sort_order" type="number" value="<%= v.sort_order || 0 %>"></div>
+          <div class="field"><label class="check" style="margin-top:26px"><input type="checkbox" name="featured" value="1"<%- v.featured ? ' checked' : '' %>> Featured</label></div>
+        </div>
+        <button class="btn" type="submit" style="width:100%">Save project</button>
+        <% if (!isNew) { %>
+        <form method="post" action="/admin/projects/<%= project.id %>/delete" data-confirm="Delete this project?" style="margin-top:10px">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <button class="btn danger" type="submit" style="width:100%">Delete project</button>
+        </form>
+        <p class="small" style="margin-top:12px"><a href="/portfolio/<%= project.slug %>" target="_blank" rel="noopener">View on site ↗</a></p>
+        <% } %>
+      </div>
+    </aside>
+  </div>
+</form>
+<datalist id="media-options"><% mediaFiles.forEach(function (file) { %><option value="/uploads/<%= file.filename %>"></option><% }); %></datalist>
+<%- include('../partials/foot') %>

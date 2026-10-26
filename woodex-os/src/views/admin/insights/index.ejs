@@ -1,0 +1,32 @@
+<%- include('../partials/head') %>
+<div class="card">
+  <div class="card-head">
+    <div class="tabs">
+      <a href="/admin/insights" class="<%= !filter.status ? 'active' : '' %>">All</a>
+      <a href="/admin/insights?status=published" class="<%= filter.status === 'published' ? 'active' : '' %>">Published</a>
+      <a href="/admin/insights?status=draft" class="<%= filter.status === 'draft' ? 'active' : '' %>">Drafts</a>
+    </div>
+    <% if (can('content:write')) { %><a class="btn" href="/admin/insights/new">New insight</a><% } %>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Article</th><th>Category</th><th>Published</th><th>Status</th><th class="actions">Actions</th></tr></thead>
+      <tbody>
+        <% insights.forEach(function (insight) { %>
+        <tr>
+          <td><a href="/admin/insights/<%= insight.id %>"><strong><%= insight.title %></strong></a><div class="small muted">/insights/<%= insight.slug %></div></td>
+          <td class="small"><%= insight.category %></td>
+          <td class="small nowrap"><%= insight.published_at ? formatDate(insight.published_at) : '—' %></td>
+          <td><span class="badge <%= insight.status %>"><%= insight.status %></span></td>
+          <td class="actions">
+            <a class="btn secondary small" href="/admin/insights/<%= insight.id %>">Edit</a>
+            <% if (insight.status === 'published') { %><a class="btn secondary small" href="/insights/<%= insight.slug %>" target="_blank" rel="noopener">View</a><% } %>
+          </td>
+        </tr>
+        <% }); %>
+        <% if (!insights.length) { %><tr><td colspan="5" class="muted">No insights yet.</td></tr><% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('../partials/foot') %>

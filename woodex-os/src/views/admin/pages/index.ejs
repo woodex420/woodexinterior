@@ -1,0 +1,41 @@
+<%- include('../partials/head') %>
+<div class="card">
+  <div class="card-head">
+    <div class="tabs">
+      <a href="/admin/pages" class="<%= !filter.status ? 'active' : '' %>">All</a>
+      <a href="/admin/pages?status=published" class="<%= filter.status === 'published' ? 'active' : '' %>">Published</a>
+      <a href="/admin/pages?status=draft" class="<%= filter.status === 'draft' ? 'active' : '' %>">Drafts</a>
+    </div>
+    <div class="btn-row">
+      <form method="get" action="/admin/pages" class="btn-row">
+        <input type="search" name="q" value="<%= filter.q %>" placeholder="Search pages" aria-label="Search pages" style="width:200px">
+        <button class="btn secondary small" type="submit">Search</button>
+      </form>
+      <% if (can('content:write')) { %><a class="btn" href="/admin/pages/new">New page</a><% } %>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Title</th><th>URL</th><th>Template</th><th>Status</th><th>Updated</th><th class="actions">Actions</th></tr></thead>
+      <tbody>
+        <% pages.forEach(function (page) { %>
+        <tr>
+          <td><a href="/admin/pages/<%= page.id %>"><strong><%= page.title %></strong></a><div class="small muted"><%= page.blocks.length %> block<%= page.blocks.length === 1 ? '' : 's' %> · <%= page.page_type %></div></td>
+          <td class="small">/<%= page.slug === 'home' ? '' : page.slug %></td>
+          <td class="small"><%= page.template %></td>
+          <td><span class="badge <%= page.status %>"><%= page.status %></span></td>
+          <td class="small nowrap"><%= formatDate(page.updated_at) %></td>
+          <td class="actions">
+            <a class="btn secondary small" href="/admin/pages/<%= page.id %>">Edit</a>
+            <a class="btn secondary small" href="/preview/<%= page.slug %>" target="_blank" rel="noopener">Preview</a>
+            <a class="btn secondary small" href="<%= page.slug === 'home' ? '/' : '/' + page.slug %>" target="_blank" rel="noopener">View</a>
+          </td>
+        </tr>
+        <% }); %>
+        <% if (!pages.length) { %><tr><td colspan="6" class="muted">No pages match this filter.</td></tr><% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('../partials/foot') %>

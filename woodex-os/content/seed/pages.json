@@ -1,0 +1,419 @@
+[
+  {
+    "slug": "home",
+    "title": "Home",
+    "page_type": "home",
+    "template": "home",
+    "status": "published",
+    "sort_order": 0,
+    "seo_title": "Thoughtful spaces. Timeless interiors.",
+    "seo_description": "Interior design studio in Lahore: thoughtful residential and commercial interiors, bespoke woodwork and styling. Start a project with Woodex Interior.",
+    "hero_image": "/assets/detail.jpg",
+    "blocks": [
+      {
+        "type": "hero",
+        "ctaLabel": "Start your project",
+        "ctaHref": "/contact",
+        "slides": [
+          {
+            "tag": "Inspired interiors",
+            "title": "Spaces shaped by<br>purpose and personality",
+            "word": "DESIGN",
+            "copy": "An interior is more than a beautiful room. It’s the way you feel at home. We bring natural materials, thoughtful details, and your story together to create spaces for living well.",
+            "image": "/assets/detail.jpg",
+            "alt": "Warm, light-filled interior with arched windows, natural timber and woven textures"
+          },
+          {
+            "tag": "Timeless by nature",
+            "title": "Thoughtful details.<br>Lasting impressions.",
+            "word": "CREATE",
+            "copy": "Warm timber, honest textures, and a considered sense of balance. Discover interiors that feel personal, work beautifully, and only become better with time.",
+            "image": "/assets/hero.jpg",
+            "alt": "Sunlit living room layered with natural textures and warm timber"
+          },
+          {
+            "tag": "Made for everyday",
+            "title": "Room for life.<br>Space to be yourself.",
+            "word": "INSPIRE",
+            "copy": "From a quiet corner to a complete transformation, we shape every space around the people who use it. Beautifully practical. Distinctively yours.",
+            "image": "/assets/living.jpg",
+            "alt": "Open-plan living and dining space with timber screens and a sculptural stair"
+          }
+        ]
+      },
+      {
+        "type": "imageText",
+        "eyebrow": "The Woodex perspective",
+        "title": "We believe the best spaces don’t just look beautiful.<br>They feel like you.",
+        "image": "/assets/hero.jpg",
+        "alt": "Sunlit living room layered with natural textures and warm timber",
+        "body": "<p>Woodex Interior is a design-led studio shaping thoughtful places to live, work, and gather. Our starting point is always the same: the people who call a space their own.</p><p>With a love for natural materials and a considered approach to detail, we bring warmth, purpose, and a quiet sense of individuality to every interior.</p>",
+        "ctaLabel": "Discover our studio",
+        "ctaHref": "/about",
+        "notes": [
+          { "strong": "Human first.", "text": "Designed around your life" },
+          { "strong": "Detail always.", "text": "Considered from start to finish" }
+        ]
+      },
+      {
+        "type": "serviceCards",
+        "eyebrow": "Thoughtfully designed, beautifully lived",
+        "title": "Your vision.<br>Our considered approach.",
+        "ctaLabel": "Explore all services",
+        "ctaHref": "/services",
+        "items": [
+          { "number": "01", "title": "Residential interiors", "summary": "Personal spaces that balance everyday comfort with a distinctive sense of style.", "href": "/services#residential-interiors" },
+          { "number": "02", "title": "Commercial spaces", "summary": "Purposeful environments that bring your brand to life and people together.", "href": "/services#commercial-spaces" },
+          { "number": "03", "title": "Bespoke woodwork", "summary": "Thoughtful timber details and custom pieces, designed around your space.", "href": "/services#bespoke-woodwork" }
+        ]
+      },
+      {
+        "type": "accordion",
+        "eyebrow": "From the first idea to the final detail",
+        "title": "Good design considers<br>the whole picture.",
+        "intro": "One shared vision. A thoughtful process. We bring every part of your interior into a clear, cohesive whole.",
+        "ctaLabel": "Our design services",
+        "ctaHref": "/services",
+        "image": "/assets/living.jpg",
+        "alt": "Architectural dining room with natural wood screens and a sculptural stair",
+        "items": [
+          { "title": "Space, thoughtfully planned", "text": "Intuitive layouts that make room for your routines, your people, and the way you want to live." },
+          { "title": "Materials with meaning", "text": "Honest textures, considered finishes, and a natural palette selected for both beauty and everyday use." },
+          { "title": "Details that make the difference", "text": "From a handle to a lighting plan, small decisions work together to give your space lasting character." }
+        ]
+      },
+      {
+        "type": "projectGrid",
+        "eyebrow": "Spaces with a story",
+        "title": "A considered collection<br>of interiors.",
+        "ctaLabel": "View all projects",
+        "ctaHref": "/portfolio",
+        "limit": 4,
+        "category": "all",
+        "note": "A concept collection, shown with illustrative photography. These are sample projects, not completed Woodex commissions."
+      },
+      {
+        "type": "processSteps",
+        "eyebrow": "The way we work",
+        "title": "From a conversation<br>to a place of your own.",
+        "image": "/assets/kitchen.jpg",
+        "alt": "Open, welcoming living space with comfortable seating and timber details",
+        "steps": [
+          { "title": "Listen & discover", "text": "We begin with your routines, your ideas, and what you need your space to do." },
+          { "title": "Imagine & refine", "text": "Layouts, material palettes, and visual concepts bring a shared direction into focus." },
+          { "title": "Detail & make", "text": "Drawings, specifications, and carefully selected finishes turn the vision into a plan." },
+          { "title": "Style & complete", "text": "The final layers bring everything together, ready for your everyday life." }
+        ]
+      },
+      {
+        "type": "journalGrid",
+        "eyebrow": "The studio journal",
+        "title": "Ideas for a more<br>considered interior.",
+        "ctaLabel": "Explore insights",
+        "ctaHref": "/insights"
+      },
+      {
+        "type": "cta",
+        "eyebrow": "A space that starts with you",
+        "title": "Let’s make room<br>for something beautiful.",
+        "label": "Start your project",
+        "href": "/contact",
+        "image": "/assets/living.jpg"
+      }
+    ]
+  },
+  {
+    "slug": "about",
+    "title": "About our studio",
+    "page_type": "page",
+    "template": "default",
+    "status": "published",
+    "sort_order": 10,
+    "seo_title": "About the studio",
+    "seo_description": "Woodex Interior is a design-led studio in Lahore shaping calm, material-led interiors around the people who live and work in them.",
+    "hero_eyebrow": "Our studio",
+    "hero_title": "Designing spaces.<br>Understanding people.",
+    "hero_intro": "We see interiors as the backdrop to a life well lived. Personal, purposeful, and thoughtfully put together.",
+    "hero_image": "/assets/studio.jpg",
+    "blocks": [
+      {
+        "type": "pageHero",
+        "eyebrow": "Our studio",
+        "title": "Designing spaces.<br>Understanding people.",
+        "intro": "We see interiors as the backdrop to a life well lived. Personal, purposeful, and thoughtfully put together."
+      },
+      {
+        "type": "imageText",
+        "eyebrow": "Our approach",
+        "title": "Beautiful design begins<br>with a better understanding.",
+        "image": "/assets/studio.jpg",
+        "alt": "Light-filled studio interior with timber furniture and large windows",
+        "body": "<p>Every space has its own possibilities. Every person brings a different way of living. At Woodex, we start by listening, then translate what we learn into interiors that feel coherent, comfortable, and quietly distinctive.</p><p>Our approach balances creative thinking with practical decisions. We care about how a room flows, how a material feels, and how a detail will serve you in everyday life — not just in a photograph.</p>",
+        "ctaLabel": "Explore our services",
+        "ctaHref": "/services",
+        "notes": [
+          { "strong": "Human first.", "text": "Designed around your life" },
+          { "strong": "Detail always.", "text": "Considered from start to finish" }
+        ]
+      },
+      {
+        "type": "cardGrid",
+        "eyebrow": "Quiet principles",
+        "title": "Quiet principles.<br>A lasting difference.",
+        "columns": 3,
+        "items": [
+          { "number": "01", "title": "People before trends", "text": "Your routines, preferences, and aspirations guide the design. We look beyond what is fashionable to find what feels right for you." },
+          { "number": "02", "title": "Honest by nature", "text": "We are drawn to authentic materials, warm textures, and a sense of restraint. Spaces should feel grounded, not overworked." },
+          { "number": "03", "title": "Considered in detail", "text": "The best interiors hold together at every scale. From the overall plan to the smallest junction, each decision has a purpose." }
+        ]
+      },
+      {
+        "type": "imageText",
+        "reverse": true,
+        "title": "Natural warmth.<br>Modern clarity.",
+        "image": "/assets/detail.jpg",
+        "alt": "Natural timber beams, woven textures and warm neutral furnishings",
+        "body": "<p>Wood is more than a material to us. Its grain, warmth, and individuality reflect the qualities we want every space to have.</p><p>Paired with tactile fabrics, quiet colors, and thoughtfully chosen stone and metal, it becomes part of an interior that feels balanced rather than overly coordinated.</p>"
+      },
+      {
+        "type": "processSteps",
+        "eyebrow": "How we work",
+        "title": "Your ideas, thoughtfully<br>brought to life.",
+        "steps": [
+          { "title": "Listen & discover", "text": "We begin with your routines, your ideas, and what you need your space to do." },
+          { "title": "Imagine & refine", "text": "Layouts, material palettes, and visual concepts bring a shared direction into focus." },
+          { "title": "Detail & make", "text": "Drawings, specifications, and carefully selected finishes turn the vision into a plan." },
+          { "title": "Style & complete", "text": "The final layers bring everything together, ready for your everyday life." }
+        ]
+      },
+      {
+        "type": "cta",
+        "eyebrow": "A space that starts with you",
+        "title": "Let’s make room<br>for something beautiful.",
+        "label": "Start your project",
+        "href": "/contact",
+        "image": "/assets/hero.jpg"
+      }
+    ]
+  },
+  {
+    "slug": "services",
+    "title": "Services",
+    "page_type": "page",
+    "template": "default",
+    "status": "published",
+    "sort_order": 20,
+    "seo_title": "Interior design services",
+    "seo_description": "Residential interiors, commercial spaces, bespoke woodwork, furniture, styling, renovation and design consultations in Lahore.",
+    "hero_eyebrow": "What we do",
+    "hero_title": "A complete vision.<br>Considered in every detail.",
+    "hero_intro": "From the first conversation to the final layer, discover design support shaped around your space and your ambitions.",
+    "hero_image": "/assets/living.jpg",
+    "blocks": [
+      {
+        "type": "pageHero",
+        "eyebrow": "What we do",
+        "title": "A complete vision.<br>Considered in every detail.",
+        "intro": "From the first conversation to the final layer, discover design support shaped around your space and your ambitions."
+      },
+      {
+        "type": "processSteps",
+        "eyebrow": "Our process",
+        "title": "Thoughtful at every stage.",
+        "steps": [
+          { "title": "Listen & discover", "text": "We begin with your routines, your ideas, and what you need your space to do." },
+          { "title": "Imagine & refine", "text": "Layouts, material palettes, and visual concepts bring a shared direction into focus." },
+          { "title": "Detail & make", "text": "Drawings, specifications, and carefully selected finishes turn the vision into a plan." },
+          { "title": "Style & complete", "text": "The final layers bring everything together, ready for your everyday life." }
+        ]
+      },
+      {
+        "type": "faq",
+        "eyebrow": "Good to know",
+        "title": "A little clarity,<br>before we begin.",
+        "items": [
+          { "q": "How does a project begin?", "a": "Start by sharing your space, priorities, and any existing plans or inspiration. The first conversation helps define the scope and the level of design support you need." },
+          { "q": "Can you help with just one room?", "a": "Yes. We work with individual rooms as well as larger interior projects. A focused room scheme can include layout, colors, finishes, furniture, and styling." },
+          { "q": "How are design fees and timelines agreed?", "a": "They depend on the scope, size, and complexity of the project. A written proposal sets out the deliverables, design stages, fees, and schedule before work begins." },
+          { "q": "Do you design custom furniture and woodwork?", "a": "Yes. Bespoke design can include storage, cabinetry, wardrobes, and furniture concepts. Fabrication, installation, and specialist engineering are confirmed separately in the project proposal." },
+          { "q": "What should I prepare for an initial conversation?", "a": "A few photographs, available measurements or plans, an approximate budget, and a short list of priorities are a helpful place to start. Inspiration images are welcome too." }
+        ]
+      },
+      {
+        "type": "cta",
+        "eyebrow": "Start with a conversation",
+        "title": "Tell us about<br>your space.",
+        "label": "Start your project",
+        "href": "/contact",
+        "image": "/assets/kitchen.jpg"
+      }
+    ]
+  },
+  {
+    "slug": "portfolio",
+    "title": "Portfolio",
+    "page_type": "page",
+    "template": "default",
+    "status": "published",
+    "sort_order": 30,
+    "seo_title": "Concept portfolio",
+    "seo_description": "A concept collection of residential, commercial and bespoke interior projects by Woodex Interior, shown with illustrative photography.",
+    "hero_eyebrow": "Selected work",
+    "hero_title": "Spaces with purpose.<br>Interiors with personality.",
+    "hero_intro": "A look at the design directions we love to shape — from quiet family homes to workplaces built around people.",
+    "hero_image": "/assets/detail.jpg",
+    "blocks": [
+      {
+        "type": "pageHero",
+        "eyebrow": "Selected work",
+        "title": "Spaces with purpose.<br>Interiors with personality.",
+        "intro": "A look at the design directions we love to shape — from quiet family homes to workplaces built around people."
+      }
+    ]
+  },
+  {
+    "slug": "insights",
+    "title": "Insights",
+    "page_type": "page",
+    "template": "default",
+    "status": "published",
+    "sort_order": 40,
+    "seo_title": "Interior design insights",
+    "seo_description": "Practical ideas from the Woodex studio on materials, space planning and lighting for a more considered home.",
+    "hero_eyebrow": "The studio journal",
+    "hero_title": "A little inspiration.<br>A more considered home.",
+    "hero_intro": "Notes from the studio on materials, space, and the details that make a home feel like yours.",
+    "hero_image": "/assets/living.jpg",
+    "blocks": [
+      {
+        "type": "pageHero",
+        "eyebrow": "The studio journal",
+        "title": "A little inspiration.<br>A more considered home.",
+        "intro": "Notes from the studio on materials, space, and the details that make a home feel like yours."
+      }
+    ]
+  },
+  {
+    "slug": "contact",
+    "title": "Contact",
+    "page_type": "page",
+    "template": "contact",
+    "status": "published",
+    "sort_order": 50,
+    "seo_title": "Start your interior project",
+    "seo_description": "Tell Woodex Interior about your space. Call, WhatsApp or send a project enquiry and the Lahore studio will reply within two working days.",
+    "hero_eyebrow": "Let’s begin",
+    "hero_title": "Every beautiful space<br>starts with a conversation.",
+    "hero_intro": "Tell us what you have in mind. A new home, a fresh perspective, or the detail that brings everything together.",
+    "hero_image": "/assets/hero.jpg",
+    "blocks": [
+      {
+        "type": "pageHero",
+        "eyebrow": "Let’s begin",
+        "title": "Every beautiful space<br>starts with a conversation.",
+        "intro": "Tell us what you have in mind. A new home, a fresh perspective, or the detail that brings everything together."
+      },
+      {
+        "type": "contactForm",
+        "formTitle": "Tell us about your project.",
+        "note": "Share a few details and the studio will reply within two working days. Required fields are marked *."
+      },
+      {
+        "type": "faq",
+        "eyebrow": "Good to know",
+        "title": "A little clarity,<br>before we begin.",
+        "items": [
+          { "q": "How does a project begin?", "a": "Start by sharing your space, priorities, and any existing plans or inspiration. The first conversation helps define the scope and the level of design support you need." },
+          { "q": "Can you help with just one room?", "a": "Yes. We work with individual rooms as well as larger interior projects, from layout and finishes to furniture and styling." },
+          { "q": "What areas do you work in?", "a": "The studio is based in Lahore and works across Pakistan. For projects further afield, get in touch and we will confirm what is possible." },
+          { "q": "What should I prepare for an initial conversation?", "a": "A few photographs, available measurements or plans, an approximate budget, and a short list of priorities are a helpful place to start." }
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "privacy",
+    "title": "Privacy information",
+    "page_type": "legal",
+    "template": "default",
+    "status": "published",
+    "sort_order": 60,
+    "seo_title": "Privacy information",
+    "seo_description": "How Woodex Interior collects, uses and stores the information you share through this website, and how to contact us about it.",
+    "hero_eyebrow": "Legal",
+    "hero_title": "Privacy, simply put.",
+    "hero_intro": "How this website handles the information you share with us.",
+    "blocks": [
+      {
+        "type": "pageHero",
+        "eyebrow": "Legal",
+        "title": "Privacy, simply put.",
+        "intro": "How this website handles the information you share with us."
+      },
+      {
+        "type": "richText",
+        "html": "<h2>Who we are</h2><p>Woodex Interior is an interior design studio based in Lahore, Pakistan. You can reach us at <a href=\"mailto:woodexinterior.pk@gmail.com\">woodexinterior.pk@gmail.com</a> or +92 322 4000768.</p><h2>What we collect</h2><p>When you send an enquiry we store the name, email address, phone number, project location, service interest, timeline and message you choose to share. We also store the time of the request and a shortened technical record (IP address and browser) used to protect the form from abuse.</p><h2>Why we use it</h2><p>We use your details only to reply to your enquiry, to prepare a proposal, and to keep a record of the conversation. We do not sell your information and we do not use it for unrelated marketing.</p><h2>Cookies and storage</h2><p>The public website sets one short-lived cookie so that the enquiry form can be verified against cross-site request forgery. If you sign in to the studio content system, a session cookie keeps you signed in. No advertising or analytics cookies are set by default.</p><h2>How long we keep it</h2><p>Enquiries are kept while a project is active and for up to 24 months afterwards so that we can answer follow-up questions. You can ask us to delete your enquiry at any time.</p><h2>Your choices</h2><p>Write to <a href=\"mailto:woodexinterior.pk@gmail.com\">woodexinterior.pk@gmail.com</a> to ask for a copy of your information, to correct it, or to have it deleted. We will respond within 30 days.</p><h2>Photography and sample projects</h2><p>Portfolio projects on this site are design concepts illustrated with licensed stock photography. They are not presented as completed client commissions.</p><p><em>Last reviewed: 26 October 2026.</em></p>"
+      }
+    ]
+  },
+  {
+    "slug": "style-guide",
+    "title": "Master style guide",
+    "page_type": "page",
+    "template": "style-guide",
+    "status": "published",
+    "sort_order": 70,
+    "seo_title": "Master style guide",
+    "seo_description": "The Woodex Interior design system: colour tokens, typography scale and interface components.",
+    "noindex": true,
+    "hero_eyebrow": "Design system",
+    "hero_title": "The Woodex<br>visual language.",
+    "blocks": [
+      {
+        "type": "pageHero",
+        "eyebrow": "Design system",
+        "title": "The Woodex<br>visual language.",
+        "intro": "A reference for the colour tokens, typography and components used across the website."
+      },
+      {
+        "type": "richText",
+        "html": "<h2>Colour tokens</h2><ul><li><strong>Ink</strong> #111111 — headings and primary copy</li><li><strong>Body</strong> #525252 — supporting paragraphs</li><li><strong>Navy</strong> #0f1e36 — dark feature bands</li><li><strong>Accent</strong> #a87442 — focus rings and highlights</li><li><strong>Soft</strong> #f5f5f3 — alternating section backgrounds</li><li><strong>Beige</strong> #fcf2e8 — warm neutral panels</li></ul><h2>Typography</h2><p>Headings use Nohemi at 400/500/600. Body copy uses Inter with a 16px base and 1.8 line height for long-form reading.</p><h2>Components</h2><p>Buttons are pill-shaped with a trailing arrow. Cards use a 1px rule, 8px radius and generous internal padding. Images sit inside rounded frames with a subtle zoom on hover.</p><h2>Accessibility</h2><p>Text meets WCAG 2.2 AA contrast, every interactive element has a visible focus ring, and all content images carry descriptive alt text.</p>"
+      }
+    ]
+  },
+  {
+    "slug": "thank-you",
+    "title": "Thank you",
+    "page_type": "system",
+    "template": "default",
+    "status": "published",
+    "sort_order": 80,
+    "seo_title": "Thank you",
+    "seo_description": "Your enquiry is with the Woodex studio. We reply within two working days.",
+    "noindex": true,
+    "blocks": [
+      {
+        "type": "pageHero",
+        "eyebrow": "Enquiry received",
+        "title": "Thank you.<br>Your enquiry is with us.",
+        "intro": "A member of the studio will reply within two working days. If your project is urgent, call or message +92 322 4000768."
+      },
+      {
+        "type": "richText",
+        "html": "<h2>What happens next</h2><p>We read every enquiry personally. You will hear from us with a few clarifying questions and, where it makes sense, a suggested first conversation.</p><p>In the meantime you might like to look at our <a href=\"/portfolio\">concept portfolio</a> or read the <a href=\"/insights\">studio journal</a>.</p><p><a class=\"btn dark\" href=\"/portfolio\">View the portfolio</a></p>"
+      }
+    ]
+  },
+  {
+    "slug": "404",
+    "title": "Page not found",
+    "page_type": "system",
+    "template": "404",
+    "status": "published",
+    "sort_order": 90,
+    "seo_title": "Page not found",
+    "seo_description": "That page could not be found.",
+    "noindex": true,
+    "blocks": []
+  }
+]

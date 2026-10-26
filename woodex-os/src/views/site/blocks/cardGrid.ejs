@@ -1,0 +1,19 @@
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <div>
+        <% if (block.eyebrow) { %><div class="eyebrow"><%= block.eyebrow %></div><% } %>
+        <% if (block.title) { %><h2><%- block.title %></h2><% } %>
+      </div>
+    </div>
+    <div class="values-grid">
+      <% block.items.forEach(function (item) { %>
+      <article class="value-card">
+        <% if (item.number) { %><span><%= item.number %></span><% } %>
+        <h3><%= item.title %></h3>
+        <p><%= item.text %></p>
+      </article>
+      <% }); %>
+    </div>
+  </div>
+</section>

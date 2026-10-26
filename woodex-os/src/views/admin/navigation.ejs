@@ -1,0 +1,54 @@
+<%- include('partials/head') %>
+<form method="post" action="/admin/navigation">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <% [['main','Main navigation'],['footer_explore','Footer — Explore'],['footer_services','Footer — What we do'],['footer_legal','Footer — Legal']].forEach(function (pair) { %>
+  <div class="card">
+    <div class="card-head"><h2><%= pair[1] %></h2><span class="small muted"><%= groups[pair[0]].length %> link<%= groups[pair[0]].length === 1 ? '' : 's' %></span></div>
+    <% if (!groups[pair[0]].length) { %><p class="muted small">No links in this group yet.</p><% } %>
+    <% groups[pair[0]].forEach(function (item) { %>
+    <div class="form-row three" style="margin-bottom:8px;align-items:end">
+      <div class="field" style="margin:0">
+        <label for="label-<%= item.id %>">Label</label>
+        <input id="label-<%= item.id %>" name="label_<%= item.id %>" value="<%= item.label %>" maxlength="80">
+      </div>
+      <div class="field" style="margin:0">
+        <label for="href-<%= item.id %>">Link</label>
+        <input id="href-<%= item.id %>" name="href_<%= item.id %>" value="<%= item.href %>" maxlength="300">
+      </div>
+      <div class="field" style="margin:0">
+        <label for="sort-<%= item.id %>">Order</label>
+        <div class="btn-row">
+          <input id="sort-<%= item.id %>" name="sort_<%= item.id %>" type="number" value="<%= item.sort_order %>" style="width:80px">
+          <label class="check"><input type="checkbox" name="visible_<%= item.id %>" value="1"<%- item.visible ? ' checked' : '' %>> Visible</label>
+        </div>
+      </div>
+    </div>
+    <% }); %>
+  </div>
+  <% }); %>
+  <div class="card">
+    <div class="form-actions" style="border:0;margin:0;padding:0">
+      <span class="small muted">Changes go live immediately after saving.</span>
+      <button class="btn" type="submit">Save navigation</button>
+    </div>
+  </div>
+</form>
+
+<div class="card">
+  <div class="card-head"><h2>Add a link</h2></div>
+  <form method="post" action="/admin/navigation/add" class="form-row three">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="field"><label for="new-area">Group</label>
+      <select id="new-area" name="area">
+        <option value="main">Main navigation</option>
+        <option value="footer_explore">Footer — Explore</option>
+        <option value="footer_services">Footer — What we do</option>
+        <option value="footer_legal">Footer — Legal</option>
+      </select>
+    </div>
+    <div class="field"><label for="new-label">Label</label><input id="new-label" name="label" maxlength="80" required></div>
+    <div class="field"><label for="new-href">Link</label><input id="new-href" name="href" maxlength="300" placeholder="/contact" value="/"></div>
+    <div class="field" style="align-self:end"><button class="btn secondary" type="submit">Add link</button></div>
+  </form>
+</div>
+<%- include('partials/foot') %>

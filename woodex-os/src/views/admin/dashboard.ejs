@@ -1,0 +1,84 @@
+<%- include('partials/head') %>
+
+<div class="stat-grid">
+  <div class="stat-card"><div class="label">Published pages</div><div class="value"><%= stats.publishedPages %></div><div class="meta"><%= stats.drafts %> in draft · <%= stats.pages %> total</div></div>
+  <div class="stat-card"><div class="label">Projects</div><div class="value"><%= stats.publishedProjects %></div><div class="meta"><%= stats.projects %> total in the collection</div></div>
+  <div class="stat-card"><div class="label">Insights</div><div class="value"><%= stats.publishedInsights %></div><div class="meta"><%= stats.insights %> articles</div></div>
+  <div class="stat-card"><div class="label">New enquiries</div><div class="value"><%= stats.newEnquiries %></div><div class="meta"><%= stats.enquiries %> lifetime</div></div>
+</div>
+
+<div class="grid cols-2" style="margin-top:20px">
+  <div class="card">
+    <div class="card-head">
+      <h2>Content health</h2>
+      <a class="btn secondary small" href="/admin/health">Open QA</a>
+    </div>
+    <% if (!health.length) { %>
+      <p class="badge ok">No issues found</p>
+    <% } else { %>
+      <ul class="list-reset" style="display:grid;gap:8px">
+        <% health.slice(0, 8).forEach(function (issue) { %>
+        <li style="display:flex;gap:10px;align-items:flex-start">
+          <span class="badge <%= issue.severity === 'warning' ? 'warn' : 'info' %>"><%= issue.area %></span>
+          <span class="small"><%= issue.message %> <% if (issue.slug) { %><a href="/admin/pages" class="muted">/<%= issue.slug %></a><% } %></span>
+        </li>
+        <% }); %>
+      </ul>
+      <% if (health.length > 8) { %><p class="small muted" style="margin-top:10px">+ <%= health.length - 8 %> more in Health &amp; QA.</p><% } %>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Latest enquiries</h2><a class="btn secondary small" href="/admin/enquiries">Inbox</a></div>
+    <% if (!latestEnquiries.length) { %><p class="muted">No enquiries yet. Submit the contact form on the live site to test the pipeline.</p><% } %>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Service</th><th>Status</th><th>Received</th></tr></thead>
+        <tbody>
+          <% latestEnquiries.forEach(function (enquiry) { %>
+          <tr>
+            <td><a href="/admin/enquiries/<%= enquiry.id %>"><%= enquiry.name %></a></td>
+            <td class="small"><%= enquiry.service || '—' %></td>
+            <td><span class="badge <%= enquiry.status %>"><%= enquiry.status.replace('_', ' ') %></span></td>
+            <td class="small nowrap"><%= formatDate(enquiry.created_at) %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="grid cols-2" style="margin-top:20px">
+  <div class="card">
+    <div class="card-head"><h2>Quick actions</h2></div>
+    <div class="btn-row">
+      <a class="btn" href="/admin/pages/new">New page</a>
+      <a class="btn secondary" href="/admin/projects/new">New project</a>
+      <a class="btn secondary" href="/admin/insights/new">New insight</a>
+      <a class="btn secondary" href="/admin/media">Upload media</a>
+      <a class="btn secondary" href="/sitemap.xml" target="_blank" rel="noopener">Sitemap</a>
+    </div>
+    <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+    <h3>Recently edited</h3>
+    <% if (!drafts.length) { %><p class="muted small">No drafts. Everything is published.</p><% } %>
+    <ul class="list-reset" style="display:grid;gap:6px">
+      <% drafts.forEach(function (page) { %>
+      <li class="small"><a href="/admin/pages/<%= page.id %>"><%= page.title %></a> <span class="badge draft">draft</span></li>
+      <% }); %>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Activity</h2><% if (can('audit:read')) { %><a class="btn secondary small" href="/admin/activity">Full log</a><% } %></div>
+    <% if (!activity.length) { %><p class="muted small">No activity recorded yet.</p><% } %>
+    <ul class="timeline list-reset">
+      <% activity.forEach(function (entry) { %>
+      <li><span class="when"><%= formatDate(entry.created_at, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) %></span>
+        <span><strong><%= entry.action %></strong> <span class="muted"><%= entry.entity || '' %><%= entry.entity_id ? ' #' + entry.entity_id : '' %> · <%= entry.user_email %></span></span></li>
+      <% }); %>
+    </ul>
+  </div>
+</div>
+
+<%- include('partials/foot') %>

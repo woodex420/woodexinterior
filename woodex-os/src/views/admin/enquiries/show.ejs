@@ -1,0 +1,67 @@
+<%- include('../partials/head') %>
+<div class="split">
+  <div>
+    <div class="card">
+      <div class="card-head"><h2>Enquiry #<%= enquiry.id %></h2><a class="btn secondary small" href="/admin/enquiries">Back to inbox</a></div>
+      <dl class="kv">
+        <dt>Received</dt><dd><%= formatDate(enquiry.created_at, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></dd>
+        <dt>Name</dt><dd><%= enquiry.name %></dd>
+        <dt>Email</dt><dd><a href="mailto:<%= enquiry.email %>?subject=Your%20Woodex%20enquiry"><%= enquiry.email %></a></dd>
+        <dt>Phone</dt><dd><% if (enquiry.phone) { %><a href="tel:<%= String(enquiry.phone).replace(/[^\d+]/g, '') %>"><%= enquiry.phone %></a><% } else { %>—<% } %></dd>
+        <dt>Location</dt><dd><%= enquiry.location || '—' %></dd>
+        <dt>Service</dt><dd><%= enquiry.service || '—' %></dd>
+        <dt>Timeline</dt><dd><%= enquiry.timeline || '—' %></dd>
+        <dt>Source</dt><dd><%= enquiry.source %></dd>
+      </dl>
+      <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+      <h3>Project brief</h3>
+      <p style="white-space:pre-wrap"><%= enquiry.message %></p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Notes &amp; status</h2></div>
+      <form method="post" action="/admin/enquiries/<%= enquiry.id %>">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <div class="field">
+          <label for="status">Pipeline status</label>
+          <select id="status" name="status">
+            <% ['new','in_review','quoted','won','lost','spam'].forEach(function (option) { %>
+            <option value="<%= option %>"<%- enquiry.status === option ? ' selected' : '' %>><%= option.replace('_', ' ') %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="field">
+          <label for="notes">Internal notes</label>
+          <textarea id="notes" name="notes" rows="6" maxlength="4000"><%= enquiry.notes || '' %></textarea>
+          <span class="hint">Only visible to the studio team.</span>
+        </div>
+        <button class="btn" type="submit">Save enquiry</button>
+      </form>
+      <% if (can('content:write')) { %>
+      <form method="post" action="/admin/enquiries/<%= enquiry.id %>/delete" data-confirm="Delete this enquiry permanently?" style="margin-top:14px">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <button class="btn danger" type="submit">Delete enquiry</button>
+      </form>
+      <% } %>
+    </div>
+  </div>
+  <aside>
+    <div class="card">
+      <div class="card-head"><h2>Reply quickly</h2></div>
+      <div class="btn-row">
+        <a class="btn" href="mailto:<%= enquiry.email %>?subject=Your%20Woodex%20Interior%20enquiry&body=Hello%20<%= encodeURIComponent(enquiry.name) %>%2C%0A%0AThank%20you%20for%20telling%20us%20about%20your%20project.">Email reply</a>
+        <% if (enquiry.phone) { %><a class="btn secondary" href="https://wa.me/<%= String(enquiry.phone).replace(/[^\d]/g, '') %>" target="_blank" rel="noopener">WhatsApp</a><% } %>
+      </div>
+      <p class="small muted" style="margin-top:12px">Messages are stored in Woodex OS. Outbound email is sent from your own mail client unless notification email is configured.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Technical</h2></div>
+      <dl class="kv small">
+        <dt>IP</dt><dd><%= enquiry.ip || '—' %></dd>
+        <dt>User agent</dt><dd style="overflow-wrap:anywhere"><%= enquiry.user_agent || '—' %></dd>
+        <dt>Updated</dt><dd><%= formatDate(enquiry.updated_at, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) %></dd>
+      </dl>
+    </div>
+  </aside>
+</div>
+<%- include('../partials/foot') %>

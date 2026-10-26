@@ -1,0 +1,540 @@
+{
+  "label": "Woodex OS (dynamic)",
+  "base": "http://127.0.0.1:4321",
+  "generatedAt": "2026-10-26T19:40:00.383Z",
+  "pages": [
+    {
+      "url": "/",
+      "status": 200,
+      "bytes": 22143,
+      "title": "Thoughtful spaces. Timeless interiors. | Woodex Interior",
+      "description": "Interior design studio in Lahore: thoughtful residential and commercial interiors, bespoke woodwork and styling. Start a project with Woodex Interior.",
+      "h1": "Spaces shaped by purpose and personality",
+      "headings": 25,
+      "images": 14,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/portfolio/the-arched-residence",
+        "/portfolio/the-open-house",
+        "/portfolio/the-collective-workspace",
+        "/portfolio/the-oak-edit",
+        "/insights/layering-light",
+        "/insights/a-home-that-flows",
+        "/insights/the-warmth-of-natural-materials",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "intro",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/about",
+      "status": 200,
+      "bytes": 11272,
+      "title": "About the studio | Woodex Interior",
+      "description": "Woodex Interior is a design-led studio in Lahore shaping calm, material-led interiors around the people who live and work in them.",
+      "h1": "Designing spaces. Understanding people.",
+      "headings": 16,
+      "images": 3,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/services",
+      "status": 200,
+      "bytes": 16579,
+      "title": "Interior design services | Woodex Interior",
+      "description": "Residential interiors, commercial spaces, bespoke woodwork, furniture, styling, renovation and design consultations in Lahore.",
+      "h1": "A complete vision. Considered in every detail.",
+      "headings": 17,
+      "images": 7,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/portfolio",
+      "status": 200,
+      "bytes": 11200,
+      "title": "Concept portfolio | Woodex Interior",
+      "description": "A concept collection of residential, commercial and bespoke interior projects by Woodex Interior, shown with illustrative photography.",
+      "h1": "Spaces with purpose. Interiors with personality.",
+      "headings": 11,
+      "images": 6,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/portfolio/the-arched-residence",
+        "/portfolio/the-open-house",
+        "/portfolio/the-collective-workspace",
+        "/portfolio/the-oak-edit",
+        "/portfolio/the-soft-retreat",
+        "/portfolio/the-gathering-room",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/insights",
+      "status": 200,
+      "bytes": 8711,
+      "title": "Interior design insights | Woodex Interior",
+      "description": "Practical ideas from the Woodex studio on materials, space planning and lighting for a more considered home.",
+      "h1": "A little inspiration. A more considered home.",
+      "headings": 7,
+      "images": 3,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/insights/layering-light",
+        "/insights/a-home-that-flows",
+        "/insights/the-warmth-of-natural-materials",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/contact",
+      "status": 200,
+      "bytes": 12777,
+      "title": "Start your interior project | Woodex Interior",
+      "description": "Tell Woodex Interior about your space. Call, WhatsApp or send a project enquiry and the Lahore studio will reply within two working days.",
+      "h1": "Every beautiful space starts with a conversation.",
+      "headings": 11,
+      "images": 1,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/privacy",
+      "status": 200,
+      "bytes": 8024,
+      "title": "Privacy information | Woodex Interior",
+      "description": "How Woodex Interior collects, uses and stores the information you share through this website, and how to contact us about it.",
+      "h1": "Privacy, simply put.",
+      "headings": 11,
+      "images": 0,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/portfolio/the-arched-residence",
+      "status": 200,
+      "bytes": 9654,
+      "title": "The Arched Residence | Woodex Interior",
+      "description": "A residential interior concept in Lahore layering arched openings, exposed timber and woven textures into a calm, grounded home.",
+      "h1": "The Arched Residence",
+      "headings": 9,
+      "images": 5,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/portfolio/the-open-house",
+      "status": 200,
+      "bytes": 9126,
+      "title": "The Open House | Woodex Interior",
+      "description": "An open-plan family home concept with timber screens, a sculptural staircase and a clear separation of busy and quiet zones.",
+      "h1": "The Open House",
+      "headings": 8,
+      "images": 4,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/portfolio/the-collective-workspace",
+      "status": 200,
+      "bytes": 9203,
+      "title": "The Collective Workspace | Woodex Interior",
+      "description": "A workplace interior concept built around focus rooms, warm timber and a shared table that brings a hybrid team together.",
+      "h1": "The Collective Workspace",
+      "headings": 8,
+      "images": 4,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/portfolio/the-oak-edit",
+      "status": 200,
+      "bytes": 9066,
+      "title": "The Oak Edit | Woodex Interior",
+      "description": "A bespoke joinery concept in solid oak: a kitchen island, wardrobe wall and reading bench designed as one family of pieces.",
+      "h1": "The Oak Edit",
+      "headings": 8,
+      "images": 4,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/portfolio/the-soft-retreat",
+      "status": 200,
+      "bytes": 9056,
+      "title": "The Soft Retreat | Woodex Interior",
+      "description": "A bedroom concept in muted green, linen and woven lighting, designed for rest with layered light and quiet storage.",
+      "h1": "The Soft Retreat",
+      "headings": 8,
+      "images": 4,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/portfolio/the-gathering-room",
+      "status": 200,
+      "bytes": 9022,
+      "title": "The Gathering Room | Woodex Interior",
+      "description": "A hospitality-led meeting room concept with a long communal table, natural light and acoustic timber ceilings.",
+      "h1": "The Gathering Room",
+      "headings": 8,
+      "images": 4,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/insights/layering-light",
+      "status": 200,
+      "bytes": 8897,
+      "title": "A softer approach to lighting your home | Woodex Interior",
+      "description": "How to layer ambient, task and accent lighting so a room feels calm in the evening and practical during the day.",
+      "h1": "A softer approach to lighting your home",
+      "headings": 9,
+      "images": 2,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/insights/a-home-that-flows",
+      "status": 200,
+      "bytes": 9060,
+      "title": "How to create a home that flows | Woodex Interior",
+      "description": "Practical space-planning ideas for better circulation, clearer zones and a home that feels calm from the moment you walk in.",
+      "h1": "How to create a home that flows",
+      "headings": 10,
+      "images": 2,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/insights/the-warmth-of-natural-materials",
+      "status": 200,
+      "bytes": 9614,
+      "title": "The quiet beauty of natural materials | Woodex Interior",
+      "description": "How to build a natural material palette that feels calm, coherent and practical, from oak and linen to stone and handmade tile.",
+      "h1": "The quiet beauty of natural materials",
+      "headings": 9,
+      "images": 2,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/style-guide",
+      "status": 200,
+      "bytes": 7172,
+      "title": "Master style guide | Woodex Interior",
+      "description": "The Woodex Interior design system: colour tokens, typography scale and interface components.",
+      "h1": "The Woodex visual language.",
+      "headings": 8,
+      "images": 0,
+      "internalLinks": [
+        "/assets/favicon.svg",
+        "/site.webmanifest",
+        "/assets/Nohemi-Regular.otf",
+        "/feed.xml",
+        "/assets/theme.css",
+        "/",
+        "/about",
+        "/services",
+        "/portfolio",
+        "/insights",
+        "/contact",
+        "/privacy",
+        "/style-guide"
+      ],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    }
+  ],
+  "broken": [],
+  "counts": {
+    "error": 0,
+    "warn": 0,
+    "info": 0
+  }
+}

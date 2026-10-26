@@ -1,0 +1,9 @@
+<section class="section">
+  <div class="container">
+    <div class="stats-grid">
+      <% block.items.forEach(function (item) { %>
+      <div class="stat"><strong><%= item.value %></strong><span><%= item.label %></span></div>
+      <% }); %>
+    </div>
+  </div>
+</section>

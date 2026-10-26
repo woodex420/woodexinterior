@@ -1,0 +1,159 @@
+[
+  {
+    "slug": "the-arched-residence",
+    "title": "The Arched Residence",
+    "category": "residential",
+    "location": "Lahore",
+    "year": "2024",
+    "area": "420 m² concept",
+    "summary": "Natural textures · Quiet luxury",
+    "cover_image": "/assets/detail.jpg",
+    "featured": true,
+    "sort_order": 1,
+    "status": "published",
+    "seo_title": "The Arched Residence",
+    "seo_description": "A residential interior concept in Lahore layering arched openings, exposed timber and woven textures into a calm, grounded home.",
+    "facts": [
+      { "label": "Project type", "value": "Living & dining" },
+      { "label": "Scope", "value": "Whole-home concept" },
+      { "label": "Material direction", "value": "Oak, linen, warm white" },
+      { "label": "Status", "value": "Illustrative design concept" }
+    ],
+    "gallery": [
+      { "src": "/assets/detail.jpg", "alt": "Arched interior with woven seating and warm timber" },
+      { "src": "/assets/hero.jpg", "alt": "Sunlit living area with natural textures" },
+      { "src": "/assets/kitchen.jpg", "alt": "Warm kitchen and living junction with timber joinery" }
+    ],
+    "body": "<h2>The thinking behind the space</h2><p>A home that feels like a deep breath. This residential concept explores a softer way of living, with generous daylight, tactile finishes, and a warm, grounded palette.</p><h2>The approach</h2><p>The room begins with its architecture. Arched openings frame the garden, while exposed timber creates a quiet rhythm overhead. Low, comfortable seating keeps sightlines open and lets the proportions of the space do the talking.</p><h2>The finer details</h2><p>A mix of woven textures and soft upholstery gives the scheme its depth. Rather than relying on decoration, the palette draws character from the natural variation of wood, linen, and stone.</p><p><em>Sample concept, not a completed client commission. Gallery images illustrate the design direction and may depict different properties.</em></p>"
+  },
+  {
+    "slug": "the-open-house",
+    "title": "The Open House",
+    "category": "residential",
+    "location": "Lahore",
+    "year": "2023",
+    "area": "380 m² concept",
+    "summary": "Open planning · Modern living",
+    "cover_image": "/assets/living.jpg",
+    "featured": true,
+    "sort_order": 2,
+    "status": "published",
+    "seo_title": "The Open House",
+    "seo_description": "An open-plan family home concept with timber screens, a sculptural staircase and a clear separation of busy and quiet zones.",
+    "facts": [
+      { "label": "Project type", "value": "Open-plan family home" },
+      { "label": "Scope", "value": "Living, dining & circulation" },
+      { "label": "Material direction", "value": "Smoked oak, stone, off-white" },
+      { "label": "Status", "value": "Illustrative design concept" }
+    ],
+    "gallery": [
+      { "src": "/assets/living.jpg", "alt": "Open dining area with timber screens and a sculptural staircase" },
+      { "src": "/assets/dining.jpg", "alt": "Dining setting with warm timber and soft lighting" }
+    ],
+    "body": "<h2>A plan that breathes</h2><p>Open planning only works when the quiet moments survive. Here, a central stair anchors the plan, while timber screens soften the line between cooking, eating and gathering.</p><h2>Zones without walls</h2><p>Furniture and light do the dividing. A long bench follows the window wall, and a deep rug marks the living zone without closing it off from the garden.</p><p><em>Sample concept, not a completed client commission. Gallery images illustrate the design direction and may depict different properties.</em></p>"
+  },
+  {
+    "slug": "the-collective-workspace",
+    "title": "The Collective Workspace",
+    "category": "commercial",
+    "location": "Lahore",
+    "year": "2024",
+    "area": "260 m² concept",
+    "summary": "Workplace design · Shared spaces",
+    "cover_image": "/assets/office.jpg",
+    "featured": true,
+    "sort_order": 3,
+    "status": "published",
+    "seo_title": "The Collective Workspace",
+    "seo_description": "A workplace interior concept built around focus rooms, warm timber and a shared table that brings a hybrid team together.",
+    "facts": [
+      { "label": "Project type", "value": "Workplace / studio office" },
+      { "label": "Scope", "value": "Interior concept & joinery" },
+      { "label": "Material direction", "value": "Ash timber, felt, glass" },
+      { "label": "Status", "value": "Illustrative design concept" }
+    ],
+    "gallery": [
+      { "src": "/assets/office.jpg", "alt": "Workspace corridor with glass partitions and timber detail" },
+      { "src": "/assets/studio.jpg", "alt": "Communal meeting area with wooden tables and large windows" }
+    ],
+    "body": "<h2>Work that people want to return to</h2><p>A hybrid team needs a reason to come in. This concept puts a generous shared table at the centre of the plan, with quieter focus rooms tucked behind glass.</p><h2>Warmth at work</h2><p>Timber baffles soften acoustics and sightlines, while felt panels and planting absorb the harder edges of a working day.</p><p><em>Sample concept, not a completed client commission. Gallery images illustrate the design direction and may depict different properties.</em></p>"
+  },
+  {
+    "slug": "the-oak-edit",
+    "title": "The Oak Edit",
+    "category": "bespoke",
+    "location": "Lahore",
+    "year": "2025",
+    "area": "180 m² concept",
+    "summary": "Custom furniture · Material study",
+    "cover_image": "/assets/kitchen.jpg",
+    "featured": true,
+    "sort_order": 4,
+    "status": "published",
+    "seo_title": "The Oak Edit",
+    "seo_description": "A bespoke joinery concept in solid oak: a kitchen island, wardrobe wall and reading bench designed as one family of pieces.",
+    "facts": [
+      { "label": "Project type", "value": "Bespoke joinery" },
+      { "label": "Scope", "value": "Kitchen, wardrobe wall, bench" },
+      { "label": "Material direction", "value": "Solid white oak, blackened steel" },
+      { "label": "Status", "value": "Illustrative design concept" }
+    ],
+    "gallery": [
+      { "src": "/assets/kitchen.jpg", "alt": "Oak kitchen island with integrated seating" },
+      { "src": "/assets/bedroom.jpg", "alt": "Bedroom with full-height timber wardrobe wall" }
+    ],
+    "body": "<h2>One family of pieces</h2><p>The most convincing interiors are made of parts that understand each other. This concept treats the kitchen island, wardrobe wall and reading bench as one family, sharing a 45-degree detail and a single oak specification.</p><h2>Made to be used</h2><p>Surfaces are sealed for daily life, edges are eased by hand, and hardware is chosen to disappear.</p><p><em>Sample concept, not a completed client commission. Gallery images illustrate the design direction and may depict different properties.</em></p>"
+  },
+  {
+    "slug": "the-soft-retreat",
+    "title": "The Soft Retreat",
+    "category": "residential",
+    "location": "Lahore",
+    "year": "2023",
+    "area": "210 m² concept",
+    "summary": "Bedroom design · Everyday calm",
+    "cover_image": "/assets/lounge.jpg",
+    "featured": false,
+    "sort_order": 5,
+    "status": "published",
+    "seo_title": "The Soft Retreat",
+    "seo_description": "A bedroom concept in muted green, linen and woven lighting, designed for rest with layered light and quiet storage.",
+    "facts": [
+      { "label": "Project type", "value": "Principal bedroom" },
+      { "label": "Scope", "value": "Bedroom & dressing" },
+      { "label": "Material direction", "value": "Linen, sage, woven pendant" },
+      { "label": "Status", "value": "Illustrative design concept" }
+    ],
+    "gallery": [
+      { "src": "/assets/lounge.jpg", "alt": "Bedroom with muted green bedding and woven pendant" },
+      { "src": "/assets/bedroom.jpg", "alt": "Calm bedroom with timber furniture and soft textiles" }
+    ],
+    "body": "<h2>Rest as the brief</h2><p>This concept starts with light: three layers, none of them overhead-bright. A woven pendant, wall sconces and a low lamp do the work after dark.</p><h2>Softness with structure</h2><p>Rounded furniture sits against a crisp architectural frame, and the storage disappears into the wall so the room can stay uncluttered.</p><p><em>Sample concept, not a completed client commission. Gallery images illustrate the design direction and may depict different properties.</em></p>"
+  },
+  {
+    "slug": "the-gathering-room",
+    "title": "The Gathering Room",
+    "category": "commercial",
+    "location": "Lahore",
+    "year": "2025",
+    "area": "150 m² concept",
+    "summary": "Collaborative spaces · Natural light",
+    "cover_image": "/assets/studio.jpg",
+    "featured": false,
+    "sort_order": 6,
+    "status": "published",
+    "seo_title": "The Gathering Room",
+    "seo_description": "A hospitality-led meeting room concept with a long communal table, natural light and acoustic timber ceilings.",
+    "facts": [
+      { "label": "Project type", "value": "Meeting & event space" },
+      { "label": "Scope", "value": "Interior concept" },
+      { "label": "Material direction", "value": "Pale oak, clay plaster" },
+      { "label": "Status", "value": "Illustrative design concept" }
+    ],
+    "gallery": [
+      { "src": "/assets/studio.jpg", "alt": "Communal meeting room with long timber table and large windows" },
+      { "src": "/assets/dining.jpg", "alt": "Long dining table set for a gathering" }
+    ],
+    "body": "<h2>Room to gather</h2><p>One long table, daylight on two sides, and enough space behind every chair to have a private word. The concept borrows more from hospitality than from the office.</p><h2>Acoustics as comfort</h2><p>Timber slats and clay plaster keep the room warm in tone and calm in sound.</p><p><em>Sample concept, not a completed client commission. Gallery images illustrate the design direction and may depict different properties.</em></p>"
+  }
+]

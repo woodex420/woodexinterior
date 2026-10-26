@@ -1,0 +1,20 @@
+<section class="section"<%- block.eyebrow ? ' id="' + block.eyebrow.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '"' : '' %>>
+  <div class="container intro-grid<%- block.reverse ? ' intro-grid--reverse' : '' %>">
+    <div class="intro-left">
+      <% if (block.eyebrow) { %><div class="eyebrow"><%= block.eyebrow %></div><% } %>
+      <% if (block.image) { %>
+      <div class="image-wrap"><img src="<%= asset(block.image) %>" alt="<%= block.alt %>" loading="lazy" decoding="async" width="900" height="1100"></div>
+      <% } %>
+    </div>
+    <div class="intro-right">
+      <% if (block.title) { %><h2><%- block.title %></h2><% } %>
+      <% if (block.body) { %><div class="intro-copy"><%- block.body %></div><% } %>
+      <% if (block.ctaLabel) { %><a class="btn dark" href="<%= block.ctaHref || '/contact' %>"><%= block.ctaLabel %><span class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a><% } %>
+      <% if (block.notes && block.notes.length) { %>
+      <div class="intro-note">
+        <% block.notes.forEach(function (note) { %><div><strong><%= note.strong %></strong><span><%= note.text %></span></div><% }); %>
+      </div>
+      <% } %>
+    </div>
+  </div>
+</section>

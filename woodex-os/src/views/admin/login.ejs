@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Sign in · Woodex OS</title>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="stylesheet" href="/admin-assets/admin.css">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="m3 6 8 28 9-20 9 20 8-28M11 6l9 28L29 6"/></svg>
+      <div><strong>WOODEX</strong><span>CONTENT SYSTEM</span></div>
+    </div>
+    <h1>Sign in</h1>
+    <p class="sub">Woodex OS manages the website, portfolio and enquiries.</p>
+    <% if (error) { %><div class="alert err" role="alert"><%= error %></div><% } %>
+    <form method="post" action="/admin/login">
+      <input type="hidden" name="next" value="<%= next %>">
+      <div class="field">
+        <label for="email">Email address</label>
+        <input id="email" name="email" type="email" autocomplete="username" required value="<%= email %>" autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn" type="submit" style="width:100%">Sign in</button>
+    </form>
+    <p class="small muted" style="margin-top:18px">Protected area. Sign-in attempts are rate limited and logged.</p>
+  </div>
+</div>
+</body>
+</html>

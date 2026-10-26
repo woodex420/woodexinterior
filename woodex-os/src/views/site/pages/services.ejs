@@ -1,0 +1,21 @@
+<%- include('../partials/block-loop') %>
+<section class="section">
+  <div class="container">
+    <% services.forEach(function (service) { %>
+    <article class="service-detail" id="<%= service.slug %>">
+      <div class="prose">
+        <h2><%= service.title %></h2>
+        <% if (service.summary) { %><p><%= service.summary %></p><% } %>
+        <%- service.body || '' %>
+        <% if (service.deliverables.length) { %>
+        <ul class="deliverables">
+          <% service.deliverables.forEach(function (item) { %><li><%= item %></li><% }); %>
+        </ul>
+        <% } %>
+        <a class="btn dark" href="/contact?service=<%= service.slug %>">Enquire about <%= service.title.toLowerCase() %><span class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a>
+      </div>
+      <div class="image-wrap"><img src="<%= asset(service.icon === 'image' ? '/assets/living.jpg' : '/assets/detail.jpg') %>" alt="<%= service.title %>" loading="lazy" decoding="async" width="900" height="900"></div>
+    </article>
+    <% }); %>
+  </div>
+</section>
