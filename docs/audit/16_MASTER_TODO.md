@@ -2073,3 +2073,46 @@ A second invoice `RI-2026-0002` (Rs 23,000) was voided with *"QA proof — raise
 schedules, bank account) was then removed; all screens are back to their honest empty state.
 
 **Next.** F3 contact money panel; F4 trial balance; then the rest of the Accounts screen audit.
+
+### Step 34 — the client's money, and do the books balance (Slice H, part 2, 26 Oct 2026)
+
+The two findings Step 33 recorded as the next bites, shipped together (the owner chose **"Both F3 + F4"**). No schema
+change, no destructive operation.
+
+**F3 — the client record shows the money.** `Livewire\Admin\Crm\ContactShow::render()` now builds one `money` block
+from the real `invoices` and `payments` rows (voided invoices excluded): **Awaiting decision** (sent/viewed
+quotations), **Invoiced**, **Paid** with the date of the last payment or *"No payment recorded yet"*, and
+**Outstanding** (issued and part-paid balances). Below it, the last ten invoices with number, issue/due date, total and
+status badge, each linking to the invoice screen. The whole card is inside `invoices.view`, so a colleague without
+that permission sees the client exactly as before.
+
+**F4 — the trial balance.** `GET /admin/accounts/trial-balance` (`Livewire\Admin\Accounts\TrialBalance`, guarded by
+`can:accounts.view`): every posted journal line in the range joined to its entry's `business_date`, summed per account
+— entry count, debit, credit, net — with the totals and the difference underneath the rows. Presets for this month /
+quarter / year / all time, a date range, and *"include accounts with no movement"*. A balanced range says **Balanced.**
+with the entry count and the dates; an unbalanced range says **Out of balance by …** in red and warns against closing a
+period; an empty range says **Nothing posted yet** rather than wearing the green tick. Nav item **Trial balance** under
+Accounts (icon `chart`).
+
+**Recorded, not silently changed.** `accountant` holds no `accounts.view`, so the person who records the money cannot
+open the trial balance (403). A test pins today's behaviour; widening the role is the owner's decision.
+
+**Tests.** 11 new — `tests/Feature/Crm/ContactMoneyPanelTest.php` (5) and
+`tests/Feature/Accounts/TrialBalanceTest.php` (6): the four figures come from real records, the last payment date is
+shown, voided invoices are excluded, only the last ten invoices are listed, the card is hidden without
+`invoices.view`; a posted invoice balances, a reversal nets to zero and the books stay balanced, the range filters and
+the empty state is honest, the owner gets 200 while support and the accountant get 403, and the sidebar reaches it.
+`tests/Feature/P10SidebarHubsTest.php` now expects **45** live destinations and also covers the invoices hub's
+recurring and bank tabs. Full suite **1,376 passed · 1 skipped · 7,461 assertions**; Pint clean; PHPStan 0 errors.
+
+**Proof on 33143 — real actions only.** `WI-10103` (Rs 8,50,000) was sent and accepted (`AcceptQuote` → project +
+advance invoice `WI-10103-1`, Rs 4,25,000, `JE-2026-0006`); `CollectPayment` recorded Rs 3,00,000 (receipt
+`RC-2026-0002`, `JE-2026-0007`). The client page read **Awaiting Rs 0 · Invoiced Rs 425,000 · Paid Rs 300,000 (26 Oct
+2026) · Outstanding Rs 125,000** with the invoice linked; the trial balance read **Balanced · 2 entries ·
+Dr Rs 725,000 = Cr Rs 725,000**. `ReverseJournalEntry` then produced `JE-2026-0008` and the page read
+**Balanced · 3 entries · Dr Rs 1,025,000 = Cr Rs 1,025,000**. All QA rows were deleted afterwards, the sequences
+rewound, and both screens returned to their honest empty state.
+
+**Observed once, not reproduced.** One full-suite run failed
+`EstimateToQuoteTest > it is offered only when the enquiry really carries an estimate`; it passed alone, in a subset
+with the new Accounts tests, and in two later full runs. Recorded rather than closed.

@@ -166,6 +166,51 @@
                 </div>
             </x-admin.card>
 
+            @if ($money)
+                <x-admin.card title="Money" description="What this client has been quoted, invoiced and paid — summed from the real records.">
+                    <dl class="grid grid-cols-2 gap-4">
+                        <div>
+                            <dt class="text-theme-xs text-gray-500">Awaiting decision</dt>
+                            <dd class="mt-1 font-heading text-theme-xl text-gray-900 dark:text-white">{{ \App\Support\Money::ofMinor($money['awaiting'])->format($lakh) }}</dd>
+                            <p class="text-theme-xs text-gray-400">Quotations sent, not yet answered</p>
+                        </div>
+                        <div>
+                            <dt class="text-theme-xs text-gray-500">Invoiced</dt>
+                            <dd class="mt-1 font-heading text-theme-xl text-gray-900 dark:text-white">{{ \App\Support\Money::ofMinor($money['invoiced'])->format($lakh) }}</dd>
+                            <p class="text-theme-xs text-gray-400">Voided invoices excluded</p>
+                        </div>
+                        <div>
+                            <dt class="text-theme-xs text-gray-500">Paid</dt>
+                            <dd class="mt-1 font-heading text-theme-xl text-success-700 dark:text-success-500">{{ \App\Support\Money::ofMinor($money['paid'])->format($lakh) }}</dd>
+                            <p class="text-theme-xs text-gray-400">{{ $money['last_payment'] ? 'Last payment '.\Illuminate\Support\Carbon::parse($money['last_payment'])->format('j M Y') : 'No payment recorded yet' }}</p>
+                        </div>
+                        <div>
+                            <dt class="text-theme-xs text-gray-500">Outstanding</dt>
+                            <dd class="mt-1 font-heading text-theme-xl {{ $money['outstanding'] > 0 ? 'text-warning-700 dark:text-warning-500' : 'text-gray-900 dark:text-white' }}">{{ \App\Support\Money::ofMinor($money['outstanding'])->format($lakh) }}</dd>
+                            <p class="text-theme-xs text-gray-400">Issued and part-paid invoices</p>
+                        </div>
+                    </dl>
+
+                    @if ($invoices->isNotEmpty())
+                        <div class="mt-5 divide-y divide-gray-100 border-t border-gray-100 dark:divide-gray-800 dark:border-gray-800">
+                            @foreach ($invoices as $invoice)
+                                <a href="{{ route('admin.invoices.show', $invoice) }}" wire:navigate wire:key="money-inv-{{ $invoice->id }}"
+                                   class="flex items-center justify-between gap-3 py-2.5 hover:bg-gray-50 dark:hover:bg-white/[0.02]">
+                                    <span class="min-w-0">
+                                        <span class="block text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $invoice->number }}</span>
+                                        <span class="block text-theme-xs text-gray-500">Issued {{ $invoice->issue_date?->format('j M Y') ?? '—' }}{{ $invoice->due_date ? ' · due '.$invoice->due_date->format('j M Y') : '' }}</span>
+                                    </span>
+                                    <span class="flex shrink-0 items-center gap-3">
+                                        <span class="text-theme-sm tabular-nums text-gray-700 dark:text-gray-300">{{ \App\Support\Money::ofMinor((int) $invoice->total_minor)->format($lakh) }}</span>
+                                        <x-admin.badge :color="$invoice->status->color()">{{ $invoice->status->label() }}</x-admin.badge>
+                                    </span>
+                                </a>
+                            @endforeach
+                        </div>
+                    @endif
+                </x-admin.card>
+            @endif
+
             @can('viewAny', \App\Domain\Sales\Models\Quote::class)
                 <x-admin.card title="Quotations">
                     @can('create', \App\Domain\Sales\Models\Quote::class)

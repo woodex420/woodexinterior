@@ -18,6 +18,11 @@ use App\Domain\Crm\Models\Activity;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Models\Tag;
+use App\Domain\Sales\Enums\InvoiceStatus;
+use App\Domain\Sales\Enums\PaymentStatus;
+use App\Domain\Sales\Enums\QuoteStatus;
+use App\Domain\Sales\Models\Invoice;
+use App\Domain\Sales\Models\Payment;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Livewire\Concerns\ManagesAttachments;
 use App\Settings\SalesSettings;
@@ -253,6 +258,37 @@ class ContactShow extends Component
             ->limit(80)
             ->get();
 
+        $money = null;
+        $invoices = collect();
+
+        if ($user->can('invoices.view')) {
+            $issued = Invoice::query()
+                ->where('contact_id', $contact->id)
+                ->where('status', '!=', InvoiceStatus::Void->value);
+
+            $money = [
+                'awaiting' => (int) $contact->quotes()
+                    ->whereIn('status', [QuoteStatus::Sent->value, QuoteStatus::Viewed->value])
+                    ->sum('total_minor'),
+                'invoiced' => (int) (clone $issued)->sum('total_minor'),
+                'paid' => (int) (clone $issued)->sum('paid_minor'),
+                'outstanding' => (int) (clone $issued)
+                    ->whereIn('status', [InvoiceStatus::Issued->value, InvoiceStatus::PartiallyPaid->value])
+                    ->sum('balance_minor'),
+                'last_payment' => Payment::query()
+                    ->where('contact_id', $contact->id)
+                    ->where('status', PaymentStatus::Verified->value)
+                    ->max('received_on'),
+            ];
+
+            $invoices = Invoice::query()
+                ->where('contact_id', $contact->id)
+                ->latest('issue_date')
+                ->latest('id')
+                ->limit(10)
+                ->get(['id', 'number', 'status', 'total_minor', 'paid_minor', 'balance_minor', 'issue_date', 'due_date']);
+        }
+
         return view('livewire.admin.crm.contact-show', [
             'contact' => $contact,
             'leads' => $leads,
@@ -262,6 +298,8 @@ class ContactShow extends Component
             'types' => ClientType::options(),
             'lines' => BusinessLine::options(),
             'quotes' => $user->can('quotes.view') ? $contact->quotes()->visibleTo($user)->latest('id')->limit(20)->get() : collect(),
+            'money' => $money,
+            'invoices' => $invoices,
             'lakh' => app(SalesSettings::class)->lakh_grouping,
         ])->title($contact->name);
     }

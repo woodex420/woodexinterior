@@ -9,7 +9,7 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,363 passed · 1 skipped · 7,418 assertions** · Pint clean · PHPStan 0 errors |
+| Tests | **1,376 passed · 1 skipped · 7,461 assertions** · Pint clean · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
@@ -38,6 +38,8 @@
 
 **Slice E (26 October).** Invoices now raise themselves. `woodex:invoice-milestones` bills every milestone an accepted quotation has reached — hourly, once per milestone, with the same number, tax, PDF and ledger posting as the advance invoice — and `woodex:invoice-reminders` runs the 7/14/30-day ladder, one rung per invoice, messaging the client on WhatsApp only with consent and telling the studio why when it cannot. Both are on the Automation screen with their cadence and switches. 10 more tests; suite **1,332 passed · 1 skipped · 7,165 assertions**.
 
+**Slice H, part 2 — the client's money and a trial balance (26 October).** The two findings the audit recorded next. The client record now carries a **Money** card — Awaiting decision, Invoiced, Paid with the last payment date, and Outstanding, summed from the real invoices and payments (voided invoices excluded) — followed by the last ten invoices, each linking to its invoice screen; the card is inside `invoices.view`. Accounts gained **`/admin/accounts/trial-balance`**: every posted journal line in the range summed per account with debit, credit, net and entry count, totals and the difference, month/quarter/year/all presets, and a *"Balanced."* / *"Out of balance by …"* banner that refuses to celebrate an empty range. 11 more tests; suite **1,376 passed · 1 skipped · 7,461 assertions**. Recorded, not changed: the `accountant` role has no `accounts.view`, so it gets 403 on the trial balance.
+
 **Slice H — CRM / Sales / Accounts deep QA, part 1 (26 October).** The audit found that an invoice had no screen at all: `/admin/invoices` was a read-only table with a PDF link, `/admin/invoices/{id}` was a 404, and `InvoicePolicy::void()` with the `invoices.void` permission had no caller anywhere. It also found that no screen could enter a bank account — the dashboard told the owner to use "Invoices → Bank accounts", a route that did not exist — so every invoice printed no payment details. Both are now real: `/admin/invoices/{invoice}` shows the frozen lines, totals, payments, ledger entry and client link, and collects a payment in place; the owner can void with a reason and the journal is **reversed**, never deleted, with a refusal when money has been recorded. `/admin/invoices?tab=bank` adds, edits, defaults and deactivates bank and wallet accounts. 15 more tests; suite **1,363 passed · 1 skipped · 7,418 assertions**.
 
 **Slice G — hygiene (26 October).** The page builder stopped asking a font CDN for glyphs: all 26 families in its typography picker (87 woff2 faces) ship in `public/assets/fonts/` with one local `public/builder/fonts.css`, in both the picker and the theme export — a saved page now loads no external host. The three System hubs gained `can-any` on their routes, so they open only for someone who may use one of their tabs (support and accountant: 403). The 33 historical screenshots were re-encoded PNG → JPEG (13 MB → 5.6 MB) with every reference repointed, and `docs/README.md` now names the right current set. 7 more tests; suite **1,348 passed · 1 skipped · 7,354 assertions**.
@@ -56,7 +58,7 @@
 | ~~C~~ | ~~One pricing path~~ | **Done 21 Oct** — estimator enquiries write their draft estimate at capture; every new quotation carries an estimate; backfill command for older enquiries |
 | ~~D~~ | ~~Overview as a control view~~ | **Done 26 Oct** — six tiles from one `ControlPanel`, each linked to its filtered list; needs-attention actions; Reports strip + Today preset; `?due=overdue` / `?created=today` on Leads |
 | ~~E~~ | ~~Invoice automation~~ | **Done 26 Oct** — milestone invoices raised hourly for reached milestones, 7/14/30 overdue ladder with consent-gated WhatsApp and an audit record per rung; **E2** recurring retainers raise `RI-…` invoices daily at 09:20 from `/admin/invoices?tab=recurring` |
-| **H** | CRM / Sales / Accounts deep QA — part 2 | Audit done (Step 33): invoice screen + bank accounts shipped; next are the contact money panel (F3) and a trial balance (F4) |
+| **H** | CRM / Sales / Accounts deep QA | **Parts 1–2 done 26 Oct** — invoice screen + in-place payment + void with ledger reversal, bank accounts, client money card, trial balance. Next: the rest of the Accounts screen audit |
 | **F** | Marketing live proof once Meta/LinkedIn approve the app | Composer + publisher are real; only the platform key is missing |
 | ~~G~~ | ~~Hygiene~~ | **Done 26 Oct** — builder fonts self-hosted (26 families, 87 faces), System hubs gated by `can-any`, evidence 13 MB → 5.6 MB with references repointed, `docs/README.md` corrected |
 

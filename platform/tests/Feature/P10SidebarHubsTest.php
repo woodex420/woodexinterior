@@ -59,12 +59,13 @@ it('consolidates the sidebar to the confirmed P10.1 map', function () {
         ->and(collect($groups['Sales']['items'])->pluck('label')->all())->toBe(['Estimations', 'Estimator rates', 'Quotations', 'Invoices', 'Payments', 'Documents']);
 
     $live = collect(AdminNavigation::for($this->owner))->flatMap(fn (array $g): array => $g['items'])->filter(fn (array $item): bool => $item['route'] !== null);
-    // 44 live destinations: the P10.1 map plus the Website screens still switched on for OS 1, plus the
+    // 45 live destinations: the P10.1 map plus the Website screens still switched on for OS 1, plus the
     // three screens that were shipped but advertised as future work — Client portal, Handovers and Chat
     // Bot — with the eleven System entries folded into Settings + three hubs (deep QA 21 Oct, slice B:
-    // Access & team, Connections, Platform: -7) and the duplicate Alert Rules placeholder removed. The
-    // exact number is asserted on purpose — a screen cannot join or leave the sidebar without a test.
-    expect($live)->toHaveCount(44);
+    // Access & team, Connections, Platform: -7) and the duplicate Alert Rules placeholder removed, plus
+    // **Trial balance** under Accounts (CRM/Sales/Accounts deep QA, 26 Oct). The exact number is asserted
+    // on purpose — a screen cannot join or leave the sidebar without a test.
+    expect($live)->toHaveCount(45);
 });
 
 it('renders every hub tab for the owner', function (string $path, string $marker) {
@@ -86,6 +87,8 @@ it('renders every hub tab for the owner', function (string $path, string $marker
     'quote templates' => ['/admin/quotes?tab=templates', 'Templates'],
     'invoices all' => ['/admin/invoices', 'All invoices'],
     'invoice tracking' => ['/admin/invoices?tab=tracking', 'Tracking'],
+    'invoice recurring' => ['/admin/invoices?tab=recurring', 'Recurring invoices'],
+    'invoice bank accounts' => ['/admin/invoices?tab=bank', 'Bank accounts'],
     'payments all' => ['/admin/payments', 'Payments'],
     'due payments' => ['/admin/payments?tab=dues', 'Due payments'],
     'receivables' => ['/admin/payments?tab=receivables', 'Receivables'],

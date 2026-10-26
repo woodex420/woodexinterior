@@ -16,6 +16,7 @@ use App\Livewire\Admin\Accounts\ChartOfAccounts;
 use App\Livewire\Admin\Accounts\JournalsIndex;
 use App\Livewire\Admin\Accounts\MethodAccounts;
 use App\Livewire\Admin\Accounts\PeriodsIndex;
+use App\Livewire\Admin\Accounts\TrialBalance;
 use App\Livewire\Admin\Automation\SequencesIndex;
 use App\Livewire\Admin\Conversations\CannedRepliesIndex;
 use App\Livewire\Admin\Conversations\Inbox;
@@ -113,6 +114,7 @@ Route::get('/contacts/{contact}/data.json', ContactDataExportController::class)-
 Route::livewire('/accounts/chart', ChartOfAccounts::class)->name('accounts.chart')->middleware('can:accounts.view');
 Route::livewire('/accounts/journals', JournalsIndex::class)->name('accounts.journals')->middleware('can:accounts.view');
 Route::livewire('/accounts/periods', PeriodsIndex::class)->name('accounts.periods')->middleware('can:accounts.view');
+Route::livewire('/accounts/trial-balance', TrialBalance::class)->name('accounts.trial')->middleware('can:accounts.view');
 Route::livewire('/accounts/methods', MethodAccounts::class)->name('accounts.methods')->middleware('can:accounts.view');
 Route::livewire('/approvals', Approvals::class)->name('approvals')->middleware('can:quotes.approve');
 Route::livewire('/sales/documents', DocumentsHub::class)->name('sales.documents')->middleware('can:quotes.view');

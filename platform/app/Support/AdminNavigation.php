@@ -53,6 +53,7 @@ final class AdminNavigation
             self::group('Accounts', [
                 self::item('Chart of Accounts', 'book', 'admin.accounts.chart', 'accounts.view'),
                 self::item('Journals', 'layers', 'admin.accounts.journals', 'accounts.view'),
+                self::item('Trial balance', 'chart', 'admin.accounts.trial', 'accounts.view'),
                 self::item('Periods', 'clock', 'admin.accounts.periods', 'accounts.view'),
                 self::item('Payment Methods', 'wallet', 'admin.accounts.methods', 'accounts.view'),
             ]),
