@@ -9,16 +9,16 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,413 passed · 1 skipped · 7,624 assertions** · Pint clean on touched files · PHPStan 0 errors |
+| Tests | **1,421 passed · 1 skipped · 7,665 assertions** · Pint clean on touched files · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
 
 ## Next: the 26 October master plan
 
-`docs/audit/32_MASTER_PLAN_2026-10-26.md` sets the forward order. **Slices I, J and K are shipped** (below); next is
-**Slice L** — Telegram QR pairing and a connection-health card that names the failing step — then the assistant
-drawer (M) and Search Console over MCP (N, blocked on the Google key).
+`docs/audit/32_MASTER_PLAN_2026-10-26.md` sets the forward order. **Slices I, J, K and L are shipped** (below); next
+is the assistant drawer (M), then Search Console over MCP (N, blocked on the Google key). Telegram is built end to
+end — it waits only on the real bot token in the server `.env`.
 
 ## What is live today (verified this pass)
 
@@ -43,6 +43,8 @@ drawer (M) and Search Console over MCP (N, blocked on the Google key).
 **Slice B (same day).** Client Portal and Handovers stopped being `P4b` badges and became real screens (signed portal links; handover progress), Chat Bot opens its live switches on Settings, the duplicate Alert Rules is gone, the eleven System entries became four pages with tabs, and the rate book moved to Sales as **Estimator rates**. 12 more tests; suite **1,296 passed / 1 skipped**.
 
 **Slice E (26 October).** Invoices now raise themselves. `woodex:invoice-milestones` bills every milestone an accepted quotation has reached — hourly, once per milestone, with the same number, tax, PDF and ledger posting as the advance invoice — and `woodex:invoice-reminders` runs the 7/14/30-day ladder, one rung per invoice, messaging the client on WhatsApp only with consent and telling the studio why when it cannot. Both are on the Automation screen with their cadence and switches. 10 more tests; suite **1,332 passed · 1 skipped · 7,165 assertions**.
+
+**Slice L — Telegram that attaches (26 October).** The complaint was real: the Security & Telegram page had **no QR at all** (a text link and a code to retype) and one generic sentence for every failure. It now shows a **server-rendered QR** of `https://t.me/<bot>?start=<code>`, a copyable link, a live expiry countdown and the *waiting → linked as @handle → last message received* states without a reload, plus a **connection-health ladder** that names the exact failing step — token missing, secret missing, bot unreachable, token/link mismatch, webhook not registered (with Telegram's own delivery error), no update in 24 h, bot blocked by the user. 8 more tests; suite **1,421 passed · 1 skipped · 7,665 assertions**. Live proof: the issued QR **decoded by an independent decoder** to the exact deep link, a webhook `/start` flipped the page to *Linked @qa_owner*, and with no token the card opens on *TELEGRAM_BOT_TOKEN is not set* — still the one owner-side blocker.
 
 **Slices J + K — the contact ladder and the proposal pipeline (26 October).** Five windows on records the OS already kept, no schema change: **Clients**, **Customers** (who actually bought, with won value read from accepted quotations) and **Visitors** (website enquiries — form, estimator, booking, chat — not yet converted; the OS records enquiries, not page views, and the screen says so) as tabs on the Contacts hub; **Proposals** (quotations still in negotiation, with value in play) and the **Pipeline** (every quotation by stage with a weighted forecast Σ value × stage weight) as tabs on the Quotations hub. `/admin/clients`, `/admin/customers`, `/admin/visitors`, `/admin/proposals` and `/admin/sales-pipeline` answer with a 301 to the right tab; the sidebar stays at 48. 10 more tests; suite **1,413 passed · 1 skipped · 7,624 assertions**. Live proof: WI-10103 (Rs 3,25,000) sent, accepted, invoiced (Rs 2,43,750) and paid — the five screens agreed with the records, then every proof row was removed. "Estimates Received" (supplier quotations) has no data model and stays a future schema slice rather than a pretend screen.
 
@@ -72,7 +74,7 @@ drawer (M) and Search Console over MCP (N, blocked on the Google key).
 | ~~I~~ | ~~Money out~~ | **Done 26 Oct** — vendors, received invoices + payments + void, expenses, other income, recurring overheads, project-cost posting, P&L, AP aging |
 | ~~J~~ | ~~Contact ladder~~ | **Done 26 Oct** — Clients, Customers and Visitors tabs on the Contacts hub, reference URLs 301 to them |
 | ~~K~~ | ~~Sales proposals + pipeline~~ | **Done 26 Oct** — Proposals (in-negotiation quotes + value in play) and the Pipeline with a weighted forecast |
-| **L** | Telegram pairing | QR pairing + connection health card — next |
+| ~~L~~ | ~~Telegram pairing~~ | **Done 26 Oct** — server QR pairing + connection health ladder; waiting only on the real bot token in the server `.env` |
 | **F** | Marketing live proof once Meta/LinkedIn approve the app | Composer + publisher are real; only the platform key is missing |
 | ~~G~~ | ~~Hygiene~~ | **Done 26 Oct** — builder fonts self-hosted (26 families, 87 faces), System hubs gated by `can-any`, evidence 13 MB → 5.6 MB with references repointed, `docs/README.md` corrected |
 

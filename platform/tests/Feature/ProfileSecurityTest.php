@@ -32,7 +32,8 @@ it('does not issue a misleading link code when Telegram configuration is missing
     $user = $this->userWithRole('owner');
     $this->actingAs($user);
 
-    Livewire::test(Security::class)->assertSee('Telegram is not configured')
+    // Slice L: the generic line is gone — the health ladder names the missing key itself.
+    Livewire::test(Security::class)->assertSee('TELEGRAM_BOT_TOKEN is not set on the server.')
         ->call('createTelegramCode')->assertDispatched('toast', type: 'warning');
     expect(TelegramLink::query()->where('user_id', $user->id)->exists())->toBeFalse();
 });

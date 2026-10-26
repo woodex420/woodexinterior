@@ -2246,3 +2246,50 @@ at 200 in their honest states.
 as the earlier `EstimateToQuoteTest` flake — recorded, not closed.
 
 **Next.** Slice L — Telegram QR pairing and the connection health card (the owner's repeated complaint), then M, N.
+
+### Step 37 — Telegram that attaches: QR pairing and a health card that names the failing step (Slice L, 26 Oct 2026)
+
+The owner's complaint, twice: *"telegram is still block no qr working nor attach with mobile app"*. The audit found
+why. The webhook's `/start CODE` handler was already solid (replay ledger, locks, chat-occupancy guard), but the
+**Security & Telegram** page offered only an easy-to-miss text link and a code to retype — **there was no QR at
+all** — and every failure mode collapsed into one static sentence. *Which* step was dead (no token, no webhook,
+wrong bot, silent updates, blocked bot) was unknowable from the screen. **No schema change**: `telegram_links`
+already carried the code and its expiry.
+
+**Shipped.**
+* **`TelegramPairing`** — the deep link (`https://t.me/<bot>?start=<code>`) and its QR, rendered on our server with
+  the bacon encoder the authenticator setup already uses. No third-party QR service ever sees a one-time code.
+  An empty `TELEGRAM_BOT_USERNAME` now reads as "cannot pair" instead of silently producing
+  `https://t.me/?start=…`, a link that opens nothing.
+* **The pairing panel** — scannable QR, a primary deep-link button, a copyable link field, the typed `/start CODE`
+  fallback, a live expiry countdown keyed to the code, and the existing 5-second poll so the page flips to
+  *Linked as @handle* with **last message received** (read from the webhook ledger) and no reload.
+* **`TelegramHealth`** — the ladder under the card, each step read from where the truth lives: bot token, webhook
+  secret, pairing-link target, bot reachable (`getMe`), token/link username agreement, webhook registered and
+  pointing here (with Telegram's own last delivery error), **updates arriving** (latest `webhook_events`, flagged
+  past 24 h), and **your Telegram** (linked, or *bot blocked by this chat* read from the 403 in the outbound log,
+  clearing when a later send lands). The two API reads are cached for 60 s so the pairing poll never hammers
+  Telegram. `createTelegramCode()` now refuses a code that cannot pair and names the exact missing key.
+
+**Tests.** 8 new — `tests/Feature/Telegram/TelegramPairingTest.php`: the panel renders the QR and the byte-exact
+deep link; a real webhook POST of `/start CODE` flips the screen to *Linked @nabeel_q*; a code is refused when the
+token or username is missing; the ladder names a missing token/secret, an unregistered webhook (with its delivery
+error), 24-hour silence, and a blocked bot; every step passes on a healthy setup. One assertion in
+`ProfileSecurityTest` pinned the old generic "Telegram is not configured" copy and now pins the key-naming line.
+Full suite **1,421 passed · 1 skipped · 7,665 assertions**; Pint clean; PHPStan 0 errors.
+
+**Proof on 33143.** The preview has no bot token, so the card opened on the truth: *TELEGRAM_BOT_TOKEN is not set
+on the server* as the first failing step. A throwaway token and secret were then set in the preview env only, a
+code issued for the owner, and the page showed *Waiting* with the QR, link and countdown. The QR was extracted and
+**decoded with an independent decoder (jsQR): `https://t.me/WoodexInteriorBot?start=3MIGYKPYVPEGEFPO`** — an exact
+match, so the "scannable" claim is proven, not assumed. A simulated phone tap (the webhook POST of `/start CODE`
+with the secret header) flipped the page to *Linked @qa_owner · Last message from this chat 0 seconds ago*, and the
+ladder updated honestly (*Updates arriving* OK, while *Bot reachable* stayed flagged — a fake token cannot pass
+`getMe` from this sandbox, and the card says so). All proof rows were deleted, the env reverted, and the page is
+back to naming the missing token.
+
+**Still blocked on the owner (unchanged):** the real `TELEGRAM_BOT_TOKEN` in the server `.env`. The moment it is
+set (and the webhook connected once in System → Integrations), the ladder goes green end to end and the QR pairs a
+real phone — nothing further to build.
+
+**Next.** Slice M — the assistant drawer and marketing attribution, then N (blocked on the Google key).

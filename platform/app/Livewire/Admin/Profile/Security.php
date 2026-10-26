@@ -7,6 +7,8 @@ namespace App\Livewire\Admin\Profile;
 use App\Domain\System\Models\TelegramLink;
 use App\Integrations\Google\GoogleIdentity;
 use App\Integrations\Google\GoogleOAuth;
+use App\Integrations\Telegram\TelegramHealth;
+use App\Integrations\Telegram\TelegramPairing;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -88,13 +90,19 @@ class Security extends Component
     public function createTelegramCode(): void
     {
         if (! $this->telegramConfigured()) {
-            $this->dispatch('toast', message: 'Telegram is not configured. Ask an administrator to set the bot token and webhook secret, then connect the webhook in System → Integrations.', type: 'warning');
+            $missing = match (true) {
+                blank(config('services.telegram.bot_token')) => 'TELEGRAM_BOT_TOKEN is not set on the server',
+                blank(config('services.telegram.webhook_secret')) => 'TELEGRAM_WEBHOOK_SECRET is not set on the server',
+                app(TelegramPairing::class)->botUsername() === null => 'TELEGRAM_BOT_USERNAME is empty — a pairing link would open no bot',
+                default => 'Telegram is not configured',
+            };
+            $this->dispatch('toast', message: "Telegram cannot pair yet: {$missing}. The connection health card below names every step.", type: 'warning');
 
             return;
         }
 
         TelegramLink::issueCodeFor($this->user());
-        $this->dispatch('toast', message: 'Code created. Send it to the Woodex bot within 30 minutes.');
+        $this->dispatch('toast', message: 'Code created. Scan the QR or open the link within 30 minutes.');
     }
 
     public function unlinkTelegram(): void
@@ -108,6 +116,15 @@ class Security extends Component
         $user = $this->user();
         $user->load('telegramLink');
 
+        // Slice L: the pairing link and its server-rendered QR exist only while a live code does;
+        // the health ladder is computed in every state so a dead end always names its failing step.
+        $pairing = app(TelegramPairing::class);
+        $health = app(TelegramHealth::class);
+        $telegram = $user->telegramLink;
+        $telegramStartUrl = $telegram?->link_code && $telegram->link_code_expires_at?->isFuture()
+            ? $pairing->startUrl($telegram->link_code)
+            : null;
+
         return view('livewire.admin.profile.security', [
             'user' => $user,
             'googleIdentity' => GoogleIdentity::query()->where('user_id', $user->id)->first(['email']),
@@ -118,7 +135,10 @@ class Security extends Component
             'pending' => $user->two_factor_secret !== null && $user->two_factor_confirmed_at === null,
             'telegram' => $user->telegramLink,
             'telegramConfigured' => $this->telegramConfigured(),
-            'telegramBotUrl' => 'https://t.me/'.rawurlencode(ltrim((string) config('services.telegram.bot_username'), '@')),
+            'telegramStartUrl' => $telegramStartUrl,
+            'telegramQrSvg' => $telegramStartUrl !== null ? $pairing->qrSvg($telegramStartUrl) : null,
+            'telegramHealth' => $health->steps($user->telegramLink),
+            'telegramLastMessageAt' => $health->lastMessageAt($user->telegramLink),
             'setupKey' => ! $user->hasTwoFactorEnabled() && $user->two_factor_secret !== null
                 ? decrypt($user->two_factor_secret) : null,
         ]);
@@ -126,7 +146,9 @@ class Security extends Component
 
     private function telegramConfigured(): bool
     {
-        return filled(config('services.telegram.bot_token')) && filled(config('services.telegram.webhook_secret'));
+        return filled(config('services.telegram.bot_token'))
+            && filled(config('services.telegram.webhook_secret'))
+            && app(TelegramPairing::class)->botUsername() !== null;
     }
 
     private function confirmPassword(): void

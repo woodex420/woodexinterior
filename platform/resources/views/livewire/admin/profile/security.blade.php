@@ -65,29 +65,80 @@
 
         <x-admin.card title="Telegram alerts" description="New leads, SLA breaches, quote views and payments, delivered to your phone.">
             @if (! $telegramConfigured)
-                <p class="text-theme-sm text-gray-600 dark:text-gray-300">Telegram is not configured. An administrator must set TELEGRAM_BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET on the server, then use Connect webhook in System → Integrations.</p>
+                <div class="flex items-center gap-3">
+                    <x-admin.badge color="warning">Not connected</x-admin.badge>
+                    <span class="text-theme-sm text-gray-600 dark:text-gray-300">Pairing cannot start yet.</span>
+                </div>
+                <p class="mt-3 text-theme-sm text-gray-600 dark:text-gray-300">Something the pairing needs is missing on the server. The connection health card below names the exact step — nothing here will work until that step passes.</p>
             @elseif ($telegram?->chat_id && $telegram->is_active)
                 <div class="flex items-center gap-3">
                     <x-admin.badge color="success">Linked</x-admin.badge>
                     <span class="text-theme-sm text-gray-600 dark:text-gray-300">{{ $telegram->username ? '@'.$telegram->username : $telegram->title }} · since {{ $telegram->linked_at?->format('j M Y') }}</span>
                 </div>
+                <p class="mt-2 text-theme-sm text-gray-600 dark:text-gray-300">{{ $telegramLastMessageAt ? 'Last message from this chat '.$telegramLastMessageAt->diffForHumans().'.' : 'No message received from this chat yet — send /help to the bot to test the round trip.' }}</p>
                 <div class="mt-4">
                     <x-admin.button variant="secondary" wire:click="unlinkTelegram">Unlink</x-admin.button>
                 </div>
             @elseif ($telegram?->link_code && $telegram->link_code_expires_at?->isFuture())
-                <a class="text-theme-sm text-gray-600 dark:text-gray-300" href="{{ $telegramBotUrl }}?start={{ $telegram->link_code }}" target="_blank" rel="noopener noreferrer">Open WoodexInteriorBot in Telegram → tap Start</a>
-                <p class="text-theme-sm text-gray-600 dark:text-gray-300">Or send this message to the bot:</p>
-                <p class="my-4 inline-block rounded-xl bg-navy-900 px-4 py-3 font-mono text-lg tracking-widest text-white">/start {{ $telegram->link_code }}</p>
-                <p class="text-theme-xs text-gray-500">The code expires {{ $telegram->link_code_expires_at->diffForHumans() }}. This page updates when the link is complete.</p>
-                <p class="mt-3 text-theme-xs text-gray-500">No reply? Unblock the bot and ask an administrator to check Connect webhook and the Telegram integration log in System → Integrations.</p>
-                <x-admin.button variant="secondary" wire:click="createTelegramCode">Generate a new code</x-admin.button>
-                <div wire:poll.5s></div>
+                <div wire:poll.5s wire:key="telegram-pairing-{{ $telegram->link_code }}">
+                    <div class="flex items-center gap-3">
+                        <x-admin.badge color="warning">Waiting</x-admin.badge>
+                        <span class="text-theme-sm text-gray-600 dark:text-gray-300">Scan with your phone — this page flips to Linked on its own, no reload.</span>
+                    </div>
+
+                    @if ($telegramStartUrl !== null)
+                        <div class="my-4 flex flex-wrap items-start gap-5">
+                            <div class="inline-block rounded-xl bg-white p-3" role="img" aria-label="QR code that opens the Woodex bot with your one-time pairing code">{!! $telegramQrSvg !!}</div>
+                            <div class="min-w-56 flex-1">
+                                <x-admin.button href="{{ $telegramStartUrl }}" target="_blank" rel="noopener" icon="send">Open in Telegram and tap Start</x-admin.button>
+                                <label class="wx-label mt-4" for="telegram-start-url">Or copy this link to your phone</label>
+                                <div class="flex gap-2">
+                                    <input id="telegram-start-url" type="text" readonly value="{{ $telegramStartUrl }}" class="wx-input font-mono text-xs" onclick="this.select()">
+                                    <button type="button" x-data @click="navigator.clipboard?.writeText(@js($telegramStartUrl)); $el.textContent = 'Copied'; setTimeout(() => $el.textContent = 'Copy', 1500)" class="shrink-0 rounded-lg border border-gray-300 px-3 text-theme-xs font-medium text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5">Copy</button>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <p class="my-4 text-theme-sm text-warning-700">The QR and link cannot be built — the bot username is missing (see the health card). The typed code below still works.</p>
+                    @endif
+
+                    <p class="text-theme-sm text-gray-600 dark:text-gray-300">Prefer typing? Send this message to the bot:</p>
+                    <p class="my-3 inline-block rounded-xl bg-navy-900 px-4 py-3 font-mono text-lg tracking-widest text-white">/start {{ $telegram->link_code }}</p>
+                    <p class="text-theme-xs text-gray-500">
+                        <span x-data="{ left: {{ max(0, (int) now()->diffInSeconds($telegram->link_code_expires_at, false)) }} }"
+                              x-init="setInterval(() => { if (left > 0) left-- }, 1000)"
+                              x-text="left > 0 ? 'Code expires in ' + String(Math.floor(left / 60)).padStart(2, '0') + ':' + String(left % 60).padStart(2, '0') : 'This code has expired — generate a new one'">Code expires {{ $telegram->link_code_expires_at->diffForHumans() }}</span>
+                        (at {{ $telegram->link_code_expires_at->format('H:i') }}). One code links one chat, once.
+                    </p>
+                    <p class="mt-2 text-theme-xs text-gray-500">Nothing happened? Work down the connection health card — the first failing step is the one to fix.</p>
+                    <div class="mt-3">
+                        <x-admin.button variant="secondary" wire:click="createTelegramCode">Generate a new code</x-admin.button>
+                    </div>
+                </div>
             @else
-                <p class="text-theme-sm text-gray-600 dark:text-gray-300">Link your Telegram account once. Open the bot and tap Start to finish linking.</p>
+                <p class="text-theme-sm text-gray-600 dark:text-gray-300">Link your Telegram account once: you will get a QR to scan with your phone — one tap, nothing to type.</p>
                 <div class="mt-4">
                     <x-admin.button icon="send" wire:click="createTelegramCode">Link Telegram</x-admin.button>
                 </div>
             @endif
         </x-admin.card>
     </div>
+
+    {{-- Slice L: the health ladder. Every row is read from where the truth lives; the first failing step is the blocker. --}}
+    <x-admin.card class="mt-6" title="Telegram connection health" description="Each step is checked live. When pairing stalls, fix the first step that fails — the ones after it cannot pass until it does.">
+        <ul class="divide-y divide-gray-100 dark:divide-gray-800">
+            @foreach ($telegramHealth as $step)
+                <li class="flex items-start gap-3 py-3" wire:key="telegram-health-{{ $step['key'] }}">
+                    <x-admin.badge :color="$step['ok'] ? 'success' : 'warning'">{{ $step['ok'] ? 'OK' : 'Fix' }}</x-admin.badge>
+                    <div class="min-w-0">
+                        <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $step['label'] }}</p>
+                        <p class="text-theme-sm text-gray-600 dark:text-gray-300">{{ $step['detail'] }}</p>
+                        @if ($step['hint'] !== null)
+                            <p class="text-theme-xs text-gray-500">{{ $step['hint'] }}</p>
+                        @endif
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    </x-admin.card>
 </div>
