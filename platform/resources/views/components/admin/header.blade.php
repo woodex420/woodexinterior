@@ -35,6 +35,9 @@
         <livewire:admin.conversations.live-chat-bell />
         <livewire:admin.notification-bell />
 
+        {{-- Assistant drawer (slice M): fixed questions over the records, on every page --}}
+        <livewire:admin.assistant-drawer />
+
         {{-- User menu --}}
         <div class="hs-dropdown relative inline-flex [--placement:bottom-right]">
             <button type="button" class="hs-dropdown-toggle flex items-center gap-2 rounded-full py-1 pr-2 pl-1 hover:bg-gray-100 dark:hover:bg-white/5" aria-haspopup="menu" aria-expanded="false">

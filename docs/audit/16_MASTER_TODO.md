@@ -2293,3 +2293,55 @@ set (and the webhook connected once in System → Integrations), the ladder goes
 real phone — nothing further to build.
 
 **Next.** Slice M — the assistant drawer and marketing attribution, then N (blocked on the Google key).
+
+### Step 38 — the assistant drawer and marketing attribution (Slice M, 26 Oct 2026)
+
+The owner's second screenshot showed an "AI Assistant" drawer with suggestion chips. Built the honest version the
+master plan scoped: a drawer on **every admin page** whose answers come from a small, fixed set of **read-only
+queries**, each citing the records it read — because there is no AI key on this server, and an assistant that
+invents numbers is worse than none. **No schema change, nothing stored.**
+
+**The drawer** (`AssistantDrawer`, mounted in the header beside the bells). Nine whitelisted questions, each
+answered by the *same rule its screen uses*: overdue invoices (`Invoice::overdue()`), due this week, collected
+this month (verified payments by `received_on`), bills to pay (Slice I payables), leads needing follow-up
+(`Lead::followUpDue()` — the one definition), new enquiries this week, quotes waiting on the client, overdue
+tasks, milestones due. Chips ask by id; typed questions match by keyword; anything else answers *"I don't have a
+query for that"* and lists what it can do. **Permissions are per-question**: an answer the asker may not open is
+refused by name (`invoices.view`) with no rows leaked, and leads/quotes run through the same `visibleTo` scopes as
+their lists. The drawer says plainly that no AI key is configured and that the thread is not saved. Deliberately
+**deferred**: LLM re-phrasing of headlines — impossible to prove without a key, and sending internal records to an
+external model is an owner's decision, not a default. The day a key exists it may only reword; the rows stay.
+
+**Attribution** (`/admin/marketing?tab=attribution`). Marketing became a hub (Social planner + Attribution; the old
+`/admin/marketing/social` 301s to the planner tab; sidebar stays at **48**). The screen follows a cohort of
+enquiries by `leads.source` to quoted → won → **won value** (Σ accepted quotations), with month/quarter/year/all
+windows and a totals row. **Ad spend is absent on purpose** and the page says why (Meta approval pending): until
+real spend exists there is no cost-per-lead to show, and a dressed-up enquiry count would be an invented number.
+
+**Tests.** 11 new — `tests/Feature/Assistant/AssistantTest.php` (8) and `tests/Feature/Marketing/AttributionTest.php`
+(3): "what is overdue?" returns **exactly** the tracking board's rows and total; an off-whitelist question refuses
+and lists the whitelist; support is refused invoice answers by permission name and sees no such chips; collected
+counts verified payments in the month only; open bills sum to what suppliers are owed; the follow-up answer cites
+only visible leads; the drawer renders on every page; attribution follows two sources to quoted/won/won-value,
+respects the window, and keeps the old planner URL behind `social.manage`.
+Full suite **1,432 passed · 1 skipped · 7,712 assertions**; Pint clean; PHPStan 0 errors.
+
+**Proof on 33143 — real actions only.** Quotation **WI-10103** (Rs 3,25,000) was sent and accepted, raising advance
+invoice **WI-10103-1** (Rs 2,43,750); its due date was set back ten days to stage an overdue invoice honestly. The
+assistant answered *"1 invoice overdue, Rs 243,750 outstanding"* citing WI-10103-1, and the tracking page read
+identically (*Overdue 1 · Rs 243,750*). After the invoice was really collected (`RC-2026-0002`), the assistant
+reported *"Rs 243,750 collected in October across 1 verified payment"* and flipped overdue to *"Nothing is
+overdue"*; asking for a poem got the plain refusal. Attribution then showed **Phone Call: 6 enquiries · 1 quoted ·
+1 won · 16.7 % · Rs 325,000**, totals 26 / 4 / 1 / Rs 325,000. Every proof row was force-deleted afterwards, the
+quote returned to draft, sequences rewound, and the screens re-checked in their honest states.
+
+**Bugs the build caught.** (1) `whereBetween` on a `date`-cast column silently drops the boundary day — stored
+`'2026-10-26 00:00:00'` compares greater than `'2026-10-26'` — so "collected today" read zero; all three
+date-window queries now use `whereDate`. (2) A citation used `Lead::$number`, which does not exist (`ref` is the
+accessor): it rendered empty and one test assertion passed *vacuously* on `toContain(null)` — PHPStan caught it;
+the assertion now pins the real reference. (3) Preview cleanup scripts must check **Eloquent** counts — raw
+`DB::table()->count()` counts soft-deleted trash and reported a clean preview as dirty.
+
+**Next.** Slice N — Search Console over MCP — which stays **blocked on the owner's Google key**. With I–M shipped,
+the open list is: N (key), "Estimates Received" (schema approval), Slice F live proof (Meta/LinkedIn), the
+36 imported redirects (owner's export), and the Telegram bot token in the server `.env`.

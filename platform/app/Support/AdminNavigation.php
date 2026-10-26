@@ -78,7 +78,7 @@ final class AdminNavigation
                 self::item('WhatsApp Templates', 'whatsapp', 'admin.whatsapp.templates', 'integrations.manage'),
             ]),
             self::group('Marketing', [
-                self::item('Social Planner', 'megaphone', 'admin.marketing.social', 'social.manage'),
+                self::item('Marketing', 'megaphone', 'admin.marketing.index', 'social.manage'),
                 self::item('Lead Ads', 'sparkles', null, null, 'P7'),
             ]),
             // The Website section is the v2.1 front, grouped the way it is worked on (docs/16 §16.8):

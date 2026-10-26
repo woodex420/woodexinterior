@@ -39,7 +39,7 @@ use App\Livewire\Admin\Hubs\SystemAccessHub;
 use App\Livewire\Admin\Hubs\SystemConnectionsHub;
 use App\Livewire\Admin\Hubs\SystemPlatformHub;
 use App\Livewire\Admin\Hubs\TasksHub;
-use App\Livewire\Admin\Marketing\SocialPlannerIndex;
+use App\Livewire\Admin\Hubs\MarketingHub;
 use App\Livewire\Admin\NotificationsPage;
 use App\Livewire\Admin\Profile\Security;
 use App\Livewire\Admin\Projects\ClientPortalIndex;
@@ -153,7 +153,9 @@ Route::get('/conversations/media/{message}', ConversationMediaController::class)
 Route::get('/media/{media}/{conversion?}', MediaController::class)->name('media.show')->whereIn('conversion', ['thumb']);
 
 // Website (phase P6, docs/09): the public website is content, edited here.
-Route::livewire('/marketing/social', SocialPlannerIndex::class)->name('marketing.social')->middleware('can:social.manage');
+// Slice M: Marketing becomes a hub — planner + attribution; the old planner URL keeps working.
+Route::livewire('/marketing', MarketingHub::class)->name('marketing.index')->middleware('can:social.manage');
+Route::get('/marketing/social', fn () => redirect()->route('admin.marketing.index', ['tab' => 'planner'], 301))->name('marketing.social')->middleware('can:social.manage');
 
 Route::livewire('/website/pages', PagesIndex::class)->name('website.pages')->middleware('can:website.edit');
 Route::livewire('/website/find-replace', FindReplaceIndex::class)->name('website.find-replace')->middleware('can:website.edit');
