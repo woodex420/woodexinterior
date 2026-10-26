@@ -118,7 +118,7 @@ it('is offered only when the enquiry really carries an estimate', function () {
     expect($creator->available(estimatorLead()))->toBeTrue()
         ->and($creator->available(estimatorLead(['service' => 'something-we-do-not-price'])))->toBeFalse()
         ->and($creator->available(estimatorLead(['area' => ''])))->toBeFalse()
-        ->and($creator->available(Lead::factory()->create(['owner_id' => $this->sales->id, 'business_line' => 'interior'])))->toBeFalse();
+        ->and($creator->available(Lead::factory()->create(['owner_id' => $this->sales->id, 'business_line' => 'interior', 'source' => 'website_form'])))->toBeFalse();
 });
 
 it('starts the quotation from the enquiry page and opens it, in one click', function () {
@@ -133,7 +133,9 @@ it('starts the quotation from the enquiry page and opens it, in one click', func
 });
 
 it('says so instead of failing when there is nothing to price', function () {
-    $lead = Lead::factory()->create(['owner_id' => $this->sales->id, 'business_line' => 'interior', 'meta' => null]);
+    // Source pinned: an unpinned factory lead can roll source=estimator with a rate-book service,
+    // which the pre-meta column fallback would then price — the premise must hold on every run.
+    $lead = Lead::factory()->create(['owner_id' => $this->sales->id, 'business_line' => 'interior', 'source' => 'website_form', 'meta' => null]);
 
     Livewire\Livewire::actingAs($this->sales)
         ->test(LeadShow::class, ['lead' => $lead])

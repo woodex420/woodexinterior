@@ -2539,4 +2539,45 @@ and a draft quotation PDF rendered end-to-end over HTTP.
 new integrations-redevelopment slice, TailAdmin reference) live in
 `docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md`.
 
-**Next.** Owner picks from the plan-35 queue (V recommended); one question, then start.
+**Next (done).** The owner picked V — Step 45.
+
+### Step 45 — leads redevelopment: sheet import screen, drawer tabs, month + line filters (Slice V, 26 Oct 2026)
+
+Plan 34/35, slice V. Three pieces, no schema change. **Import sheet** (`/leads/import`,
+owner-only — the same rule the importer itself enforces): the tested `LeadCsvImporter`
+gains a screen. Upload a historical CSV and its own headings are matched to the five the
+importer reads (aliases pre-matched, the owner confirms; every other column travels with
+the lead as note lines; Status is optional and kept as a note, never a stage). Year and
+batch are prefilled from the first sheet date. The **dry run writes nothing** and reports
+counts with grouped plain-words reasons and sheet row numbers only — never names or phone
+numbers. Apply then imports: new people become leads with their original dates, phones
+already on a contact are skipped untouched, rows without a usable phone or a date in the
+chosen year are held for review, and re-running the same batch is recognised and skipped.
+Changing any match, the year or the batch clears the report, so what is imported is always
+what was rehearsed. **Drawer tabs**: Details keeps today's pinned fields; **Log activity**
+works the lead without leaving the list (type/outcome/notes through `LogLeadActivity`,
+then the next action through `SetNextAction` — the activity is written first so the
+timeline always explains why the follow-up changed); quick chips set a next action **only
+when the lead has none** — they never erase one someone planned; **Timeline (n)** shows
+the same history as the full page. **List header**: Import sheet button, business-line
+segmented tabs (All / Interior / Furniture / Project (turnkey)) wired to the one existing
+line filter, and a month filter read in Asia/Karachi like the dates the list prints.
+
+**One flaky test found and fixed.** `EstimateToQuoteTest` failed 4 of 6 isolated runs: a
+factory lead can roll `source=estimator` with a rate-book service, which the (intentional)
+pre-meta column fallback then prices — the "nothing to price" premise was only usually
+true. Source is now pinned in the two affected tests; product behaviour unchanged, 6/6
+clean afterwards.
+
+**Proof.** New `LeadImportScreenTest` (route serves owner-only ahead of the lead page,
+alias auto-match + prefill, dry-run privacy, apply imports only new people with original
+dates and folded notes, rerun idempotent, manual remap honoured → review, one column
+matched twice refused), six new drawer tests (tabs, log → Contacted, next-in-same-save,
+chip sets/keeps, timeline) and month/line index tests. Targeted **65 passed · 295
+assertions**; full suite **1,501 passed · 1 skipped · 8,060 assertions**; Pint clean,
+PHPStan 0. Live on 33143: the import page renders, the leads header shows the button,
+line tabs and month input, `?month=2020-01` returns the empty state and
+`?line=furniture` marks the Furniture tab.
+
+**Next.** Owner picks from the plan-35 queue (INT integrations recommended); one
+question, then start.

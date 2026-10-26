@@ -6,6 +6,7 @@ use App\Domain\Crm\Actions\CaptureLead;
 use App\Domain\Crm\Data\LeadInput;
 use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Crm\Enums\LeadSource;
+use App\Domain\Crm\Models\Activity;
 use App\Domain\Crm\Models\PipelineStage;
 use App\Livewire\Admin\Crm\LeadsIndex;
 use Livewire\Livewire;
@@ -77,4 +78,96 @@ it('keeps the stage when a manager tries to mark a lead won without an accepted 
         ->assertSet('drawerStage', $this->lead->stage_id);
 
     expect($this->lead->refresh()->stage_id)->not->toBe($won->id);
+});
+
+/*
+| Slice V: the drawer grows the v2.1 side-panel tabs — Details stays pinned, Log activity
+| works the lead through the same actions as the full page, Timeline shows what happened.
+*/
+
+it('opens the drawer on the details tab with log and timeline alongside', function () {
+    Livewire::test(LeadsIndex::class)
+        ->call('openLeadDrawer', $this->lead->id)
+        ->assertSet('drawerTab', 'details')
+        ->assertSee('Log activity')
+        ->assertSee('Timeline')
+        ->set('drawerTab', 'log')
+        ->assertSee('What happened');
+});
+
+it('logs a call from the drawer and follows the lead to contacted', function () {
+    $contacted = PipelineStage::query()->where('key', 'contacted')->firstOrFail();
+
+    Livewire::test(LeadsIndex::class)
+        ->call('openLeadDrawer', $this->lead->id)
+        ->set('drawerTab', 'log')
+        ->set('drawerLogType', 'call')
+        ->set('drawerLogOutcome', 'connected')
+        ->set('drawerLogBody', 'Discussed the wardrobe sizes.')
+        ->call('drawerLog')
+        ->assertHasNoErrors()
+        ->assertSet('drawerLogBody', '')
+        ->assertSet('drawerStage', $contacted->id);
+
+    expect(Activity::query()->where('lead_id', $this->lead->id)->where('type', 'call')->where('body', 'like', '%wardrobe%')->exists())->toBeTrue()
+        ->and($this->lead->refresh()->stage_id)->toBe($contacted->id);
+});
+
+it('sets the next action in the same save as the log', function () {
+    $when = now()->addDays(2)->setTime(11, 0);
+
+    Livewire::test(LeadsIndex::class)
+        ->call('openLeadDrawer', $this->lead->id)
+        ->set('drawerTab', 'log')
+        ->set('drawerLogType', 'whatsapp')
+        ->set('drawerLogBody', 'Sent the wardrobe catalogue.')
+        ->set('drawerNextType', 'call')
+        ->set('drawerNextAt', $when->format('Y-m-d\TH:i'))
+        ->call('drawerLog')
+        ->assertHasNoErrors();
+
+    $lead = $this->lead->refresh();
+
+    expect($lead->next_action_type?->value)->toBe('call')
+        ->and($lead->next_action_at?->format('Y-m-d H:i'))->toBe($when->format('Y-m-d H:i'))
+        ->and(Activity::query()->where('lead_id', $lead->id)->where('type', 'whatsapp')->where('body', 'like', '%catalogue%')->exists())->toBeTrue();
+});
+
+it('sets a next action from a quick chip when the lead has none', function () {
+    $this->lead->forceFill(['next_action_type' => null, 'next_action_at' => null])->save();
+
+    Livewire::test(LeadsIndex::class)
+        ->call('openLeadDrawer', $this->lead->id)
+        ->call('drawerQuickNext', 'tomorrow')
+        ->assertHasNoErrors();
+
+    expect($this->lead->refresh()->next_action_at)->not->toBeNull();
+});
+
+it('never lets a quick chip erase an existing next action', function () {
+    $planned = now()->addDays(5)->setTime(10, 30)->startOfMinute();
+    $this->lead->forceFill(['next_action_type' => 'whatsapp', 'next_action_at' => $planned])->save();
+
+    Livewire::test(LeadsIndex::class)
+        ->call('openLeadDrawer', $this->lead->id)
+        ->call('drawerQuickNext', '1h')
+        ->assertHasNoErrors();
+
+    $lead = $this->lead->refresh();
+
+    expect($lead->next_action_at?->format('Y-m-d H:i:s'))->toBe($planned->format('Y-m-d H:i:s'))
+        ->and($lead->next_action_type?->value)->toBe('whatsapp');
+});
+
+it('shows logged activity on the drawer timeline', function () {
+    Livewire::test(LeadsIndex::class)
+        ->call('openLeadDrawer', $this->lead->id)
+        ->set('drawerTab', 'log')
+        ->set('drawerLogType', 'note')
+        ->set('drawerLogBody', 'Prefers shaker-style wardrobe doors.')
+        ->call('drawerLog')
+        ->assertHasNoErrors()
+        ->set('drawerTab', 'timeline')
+        ->assertSee('Prefers shaker-style wardrobe doors.')
+        ->assertViewHas('drawerActivityCount', fn ($count) => $count >= 1);
 });

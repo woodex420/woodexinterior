@@ -2,6 +2,9 @@
     <x-admin.page-header title="Leads" description="Every enquiry from every channel, one list. Search by name, phone in any format, or reference."
                          :breadcrumbs="['CRM' => null, 'Leads' => null]">
         <x-slot:actions>
+            @if ($canImport)
+                <x-admin.button variant="secondary" icon="upload" :href="route('admin.leads.import')" wire:navigate>Import sheet</x-admin.button>
+            @endif
             <x-admin.button variant="secondary" icon="kanban" :href="route('admin.leads.index', ['tab' => 'pipeline'])" wire:navigate>Board view</x-admin.button>
             @can('create', \App\Domain\Crm\Models\Lead::class)
                 <x-admin.button icon="plus" wire:click="$set('showCreate', true)">New lead</x-admin.button>
@@ -21,12 +24,7 @@
                 <option value="{{ $s->key }}">{{ $s->name }}</option>
             @endforeach
         </select>
-        <select wire:model.live="line" class="wx-input" aria-label="Business line">
-            <option value="">All lines</option>
-            @foreach ($lines as $value => $label)
-                <option value="{{ $value }}">{{ $label }}</option>
-            @endforeach
-        </select>
+        <input type="month" wire:model.live="month" class="wx-input" aria-label="Enquiry month">
         <select wire:model.live="source" class="wx-input" aria-label="Source">
             <option value="">All sources</option>
             @foreach ($sources as $value => $label)
@@ -38,6 +36,18 @@
             <option value="me">My leads</option>
             <option value="unassigned">Unassigned</option>
         </select>
+    </div>
+
+    {{-- Business-line tabs (Slice V): the v2.1 header lines, wired to the list's one line filter. --}}
+    <div class="mb-4 flex flex-wrap items-center gap-1" role="tablist" aria-label="Business line">
+        @foreach (['' => 'All lines'] + $lines as $value => $label)
+            <button type="button" role="tab" aria-selected="{{ $line === $value ? 'true' : 'false' }}" wire:click="$set('line', '{{ $value }}')"
+                    @class([
+                        'rounded-full px-3.5 py-1.5 text-theme-sm font-medium transition',
+                        'bg-navy-800 text-white shadow-theme-xs dark:bg-white dark:text-navy-900' => $line === $value,
+                        'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10' => $line !== $value,
+                    ])>{{ $label }}</button>
+        @endforeach
     </div>
 
     {{-- Control-view filters (?created=today, ?due=overdue): the dashboard's numbers, opened. --}}
@@ -314,6 +324,19 @@
             </header>
 
             <div class="flex-1 space-y-5 overflow-y-auto px-5 py-4">
+                {{-- Slice V: the v2.1 side-panel tabs — work the lead without leaving the list. --}}
+                <div class="flex gap-1 rounded-xl bg-gray-50 p-1 dark:bg-white/5" role="tablist" aria-label="Lead drawer">
+                    @foreach (['details' => 'Details', 'log' => 'Log activity', 'timeline' => 'Timeline'.($drawerActivityCount > 0 ? " ({$drawerActivityCount})" : '')] as $tabId => $tabLabel)
+                        <button type="button" role="tab" aria-selected="{{ $drawerTab === $tabId ? 'true' : 'false' }}" wire:click="$set('drawerTab', '{{ $tabId }}')"
+                                @class([
+                                    'flex-1 rounded-lg px-3 py-1.5 text-theme-sm font-medium transition',
+                                    'bg-white text-navy-900 shadow-theme-xs dark:bg-gray-800 dark:text-white' => $drawerTab === $tabId,
+                                    'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200' => $drawerTab !== $tabId,
+                                ])>{{ $tabLabel }}</button>
+                    @endforeach
+                </div>
+
+                @if ($drawerTab === 'details')
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-theme-sm">
                     @if ($phone = \App\Support\Phone::display($drawerLead->contact->phone))
                         <a href="tel:{{ $drawerLead->contact->phone }}" class="inline-flex items-center gap-1.5 text-navy-700 hover:text-brand-600 dark:text-gray-300">
@@ -375,6 +398,95 @@
                         <dd class="text-right font-medium text-gray-800 dark:text-gray-200">{{ $drawerLead->created_at?->timezone('Asia/Karachi')->format('j M Y, g:i a') }}</dd>
                     </div>
                 </dl>
+                @endif
+
+                @if ($drawerTab === 'log')
+                <form wire:submit="drawerLog" class="space-y-4">
+                    <div>
+                        <label class="wx-label" for="drawer-log-type">What happened</label>
+                        <select id="drawer-log-type" wire:model.live="drawerLogType" class="wx-input">
+                            <option value="call">Call</option>
+                            <option value="whatsapp">WhatsApp</option>
+                            <option value="email">Email</option>
+                            <option value="meeting">Meeting</option>
+                            <option value="note">Note</option>
+                        </select>
+                    </div>
+
+                    @if ($drawerLogType === 'call')
+                        <div>
+                            <label class="wx-label" for="drawer-log-outcome">Call outcome</label>
+                            <select id="drawer-log-outcome" wire:model="drawerLogOutcome" class="wx-input">
+                                @foreach ($callOutcomes as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            @error('drawerLogOutcome') <p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p> @enderror
+                        </div>
+                    @endif
+
+                    <div>
+                        <label class="wx-label" for="drawer-log-body">Notes</label>
+                        <textarea id="drawer-log-body" wire:model="drawerLogBody" rows="3" class="wx-input h-auto py-2" placeholder="What did the client say?"></textarea>
+                        @error('drawerLogBody') <p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="rounded-xl border border-gray-100 p-4 dark:border-gray-800">
+                        <p class="mb-3 text-theme-sm font-medium text-gray-800 dark:text-gray-200">Next action</p>
+                        @if ($drawerLead->next_action_at)
+                            <p class="mb-3 text-theme-xs text-gray-500">
+                                Currently: {{ $drawerLead->next_action_type?->label() ?? 'Follow up' }} · {{ $drawerLead->next_action_at->timezone('Asia/Karachi')->format('D j M, g:i a') }}.
+                                Quick chips never replace it — change the time below and save to reschedule.
+                            </p>
+                        @endif
+                        <div class="flex flex-wrap gap-1.5">
+                            @foreach (['1h' => 'In 1 hour', 'tomorrow' => 'Tomorrow', '3d' => 'In 3 days', 'week' => 'Next week'] as $preset => $chipLabel)
+                                <button type="button" wire:click="drawerQuickNext('{{ $preset }}')" wire:loading.attr="disabled" wire:target="drawerQuickNext"
+                                        class="rounded-full bg-gray-100 px-3 py-1 text-theme-xs font-medium text-gray-700 transition hover:bg-gray-200 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10">{{ $chipLabel }}</button>
+                            @endforeach
+                        </div>
+                        <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                            <div>
+                                <label class="wx-label" for="drawer-next-type">Do</label>
+                                <select id="drawer-next-type" wire:model="drawerNextType" class="wx-input">
+                                    @foreach ($nextTypes as $value => $label)
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                @error('drawerNextType') <p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p> @enderror
+                            </div>
+                            <div>
+                                <label class="wx-label" for="drawer-next-at">When</label>
+                                <input id="drawer-next-at" type="datetime-local" wire:model="drawerNextAt" class="wx-input">
+                                @error('drawerNextAt') <p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <x-admin.button type="submit" icon="check" wire:loading.attr="disabled" wire:target="drawerLog" class="w-full justify-center">Save</x-admin.button>
+                </form>
+                @endif
+
+                @if ($drawerTab === 'timeline')
+                    @forelse ($drawerActivities as $activity)
+                        <div class="flex gap-3" wire:key="drawer-activity-{{ $activity->id }}">
+                            <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-gray-50 text-gray-500 dark:bg-white/5 dark:text-gray-400">
+                                <x-icon :name="$activity->type->icon()" class="size-4" />
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-theme-sm font-medium text-gray-800 dark:text-gray-200">
+                                    {{ $activity->type->label() }}@if ($activity->outcome) · {{ \App\Domain\Crm\Enums\CallOutcome::tryFrom((string) $activity->outcome)?->label() ?? $activity->outcome }}@endif
+                                </p>
+                                @if ($activity->body)
+                                    <p class="mt-0.5 text-theme-sm whitespace-pre-line text-gray-600 dark:text-gray-400">{{ $activity->body }}</p>
+                                @endif
+                                <p class="mt-0.5 text-theme-xs text-gray-400">{{ $activity->user?->name ?? 'System' }} · {{ $activity->occurred_at?->timezone('Asia/Karachi')->format('j M Y, g:i a') }}</p>
+                            </div>
+                        </div>
+                    @empty
+                        <x-admin.empty icon="clock" title="No activity yet" description="Calls, messages and notes you log will appear here." />
+                    @endforelse
+                @endif
             </div>
 
             <footer class="flex items-center justify-between gap-3 border-t border-gray-100 px-5 py-4 dark:border-gray-800">

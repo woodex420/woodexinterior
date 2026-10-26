@@ -4,6 +4,7 @@ use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\System\Models\SavedView;
 use App\Livewire\Admin\Crm\LeadsIndex;
+use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 
 it('finds a lead by phone typed in local format', function () {
@@ -131,4 +132,32 @@ it('opens the leads list quiet when no shortcut asks for the composer', function
     Livewire::actingAs($sales)
         ->test(LeadsIndex::class)
         ->assertSet('showCreate', false);
+});
+
+it('filters the list to one enquiry month', function () {
+    $manager = $this->userWithRole('sales_manager');
+    $this->actingAs($manager);
+
+    $january = Lead::factory()->create();
+    $january->forceFill(['created_at' => Carbon::parse('2025-01-15 12:00:00')])->save();
+
+    $february = Lead::factory()->create();
+    $february->forceFill(['created_at' => Carbon::parse('2025-02-15 12:00:00')])->save();
+
+    Livewire::test(LeadsIndex::class)
+        ->set('month', '2025-01')
+        ->assertViewHas('leads', fn ($leads) => $leads->total() === 1 && $leads->first()->is($january));
+});
+
+it('filters by business line from the line tabs', function () {
+    $manager = $this->userWithRole('sales_manager');
+    $this->actingAs($manager);
+
+    Lead::factory()->create(['business_line' => 'interior']);
+    $furniture = Lead::factory()->create(['business_line' => 'furniture']);
+
+    Livewire::test(LeadsIndex::class)
+        ->assertSee('All lines')
+        ->set('line', 'furniture')
+        ->assertViewHas('leads', fn ($leads) => $leads->total() === 1 && $leads->first()->is($furniture));
 });

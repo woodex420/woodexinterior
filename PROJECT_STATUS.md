@@ -9,7 +9,7 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,488 passed · 1 skipped · 7,977 assertions** · Pint clean on touched files · PHPStan 0 errors |
+| Tests | **1,501 passed · 1 skipped · 8,060 assertions** · Pint clean on touched files · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
@@ -94,7 +94,7 @@ the owner picks the next slice from it.
 | ~~R~~ | ~~Classic BOQ design match~~ | **Done 26 Oct** — summary-first BOQ, frozen sent PDFs, zero-money dashes |
 | ~~S~~ | ~~Builder live preview + per-quote blocks~~ | **Done 26 Oct** — preview drawer with the real PDF, per-quotation theme/blocks, Type/Site/intro, printed-client overrides |
 | ~~44~~ | ~~v2.1 template source import + design verify~~ | **Done 26 Oct** — the owner's own 16 starter templates import from the UI in one click; quote/invoice PDFs verified block-by-block against `admin-print17.js` (palettes, boxes, payments + stamp, signatures) |
-| **V** | Leads redevelopment (sheet import screen, drawer tabs) | Next per plan 34/35 — designed, waiting for the owner's start |
+| ~~V~~ | ~~Leads redevelopment (sheet import screen, drawer tabs)~~ | **Done 26 Oct** — owner-only `/leads/import` (column matching → privacy-safe dry run → idempotent apply over the existing importer), drawer Details/Log activity/Timeline tabs with quick chips that never erase a planned next action, business-line tabs + month filter on the list |
 | **INT** | Integrations redevelopment (TailAdmin-style cards, real connect/test, custom webhooks; placeholders removed) | New 26 Oct — design in plan 35 |
 | **W · T · U · X** | Estimations hub · template cards · invoice fields (needs the owner's sample invoice PDFs) · marketing remainder | Queue + blockers in plan 35 |
 | ~~G~~ | ~~Hygiene~~ | **Done 26 Oct** — builder fonts self-hosted (26 families, 87 faces), System hubs gated by `can-any`, evidence 13 MB → 5.6 MB with references repointed, `docs/README.md` corrected |

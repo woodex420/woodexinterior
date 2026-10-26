@@ -30,7 +30,7 @@ the gap report + the refreshed queue.
 |---|---|---|---|
 | Quotation templates + PDF (Classic BOQ) | `admin-print17.js` (3 palettes, blocks, BOQ) + 9 starter templates | Same palettes/labels/blocks; 16 starter templates in one canonical file, importable from the UI (**Step 44**) | **Aligned.** Remaining: template cards/chips UI (Slice T), single/project layouts not ported (not requested) |
 | Invoices | `admin-p18` Create invoice with PO #, project, delivery, payment condition + schedule | Items/Unit column, boxes, payments-received + Paid stamp, signatures (**Step 44**); issued PDFs are frozen bytes (v2.1 re-renders live) | **Near.** The 5 extra fields are Slice U (schema ask with the slice); frozen-PDF semantics stay — receipts prove later payments |
-| Leads & CRM | `admin-sales17` sheet-style tracker, lead side drawer, sheet import; pipeline v2 | Leads index, drawer/show, pipeline, CSV importer service + console command | **Slice V** (designed, paused): import screen over the existing importer, drawer tabs, month/line filters |
+| Leads & CRM | `admin-sales17` sheet-style tracker, lead side drawer, sheet import; pipeline v2 | Leads index, drawer/show, pipeline, CSV importer service + console command | **Done — Slice V (Step 45):** import screen over the existing importer, drawer tabs, month/line filters |
 | Estimator | `admin-p18e` rate book + formula + preview; forms | Estimator rates admin + submissions → leads, separate from Sales estimates | **Slice W**: one native Estimations hub (owner: native, not a v2.1 port) |
 | Inbox / WhatsApp | live chat, WhatsApp hub, campaigns, auto flows, offers, client-update notifications | Inbox with real runtime, automation sequences, templates | Comparable; live WhatsApp proof is blocked on the **owner's tokens** (unchanged) |
 | Social / Marketing | `admin-social` planner (FB Page + Instagram) | Social planner with attribution (Step 43-era) | Comparable; blocked on **Meta/LinkedIn approval** (unchanged). Remainder = Slice X |
@@ -44,11 +44,10 @@ the gap report + the refreshed queue.
 
 ## The refreshed queue (owner picks one to start)
 
-1. **Slice V — Leads redevelopment** *(recommended; next per plan 34)*. Owner-only
-   `/leads/import` screen over the tested `LeadCsvImporter` (column mapping → dry run →
+1. ~~**Slice V — Leads redevelopment**~~ — **Done 26 Oct (Step 45).** Owner-only
+   `/leads/import` screen over the tested `LeadCsvImporter` (column matching → dry run →
    apply), drawer tabs (Details / Log activity / Timeline), month + business-line tabs.
-   Design is locked; the parked draft file was lost in a sandbox reset and will be
-   rewritten from the recorded design. No schema change.
+   Shipped without a schema change; see `16_MASTER_TODO.md` Step 45.
 2. **Slice INT — Integrations redevelopment** *(new, owner 26 Oct)*. Design below.
 3. **Slice W — Estimations hub**. Merge Website-studio rates + Sales estimates into one
    native hub. No new tables expected; verify at design time.

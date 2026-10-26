@@ -24,6 +24,7 @@ use App\Livewire\Admin\Conversations\Inbox;
 use App\Livewire\Admin\Crm\AssignmentRules;
 use App\Livewire\Admin\Crm\CompanyShow;
 use App\Livewire\Admin\Crm\ContactShow;
+use App\Livewire\Admin\Crm\LeadImport;
 use App\Livewire\Admin\Crm\LeadShow;
 use App\Livewire\Admin\Hubs\ContactsHub;
 use App\Livewire\Admin\Hubs\DashboardHub;
@@ -89,6 +90,7 @@ Route::get('/my-day', fn () => redirect()->route('admin.dashboard', ['tab' => 'm
 
 // CRM (P1): Leads (list · pipeline · tracking), Contacts (people · companies), Tasks & Visits
 Route::livewire('/leads', LeadsHub::class)->name('leads.index')->middleware('can:leads.view');
+Route::livewire('/leads/import', LeadImport::class)->name('leads.import')->middleware('can:system.import');
 Route::livewire('/leads/{lead}', LeadShow::class)->name('leads.show')->middleware('can:leads.view');
 Route::get('/pipeline', fn () => redirect()->route('admin.leads.index', ['tab' => 'pipeline'], 301))->name('pipeline')->middleware('can:leads.view');
 Route::livewire('/contacts', ContactsHub::class)->name('contacts.index')->middleware('can:contacts.view');

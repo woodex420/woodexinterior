@@ -6,11 +6,17 @@ namespace App\Livewire\Admin\Crm;
 
 use App\Domain\Crm\Actions\AssignLead;
 use App\Domain\Crm\Actions\CaptureLead;
+use App\Domain\Crm\Actions\LogLeadActivity;
 use App\Domain\Crm\Actions\MoveLeadToStage;
+use App\Domain\Crm\Actions\SetNextAction;
 use App\Domain\Crm\Data\LeadInput;
+use App\Domain\Crm\Enums\ActivityType;
 use App\Domain\Crm\Enums\BusinessLine;
+use App\Domain\Crm\Enums\CallOutcome;
 use App\Domain\Crm\Enums\LeadSource;
+use App\Domain\Crm\Enums\NextActionType;
 use App\Domain\Crm\Enums\StageType;
+use App\Domain\Crm\Models\Activity;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Crm\Models\PipelineStage;
@@ -19,10 +25,12 @@ use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Models\User;
 use App\Support\Money;
 use App\Support\Phone;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -74,6 +82,10 @@ class LeadsIndex extends Component
     #[Url(except: '')]
     public string $due = '';
 
+    /** Slice V: the v2.1 header month — `Y-m`, read in Asia/Karachi like the dates the list prints. */
+    #[Url(except: '')]
+    public string $month = '';
+
     #[Url(except: 'newest')]
     public string $sort = 'newest';
 
@@ -115,7 +127,7 @@ class LeadsIndex extends Component
 
     public function updating(string $name): void
     {
-        if (in_array($name, ['search', 'stage', 'line', 'source', 'owner', 'created', 'due', 'sort', 'perPage'], true)) {
+        if (in_array($name, ['search', 'stage', 'line', 'source', 'owner', 'created', 'due', 'month', 'sort', 'perPage'], true)) {
             $this->resetPage();
             $this->selected = [];
         }
@@ -128,7 +140,7 @@ class LeadsIndex extends Component
 
     public function clearFilters(): void
     {
-        $this->reset('search', 'stage', 'line', 'source', 'owner', 'created', 'due', 'sort', 'selected');
+        $this->reset('search', 'stage', 'line', 'source', 'owner', 'created', 'due', 'month', 'sort', 'selected');
         $this->resetPage();
     }
 
@@ -157,7 +169,7 @@ class LeadsIndex extends Component
 
     protected function savedViewProperties(): array
     {
-        return ['search', 'stage', 'line', 'source', 'owner', 'sort', 'perPage', 'columns'];
+        return ['search', 'stage', 'line', 'source', 'owner', 'month', 'sort', 'perPage', 'columns'];
     }
 
     public function bulkAssign(string $userId): void
@@ -204,6 +216,20 @@ class LeadsIndex extends Component
 
     public ?int $drawerOwner = null;
 
+    // Slice V: the drawer works the lead, not just reads it — Details / Log activity / Timeline tabs
+    // over the same pinned fields, the same actions the full page uses (LogLeadActivity, SetNextAction).
+    public string $drawerTab = 'details';
+
+    public string $drawerLogType = 'call';
+
+    public string $drawerLogOutcome = 'connected';
+
+    public string $drawerLogBody = '';
+
+    public string $drawerNextType = 'call';
+
+    public string $drawerNextAt = '';
+
     public function openLeadDrawer(int $lead): void
     {
         $found = Lead::query()->findOrFail($lead);
@@ -212,6 +238,11 @@ class LeadsIndex extends Component
         $this->drawerId = $found->id;
         $this->drawerStage = $found->stage_id;
         $this->drawerOwner = $found->owner_id;
+        $this->drawerTab = 'details';
+        $this->reset('drawerLogType', 'drawerLogOutcome', 'drawerLogBody');
+        $this->drawerNextType = $found->next_action_type->value ?? NextActionType::Call->value;
+        $this->drawerNextAt = ($found->next_action_at ?? CarbonImmutable::now()->addHour()->startOfHour())->format('Y-m-d\TH:i');
+        $this->resetValidation();
     }
 
     public function closeLeadDrawer(): void
@@ -260,6 +291,86 @@ class LeadsIndex extends Component
 
         $this->drawerOwner = $lead->refresh()->owner_id;
         $this->toast("{$lead->ref} assigned to {$owner->name}.");
+    }
+
+    /**
+     * The drawer's Log activity tab: the activity is written first, then the next action —
+     * the timeline always explains why the follow-up changed. Stage moves stay on Details.
+     */
+    public function drawerLog(): void
+    {
+        $lead = Lead::query()->findOrFail($this->drawerId);
+        $this->authorize('update', $lead);
+
+        $this->validate([
+            'drawerLogType' => ['required', Rule::in(['call', 'whatsapp', 'email', 'meeting', 'note'])],
+            'drawerLogOutcome' => [Rule::requiredIf($this->drawerLogType === 'call'), 'nullable', Rule::enum(CallOutcome::class)],
+            'drawerLogBody' => [Rule::requiredIf($this->drawerLogType === 'note'), 'nullable', 'string', 'max:5000'],
+            'drawerNextType' => ['required', Rule::enum(NextActionType::class)],
+            'drawerNextAt' => ['nullable', 'date'],
+        ], attributes: ['drawerLogBody' => 'note', 'drawerLogOutcome' => 'call outcome', 'drawerNextAt' => 'next action time']);
+
+        $type = ActivityType::from($this->drawerLogType);
+        $outcome = $type === ActivityType::Call ? CallOutcome::from($this->drawerLogOutcome) : null;
+        $action = app(LogLeadActivity::class);
+
+        $action->handle($lead, $type, $this->user(), $this->drawerLogBody, $outcome);
+
+        $nextAt = $this->drawerNextAt !== '' ? Carbon::parse($this->drawerNextAt) : null;
+        if ($nextAt !== null) {
+            app(SetNextAction::class)->handle($lead->refresh(), NextActionType::from($this->drawerNextType), $nextAt);
+        }
+
+        $this->reset('drawerLogBody');
+        $this->drawerStage = $lead->refresh()->stage_id;
+
+        if ($type === ActivityType::Call && $action->consecutiveNoAnswers($lead) >= 3) {
+            $this->toast('Three calls without an answer. Try a WhatsApp message instead.', 'warning');
+
+            return;
+        }
+
+        $message = match ($type) {
+            ActivityType::Call => 'Call logged: '.$outcome?->label().'.',
+            ActivityType::Note => 'Note added.',
+            default => $type->label().' logged.',
+        };
+        $this->toast($nextAt !== null
+            ? $message.' Next: '.NextActionType::from($this->drawerNextType)->label().' · '.$nextAt->timezone('Asia/Karachi')->format('D j M, g:i a').'.'
+            : $message);
+    }
+
+    /** Quick chips set a next action only when the lead has none — they never erase one someone planned. */
+    public function drawerQuickNext(string $preset): void
+    {
+        $lead = Lead::query()->findOrFail($this->drawerId);
+        $this->authorize('update', $lead);
+
+        if ($lead->next_action_at !== null) {
+            $this->toast("{$lead->ref} already has a next action (".($lead->next_action_type?->label() ?? 'Follow up').' · '.$lead->next_action_at->diffForHumans().') — kept.', 'warning');
+
+            return;
+        }
+
+        $now = CarbonImmutable::now();
+        $at = match ($preset) {
+            '1h' => $now->addHour()->startOfMinute(),
+            'tomorrow' => $now->addDay()->setTime(11, 0),
+            '3d' => $now->addDays(3)->setTime(11, 0),
+            'week' => $now->addWeek()->setTime(11, 0),
+            default => null,
+        };
+
+        if ($at === null) {
+            return;
+        }
+
+        $type = NextActionType::tryFrom($this->drawerNextType) ?? NextActionType::Call;
+        app(SetNextAction::class)->handle($lead, $type, $at);
+
+        $this->drawerNextType = $type->value;
+        $this->drawerNextAt = $at->format('Y-m-d\TH:i');
+        $this->toast('Next action: '.$type->label().' · '.$at->timezone('Asia/Karachi')->format('D j M, g:i a').'.');
     }
 
     public function bulkDelete(): void
@@ -355,6 +466,10 @@ class LeadsIndex extends Component
             ->when($this->created === 'today', fn (Builder $q) => $q->where('created_at', '>=', now()->startOfDay()))
             ->when($this->created === 'week', fn (Builder $q) => $q->where('created_at', '>=', now()->startOfWeek()))
             ->when($this->due === 'overdue', fn (Builder $q) => $q->followUpDue())
+            ->when(preg_match('/^\d{4}-(0[1-9]|1[0-2])$/D', $this->month) === 1, function (Builder $q): void {
+                $start = CarbonImmutable::createFromFormat('!Y-m', $this->month, 'Asia/Karachi')->utc();
+                $q->where('created_at', '>=', $start)->where('created_at', '<', $start->addMonth());
+            })
             ->tap(fn (Builder $q) => match ($this->sort) {
                 'oldest' => $q->oldest('id'),
                 'score' => $q->orderByDesc('score')->latest('id'),
@@ -415,16 +530,31 @@ class LeadsIndex extends Component
         $user = $this->user();
         $leads = $this->query()->with(['contact', 'stage', 'owner'])->paginate(in_array($this->perPage, [25, 50, 100], true) ? $this->perPage : 25);
 
+        $drawerActivities = collect();
+        $drawerActivityCount = 0;
+        if ($this->drawerId !== null && ($drawerLead = Lead::query()->find($this->drawerId)) !== null) {
+            $drawerTimeline = Activity::query()
+                ->where(fn (Builder $q) => $q->where('lead_id', $drawerLead->id)
+                    ->orWhere(fn (Builder $c) => $c->where('contact_id', $drawerLead->contact_id)->whereNull('lead_id')));
+            $drawerActivityCount = (clone $drawerTimeline)->count();
+            $drawerActivities = $drawerTimeline->with('user:id,name')->latest('occurred_at')->latest('id')->limit(30)->get();
+        }
+
         return view('livewire.admin.crm.leads-index', [
             'leads' => $leads,
             'stages' => PipelineStage::query()->ordered()->get(),
             'lines' => BusinessLine::options(),
             'sources' => LeadSource::options(),
-            'hasFilters' => trim($this->search) !== '' || $this->stage !== '' || $this->line !== '' || $this->source !== '' || $this->owner !== '' || $this->created !== '' || $this->due !== '',
+            'hasFilters' => trim($this->search) !== '' || $this->stage !== '' || $this->line !== '' || $this->source !== '' || $this->owner !== '' || $this->created !== '' || $this->due !== '' || $this->month !== '',
             'views' => $this->savedViews(),
             'staff' => $user->can('leads.assign') ? $this->staff() : collect(),
             'canExport' => $user->can('leads.export'),
             'canDelete' => $user->can('leads.delete'),
+            'canImport' => $user->can('system.import'),
+            'drawerActivities' => $drawerActivities,
+            'drawerActivityCount' => $drawerActivityCount,
+            'callOutcomes' => CallOutcome::options(),
+            'nextTypes' => NextActionType::options(),
         ]);
     }
 }
