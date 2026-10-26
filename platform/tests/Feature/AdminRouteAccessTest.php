@@ -26,7 +26,9 @@ it('gives the support role exactly the screens its permissions allow, and 403 ev
         'admin.profile.security',
     ];
 
-    $redirects = ['admin.my-day', 'admin.pipeline', 'admin.companies.index', 'admin.visits.index'];
+    // Slice J: /clients, /customers and /visitors are 301s into the Contacts hub, which support may open
+    // (contacts.view) — so they redirect rather than refuse, like the older aliases.
+    $redirects = ['admin.my-day', 'admin.pipeline', 'admin.companies.index', 'admin.visits.index', 'admin.crm.clients', 'admin.crm.customers', 'admin.crm.visitors'];
 
     $excludedPrefixes = ['login', 'logout', 'password.', 'two-factor.', 'google.', 'install'];
 

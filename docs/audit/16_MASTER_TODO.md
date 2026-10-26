@@ -2184,3 +2184,65 @@ now carries 1210 and the migration refuses to insert a parentless leaf.
 green, and the file passes alone and beside the new Accounts tests. Recorded, not closed.
 
 **Next.** Slice L — Telegram QR pairing and the connection health card (the owner's repeated complaint), then Slice J.
+
+### Step 36 — the contact ladder and the proposal pipeline (Slices J + K, 26 Oct 2026)
+
+The owner asked for the missing pages from `32_MASTER_PLAN_2026-10-26.md` to be added "as recommended". The audit
+stood: the OS already stored the whole Gauzy ladder, but only some of it had a window. **Leads** already has its hub
+and pipeline (`/admin/leads`, `/admin/pipeline`), and Sales/Accounting parity (Estimates, Invoices, Payments,
+Income, Expenses, Recurring Expenses, Invoices Received) was closed by Slices H and I. What had no window: the
+Clients / Customers / Visitors views of the contact book, the Proposals stage of the quotation list, and a quotation
+pipeline. Those are the five screens added here — as **hub tabs**, not new sidebar items, so the sidebar stays at
+**48** destinations. **No schema change, no new table.**
+
+**Slice J — the contact ladder** (`/admin/contacts` hub, tabs `people · clients · customers · visitors · companies`).
+* **Clients** — `is_client` fixed on; the flag is set by the OS the moment a quotation is accepted, never typed by
+  hand. The tab reuses the contacts screen itself.
+* **Customers** — who actually bought, read from the records: an accepted quotation or a project, with won-quote /
+  project counts and the won value (Σ `total_minor`). A project without the flag still counts, so this view is
+  fact-based rather than flag-based.
+* **Visitors** — the honest version of the reference's screen: a contact brought in by the website (form, estimator,
+  booking, chat) who is not a client and has no accepted quotation or project. The OS records enquiries, not page
+  views, and the screen says so rather than inventing analytics.
+* `/admin/clients`, `/admin/customers`, `/admin/visitors` 301 to the matching tabs, so the reference product's URLs
+  answer. All three views keep `contacts.view` and the `visibleTo` scope — a tab never widens what a user may see.
+
+**Slice K — proposals and the pipeline** (`/admin/quotes` hub, new tabs `proposals` and `pipeline`).
+* **Proposals** — the quotations still in negotiation: draft, pending approval, approved, changes requested, sent,
+  viewed. Four fact cards: value in play, not sent yet, awaiting approval, oldest open.
+* **Pipeline** — every quotation in a column by the status the OS stores, with values, age and owner, plus a
+  **weighted forecast** Σ(value × stage weight) (draft 10 % … viewed 70 %). Won quotes are excluded from the
+  forecast and shown separately — an accepted quote is booked, not predicted.
+* `/admin/proposals` and `/admin/sales-pipeline` 301 to the tabs (`can:quotes.view`).
+
+**Missing screen confirmed, deliberately not built yet.** "Estimates Received" (supplier quotations) has **no data
+model** in the OS. It is the purchase-order chain (supplier estimate → order → the Slice-I bill) — a schema slice of
+its own, not something to fake with a button; it is recorded as a future candidate with Slice I's bills as the
+receiving end.
+
+**Tests.** 10 new — `tests/Feature/Crm/ContactLadderTest.php` (5) and `tests/Feature/Sales/ProposalsPipelineTest.php`
+(5): clients are the won contacts; a customer is counted by accepted quotations at their real value; an
+estimator/website-form enquiry is a visitor until accepted, then leaves the list; the reference URLs 301 to the right
+tabs; support sees only its own contacts and editor gets 403; proposals list only in-negotiation quotes and the
+four cards agree; the pipeline places every quote in exactly one column and the weighted forecast is exact.
+`AdminRouteAccessTest` learned the three new redirect routes (support *may* open the Contacts hub, so its aliases
+redirect rather than refuse — same treatment as the older `/companies` alias).
+Full suite **1,413 passed · 1 skipped · 7,624 assertions**; Pint clean on touched files (3 pre-existing style notes
+in untouched files remain, recorded in Step 37 candidates); PHPStan 0 errors.
+
+**Proof on 33143 — real actions only.** The demo dripline: quotation **WI-10103** (Rs 3,25,000, Mariam Khan) was sent
+and accepted by the owner through the real `SendQuote`/`AcceptQuote` actions — project **WI-10103** opened, advance
+invoice **WI-10103-1** (Rs 2,43,750) issued with its journal, and paid in full through `CollectPayment` +
+`VerifyPayment`. **Clients** listed Mariam Khan with *Won*, **Customers** showed her won value **Rs 3,25,000**,
+**Proposals** read *Value in play Rs 76,63,465 · Not sent yet 3* with the accepted quote gone from the list,
+**Pipeline** showed *Draft 3 · Won 1 (Rs 3,25,000) · Weighted forecast Rs 7,66,346.50*, and **Visitors** listed the
+estimator/website-form enquiries only (referral and WhatsApp contacts absent, converted client removed).
+Every proof row was then deleted (payment, invoice, project, journals, quote version), WI-10103 returned to draft,
+`is_client` and the lead stage restored, the journal and receipt sequences rewound, and all five screens re-checked
+at 200 in their honest states.
+
+**Observed once, not reproduced.** One full-suite run failed `TelegramDigestTest > it sends the daily digest`
+("Yesterday: 1 new lead." missing); it passed in isolation (9 tests) and the next full run was green. Same signature
+as the earlier `EstimateToQuoteTest` flake — recorded, not closed.
+
+**Next.** Slice L — Telegram QR pairing and the connection health card (the owner's repeated complaint), then M, N.

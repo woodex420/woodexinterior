@@ -91,6 +91,10 @@ Route::livewire('/leads', LeadsHub::class)->name('leads.index')->middleware('can
 Route::livewire('/leads/{lead}', LeadShow::class)->name('leads.show')->middleware('can:leads.view');
 Route::get('/pipeline', fn () => redirect()->route('admin.leads.index', ['tab' => 'pipeline'], 301))->name('pipeline')->middleware('can:leads.view');
 Route::livewire('/contacts', ContactsHub::class)->name('contacts.index')->middleware('can:contacts.view');
+// Slice J: the reference product's contact views as first-class URLs, answering with the right tab.
+Route::get('/clients', fn () => redirect()->route('admin.contacts.index', ['tab' => 'clients'], 301))->name('crm.clients')->middleware('can:contacts.view');
+Route::get('/customers', fn () => redirect()->route('admin.contacts.index', ['tab' => 'customers'], 301))->name('crm.customers')->middleware('can:contacts.view');
+Route::get('/visitors', fn () => redirect()->route('admin.contacts.index', ['tab' => 'visitors'], 301))->name('crm.visitors')->middleware('can:contacts.view');
 Route::livewire('/contacts/{contact}', ContactShow::class)->name('contacts.show')->middleware('can:contacts.view');
 Route::livewire('/companies/{company}', CompanyShow::class)->name('companies.show')->middleware('can:contacts.view');
 Route::get('/companies', fn () => redirect()->route('admin.contacts.index', ['tab' => 'companies'], 301))->name('companies.index')->middleware('can:contacts.view');
@@ -99,6 +103,9 @@ Route::get('/site-visits', fn () => redirect()->route('admin.tasks.index', ['tab
 
 // Sales (P2): Estimations → Quotations (all · tracking · templates) → Invoices (all · tracking) → Payments (all · dues · receivables) → Documents
 Route::livewire('/quotes', QuotationsHub::class)->name('quotes.index')->middleware('can:quotes.view');
+// Slice K: the reference product's proposal/pipeline URLs answer with the right quotation tab.
+Route::get('/proposals', fn () => redirect()->route('admin.quotes.index', ['tab' => 'proposals'], 301))->name('sales.proposals')->middleware('can:quotes.view');
+Route::get('/sales-pipeline', fn () => redirect()->route('admin.quotes.index', ['tab' => 'pipeline'], 301))->name('sales.pipeline')->middleware('can:quotes.view');
 Route::livewire('/quotes/new', QuoteCreate::class)->name('quotes.create')->middleware('can:quotes.manage');
 Route::livewire('/quotes/{quote}', QuoteBuilder::class)->name('quotes.show')->middleware('can:quotes.view')->whereNumber('quote');
 Route::get('/quotes/{quote}/pdf', QuotePdfController::class)->name('quotes.pdf')->middleware('can:quotes.view')->whereNumber('quote');

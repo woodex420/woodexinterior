@@ -9,16 +9,16 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,403 passed · 1 skipped · 7,576 assertions** · Pint clean · PHPStan 0 errors |
+| Tests | **1,413 passed · 1 skipped · 7,624 assertions** · Pint clean on touched files · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
 
 ## Next: the 26 October master plan
 
-`docs/audit/32_MASTER_PLAN_2026-10-26.md` sets the forward order. **Slice I is shipped** (below); next is **Slice L**
-— Telegram QR pairing and a connection-health card that names the failing step — then the contact ladder (J),
-proposals + forecast (K), the assistant drawer (M), and Search Console over MCP (N, blocked on the Google key).
+`docs/audit/32_MASTER_PLAN_2026-10-26.md` sets the forward order. **Slices I, J and K are shipped** (below); next is
+**Slice L** — Telegram QR pairing and a connection-health card that names the failing step — then the assistant
+drawer (M) and Search Console over MCP (N, blocked on the Google key).
 
 ## What is live today (verified this pass)
 
@@ -44,6 +44,8 @@ proposals + forecast (K), the assistant drawer (M), and Search Console over MCP 
 
 **Slice E (26 October).** Invoices now raise themselves. `woodex:invoice-milestones` bills every milestone an accepted quotation has reached — hourly, once per milestone, with the same number, tax, PDF and ledger posting as the advance invoice — and `woodex:invoice-reminders` runs the 7/14/30-day ladder, one rung per invoice, messaging the client on WhatsApp only with consent and telling the studio why when it cannot. Both are on the Automation screen with their cadence and switches. 10 more tests; suite **1,332 passed · 1 skipped · 7,165 assertions**.
 
+**Slices J + K — the contact ladder and the proposal pipeline (26 October).** Five windows on records the OS already kept, no schema change: **Clients**, **Customers** (who actually bought, with won value read from accepted quotations) and **Visitors** (website enquiries — form, estimator, booking, chat — not yet converted; the OS records enquiries, not page views, and the screen says so) as tabs on the Contacts hub; **Proposals** (quotations still in negotiation, with value in play) and the **Pipeline** (every quotation by stage with a weighted forecast Σ value × stage weight) as tabs on the Quotations hub. `/admin/clients`, `/admin/customers`, `/admin/visitors`, `/admin/proposals` and `/admin/sales-pipeline` answer with a 301 to the right tab; the sidebar stays at 48. 10 more tests; suite **1,413 passed · 1 skipped · 7,624 assertions**. Live proof: WI-10103 (Rs 3,25,000) sent, accepted, invoiced (Rs 2,43,750) and paid — the five screens agreed with the records, then every proof row was removed. "Estimates Received" (supplier quotations) has no data model and stays a future schema slice rather than a pretend screen.
+
 **Slice I — money out (26 October).** The half of the ledger that did not exist. Accounts now has **received invoices** (vendor bills with lines, tax, paid status and a proper posting: Dr the cost accounts + Dr input tax 1210 / Cr accounts payable 2010), **part payments** against them, **void with a journal reversal**, a **supplier register**, **payables aging**, **one-off expenses and other income** that post as they are saved, **recurring overheads** posted daily at 09:10 by `woodex:expense-recurring`, **project costs that finally reach the books** (and a project page that says *posted*), and a **profit & loss** built from posted lines. 20 more tests; suite **1,403 passed · 1 skipped · 7,576 assertions**. Live proof: bill Rs 1,15,000 posted, Rs 45,000 paid leaving Rs 70,000, rent schedule advanced to 26 Nov, project cost Rs 1,50,000 posted, P&L profit Rs 10,000, trial balance balanced at Rs 6,60,000 both sides.
 
 **Slice H, part 2 — the client's money and a trial balance (26 October).** The two findings the audit recorded next. The client record now carries a **Money** card — Awaiting decision, Invoiced, Paid with the last payment date, and Outstanding, summed from the real invoices and payments (voided invoices excluded) — followed by the last ten invoices, each linking to its invoice screen; the card is inside `invoices.view`. Accounts gained **`/admin/accounts/trial-balance`**: every posted journal line in the range summed per account with debit, credit, net and entry count, totals and the difference, month/quarter/year/all presets, and a *"Balanced."* / *"Out of balance by …"* banner that refuses to celebrate an empty range. 11 more tests; suite **1,376 passed · 1 skipped · 7,461 assertions**. Recorded, not changed: the `accountant` role has no `accounts.view`, so it gets 403 on the trial balance.
@@ -68,6 +70,8 @@ proposals + forecast (K), the assistant drawer (M), and Search Console over MCP 
 | ~~E~~ | ~~Invoice automation~~ | **Done 26 Oct** — milestone invoices raised hourly for reached milestones, 7/14/30 overdue ladder with consent-gated WhatsApp and an audit record per rung; **E2** recurring retainers raise `RI-…` invoices daily at 09:20 from `/admin/invoices?tab=recurring` |
 | ~~H~~ | ~~CRM / Sales / Accounts deep QA~~ | **Done 26 Oct** — invoice screen, in-place payment, void with ledger reversal, bank accounts, client money card, trial balance |
 | ~~I~~ | ~~Money out~~ | **Done 26 Oct** — vendors, received invoices + payments + void, expenses, other income, recurring overheads, project-cost posting, P&L, AP aging |
+| ~~J~~ | ~~Contact ladder~~ | **Done 26 Oct** — Clients, Customers and Visitors tabs on the Contacts hub, reference URLs 301 to them |
+| ~~K~~ | ~~Sales proposals + pipeline~~ | **Done 26 Oct** — Proposals (in-negotiation quotes + value in play) and the Pipeline with a weighted forecast |
 | **L** | Telegram pairing | QR pairing + connection health card — next |
 | **F** | Marketing live proof once Meta/LinkedIn approve the app | Composer + publisher are real; only the platform key is missing |
 | ~~G~~ | ~~Hygiene~~ | **Done 26 Oct** — builder fonts self-hosted (26 families, 87 faces), System hubs gated by `can-any`, evidence 13 MB → 5.6 MB with references repointed, `docs/README.md` corrected |
