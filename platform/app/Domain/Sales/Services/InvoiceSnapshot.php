@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Sales\Services;
 
 use App\Domain\Crm\Enums\BusinessLine;
+use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\InvoiceItem;
 use App\Settings\BusinessSettings;
@@ -33,7 +34,7 @@ final class InvoiceSnapshot
         $business = [
             'name' => $invoice->business_line === BusinessLine::Furniture ? $this->business->furniture_brand_name : $this->business->brand_name,
             'legal_name' => $this->business->legal_name,
-            'address' => $this->business->address,
+            'address' => self::withCity($this->business->address, $this->business->city),
             'city' => $this->business->city,
             'phone' => $this->business->phone,
             'email' => $this->business->email,
@@ -73,6 +74,13 @@ final class InvoiceSnapshot
 
         $total = Money::ofMinor((int) $invoice->total_minor, $invoice->currency);
 
+        $wallets = BankAccount::query()->forLine($invoice->business_line)->where('kind', 'wallet')
+            ->when($bank !== null, fn ($query) => $query->whereKeyNot($bank->id))->limit(3)->get()
+            ->map(fn (BankAccount $account): array => [
+                'provider' => $account->wallet_provider ?: $account->bank_name,
+                'number' => $account->account_number,
+            ])->values()->all();
+
         return [
             'schema' => self::SCHEMA,
             'document_design' => $documentDesign,
@@ -90,9 +98,11 @@ final class InvoiceSnapshot
                 'account_number' => $bank->account_number,
                 'iban' => $bank->iban,
                 'branch' => $bank->branch,
+                'branch_code' => $bank->branch_code,
                 'wallet_provider' => $bank->wallet_provider,
                 'kind' => $bank->kind,
             ],
+            'wallets' => $wallets,
             'project' => $invoice->project === null ? null : [
                 'code' => $invoice->project->code,
                 'name' => $invoice->project->name,
@@ -114,5 +124,18 @@ final class InvoiceSnapshot
             'notes' => $invoice->notes,
             'terms' => $invoice->terms,
         ];
+    }
+
+    /** "…, Lahore" + city "Lahore" stays "…, Lahore" (the settings address often ends with the city already). */
+    private static function withCity(string $address, string $city): string
+    {
+        $address = trim($address, " ,\t");
+        $city = trim($city);
+
+        if ($city === '' || preg_match('/(^|[\s,])'.preg_quote($city, '/').'$/iu', $address) === 1) {
+            return $address;
+        }
+
+        return trim($address.', '.$city, ', ');
     }
 }

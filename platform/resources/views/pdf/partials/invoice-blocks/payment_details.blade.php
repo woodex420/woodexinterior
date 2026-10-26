@@ -1,15 +1,38 @@
-@if ($bank)
+@php $wallets = $s['wallets'] ?? []; @endphp
+@if ($bank || $wallets !== [])
     <div class="avoid">
         <h2>Pay to</h2>
-        <table class="box">
+        <table class="meta">
             <tr>
-                <td style="width: 34%;"><span class="muted">Title</span><br><strong>{{ $bank['title'] }}</strong></td>
-                <td style="width: 33%;"><span class="muted">Bank</span><br>{{ $bank['bank_name'] }}@if (! empty($bank['branch']))<br><span class="muted">{{ $bank['branch'] }}</span>@endif</td>
-                <td style="width: 33%;">
-                    <span class="muted">{{ ! empty($bank['iban']) ? 'IBAN' : 'Account no.' }}</span><br>
-                    <strong>{{ $bank['iban'] ?: $bank['account_number'] }}</strong>
-                    @if (! empty($bank['wallet_provider']))<br><span class="muted">{{ $bank['wallet_provider'] }}</span>@endif
-                </td>
+                @if ($bank)
+                    <td style="width: {{ $wallets !== [] ? '49%' : '100%' }};">
+                        <div class="box">
+                            <strong>{{ $bank['bank_name'] }}</strong>
+                            <table style="margin-top: 4px;">
+                                <tr><td class="paylabel">Account title</td><td>{{ $bank['title'] }}</td></tr>
+                                @if (! empty($bank['account_number']))<tr><td class="paylabel">Account no.</td><td>{{ $bank['account_number'] }}</td></tr>@endif
+                                @if (! empty($bank['iban']))<tr><td class="paylabel">IBAN</td><td>{{ $bank['iban'] }}</td></tr>@endif
+                                @if (! empty($bank['branch']))<tr><td class="paylabel">Branch</td><td>{{ $bank['branch'] }}@if (! empty($bank['branch_code'])) ({{ $bank['branch_code'] }})@endif</td></tr>@endif
+                                @if (! empty($bank['wallet_provider']))<tr><td class="paylabel">Wallet</td><td>{{ $bank['wallet_provider'] }}</td></tr>@endif
+                            </table>
+                        </div>
+                    </td>
+                @endif
+                @if ($bank && $wallets !== [])
+                    <td style="width: 2%;"></td>
+                @endif
+                @if ($wallets !== [])
+                    <td style="width: 49%;">
+                        <div class="box">
+                            <strong>Mobile wallets</strong>
+                            <table style="margin-top: 4px;">
+                                @foreach ($wallets as $wallet)
+                                    <tr><td class="paylabel">{{ $wallet['provider'] }}</td><td>{{ $wallet['number'] }}</td></tr>
+                                @endforeach
+                            </table>
+                        </div>
+                    </td>
+                @endif
             </tr>
         </table>
     </div>

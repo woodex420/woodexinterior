@@ -9,7 +9,7 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,469 passed · 1 skipped · 7,855 assertions** · Pint clean on touched files · PHPStan 0 errors |
+| Tests | **1,472 passed · 1 skipped · 7,893 assertions** · Pint clean on touched files · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
@@ -43,6 +43,8 @@ only on the real bot token in the server `.env`.
 **Slice B (same day).** Client Portal and Handovers stopped being `P4b` badges and became real screens (signed portal links; handover progress), Chat Bot opens its live switches on Settings, the duplicate Alert Rules is gone, the eleven System entries became four pages with tabs, and the rate book moved to Sales as **Estimator rates**. 12 more tests; suite **1,296 passed / 1 skipped**.
 
 **Slice E (26 October).** Invoices now raise themselves. `woodex:invoice-milestones` bills every milestone an accepted quotation has reached — hourly, once per milestone, with the same number, tax, PDF and ledger posting as the advance invoice — and `woodex:invoice-reminders` runs the 7/14/30-day ladder, one rung per invoice, messaging the client on WhatsApp only with consent and telling the studio why when it cannot. Both are on the Automation screen with their cadence and switches. 10 more tests; suite **1,332 passed · 1 skipped · 7,165 assertions**.
+
+**Slice R — quotation & invoice design match, Classic BOQ (26 October).** Both client documents now follow the v2.1 Pro layout the owner shared as PDFs: a **Summary of cost** first page (total area and per-sft rates where a section is fully sft-priced, dashes otherwise), amount-in-words box + TOTAL pill, the detailed BOQ as one table per section with 1.1-style numbering, bank details with branch code beside a **Mobile wallets** box (JazzCash/Easypaisa), an accepted-by-client signature block, and the contact footer. Summary of cost is a normal PDF block — move or hide it in Document design like any other; designs saved earlier gain it automatically. 4 more tests; suite **1,472 passed · 1 skipped · 7,893 assertions**. Proof renders of the demo quotation and a manual invoice were inspected page-by-page against the owner's PDFs (fake account numbers; preview restored afterwards).
 
 **Slice P — manual invoices, tracking filters, invoice export (26 October).** "New invoice" is a real flow now: client, lines, discount and tax, saved as a draft or issued in the same act — numbered in its own **MI-2026-####** series and frozen + booked exactly like milestone invoices (Dr receivable / Cr revenue / Cr tax). The shared issue step also fixes a latent gap: draft advance invoices could never be issued before; they can now. Invoice tracking filters by **year** and **Interior/Furniture**, and both the board and the list export CSV of what the filters select. 22 more tests; suite **1,469 passed · 1 skipped · 7,855 assertions**. Live proof on 33143: MI-2026-0001 issued at Rs 36,750 with an exact journal and frozen PDF, draft MI-2026-0002 issued through the new button, preview restored to baseline afterwards.
 

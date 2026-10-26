@@ -15,7 +15,7 @@
     * { font-family: "DejaVu Sans", sans-serif; }
     body { font-size: 9.5px; color: #1a2a45; line-height: 1.45; }
     header { position: fixed; top: -104px; left: 0; right: 0; height: 84px; border-bottom: 2px solid #0f1e36; }
-    footer { position: fixed; bottom: -46px; left: 0; right: 0; height: 24px; border-top: 1px solid #c5d1e2; font-size: 8px; color: #6e87ac; }
+    footer { position: fixed; bottom: -46px; left: 0; right: 0; height: 24px; border-top: 1px solid #c5d1e2; font-size: 8px; color: #46586f; }
     .brand { font-size: 20px; letter-spacing: 3px; font-weight: bold; color: #0f1e36; }
     .tagline { font-size: 7.5px; letter-spacing: 1.4px; color: #6e87ac; text-transform: uppercase; margin-top: 3px; }
     .muted { color: #6e87ac; }
@@ -24,7 +24,18 @@
     h2 { font-size: 10.5px; margin: 16px 0 6px; color: #0f1e36; text-transform: uppercase; letter-spacing: 1.2px; }
     table { width: 100%; border-collapse: collapse; }
     .meta td { vertical-align: top; padding: 0; }
-    .box { background: #f2f5f9; padding: 9px 11px; }
+    /* Classic BOQ furniture (Slice R): title band, cream boxes, words box + balance pill. */
+    .doctitle { font-size: 21px; letter-spacing: 4px; font-weight: bold; color: #0f1e36; text-align: right; }
+    .doctitle .gold { color: #c39a4a; }
+    .docmeta td { padding: 1px 0 1px 10px; vertical-align: top; }
+    .goldrule { border-top: 1px solid #c39a4a; margin: 10px 0 12px; }
+    .box { background: #faf7f1; border: 1px solid #e8e0d0; padding: 9px 11px; }
+    .boxlabel { font-size: 7.5px; letter-spacing: 1.6px; color: #a07d3c; text-transform: uppercase; margin-bottom: 3px; }
+    .wordsbox { border: 1px dashed #c9b18a; padding: 8px 10px; }
+    .pill td { background: #0f1e36; color: #fff; padding: 9px 12px; }
+    .pill .pill-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+    .pill .pill-amount { font-size: 13px; font-weight: bold; color: #e9c46a; text-align: right; }
+    .paylabel { color: #6e87ac; width: 34%; padding: 1px 6px 1px 0; vertical-align: top; }
     .lines th { background: #0f1e36; color: #fff; font-weight: bold; font-size: 8.5px; text-transform: uppercase; letter-spacing: .6px; padding: 6px; text-align: left; }
     .lines th.right { text-align: right; }
     .lines td { padding: 6px; border-bottom: 1px solid #e3e9f1; vertical-align: top; }
@@ -48,11 +59,9 @@
                 <div class="brand">{{ strtoupper($design['brand_name'] ?? $b['name']) }}</div>
                 <div class="tagline">{{ ($design['header_text'] ?? '') !== '' ? $design['header_text'] : $b['tagline'] }}</div>
             </td>
-            <td class="right muted" style="width: 48%; line-height: 1.55;">
-                {{ $b['address'] }}<br>
-                {{ $b['phone'] }}@if (! empty($b['whatsapp']) && $b['whatsapp'] !== $b['phone']) · WhatsApp {{ $b['whatsapp'] }}@endif<br>
-                {{ $b['email'] }}@if (! empty($b['website'])) · {{ $b['website'] }}@endif
-                @if (! empty($b['ntn']))<br>NTN {{ $b['ntn'] }}@endif
+            <td class="right" style="width: 48%; line-height: 1.55;">
+                <strong>{{ $isCreditNote ? 'Credit note' : 'Invoice' }} {{ $s['number'] }}</strong><br>
+                <span class="muted">{{ $s['issue_date'] ?? '—' }} · Due {{ $s['due_date'] ?? '—' }}</span>
             </td>
         </tr>
     </table>
@@ -62,7 +71,10 @@
     @if (! empty($design['footer_text']))
         <div class="document-footer">{{ $design['footer_text'] }}</div>
     @else
-    {{ $b['legal_name'] }} · {{ $b['address'] }}, {{ $b['city'] }} · {{ $b['phone'] }}
+    <table><tr>
+        <td style="padding-top: 6px; width: 68%;">{{ $b['phone'] }}&nbsp;&nbsp;|&nbsp;&nbsp;{{ $b['email'] }}&nbsp;&nbsp;|&nbsp;&nbsp;{{ $b['address'] }}</td>
+        <td class="right" style="padding-top: 6px; padding-right: 88px; width: 32%;">Thank you for your business</td>
+    </tr></table>
     @endif
 </footer>
 
@@ -72,30 +84,46 @@
     <div class="stamp">Credit note</div>
 @endif
 
-<h1>{{ $isCreditNote ? 'Credit note' : 'Invoice' }} {{ $s['number'] }}</h1>
-<div class="muted">
-    @if (! empty($s['project']))Project {{ $s['project']['code'] }} — {{ $s['project']['name'] }}<br>@endif
-    @if (! empty($s['quote']))Against quotation {{ $s['quote']['number'] }} ({{ $s['quote']['title'] }}, total {{ $s['quote']['total'] }})@endif
-</div>
-
-<table class="meta" style="margin-top: 12px;">
+<table class="meta">
     <tr>
-        <td style="width: 48%;">
-            <div class="box">
-                <strong>Billed to</strong><br>
-                {{ $client['name'] }}@if (! empty($client['company']))<br>{{ $client['company'] }}@endif<br>
-                @if (! empty($client['address'])){{ $client['address'] }}<br>@endif
-                @if (! empty($client['city'])){{ $client['city'] }}<br>@endif
-                {{ $client['phone'] }}@if (! empty($client['email']))<br>{{ $client['email'] }}@endif
+        <td style="width: 44%;"></td>
+        <td style="width: 56%;">
+            <div class="doctitle">{{ $isCreditNote ? 'CREDIT NOTE' : 'INVOICE' }}<span class="gold">.</span></div>
+            <table class="docmeta" style="margin-top: 6px;">
+                <tr><td class="muted right">{{ $isCreditNote ? 'Credit note no.' : 'Invoice no.' }}</td><td class="right" style="width: 34%;"><strong>{{ $s['number'] }}</strong></td></tr>
+                <tr><td class="muted right">Date</td><td class="right">{{ $s['issue_date'] ?? '—' }}</td></tr>
+                <tr><td class="muted right">Due date</td><td class="right">{{ $s['due_date'] ?? '—' }}</td></tr>
+            </table>
+            <div class="muted right" style="margin-top: 6px; line-height: 1.55;">
+                {{ $b['address'] }}<br>
+                {{ $b['phone'] }} · {{ $b['email'] }}@if (! empty($b['ntn']))<br>NTN {{ $b['ntn'] }}@endif
             </div>
         </td>
-        <td style="width: 4%;"></td>
-        <td style="width: 48%;">
-            <table class="meta">
-                <tr><td class="muted" style="width: 40%;">Invoice date</td><td>{{ $s['issue_date'] ?? '—' }}</td></tr>
-                <tr><td class="muted">Due date</td><td>{{ $s['due_date'] ?? '—' }}</td></tr>
-                <tr><td class="muted">Amount due</td><td><strong>{{ $s['balance'] }}</strong></td></tr>
-            </table>
+    </tr>
+</table>
+
+<div class="goldrule"></div>
+
+<table class="meta">
+    <tr>
+        <td style="width: 49%;">
+            <div class="box">
+                <div class="boxlabel">Billed to</div>
+                <div style="font-size: 11px; font-weight: bold;">{{ $client['name'] }}</div>
+                @if (! empty($client['company']))<div>{{ $client['company'] }}</div>@endif
+                @if (! empty($client['address']))<div class="muted">{{ $client['address'] }}</div>@endif
+                @if (! empty($client['city']))<div class="muted">{{ $client['city'] }}</div>@endif
+                <div class="muted">{{ implode(' · ', array_filter([$client['phone'], $client['email'] ?? null])) }}</div>
+            </div>
+        </td>
+        <td style="width: 2%;"></td>
+        <td style="width: 49%;">
+            <div class="box">
+                <div class="boxlabel">Amount due</div>
+                <div style="font-size: 13px; font-weight: bold;">{{ $s['balance'] }}</div>
+                @if (! empty($s['project']))<div class="muted" style="margin-top: 2px;">Project {{ $s['project']['code'] }} — {{ $s['project']['name'] }}</div>@endif
+                @if (! empty($s['quote']))<div class="muted" style="margin-top: 2px;">Against quotation {{ $s['quote']['number'] }} ({{ $s['quote']['title'] }}, total {{ $s['quote']['total'] }})</div>@endif
+            </div>
         </td>
     </tr>
 </table>

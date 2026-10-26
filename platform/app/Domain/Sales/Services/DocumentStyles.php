@@ -36,12 +36,13 @@ final class DocumentStyles
     /** @var array<string, string> Block key => label, in the original (default) render order. */
     public const QUOTE_BLOCKS = [
         'scope' => 'Scope of work',
-        'boq' => 'Items / BOQ (Price)',
+        'summary' => 'Summary of cost',
         'totals' => 'Totals & amount in words',
+        'boq' => 'Items / BOQ (detailed)',
         'payment' => 'Payment schedule',
         'terms' => 'Terms & conditions',
         'notes' => 'Notes',
-        'payment_details' => 'Payment details (bank)',
+        'payment_details' => 'Payment details (bank & wallets)',
         'signatures' => 'Signatures',
     ];
 
@@ -74,7 +75,7 @@ final class DocumentStyles
 
     /**
      * Normalize a stored/submitted block list: drop unknown keys, keep the first of duplicates,
-     * append any known block that is missing (visible), and force locked blocks visible.
+     * insert any known block that is missing (visible) at its catalogue position, force locked visible.
      *
      * @return list<array{key: string, visible: bool}>
      */
@@ -96,10 +97,25 @@ final class DocumentStyles
             $blocks[] = ['key' => $key, 'visible' => in_array($key, $locked, true) || (bool) ($entry['visible'] ?? true)];
         }
 
+        // A block the stored list predates (e.g. a design saved before "Summary of cost" existed) joins at
+        // its catalogue position — after the last listed block that precedes it in the catalogue — instead
+        // of landing after Signatures. The owner's own relative order is never disturbed.
+        $positions = array_flip(array_keys($catalogue));
+
         foreach (array_keys($catalogue) as $key) {
-            if (! isset($seen[$key])) {
-                $blocks[] = ['key' => $key, 'visible' => true];
+            if (isset($seen[$key])) {
+                continue;
             }
+
+            $insertAt = 0;
+
+            foreach ($blocks as $index => $block) {
+                if ($positions[$block['key']] < $positions[$key]) {
+                    $insertAt = $index + 1;
+                }
+            }
+
+            array_splice($blocks, $insertAt, 0, [['key' => $key, 'visible' => true]]);
         }
 
         return $blocks;

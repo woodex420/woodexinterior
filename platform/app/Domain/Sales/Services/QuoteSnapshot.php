@@ -113,13 +113,19 @@ final class QuoteSnapshot
                 'website' => $this->business->website,
                 'ntn' => $this->business->ntn,
             ],
-            'bank_accounts' => BankAccount::query()->forLine($quote->business_line)->limit(3)->get()
+            'bank_accounts' => BankAccount::query()->forLine($quote->business_line)->where('kind', 'bank')->limit(3)->get()
                 ->map(fn (BankAccount $account): array => [
                     'title' => $account->title,
                     'bank_name' => $account->bank_name,
                     'account_number' => $account->account_number,
                     'iban' => $account->iban,
                     'branch' => $account->branch,
+                    'branch_code' => $account->branch_code,
+                ])->values()->all(),
+            'wallets' => BankAccount::query()->forLine($quote->business_line)->where('kind', 'wallet')->limit(3)->get()
+                ->map(fn (BankAccount $account): array => [
+                    'provider' => $account->wallet_provider ?: $account->bank_name,
+                    'number' => $account->account_number,
                 ])->values()->all(),
             'signatories' => array_values($quote->signatories ?: $this->sales->signatories),
             'prepared_by' => $quote->owner?->name,

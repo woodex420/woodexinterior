@@ -2437,3 +2437,28 @@ has no screen), one unified Estimations hub (estimator rates and estimates curre
 Marketing connections (existing Slice Q, token-blocked). Slices **R→S→V→T→U→W→X** proposed, R (PDF design
 match) recommended first. Schema asks inside the plan: nullable quote `type/site/intro_line`, six nullable
 invoice columns, template `category` — all pending the owner's pick. No code changed in this step.
+
+### Step 42 — quotation & invoice design match: Classic BOQ parity (Slice R, 26 Oct 2026)
+
+Plan 34, slice R (the owner's pick). Both documents now print in the v2.1 Classic BOQ anatomy: title band
+(QUOTATION. / INVOICE. + meta + gold rule), **Prepared for / Project details** (invoice: Billed to / Amount
+due) cream boxes, the new **Summary of cost** block (per-section rollup; Total area (SFT) + Per Sft computed
+only when a section is entirely sft-priced, dashes otherwise), dashed **Amount in words** box + navy **TOTAL
+(Rs)** pill, **Detailed BOQ as one table per section** with 1.1/2.1 SR numbering and Total·Section rows,
+zero lines printed as dashes, **Payment details split into Bank (with branch code) | Mobile wallets**,
+**Accepted by client** signature block, and the footer contact strip + "Thank you for your business".
+Summary is a normal block: it appears in Document design, moves and hides like the rest, and designs saved
+before it existed gain it at its catalogue position (after Scope), never after Signatures. No schema change —
+snapshots gained `wallets` + `branch_code` (the bank columns already existed); older Frozen snapshots render
+without them. Sent documents keep their stored bytes, as always.
+
+**Proof.** 4 new tests (`ClassicBoqDesignTest`) + Slice O pins updated for the 9-block catalogue. Targeted
+suites 80 green; full suite **1,472 passed · 1 skipped · 7,893 assertions** (the known EstimateToQuote flake
+passes alone); Pint clean, PHPStan 0. Live renders inspected page-by-page: WI-10100 in the new design (Wood
+Work summary area 724.875 sft @ Rs 1,638.42/sft computed; mixed sections dashed) and MI-2026-0001 (wallets +
+branch code print) — proof rows used fake account numbers and the preview was restored to baseline after.
+Build-caught: the invoice printed "Lahore, Lahore" (address + city) — the snapshot now de-dupes like the
+quotation's. A sandbox reset mid-slice wiped /tmp and the local git ref; recovered by re-setup and aligning
+to the pushed remote tip (16-file diff verified before commit).
+
+**Next.** Plan 34 order: Slice S (builder live preview + per-quote PDF blocks) — or the owner's pick.

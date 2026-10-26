@@ -37,17 +37,19 @@ beforeEach(function () {
     $this->designValues = ['brand_name' => 'Woodex Interior', 'accent_color' => '#234567', 'header_text' => 'Reviewed design identity', 'footer_text' => 'Thank you for your business'];
 });
 
-it('normalizes block lists: unknown dropped, duplicates once, missing appended, locked visible', function () {
+it('normalizes block lists: unknown dropped, duplicates once, missing join at catalogue position, locked visible', function () {
     $blocks = DocumentStyles::blocks('quote', [
         ['key' => 'terms', 'visible' => true],
         ['key' => 'boq', 'visible' => false],
         ['key' => 'bogus', 'visible' => true],
         ['key' => 'terms', 'visible' => false],
     ]);
+    $keys = collect($blocks)->pluck('key');
 
-    expect($blocks)->toHaveCount(8)
-        ->and($blocks[0])->toBe(['key' => 'terms', 'visible' => true])
-        ->and($blocks[1])->toBe(['key' => 'boq', 'visible' => true])
+    expect($blocks)->toHaveCount(9)
+        ->and($blocks[0])->toBe(['key' => 'scope', 'visible' => true])
+        ->and($keys->search('terms'))->toBeLessThan($keys->search('boq'))
+        ->and(collect($blocks)->firstWhere('key', 'boq')['visible'])->toBeTrue()
         ->and(collect($blocks)->pluck('key')->duplicates())->toBeEmpty()
         ->and(DocumentStyles::visibleBlocks('quote', null))->toBe(array_keys(DocumentStyles::QUOTE_BLOCKS))
         ->and(DocumentStyles::visibleBlocks('invoice', []))->toBe(array_keys(DocumentStyles::INVOICE_BLOCKS))
@@ -63,8 +65,9 @@ it('persists theme and blocks through the action', function () {
     ], 1);
 
     expect($design->pdf_theme)->toBe('premium')
-        ->and($design->quote_blocks)->toHaveCount(8)
-        ->and($design->quote_blocks[0]['key'])->toBe('terms')
+        ->and($design->quote_blocks)->toHaveCount(9)
+        ->and($design->quote_blocks[0]['key'])->toBe('scope')
+        ->and(collect($design->quote_blocks)->firstWhere('key', 'terms')['visible'])->toBeTrue()
         ->and(collect($design->invoice_blocks)->firstWhere('key', 'notes')['visible'])->toBeFalse()
         ->and(app(DocumentStyles::class)->copy(BusinessLine::Interior)['pdf_theme'])->toBe('premium');
 });
@@ -95,7 +98,7 @@ it('renders new quotes with reordered blocks, hidden blocks omitted and the chos
 
     expect($snapshot['document_design']['pdf_theme'])->toBe('premium')
         ->and($html)->toContain('/* theme: premium */')
-        ->and(strpos($html, 'Terms and conditions'))->toBeLessThan(strpos($html, '<h2>Price</h2>'))
+        ->and(strpos($html, 'Terms and conditions'))->toBeLessThan(strpos($html, '<h2>Detailed bill of quantities</h2>'))
         ->and($html)->not->toContain('Scope of work')
         ->and($html)->not->toContain('Scope marker text')
         ->and($html)->toContain('First term line')
@@ -109,8 +112,8 @@ it('renders legacy snapshots without theme or block keys in the original order',
 
     $html = view('pdf.quote', ['s' => $snapshot, 'draft' => true])->render();
 
-    expect(strpos($html, 'Scope of work'))->toBeLessThan(strpos($html, '<h2>Price</h2>'))
-        ->and(strpos($html, '<h2>Price</h2>'))->toBeLessThan(strpos($html, 'Terms and conditions'))
+    expect(strpos($html, 'Scope of work'))->toBeLessThan(strpos($html, '<h2>Detailed bill of quantities</h2>'))
+        ->and(strpos($html, '<h2>Detailed bill of quantities</h2>'))->toBeLessThan(strpos($html, 'Terms and conditions'))
         ->and($html)->toContain('Scope marker text')
         ->and($html)->not->toContain('/* theme:');
 });
@@ -165,7 +168,7 @@ it('saves theme and blocks from the designer screen', function () {
         ->assertSet('pdfTheme', 'classic')
         ->assertSet('quoteBlocks.0.key', 'scope')
         ->call('moveBlock', 'quote', 0, 1)
-        ->assertSet('quoteBlocks.0.key', 'boq')
+        ->assertSet('quoteBlocks.0.key', 'summary')
         ->set('quoteBlocks.1.visible', false)
         ->set('pdfTheme', 'minimal')
         ->call('save')->assertHasNoErrors();
@@ -173,14 +176,14 @@ it('saves theme and blocks from the designer screen', function () {
     $design = DocumentDesign::query()->where('business_line', 'interior')->firstOrFail();
 
     expect($design->pdf_theme)->toBe('minimal')
-        ->and($design->quote_blocks[0]['key'])->toBe('boq')
+        ->and($design->quote_blocks[0]['key'])->toBe('summary')
         ->and($design->quote_blocks[1])->toBe(['key' => 'scope', 'visible' => false]);
 });
 
 it('keeps price and totals visible even when unticked, and resets order', function () {
     Livewire::test(DocumentDesigner::class)
-        ->set('quoteBlocks.1.visible', false)
         ->set('quoteBlocks.2.visible', false)
+        ->set('quoteBlocks.3.visible', false)
         ->call('save')->assertHasNoErrors();
 
     $blocks = DocumentDesign::query()->where('business_line', 'interior')->firstOrFail()->quote_blocks;

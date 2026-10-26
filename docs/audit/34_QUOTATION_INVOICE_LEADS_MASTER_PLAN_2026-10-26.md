@@ -108,7 +108,7 @@ engine, marketing attribution (source → enquiry → won value).
 
 ## 3. The slices (each independently shippable, tested, live-proven)
 
-**Slice R — Quotation design match (Classic BOQ parity).** New "Summary of cost" block (section rollup;
+**Slice R — Quotation design match (Classic BOQ parity).** ✅ **Shipped 26 Oct 2026** (MASTER_TODO Step 42). New "Summary of cost" block (section rollup;
 area/per-sft filled when a section is sft-priced, dash otherwise), BOQ rebuilt as per-section tables with
 1.1-style SR, words box + total pill, Project-details box, footer contact strip + thank-you, logo mark in the
 header, zero-as-dash + qty trim, Payment details split **Bank (with branch code) | Mobile wallets** (uses
@@ -152,7 +152,7 @@ in the document design; public estimator and bot keep the same rates (single sou
 signature-verified webhook → inbox/leads, delivery truth), social Settings connect, planner publish +
 Comments from connected pages. *Blocked for live proof until the owner provides Page ID + token.*
 
-**Recommended order: R → S → V → T → U → W → X.** R+S deliver the owner's headline ask ("match the PDF,
+**Order: R ✅ → S → V → T → U → W → X** (owner picked R first, 26 Oct). R+S deliver the owner's headline ask ("match the PDF,
 blocks drag & switch"); V is the daily-driver; T/U are structured-data completions; W unifies; X waits on
 Meta credentials anyway.
 
