@@ -50,7 +50,7 @@
                         @php $late = $invoice->due_date !== null && $invoice->due_date->lt(today()) && ! in_array($invoice->status, [\App\Domain\Sales\Enums\InvoiceStatus::Paid, \App\Domain\Sales\Enums\InvoiceStatus::Void], true); @endphp
                         <tr wire:key="invoice-{{ $invoice->id }}" class="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
                             <td class="px-5 py-3">
-                                <span class="block font-medium text-gray-800 dark:text-white/90">{{ $invoice->number }}</span>
+                                <a href="{{ route('admin.invoices.show', $invoice) }}" wire:navigate class="block font-medium text-gray-800 hover:text-brand-600 hover:underline dark:text-white/90 dark:hover:text-brand-400">{{ $invoice->number }}</a>
                                 <span class="block max-w-xs truncate text-theme-xs text-gray-500">
                                     {{ $invoice->project?->code ?? '—' }}{{ $invoice->quote ? ' · quotation '.$invoice->quote->number : '' }}
                                 </span>

@@ -2021,3 +2021,55 @@ every family parsed out of the picker's own `GFONTS` table has a face and an exi
 Full suite **1,348 passed · 1 skipped · 7,354 assertions**; Pint clean; PHPStan 0 (598 files).
 
 **Not done in G.** Nothing from the audit's list. F (marketing live proof) stays blocked on Meta/LinkedIn approval.
+
+### Step 33 — CRM / Sales / Accounts deep QA begins: the invoice gets a home (Slice H, 26 Oct 2026)
+
+The owner's standing directive was that CRM, Sales and Accounts were "still old, no updated". This step is the audit
+that follows from it, and the first two fixes it produced. The audit method: crawl every screen live as the owner,
+search the code for placeholder copy, compare each screen with the database, then read the screens against the
+domain layer to find actions and policies with no caller anywhere.
+
+**What the audit found.**
+1. **No invoice screen existed.** `/admin/invoices` was a read-only table; `/admin/invoices/{id}` returned 404.
+   `InvoicePolicy::void()` and the `invoices.void` permission had **no caller in the codebase**, so an invoice could
+   not be voided anywhere in the OS, and the client's signed link (`InvoiceLinks::portal`) was reachable only from a
+   quotation's blade.
+2. **No screen could enter a bank account.** The dashboard's setup checklist says "Invoices → Bank accounts", the
+   `BankAccount` model says the owner enters them "in the admin", the invoice snapshot prints them, and the route did
+   not exist. `bank_accounts` was empty on every install, so **no invoice printed payment details at all**.
+3. The contact page (CRM) shows enquiries and a statement PDF but no quotations, invoices or outstanding balance.
+4. Accounts can post, reverse and close periods but has **no trial balance**.
+
+Items 3 and 4 are recorded here as the next bites; 1 and 2 shipped now.
+
+**Shipped.**
+* `GET /admin/invoices/{invoice}` — `Livewire\Admin\Sales\InvoiceShow`: the frozen lines with per-line tax, the
+  subtotal/discount/tax/total, paid and balance, client and quotation/project links, the bank details it printed, the
+  journal entry it became (with its lines, or *Reversed*), and every payment recorded against it.
+* **Collect a payment** from the invoice — the existing `CollectPayment` path (record → verify → receipt → ledger),
+  shown only to people with both payment permissions and only while a balance exists.
+* `Sales\Actions\VoidInvoice` + **Void** (owner only) — a mandatory reason, `voided_at` / `void_reason` / zeroed
+  balance, and the invoice's journal **reversed** through `ReverseJournalEntry`. Refused when money has been recorded
+  against it (that is a refund or credit note, and the error says so). Nothing is deleted.
+* **Client link** and **WhatsApp share** on the invoice itself.
+* `GET /admin/invoices?tab=bank` — `Livewire\Admin\Sales\BankAccounts`: add and edit bank or mobile-wallet accounts,
+  one default per business line, deactivate rather than delete (issued invoices point at the row). Read with
+  `invoices.view`, changed with `invoices.manage`, audited under `billing`.
+* The invoice list: every number links to its invoice.
+* Morph map: `'bank_account' => BankAccount::class` (the audit trail now stores bank accounts).
+
+**Tests.** 15 new — `tests/Feature/Sales/InvoiceScreenTest.php` (9) and `tests/Feature/Sales/BankAccountsScreenTest.php`
+(6), including: the page shows the real line and client; the list links to it; support is refused; a payment collected
+from the page is verified, receipted and posted; over-collecting is refused; a void reverses the ledger and keeps the
+document; a void with money against it is refused; a reason is required; a sales user cannot void; an account saved on
+the bank screen is the account the next invoice prints (asserted through a real quotation acceptance).
+Full suite **1,363 passed · 1 skipped · 7,418 assertions**; Pint clean; PHPStan 0 errors.
+
+**Proof on 33143.** QA bank account saved; a recurring schedule raised `RI-2026-0001` (Rs 40,000 + 15% = Rs 46,000)
+and the invoice screen showed the line, the IBAN, journal `JE-2026-0002`, and both actions. A payment of Rs 10,000
+was collected — receipt `RC-2026-0001`, `JE-2026-0003` — and the page read paid Rs 10,000 / balance Rs 36,000.
+A second invoice `RI-2026-0002` (Rs 23,000) was voided with *"QA proof — raised in error"*: **Void on 26 Oct 2026,
+11:40**, journal `JE-2026-0004` **Reversed** by `JE-2026-0005`. Every QA row (invoices, items, payments, journals,
+schedules, bank account) was then removed; all screens are back to their honest empty state.
+
+**Next.** F3 contact money panel; F4 trial balance; then the rest of the Accounts screen audit.
