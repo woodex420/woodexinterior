@@ -57,7 +57,8 @@
                         <div class="min-w-0 flex-1">
                             <a href="{{ route('admin.leads.show', $lead) }}" wire:navigate class="block truncate font-medium text-gray-800 hover:underline dark:text-white/90">{{ $lead->contact->name }}
                                 <span class="ml-1 text-theme-xs font-normal text-gray-400">{{ $lead->ref }}</span></a>
-                            <p class="text-theme-xs text-gray-500">{{ $lead->business_line->label() }}{{ $lead->service ? ' · '.\Illuminate\Support\Str::headline($lead->service) : '' }} · {{ $lead->owner?->name ?? 'Unassigned' }}</p>
+                            @php($service = $lead->service ? \Illuminate\Support\Str::headline($lead->service) : null)
+                            <p class="text-theme-xs text-gray-500">{{ $lead->business_line->label() }}{{ $service && $service !== $lead->business_line->label() ? ' · '.$service : '' }} · {{ $lead->owner?->name ?? 'Unassigned' }}</p>
                         </div>
                         @if ($lead->isSlaBreached())
                             <x-admin.badge color="error">SLA breached</x-admin.badge>
