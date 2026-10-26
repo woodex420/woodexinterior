@@ -108,6 +108,7 @@ it('renders new quotes with reordered blocks, hidden blocks omitted and the chos
 it('renders legacy snapshots without theme or block keys in the original order', function () {
     app(QuoteEditor::class)->updateDetails($this->quote, ['scope_html' => '<p>Scope marker text</p>', 'terms' => 'First term line']);
     $snapshot = app(QuoteSnapshot::class)->build($this->quote->refresh());
+    unset($snapshot['quotation_renderer'], $snapshot['quote_layout']);
     $snapshot['document_design'] = array_diff_key($snapshot['document_design'], array_flip(['pdf_theme', 'quote_blocks', 'invoice_blocks']));
 
     $html = view('pdf.quote', ['s' => $snapshot, 'draft' => true])->render();
@@ -198,6 +199,7 @@ it('keeps price and totals visible even when unticked, and resets order', functi
 
 it('exports and imports a quote template file', function () {
     $template = QuoteTemplate::query()->where('is_active', true)->firstOrFail();
+    $template->update(['blueprint' => [...$template->blueprint, 'presentation' => ['quote_layout' => 'project', 'pdf_theme' => 'premium', 'client' => 'Must not transfer', 'bank' => 'Must not transfer']]]);
 
     Livewire::test(QuoteTemplates::class)
         ->call('exportTemplate', $template->id)
@@ -226,7 +228,10 @@ it('exports and imports a quote template file', function () {
     expect(QuoteTemplate::query()->count())->toBe($count + 1)
         ->and($imported->slug)->toBe($template->slug.'-2')
         ->and($imported->name)->toBe($template->name)
-        ->and(QuoteBlueprint::sections($imported->blueprint))->toEqual(QuoteBlueprint::sections($template->blueprint));
+        ->and(QuoteBlueprint::sections($imported->blueprint))->toEqual(QuoteBlueprint::sections($template->blueprint))
+        ->and($imported->blueprint['presentation']['quote_layout'])->toBe('project')
+        ->and($imported->blueprint['presentation']['pdf_theme'])->toBe('premium')
+        ->and(array_keys($imported->blueprint['presentation']))->toBe(['quote_layout', 'pdf_theme', 'quote_blocks']);
 });
 
 it('refuses invalid template files and unlinks unknown catalog items', function () {

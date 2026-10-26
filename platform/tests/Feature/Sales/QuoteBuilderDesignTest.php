@@ -96,10 +96,9 @@ it('prints the client override without touching the contact, and clears it on re
         ->and(app(QuoteSnapshot::class)->build($this->quote)['client']['name'])->toBe($contactName);
 });
 
-it('shows the live preview drawer with the document itself, and asks it to refresh after edits', function () {
+it('shows the persistent side preview with the document itself, and asks it to refresh after edits', function () {
     Livewire::test(QuoteBuilder::class, ['quote' => $this->quote])
-        ->assertDontSee('Quotation live preview')
-        ->set('showPreview', true)
+        ->assertSee('quotation-workbench')
         ->assertSee('Live preview')
         ->assertSee('Quotation live preview')
         // The pane carries the real document HTML (srcdoc), not a framed PDF.

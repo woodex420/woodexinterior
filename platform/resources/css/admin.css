@@ -191,3 +191,13 @@
 .sortable-drag {
   @apply rotate-1 shadow-theme-lg;
 }
+
+/* Quotation workbench: preview occupies its own column, never covers editable controls. */
+.quotation-workbench { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.quotation-editor { min-width: 0; }
+.quotation-preview { position: sticky; top: 88px; height: calc(100dvh - 108px); min-height: 480px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e4e7ec; border-radius: 12px; background: #e9e7e2; }
+.quotation-editor .sticky { z-index: 10; }
+@media (max-width: 1023px) {
+  .quotation-workbench { grid-template-columns: minmax(0, 1fr); }
+  .quotation-preview { position: relative; top: auto; height: 75dvh; min-height: 420px; }
+}

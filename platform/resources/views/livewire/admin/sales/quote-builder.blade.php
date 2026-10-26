@@ -7,7 +7,7 @@
     $ro = ! $editable;
     $planKey = $quote->milestonePlan()->value;
 @endphp
-<div>
+<div x-data="quoteWorkbench({ url: '{{ route('admin.quotes.preview', $quote, false) }}', csrf: '{{ csrf_token() }}' })" x-on:input="queuePreview($event)" x-on:change="queuePreview($event)" x-on:preview-refresh.window="queuePreview()">
     <x-admin.page-header :title="$quote->label()" :breadcrumbs="['Sales' => null, 'Quotations' => route('admin.quotes.index'), $quote->label() => null]">
         <x-slot:actions>
             @can('duplicate', $quote)
@@ -16,7 +16,6 @@
             @can('manageCatalog', \App\Domain\Sales\Models\Quote::class)
                 <x-admin.button variant="secondary" icon="templates" wire:click="openSaveTemplate">Save as template</x-admin.button>
             @endcan
-            <x-admin.button variant="secondary" icon="eye" wire:click="$toggle('showPreview')">{{ $showPreview ? 'Hide preview' : 'Live preview' }}</x-admin.button>
             <x-admin.button variant="secondary" icon="file" :href="route('admin.quotes.pdf', $quote)" x-on:click.prevent="$dispatch('document-preview', { url: $el.href })">{{ $sendable ? 'Preview PDF' : 'PDF' }}</x-admin.button>
             @if ($editable)<x-admin.button variant="ghost" wire:click="applyCurrentDesign" wire:confirm="Copy the latest saved brand design into this draft? Check the PDF before sending.">Apply current design</x-admin.button>@endif
             @if ($canRevise)
@@ -108,7 +107,8 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+    <div class="quotation-workbench">
+    <div class="quotation-editor grid grid-cols-1 gap-6">
         {{-- Main column: scope, sections and lines, totals --}}
         <div class="min-w-0 space-y-5">
             <x-admin.card title="Scope of work" description="Printed before the price list. Blank line = new paragraph; start lines with “-” for bullets.">
@@ -459,13 +459,7 @@
 
             <x-admin.card title="PDF design" description="For this quotation only. Brand defaults live in Document design.">
                 <div class="space-y-4">
-                    <x-admin.field label="Design" for="pdfTheme">
-                        <select id="pdfTheme" wire:model.live="pdfTheme" @disabled($ro) class="wx-input">
-                            @foreach ($themes as $themeKey => $themeLabel)
-                                <option value="{{ $themeKey }}">{{ $themeLabel }}</option>
-                            @endforeach
-                        </select>
-                    </x-admin.field>
+                    <p class="text-theme-xs text-gray-500">Choose the v2.1 layout and colour design above the live preview. Below, customise the blocks for this quotation only.</p>
                     <div>
                         <div class="flex items-center justify-between">
                             <span class="wx-label">PDF blocks</span>
@@ -624,10 +618,30 @@
                 </div>
             </x-admin.card>
 
-            <x-admin.card title="Sending">
-                <p class="text-theme-sm text-gray-600 dark:text-gray-400">Approval for large discounts, the PDF, sending by link and the client's online acceptance arrive in <strong>P2 part 2</strong>. Until then, quotations stay drafts.</p>
-            </x-admin.card>
         </div>
+    </div>
+
+        <aside class="quotation-preview" aria-label="Quotation preview panel">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
+                <div><p class="font-medium">Live preview · v2.1</p><p class="text-theme-xs text-gray-500">{{ $layouts[$quoteLayout] ?? 'Classic BOQ' }} · {{ $themes[$pdfTheme] ?? 'Classic' }}</p></div>
+                <x-admin.button size="sm" variant="secondary" icon="file" :href="route('admin.quotes.pdf', $quote)" x-on:click.prevent="$dispatch('document-preview', { url: $el.href })">Preview saved PDF</x-admin.button>
+            </div>
+            <div class="grid grid-cols-2 gap-3 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
+                <label class="text-theme-xs text-gray-500" for="quoteLayout">v2.1 layout
+                    <select id="quoteLayout" wire:model.live="quoteLayout" @disabled($ro) class="wx-input mt-1" title="Single: one continuous table. Project: summary and a separate page per trade. Classic: summary and detailed BOQ.">
+                        @foreach ($layouts as $layoutKey => $layoutLabel)<option value="{{ $layoutKey }}">{{ $layoutLabel }}</option>@endforeach
+                    </select>
+                </label>
+                <label class="text-theme-xs text-gray-500" for="pdfTheme">Colour design
+                    <select id="pdfTheme" wire:model.live="pdfTheme" @disabled($ro) class="wx-input mt-1">
+                        @foreach ($themes as $themeKey => $themeLabel)<option value="{{ $themeKey }}">{{ $themeLabel }}</option>@endforeach
+                    </select>
+                </label>
+                @if ($quoteLayout === 'single')<p class="col-span-2 text-theme-xs text-gray-500">One continuous table; long quotations can continue onto more pages.</p>@endif
+            </div>
+            <p class="border-b border-gray-200 bg-white px-4 py-2 text-theme-xs text-gray-500 dark:bg-gray-900" role="status" x-text="previewStatus">Preview ready · saves when you leave a field</p>
+            <iframe wire:ignore x-ref="sheet" x-init="fitSheet()" x-on:load="fitSheet()" srcdoc="{{ $previewHtml }}" class="min-h-0 w-full flex-1 border-0" title="Quotation live preview"></iframe>
+        </aside>
     </div>
 
     {{-- Rate book picker (QUO-001) --}}
@@ -791,16 +805,4 @@
         </x-admin.modal>
     @endif
 
-    @if ($showPreview)
-        <div class="fixed inset-y-0 right-0 z-40 flex w-full max-w-3xl flex-col bg-white shadow-2xl dark:bg-gray-900" role="dialog" aria-label="Live preview">
-            <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-800">
-                <p class="text-theme-sm font-medium text-gray-900 dark:text-white">Live preview <span class="font-normal text-gray-400">· {{ $themes[$pdfTheme] }} · updates as you edit</span></p>
-                <div class="flex shrink-0 gap-2">
-                    <x-admin.button size="sm" variant="secondary" icon="file" :href="route('admin.quotes.pdf', $quote)" x-on:click.prevent="$dispatch('document-preview', { url: $el.href })">Preview PDF</x-admin.button>
-                    <x-admin.button size="sm" variant="ghost" wire:click="$set('showPreview', false)">Close</x-admin.button>
-                </div>
-            </div>
-            <iframe wire:ignore wire:key="quote-live-preview" x-data x-on:preview-refresh.window.debounce.600ms="const d = $event.detail; const h = d.html || (d[0] && d[0].html); if (h) { const y = $el.contentWindow ? $el.contentWindow.scrollY : 0; $el.onload = () => { try { $el.contentWindow.scrollTo(0, y) } catch (e) {} }; $el.srcdoc = h; }" srcdoc="{{ $previewHtml }}" class="min-h-0 flex-1 bg-gray-100" title="Quotation live preview"></iframe>
-        </div>
-    @endif
 </div>

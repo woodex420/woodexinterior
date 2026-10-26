@@ -28,7 +28,7 @@ the gap report + the refreshed queue.
 
 | Area | v2.1 Pro source | Woodex OS today | Verdict |
 |---|---|---|---|
-| Quotation templates + PDF (Classic BOQ) | `admin-print17.js` (3 palettes, blocks, BOQ) + 9 starter templates | Same palettes/labels/blocks; 16 starter templates in one canonical file, importable from the UI (**Step 44**) | **Aligned.** Remaining: template cards/chips UI (Slice T), single/project layouts not ported (not requested) |
+| Quotation templates + PDF | `admin-print17.js` (3 layouts, 3 palettes, blocks) + 9 starter templates | **Step 48 correction:** native source-derived Classic BOQ / Single / Project renderer, DM Sans and source shell, persistent current-input preview; canonical 16-template importer remains | **Three layouts delivered**, replacing the earlier partial alignment claim. Cards/chips/advance-% remain T; full heading/spec row-kind editor and pixel-identical html2pdf pagination are not claimed. See audit 36 |
 | Invoices | `admin-p18` Create invoice with PO #, project, delivery, payment condition + schedule | Items/Unit column, boxes, payments-received + Paid stamp, signatures (**Step 44**); issued PDFs are frozen bytes (v2.1 re-renders live) | **Near.** The 5 extra fields are Slice U (schema ask with the slice); frozen-PDF semantics stay — receipts prove later payments |
 | Leads & CRM | `admin-sales17` sheet-style tracker, lead side drawer, sheet import; pipeline v2 | Leads index, drawer/show, pipeline, CSV importer service + console command | **Done — Slice V (Step 45):** import screen over the existing importer, drawer tabs, month/line filters |
 | Estimator | `admin-p18e` rate book + formula + preview; forms | Estimator rates admin + submissions → leads, separate from Sales estimates | **Slice W**: one native Estimations hub (owner: native, not a v2.1 port) |
@@ -49,7 +49,7 @@ the gap report + the refreshed queue.
    apply), drawer tabs (Details / Log activity / Timeline), month + business-line tabs.
    Shipped without a schema change; see `16_MASTER_TODO.md` Step 45.
 2. ~~**Slice INT — Integrations redevelopment**~~ — **Done 27 Oct (Step 47).** Owner chose the unified grid + signed webhooks and approved two tables. Delivered scope and remaining connector work below.
-3. **Slice W — Estimations hub**. Merge Website-studio rates + Sales estimates into one
+3. **Slice W — Estimations hub (paused for Step 48 quotation review)**. Merge Website-studio rates + Sales estimates into one
    native hub. No new tables expected; verify at design time.
 4. **Slice T remainder — quotation types & template cards.** Data half superseded by
    Step 44's importer; remaining = card/chip UI + advance-% surfaces. Small schema ask
@@ -136,3 +136,14 @@ receiver is claimed connected. Sheets append/off-site backups are deferred, not 
 
 **Next recommended:** W — native Estimations hub. T remainder and U remain pending as
 listed above; U still needs the owner's invoice sample PDFs.
+
+
+## Owner-interposed quotation correction — Step 48 (27 Oct)
+
+After INT the owner paused W, selected source review first, then approved Start. Existing
+quotation editor rebuilt with persistent desktop side preview, no-save current-input render,
+three v2.1 layouts/palettes and source-derived document shell. Native Laravel workflow reused;
+no schema change. Both business lines and cookie-restricted Arena frame verified; full gate
+**1,547 passed / 1 skipped / 8,257 assertions**. Sent PDFs stay frozen; legacy snapshots keep
+legacy rendering. Details and boundaries: `36_QUOTATION_WORKBENCH_2026-10-27.md`.
+**Next: owner reviews quotations before any decision to start W.**

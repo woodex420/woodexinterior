@@ -19,6 +19,30 @@ final class DocumentStyles
 {
     public const THEME_CLASSIC = 'classic';
 
+    /** v2.1 layouts are independent of the colour design. */
+    public const QUOTE_LAYOUTS = [
+        'classic' => 'Classic BOQ',
+        'single' => 'Single page',
+        'project' => 'Project (summary + trades)',
+    ];
+
+    /** @return list<array{key: string, visible: bool}> */
+    public static function quoteLayoutBlocks(string $layout): array
+    {
+        $blocks = self::blocks('quote', null);
+        if ($layout === 'single') {
+            $blocks[1]['visible'] = false;
+            [$blocks[2], $blocks[3]] = [$blocks[3], $blocks[2]];
+        }
+
+        return $blocks;
+    }
+
+    public static function quoteLayout(mixed $layout): string
+    {
+        return is_string($layout) && isset(self::QUOTE_LAYOUTS[$layout]) ? $layout : 'classic';
+    }
+
     /** @var array<string, string> */
     public const THEMES = [
         'classic' => 'Classic',

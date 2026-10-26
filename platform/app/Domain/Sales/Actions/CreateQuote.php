@@ -54,6 +54,15 @@ final class CreateQuote
                 : MilestonePlanKey::Execution;
             $design = $plan === MilestonePlanKey::Design || $template?->kind === TemplateKind::Design;
 
+            $documentDesign = app(DocumentStyles::class)->copy($line);
+            $presentation = $template?->blueprint['presentation'] ?? null;
+            if (is_array($presentation)) {
+                $documentDesign = [...$documentDesign,
+                    'quote_layout' => DocumentStyles::quoteLayout($presentation['quote_layout'] ?? null),
+                    'pdf_theme' => DocumentStyles::theme($presentation['pdf_theme'] ?? null),
+                    'quote_blocks' => DocumentStyles::blocks('quote', $presentation['quote_blocks'] ?? DocumentStyles::quoteLayoutBlocks(DocumentStyles::quoteLayout($presentation['quote_layout'] ?? null))),
+                ];
+            }
             $quote = Quote::create([
                 'number' => $this->numbering->next($line->quoteSequenceKey()),
                 'sequence_key' => $line->quoteSequenceKey(),
@@ -74,7 +83,7 @@ final class CreateQuote
                 'notes' => $template?->notes,
                 'scope_html' => Html::sanitize($template?->scope_html),
                 'owner_id' => $by->id,
-                'meta' => ['milestone_plan' => $plan->value, 'document_design' => app(DocumentStyles::class)->copy($line)],
+                'meta' => ['milestone_plan' => $plan->value, 'document_design' => $documentDesign],
             ]);
 
             $sections = $template !== null ? QuoteBlueprint::sections($template->blueprint) : [];

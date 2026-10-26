@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ContactDataExportController;
 use App\Http\Controllers\Admin\ConversationMediaController;
 use App\Http\Controllers\Admin\InvoicePdfController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\QuoteDraftPreviewController;
 use App\Http\Controllers\Admin\QuotePdfController;
 use App\Http\Controllers\Admin\SystemUpdateController;
 use App\Http\Controllers\Admin\WebsiteBuilderController;
@@ -111,6 +112,7 @@ Route::get('/proposals', fn () => redirect()->route('admin.quotes.index', ['tab'
 Route::get('/sales-pipeline', fn () => redirect()->route('admin.quotes.index', ['tab' => 'pipeline'], 301))->name('sales.pipeline')->middleware('can:quotes.view');
 Route::livewire('/quotes/new', QuoteCreate::class)->name('quotes.create')->middleware('can:quotes.manage');
 Route::livewire('/quotes/{quote}', QuoteBuilder::class)->name('quotes.show')->middleware('can:quotes.view')->whereNumber('quote');
+Route::post('/quotes/{quote}/preview', QuoteDraftPreviewController::class)->name('quotes.preview')->middleware(['can:quotes.view', 'throttle:120,1'])->whereNumber('quote');
 Route::get('/quotes/{quote}/pdf', QuotePdfController::class)->name('quotes.pdf')->middleware('can:quotes.view')->whereNumber('quote');
 Route::livewire('/invoices', InvoicesHub::class)->name('invoices.index')->middleware('can:invoices.view');
 Route::livewire('/invoices/new', InvoiceCreate::class)->name('invoices.create')->middleware('can:invoices.manage');

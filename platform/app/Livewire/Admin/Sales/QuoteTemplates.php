@@ -11,6 +11,7 @@ use App\Domain\Sales\Enums\TemplateKind;
 use App\Domain\Sales\Models\CatalogItem;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteTemplate;
+use App\Domain\Sales\Services\DocumentStyles;
 use App\Domain\Sales\Services\TemplatePackImporter;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Settings\SalesSettings;
@@ -247,6 +248,8 @@ class QuoteTemplates extends Component
             $slug = $base.'-'.$n++;
         }
 
+        $presentation = is_array($data['blueprint']['presentation'] ?? null) ? $data['blueprint']['presentation'] : [];
+
         $template = DB::transaction(fn (): QuoteTemplate => QuoteTemplate::query()->create([
             'name' => trim((string) $data['name']),
             'slug' => $slug,
@@ -257,7 +260,11 @@ class QuoteTemplates extends Component
             'terms' => trim((string) ($data['terms'] ?? '')) !== '' ? trim((string) $data['terms']) : null,
             'notes' => trim((string) ($data['notes'] ?? '')) !== '' ? trim((string) $data['notes']) : null,
             'scope_html' => Html::sanitize(isset($data['scope_html']) ? (string) $data['scope_html'] : null),
-            'blueprint' => ['sections' => $sections],
+            'blueprint' => ['sections' => $sections, 'presentation' => [
+                'quote_layout' => DocumentStyles::quoteLayout($presentation['quote_layout'] ?? null),
+                'pdf_theme' => DocumentStyles::theme($presentation['pdf_theme'] ?? null),
+                'quote_blocks' => DocumentStyles::blocks('quote', $presentation['quote_blocks'] ?? DocumentStyles::quoteLayoutBlocks(DocumentStyles::quoteLayout($presentation['quote_layout'] ?? null))),
+            ]],
             'is_active' => true,
             'position' => (int) QuoteTemplate::query()->max('position') + 1,
         ]));

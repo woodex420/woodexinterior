@@ -53,7 +53,9 @@ function digestRun(string $period = 'daily'): void
 }
 
 it('sends the daily digest to every linked chat', function () {
-    $lead = Lead::factory()->create(['owner_id' => $this->owner->id]);
+    // The visit lead is created today; only the explicit yesterdayLead below belongs in yesterday's count.
+    // The factory otherwise chooses a random time in the last 20 days, occasionally adding a second lead.
+    $lead = Lead::factory()->create(['owner_id' => $this->owner->id, 'created_at' => now()]);
     app(ScheduleSiteVisit::class)->handle($lead, now()->addHours(3), 60, 'DHA Phase 5', $this->owner, $this->owner);
     Task::query()->create(['title' => 'Send the walnut sample', 'type' => 'todo', 'priority' => 'normal', 'status' => 'open', 'due_at' => now()->addHours(2), 'assignee_id' => $this->owner->id, 'created_by' => $this->owner->id]);
     // created_at is forced after the insert: this row is exactly what the digest's "yesterday" window

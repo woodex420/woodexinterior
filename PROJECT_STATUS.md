@@ -9,7 +9,7 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,531 passed · 1 skipped · 8,184 assertions** · Pint clean on touched files · PHPStan 0 errors |
+| Tests | **1,547 passed · 1 skipped · 8,257 assertions** · Pint clean on touched files · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
@@ -23,6 +23,21 @@ preview), and Step 44 imported the real v2.1 Pro template source and verified th
 design against it. The current queue — with the v2.1-vs-OS gap report and the new
 integrations slice — is **[`docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md`](docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md)**;
 the owner picks the next slice from it.
+
+## Latest correction — Step 48 (27 October)
+
+The owner paused Slice W and approved the quotation correction after a source comparison.
+The existing quotation page now has an **always-shown desktop side preview**, updating from
+**unsaved inputs while typing**, independently of save-on-blur. The source-derived v2.1
+**Classic BOQ / Single page / Project** layouts and **Classic / Minimal / Premium** colour
+designs are selectable above it; DM Sans, header/boxes/tables/totals/footer replace the OS
+quotation shell. Both interior and furniture use the v2.1 palettes (no legacy green override).
+Saved PDFs share the renderer; sent versions remain frozen. No schema or public-v1 changes.
+Browser proof covered both business lines, all layouts, mobile width and cookie-restricted
+Arena framing. See **[`docs/audit/36_QUOTATION_WORKBENCH_2026-10-27.md`](docs/audit/36_QUOTATION_WORKBENCH_2026-10-27.md)**
+for the source comparison, proof and explicit pagination/row-kind boundaries. **W remains paused
+until the owner reviews this correction.** Earlier Slice S/R/Step 44/46 descriptions below are
+historical and do not supersede this correction.
 
 ## What is live today (verified this pass)
 

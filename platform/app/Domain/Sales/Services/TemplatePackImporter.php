@@ -110,7 +110,10 @@ final class TemplatePackImporter
                 'terms' => $this->clean($entry['terms'] ?? null, 10000),
                 'notes' => null,
                 'scope_html' => null,
-                'blueprint' => ['sections' => $sections],
+                'blueprint' => ['sections' => $sections, 'presentation' => [
+                    'quote_layout' => DocumentStyles::quoteLayout($entry['layout'] ?? null),
+                    'pdf_theme' => DocumentStyles::theme($entry['design'] ?? null),
+                ]],
                 'is_active' => true,
                 'position' => ++$position,
             ]);

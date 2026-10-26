@@ -8,6 +8,7 @@
  * - Heavy libraries (SortableJS, ApexCharts) load only on screens that need them.
  */
 import 'preline/plugins/dropdown';
+import { registerQuoteWorkbench } from './admin/quote-workbench';
 
 const PRELINE_PLUGINS = ['HSDropdown'];
 
@@ -18,6 +19,7 @@ const initPreline = () => {
 /* ---------- Alpine stores: sidebar + colour theme (TailAdmin behaviour) ---------- */
 document.addEventListener('alpine:init', () => {
     const Alpine = window.Alpine;
+    registerQuoteWorkbench(Alpine);
 
     Alpine.store('sidebar', {
         expanded: true,

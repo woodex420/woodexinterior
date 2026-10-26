@@ -126,3 +126,12 @@ Never run destructive/browser-restoring QA against the owner's active database. 
 script explicitly set `BROWSER_DB_FILE`/`BROWSER_DB_COPY` to QA-only paths and pass the QA base URL. Its legacy
 homepage lead-form selectors currently mismatch the served homepage; see docs/19 for honest test boundaries.
 The native PHP/MySQL harness in `../docker/` is prepared but not executed in this restricted sandbox.
+
+## Quotation workbench proof (Step 48)
+
+`PORT=33143 node tools/sandbox/quotation-workbench-check.mjs` uses the four demo quotes
+from `setup.sh`. It checks interior WI-10102 and furniture WF-10050: persistent preview,
+quantity/rate/client/scope updates with focus retained, the saved editor total unchanged
+while a quantity is still unsaved, all three layout switches, and 390px mobile width.
+It restores the preview SQLite file in `finally`. Screenshots go under
+`/tmp/woodex-run/shots/step48-*`; never point this sandbox-only check at production.

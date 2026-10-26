@@ -59,6 +59,8 @@ final class QuoteSnapshot
 
         return [
             'schema' => self::SCHEMA,
+            'quotation_renderer' => 'v21',
+            'quote_layout' => DocumentStyles::quoteLayout($quote->meta['document_design']['quote_layout'] ?? null),
             'document_design' => $quote->meta['document_design'] ?? null,
             'number' => $quote->number,
             'revision' => $revision ?? (int) $quote->revision,

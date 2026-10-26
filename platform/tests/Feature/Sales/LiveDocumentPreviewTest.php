@@ -50,12 +50,13 @@ it('keeps the printed document free of the screen-only preview sheet', function 
         ->and($pane)->not->toContain('class="watermark"');
 });
 
-it('previews a furniture quotation with its WF number and furniture accent', function () {
+it('previews a furniture quotation with its WF number and the actual v2.1 Classic palette', function () {
     $snapshot = app(QuoteSnapshot::class)->build(livePreviewQuote($this->owner, BusinessLine::Furniture));
     $pane = app(QuotePdf::class)->html($snapshot);
 
     expect($snapshot['label'])->toStartWith('WF-')
-        ->and($pane)->toContain('#276749')
+        ->and($pane)->toContain('#0c1628')
+        ->and($pane)->not->toContain('#276749')
         ->and($pane)->toContain('Previewed joinery');
 });
 

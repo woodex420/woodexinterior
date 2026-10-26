@@ -70,7 +70,7 @@ final class QuoteEditor
      * design copy this quote carries. Blocks are normalized through DocumentStyles (locked blocks stay
      * visible); the brand master in Document design is never touched.
      *
-     * @param  array{pdf_theme?: mixed, quote_blocks?: mixed}  $patch
+     * @param  array{pdf_theme?: mixed, quote_blocks?: mixed, quote_layout?: mixed}  $patch
      */
     public function updateDocumentDesign(Quote $quote, array $patch): void
     {
@@ -79,6 +79,10 @@ final class QuoteEditor
 
             if (array_key_exists('pdf_theme', $patch)) {
                 $design['pdf_theme'] = DocumentStyles::theme($patch['pdf_theme']);
+            }
+
+            if (array_key_exists('quote_layout', $patch)) {
+                $design['quote_layout'] = DocumentStyles::quoteLayout($patch['quote_layout']);
             }
 
             if (array_key_exists('quote_blocks', $patch)) {

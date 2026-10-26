@@ -9,6 +9,7 @@ use App\Domain\Sales\Enums\MilestonePlanKey;
 use App\Domain\Sales\Enums\TemplateKind;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteTemplate;
+use App\Domain\Sales\Services\DocumentStyles;
 use Illuminate\Support\Str;
 
 /**
@@ -29,7 +30,11 @@ final class SaveQuoteAsTemplate
             'terms' => $quote->terms,
             'notes' => $quote->notes,
             'scope_html' => $quote->scope_html,
-            'blueprint' => QuoteBlueprint::fromQuote($quote),
+            'blueprint' => [...QuoteBlueprint::fromQuote($quote), 'presentation' => [
+                'quote_layout' => DocumentStyles::quoteLayout($quote->meta['document_design']['quote_layout'] ?? null),
+                'pdf_theme' => DocumentStyles::theme($quote->meta['document_design']['pdf_theme'] ?? null),
+                'quote_blocks' => DocumentStyles::blocks('quote', $quote->meta['document_design']['quote_blocks'] ?? null),
+            ]],
             'is_active' => true,
         ];
 

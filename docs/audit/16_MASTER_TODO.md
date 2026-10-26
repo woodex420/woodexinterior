@@ -2668,3 +2668,45 @@ Facebook publishing, Google Sheets append or Drive/GitHub off-site backup. The o
 explicitly deferred the latter two from this slice. Plan 35 records the refreshed boundary.
 
 **Next recommendation:** Slice W — the native Estimations hub; ask before starting.
+
+
+### Step 48 — quotation workbench correction (27 Oct 2026)
+
+Owner paused W after screenshots of the optional drawer and remaining OS document design.
+Selected source comparison first, then explicitly Start. Re-read actual v2.1 print/sales
+sources; replaced the quotation shell rather than another palette-only adjustment.
+
+**Delivered:** existing editor + persistent sticky desktop side preview (stacked on mobile),
+layout/colour controls above it; native source-derived **Classic BOQ / Single page / Project**
+layouts and **Classic / Minimal / Premium** palettes, bundled source DM Sans, integrated
+header, boxes, tables, total/words band and correctly positioned footer. The OS furniture-green
+accent no longer overrides Classic's navy/gold. Custom PDF blocks remain; default layout
+switches get the corresponding default arrangement. Single page honestly means a continuous
+table, not a one-physical-page guarantee. Template blueprint save/reuse + v2.1 imports carry
+presentation without copying private client/company/bank data. No new module or schema.
+
+**Runtime:** independent authenticated/CSRF-protected preview POST projects current form
+inputs without model writes, using the same calculator, rounding and milestone split as
+saved quotations. A Livewire preview action was rejected because it flushed pending blur
+fields. Typing debounces 350ms plus request/render time; focus and sheet scroll remain,
+stale responses discarded, invalid input keeps the last valid document with an explicit
+message. Save-on-blur is separate and the saved PDF is labelled as such. Only own item IDs
+can enter the projection; payload bounded, policy-gated, rate-limited. Old frozen snapshots
+retain their legacy renderer and sent PDFs keep stored bytes; sent preview uses its snapshot.
+
+**Proof:** **1,547 passed · 1 skipped · 8,257 assertions**, Pint/PHPStan clean, Vite build
+and diff checks pass. Six real PDFs (three layouts × both business lines); embedded font
+inspection and raster proof. Chromium on33143 checked WI-10102/WF-10050: quantity/rate/client/
+scope visibly update while focused; unsaved quantity leaves the saved total unchanged;
+layout switching, no overlap, 390px width, no JS errors. Both third-party-cookie-blocked
+and proxy-strips-all-cookies iframe scenarios passed the live unsaved preview. Demo database
+restored; no proof records persist. Repeatable script in tools/sandbox. An unrelated full-gate
+DailyDigest test premise was stabilised by dating its visit lead today (the factory otherwise
+sometimes also chose yesterday); no digest runtime changed, subsequent full gate passed.
+
+**Boundary:** source-derived native documents, not a transplanted html2pdf engine or identical
+pagination. HTML preview is continuous A4-width, PDF adds pages/repeated table heads/page
+numbers. Full heading/spec row-kind editing is not part of this correction. Invoice fields,
+T cards/advance-% and W are not silently included. Full audit: `36_QUOTATION_WORKBENCH_2026-10-27.md`.
+
+**Next:** keep W paused for the owner's quotation review; ask before starting it.

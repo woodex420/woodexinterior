@@ -86,8 +86,7 @@ class QuoteBuilder extends Component
 
     public string $plan = '';
 
-    /** Live preview drawer (Slice S). */
-    public bool $showPreview = false;
+    public string $quoteLayout = 'classic';
 
     /** Per-quotation PDF design (Slice S): theme for this quote only. */
     public string $pdfTheme = 'classic';
@@ -166,6 +165,7 @@ class QuoteBuilder extends Component
             'plan' => $this->savePlan(),
             'quoteBlocks' => $this->saveQuoteBlocks(),
             'pdfTheme' => $this->savePdfTheme(),
+            'quoteLayout' => $this->saveQuoteLayout(),
             'client' => $this->saveClient($key),
             default => null,
         };
@@ -329,8 +329,22 @@ class QuoteBuilder extends Component
 
     public function resetQuoteBlocks(): void
     {
-        $this->quoteBlocks = DocumentStyles::blocks('quote', null);
+        $this->quoteBlocks = DocumentStyles::quoteLayoutBlocks($this->quoteLayout);
         $this->saveQuoteBlocks();
+    }
+
+    private function saveQuoteLayout(): void
+    {
+        $this->saveField('quoteLayout', function (): void {
+            if (! isset(DocumentStyles::QUOTE_LAYOUTS[$this->quoteLayout])) {
+                throw new InvalidArgumentException('Choose a quotation layout.');
+            }
+            $oldLayout = DocumentStyles::quoteLayout($this->quote->meta['document_design']['quote_layout'] ?? null);
+            $blocks = $this->quoteBlocks === DocumentStyles::quoteLayoutBlocks($oldLayout)
+                ? DocumentStyles::quoteLayoutBlocks($this->quoteLayout) : $this->quoteBlocks;
+            $this->editor()->updateDocumentDesign($this->quote, ['quote_layout' => $this->quoteLayout, 'quote_blocks' => $blocks]);
+            $this->quoteBlocks = $blocks;
+        });
     }
 
     private function savePdfTheme(): void
@@ -378,12 +392,10 @@ class QuoteBuilder extends Component
         };
     }
 
-    /** Asks the open preview pane to redraw (debounced in the browser); it renders from saved state. */
+    /** Structural/saved changes ask the persistent pane to re-read current inputs. */
     private function touchPreview(): void
     {
-        if ($this->showPreview) {
-            $this->dispatch('preview-refresh', html: $this->previewHtml());
-        }
+        $this->dispatch('preview-refresh');
     }
 
     /**
@@ -392,7 +404,10 @@ class QuoteBuilder extends Component
      */
     private function previewHtml(): string
     {
-        return app(QuotePdf::class)->html(app(QuoteSnapshot::class)->build($this->quote->refresh()));
+        $quote = $this->quote;
+        $snapshot = ! $quote->isEditable() ? $quote->versions()->reorder('revision', 'desc')->first()?->snapshot : null;
+
+        return app(QuotePdf::class)->html($snapshot ?? app(QuoteSnapshot::class)->build($quote));
     }
 
     // ----- Milestones ---------------------------------------------------------------------------------------
@@ -645,6 +660,7 @@ class QuoteBuilder extends Component
             'lakh' => $settings->lakh_grouping,
             'signatoryOptions' => $this->signatoryOptions(),
             'themes' => DocumentStyles::THEMES,
+            'layouts' => DocumentStyles::QUOTE_LAYOUTS,
             'blockLabels' => DocumentStyles::QUOTE_BLOCKS,
             'lockedBlocks' => DocumentStyles::LOCKED_BLOCKS['quote'],
             'units' => Unit::options(),
@@ -658,7 +674,7 @@ class QuoteBuilder extends Component
             'catalogItems' => $this->showCatalog ? $this->catalogResults() : collect(),
             'catalogCategories' => $this->showCatalog ? CatalogItem::query()->where('is_active', true)->distinct()->orderBy('category')->pluck('category') : collect(),
             'templates' => $this->showTemplate ? QuoteTemplate::query()->orderBy('position')->get(['id', 'name']) : collect(),
-            'previewHtml' => $this->showPreview ? $this->previewHtml() : null,
+            'previewHtml' => $this->previewHtml(),
             ...$this->sendState($quote, $settings->lakh_grouping),
         ])->title($quote->label().' · '.$quote->title);
     }
@@ -738,7 +754,10 @@ class QuoteBuilder extends Component
 
         // A rejected value stays in the field with its message, so it can be corrected.
         if ($saved) {
-            $this->lines[$itemId] = $this->lineState($item->refresh());
+            $this->lines[$itemId][$field] = $this->lineState($item->refresh())[$field];
+            if ($field === 'discount_type') {
+                $this->lines[$itemId]['discount_value'] = '';
+            }
         }
     }
 
@@ -821,7 +840,10 @@ class QuoteBuilder extends Component
 
         if ($saved) {
             unset($this->quote);
-            $this->details = $this->detailsState($this->quote);
+            $this->details[$field] = $this->detailsState($this->quote)[$field];
+            if ($field === 'discount_type') {
+                $this->details['discount_value'] = '';
+            }
         }
     }
 
@@ -940,6 +962,7 @@ class QuoteBuilder extends Component
         $this->plan = $quote->milestonePlan()->value;
 
         $design = $quote->meta['document_design'] ?? null;
+        $this->quoteLayout = DocumentStyles::quoteLayout($quote->meta['document_design']['quote_layout'] ?? null);
         $this->pdfTheme = DocumentStyles::theme(is_array($design) ? ($design['pdf_theme'] ?? null) : null);
         $this->quoteBlocks = DocumentStyles::blocks('quote', is_array($design) ? ($design['quote_blocks'] ?? null) : null);
 
