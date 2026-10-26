@@ -44,7 +44,7 @@ it('persists per-quotation blocks: hide, move, locked stays visible, reset order
     expect($keys->search('terms'))->toBeLessThan($keys->search('boq'));
 
     $html = builderHtml($this->quote);
-    expect(strpos($html, 'Terms and conditions'))->toBeLessThan(strpos($html, 'Detailed bill of quantities'));
+    expect(strpos($html, 'Terms &amp; conditions'))->toBeLessThan(strpos($html, 'Detailed bill of quantities'));
 
     $component->call('resetQuoteBlocks');
     expect(collect($this->quote->refresh()->meta['document_design']['quote_blocks'])->pluck('key')->all())
@@ -75,8 +75,8 @@ it('saves type, site and intro line and prints them', function () {
         ->and($quote->intro_line)->toBe('Thank you for the opportunity.')
         ->and($html)->toContain('Renovation')
         ->and($html)->toContain('DHA Phase 6, Lahore')
-        ->and(strpos($html, 'Summary of cost'))->toBeLessThan(strpos($html, 'Thank you for the opportunity.'))
-        ->and(strpos($html, 'Thank you for the opportunity.'))->toBeLessThan(strpos($html, 'Detailed bill of quantities'));
+        ->and(strpos($html, 'Project details'))->toBeLessThan(strpos($html, 'Thank you for the opportunity.'))
+        ->and(strpos($html, 'Thank you for the opportunity.'))->toBeLessThan(strpos($html, 'Summary of cost'));
 });
 
 it('prints the client override without touching the contact, and clears it on revert', function () {

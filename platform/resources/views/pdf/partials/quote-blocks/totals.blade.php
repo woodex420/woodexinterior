@@ -9,7 +9,7 @@
                         <tr><td>Subtotal</td><td class="right">{{ $plain($t['subtotal_minor']) }}</td></tr>
                         @if ($t['discount_minor'] > 0)<tr><td>{{ $t['discount_label'] }}</td><td class="right">− {{ $plain($t['discount_minor']) }}</td></tr>@endif
                         @if ($t['other_charges_minor'] > 0)<tr><td>{{ $t['other_charges_label'] }}</td><td class="right">{{ $plain($t['other_charges_minor']) }}</td></tr>@endif
-                        @if ($t['tax_minor'] > 0)<tr><td>Tax ({{ rtrim(rtrim(number_format($t['tax_bp'] / 100, 2), '0'), '.') }}%)</td><td class="right">{{ $plain($t['tax_minor']) }}</td></tr>@endif
+                        @if ($t['tax_minor'] > 0)<tr><td>Total tax ({{ rtrim(rtrim(number_format($t['tax_bp'] / 100, 2), '0'), '.') }}%)</td><td class="right">{{ $plain($t['tax_minor']) }}</td></tr>@endif
                         @if ($t['rounding_minor'] !== 0)<tr><td>Rounding</td><td class="right">{{ $plain($t['rounding_minor']) }}</td></tr>@endif
                     </table>
                 </td>
@@ -27,7 +27,7 @@
             <td style="width: 44%; vertical-align: top;">
                 <table class="pill">
                     <tr>
-                        <td class="pill-label">Total (Rs)</td>
+                        <td class="pill-label">{{ $hasAdjustments ? 'Grand total (Rs)' : 'Total (Rs)' }}</td>
                         <td class="pill-amount">{{ $plain($t['total_minor']) }}</td>
                     </tr>
                 </table>

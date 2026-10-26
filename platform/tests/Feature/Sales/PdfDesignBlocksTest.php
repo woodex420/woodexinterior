@@ -113,7 +113,7 @@ it('renders legacy snapshots without theme or block keys in the original order',
     $html = view('pdf.quote', ['s' => $snapshot, 'draft' => true])->render();
 
     expect(strpos($html, 'Scope of work'))->toBeLessThan(strpos($html, '<h2>Detailed bill of quantities</h2>'))
-        ->and(strpos($html, '<h2>Detailed bill of quantities</h2>'))->toBeLessThan(strpos($html, 'Terms and conditions'))
+        ->and(strpos($html, '<h2>Detailed bill of quantities</h2>'))->toBeLessThan(strpos($html, 'Terms &amp; conditions'))
         ->and($html)->toContain('Scope marker text')
         ->and($html)->not->toContain('/* theme:');
 });
@@ -153,13 +153,13 @@ it('renders invoices with hidden and reordered blocks', function () {
     expect($invoice->snapshot['bank'])->not->toBeEmpty();
 
     $html = view('pdf.invoice', ['s' => $invoice->snapshot])->render();
-    expect($html)->not->toContain('Pay to')
+    expect($html)->not->toContain('Payment details')
         ->and(strpos($html, 'Balance due'))->toBeLessThan(strpos($html, 'Particulars'));
 
     $control = $invoice->snapshot;
     $control['document_design'] = array_diff_key($control['document_design'], array_flip(['pdf_theme', 'quote_blocks', 'invoice_blocks']));
     $controlHtml = view('pdf.invoice', ['s' => $control])->render();
-    expect($controlHtml)->toContain('Pay to')
+    expect($controlHtml)->toContain('Payment details')
         ->and(strpos($controlHtml, 'Particulars'))->toBeLessThan(strpos($controlHtml, 'Balance due'));
 });
 
@@ -192,7 +192,7 @@ it('keeps price and totals visible even when unticked, and resets order', functi
         ->and(collect($blocks)->firstWhere('key', 'totals')['visible'])->toBeTrue();
 
     Livewire::test(DocumentDesigner::class)
-        ->call('moveBlock', 'invoice', 4, -1)->assertSet('invoiceBlocks.3.key', 'terms')
+        ->call('moveBlock', 'invoice', 2, 1)->assertSet('invoiceBlocks.3.key', 'terms')
         ->call('resetBlocks', 'invoice')->assertSet('invoiceBlocks.0.key', 'items');
 });
 

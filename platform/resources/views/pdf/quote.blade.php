@@ -18,48 +18,48 @@
 <style>
     @page { margin: 132px 42px 70px 42px; }
     * { font-family: "DejaVu Sans", sans-serif; }
-    body { font-size: 9.5px; color: #1a2a45; line-height: 1.45; }
-    header { position: fixed; top: -104px; left: 0; right: 0; height: 84px; border-bottom: 2px solid #0f1e36; }
-    footer { position: fixed; bottom: -46px; left: 0; right: 0; height: 24px; border-top: 1px solid #c5d1e2; font-size: 8px; color: #46586f; }
+    body { font-size: 9.5px; color: #0c1628; line-height: 1.45; }
+    header { position: fixed; top: -104px; left: 0; right: 0; height: 84px; border-bottom: 2px solid #0c1628; }
+    footer { position: fixed; bottom: -46px; left: 0; right: 0; height: 24px; border-top: 1px solid #e3e1dc; font-size: 8px; color: #46586f; }
     /* "Page X of Y" is drawn by QuotePdf after rendering: dompdf has no total page counter in CSS (it printed "of 0"). */
-    .brand { font-size: 20px; letter-spacing: 3px; font-weight: bold; color: #0f1e36; }
-    .tagline { font-size: 7.5px; letter-spacing: 1.4px; color: #6e87ac; text-transform: uppercase; margin-top: 3px; }
-    .muted { color: #6e87ac; }
+    .brand { font-size: 20px; letter-spacing: 3px; font-weight: bold; color: #0c1628; }
+    .tagline { font-size: 7.5px; letter-spacing: 1.4px; color: #6b7280; text-transform: uppercase; margin-top: 3px; }
+    .muted { color: #6b7280; }
     .right { text-align: right; }
     .center { text-align: center; }
-    h1 { font-size: 17px; margin: 0 0 2px; color: #0f1e36; letter-spacing: 1px; }
-    h2 { font-size: 10.5px; margin: 16px 0 6px; color: #0f1e36; text-transform: uppercase; letter-spacing: 1.2px; }
+    h1 { font-size: 17px; margin: 0 0 2px; color: #0c1628; letter-spacing: 1px; }
+    h2 { font-size: 10.5px; margin: 16px 0 6px; color: #0c1628; text-transform: uppercase; letter-spacing: 1.2px; }
     table { width: 100%; border-collapse: collapse; }
     .meta td { vertical-align: top; padding: 0; }
     /* Classic BOQ furniture (Slice R): title band, cream boxes, gold section heads, words box + total pill. */
-    .doctitle { font-size: 21px; letter-spacing: 4px; font-weight: bold; color: #0f1e36; text-align: right; }
-    .doctitle .gold { color: #c39a4a; }
+    .doctitle { font-size: 21px; letter-spacing: 4px; font-weight: bold; color: #0c1628; text-align: right; }
+    .doctitle .gold { color: #b8956a; }
     .docmeta td { padding: 1px 0 1px 10px; vertical-align: top; }
-    .goldrule { border-top: 1px solid #c39a4a; margin: 10px 0 12px; }
-    .box { background: #faf7f1; border: 1px solid #e8e0d0; padding: 9px 11px; }
-    .boxlabel { font-size: 7.5px; letter-spacing: 1.6px; color: #a07d3c; text-transform: uppercase; margin-bottom: 3px; }
-    .secthead { margin: 14px 0 5px; font-size: 10px; font-weight: bold; letter-spacing: 1.4px; color: #a07d3c; text-transform: uppercase; page-break-after: avoid; }
-    .secthead .note { font-weight: normal; letter-spacing: normal; text-transform: none; color: #6e87ac; }
-    .wordsbox { border: 1px dashed #c9b18a; padding: 8px 10px; }
-    .pill td { background: #0f1e36; color: #fff; padding: 9px 12px; }
+    .goldrule { border-top: 1px solid #b8956a; margin: 10px 0 12px; }
+    .box { background: #fcfbf9; border: 1px solid #e3e1dc; padding: 9px 11px; }
+    .boxlabel { font-size: 7.5px; letter-spacing: 1.6px; color: #8a6a40; text-transform: uppercase; margin-bottom: 3px; }
+    .secthead { margin: 14px 0 5px; font-size: 10px; font-weight: bold; letter-spacing: 1.4px; color: #8a6a40; text-transform: uppercase; page-break-after: avoid; }
+    .secthead .note { font-weight: normal; letter-spacing: normal; text-transform: none; color: #6b7280; }
+    .wordsbox { border: 1px dashed #b8956a; padding: 8px 10px; }
+    .pill td { background: #0c1628; color: #fff; padding: 9px 12px; }
     .pill .pill-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
-    .pill .pill-amount { font-size: 13px; font-weight: bold; color: #e9c46a; text-align: right; }
-    .paylabel { color: #6e87ac; width: 34%; padding: 1px 6px 1px 0; vertical-align: top; }
-    .lines th { background: #0f1e36; color: #fff; font-weight: bold; font-size: 8.5px; text-transform: uppercase; letter-spacing: .6px; padding: 6px 6px; text-align: left; }
+    .pill .pill-amount { font-size: 13px; font-weight: bold; color: #e6cfa5; text-align: right; }
+    .paylabel { color: #6b7280; width: 34%; padding: 1px 6px 1px 0; vertical-align: top; }
+    .lines th { background: #0c1628; color: #fff; font-weight: bold; font-size: 8.5px; text-transform: uppercase; letter-spacing: .6px; padding: 6px 6px; text-align: left; }
     .lines th.right { text-align: right; }
-    .lines td { padding: 5px 6px; border-bottom: 1px solid #e3e9f1; vertical-align: top; }
-    .lines .section td { background: #fcf2e8; font-weight: bold; color: #0f1e36; border-bottom: 1px solid #e7d6c2; }
-    .lines .subtotal td { font-weight: bold; border-bottom: 1px solid #c5d1e2; }
-    .optional td { color: #6e87ac; font-style: italic; }
+    .lines td { padding: 5px 6px; border-bottom: 1px solid #e3e1dc; vertical-align: top; }
+    .lines .section td { background: #eceae5; font-weight: bold; color: #0c1628; border-bottom: 1px solid #d6d3cc; }
+    .lines .subtotal td { font-weight: bold; border-bottom: 1px solid #e3e1dc; }
+    .optional td { color: #6b7280; font-style: italic; }
     .totals td { padding: 4px 6px; }
-    .totals .grand td { background: #0f1e36; color: #fff; font-size: 12px; font-weight: bold; padding: 8px 6px; }
+    .totals .grand td { background: #0c1628; color: #fff; font-size: 12px; font-weight: bold; padding: 8px 6px; }
     .words { margin-top: 6px; font-style: italic; }
     .scope p { margin: 0 0 4px; } .scope ul { margin: 0 0 4px 14px; padding: 0; }
     .terms li { margin-bottom: 2px; }
     .sign td { padding-top: 34px; vertical-align: bottom; }
-    .sign .line { border-top: 1px solid #1a2a45; width: 82%; padding-top: 4px; }
+    .sign .line { border-top: 1px solid #0c1628; width: 82%; padding-top: 4px; }
     .avoid { page-break-inside: avoid; }
-    .watermark { position: fixed; top: 34%; left: 6%; width: 88%; text-align: center; font-size: 110px; color: #e3e9f1; transform: rotate(-30deg); z-index: -1; letter-spacing: 12px; }
+    .watermark { position: fixed; top: 34%; left: 6%; width: 88%; text-align: center; font-size: 110px; color: #e3e1dc; transform: rotate(-30deg); z-index: -1; letter-spacing: 12px; }
 </style>
 @include('pdf.partials.document-style')
 </head>
@@ -122,9 +122,10 @@
         <td style="width: 49%;">
             <div class="box">
                 <div class="boxlabel">Prepared for</div>
-                <div style="font-size: 11px; font-weight: bold;">{{ $client['name'] }}</div>
-                @if ($client['company'])<div>{{ $client['company'] }}</div>@endif
-                <div class="muted">{{ implode(' · ', array_filter([$client['phone'], $client['email'], $client['address']])) }}</div>
+                <div style="font-size: 11px; font-weight: bold;">{{ ! empty($client['company']) ? $client['company'] : $client['name'] }}</div>
+                @if (! empty($client['company']) && $client['name'] !== $client['company'])<div>Attn: {{ $client['name'] }}</div>@endif
+                @if (! empty($client['address']))<div>{{ $client['address'] }}</div>@endif
+                <div>{{ implode(' · ', array_filter([$client['phone'], $client['email']])) }}</div>
             </div>
         </td>
         <td style="width: 2%;"></td>
@@ -132,13 +133,15 @@
             <div class="box">
                 <div class="boxlabel">Project details</div>
                 <div><span class="muted">Project</span>&nbsp;&nbsp;{{ ($s['title'] ?? '') !== '' ? $s['title'] : '—' }}</div>
-                @if (! empty($s['type']))<div style="margin-top: 2px;"><span class="muted">Type</span>&nbsp;&nbsp;{{ $s['type'] }}</div>@endif
                 @if (! empty($s['site']))<div style="margin-top: 2px;"><span class="muted">Site</span>&nbsp;&nbsp;{{ $s['site'] }}</div>@endif
-                @if ($s['prepared_by'])<div class="muted" style="margin-top: 2px;">Prepared by {{ $s['prepared_by'] }}</div>@endif
+                @if (! empty($s['type']))<div style="margin-top: 2px;"><span class="muted">Type</span>&nbsp;&nbsp;{{ $s['type'] }}</div>@endif
+                @if (! empty($s['area_sft']))<div style="margin-top: 2px;"><span class="muted">Area</span>&nbsp;&nbsp;{{ number_format((int) $s['area_sft']) }} sft</div>@endif
             </div>
         </td>
     </tr>
 </table>
+
+@if (! empty($s['intro_line']))<p style="margin: 10px 0 2px;">{{ $s['intro_line'] }}</p>@endif
 
 @foreach (\App\Domain\Sales\Services\DocumentStyles::visibleBlocks('quote', $design) as $block)
     @include('pdf.partials.quote-blocks.'.$block)

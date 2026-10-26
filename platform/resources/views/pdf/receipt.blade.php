@@ -9,25 +9,25 @@
 <style>
     @page { margin: 132px 42px 70px 42px; }
     * { font-family: "DejaVu Sans", sans-serif; }
-    body { font-size: 10px; color: #1a2a45; line-height: 1.5; }
-    header { position: fixed; top: -104px; left: 0; right: 0; height: 84px; border-bottom: 2px solid #0f1e36; }
-    footer { position: fixed; bottom: -46px; left: 0; right: 0; height: 24px; border-top: 1px solid #c5d1e2; font-size: 8px; color: #6e87ac; }
-    .brand { font-size: 20px; letter-spacing: 3px; font-weight: bold; color: #0f1e36; }
-    .tagline { font-size: 7.5px; letter-spacing: 1.4px; color: #6e87ac; text-transform: uppercase; margin-top: 3px; }
-    .muted { color: #6e87ac; }
+    body { font-size: 10px; color: #0c1628; line-height: 1.5; }
+    header { position: fixed; top: -104px; left: 0; right: 0; height: 84px; border-bottom: 2px solid #0c1628; }
+    footer { position: fixed; bottom: -46px; left: 0; right: 0; height: 24px; border-top: 1px solid #e3e1dc; font-size: 8px; color: #6b7280; }
+    .brand { font-size: 20px; letter-spacing: 3px; font-weight: bold; color: #0c1628; }
+    .tagline { font-size: 7.5px; letter-spacing: 1.4px; color: #6b7280; text-transform: uppercase; margin-top: 3px; }
+    .muted { color: #6b7280; }
     .right { text-align: right; }
-    h1 { font-size: 18px; margin: 0 0 2px; color: #0f1e36; letter-spacing: 1px; }
-    h2 { font-size: 10.5px; margin: 16px 0 6px; color: #0f1e36; text-transform: uppercase; letter-spacing: 1.2px; }
+    h1 { font-size: 18px; margin: 0 0 2px; color: #0c1628; letter-spacing: 1px; }
+    h2 { font-size: 10.5px; margin: 16px 0 6px; color: #0c1628; text-transform: uppercase; letter-spacing: 1.2px; }
     table { width: 100%; border-collapse: collapse; }
     .meta td { vertical-align: top; padding: 0; }
     .box { background: #f2f5f9; padding: 10px 12px; }
-    .lines th { background: #0f1e36; color: #fff; font-weight: bold; font-size: 8.5px; text-transform: uppercase; letter-spacing: .6px; padding: 6px; text-align: left; }
+    .lines th { background: #0c1628; color: #fff; font-weight: bold; font-size: 8.5px; text-transform: uppercase; letter-spacing: .6px; padding: 6px; text-align: left; }
     .lines th.right { text-align: right; }
-    .lines td { padding: 6px; border-bottom: 1px solid #e3e9f1; }
-    .grand td { background: #0f1e36; color: #fff; font-size: 12px; font-weight: bold; padding: 8px 6px; }
+    .lines td { padding: 6px; border-bottom: 1px solid #e3e1dc; }
+    .grand td { background: #0c1628; color: #fff; font-size: 12px; font-weight: bold; padding: 8px 6px; }
     .words { margin-top: 8px; font-style: italic; }
     .sign td { width: 50%; padding-top: 40px; vertical-align: bottom; }
-    .sign .line { border-top: 1px solid #1a2a45; width: 78%; padding-top: 4px; }
+    .sign .line { border-top: 1px solid #0c1628; width: 78%; padding-top: 4px; }
 </style>
 </head>
 <body>

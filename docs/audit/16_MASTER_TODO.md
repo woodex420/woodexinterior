@@ -2488,4 +2488,55 @@ PHPStan 0. Live on 33143: builder shows the new cards; the demo draft was restyl
 moved before the BOQ, type/site/intro set and a client override — rendered, inspected page-by-page, then
 restored from its saved original meta.
 
-**Next.** Plan 34: Slice V (leads redevelopment) or T (quotation types & template cards) — owner's pick.
+**Next (superseded).** The owner interposed `import_and_verify` (Step 44) before V/T.
+
+### Step 44 — v2.1 template source import + Classic BOQ verified against `admin-print17.js` (26 Oct 2026)
+
+Owner's correction: the quotation/invoice templates were already developed in v2.1 Pro —
+"use the same module, why develop new?" The owner shared the actual production source zip
+on Drive; it was checked (only the template/print source modules were read; `_private/`
+and `_database/` never opened), and the owner picked **import_and_verify**: import the
+real templates and verify the shipped Classic BOQ against `admin-print17.js`
+block-by-block, fixing differences. No new design was invented.
+
+**Part 1 — templates.** The 9 Drive starters proved content-identical to entries already
+in `database/seeders/data/quote-templates.json` (16 total, incl. 7 scope/solution
+templates the OS already had). One canonical file stays; a new `TemplatePackImporter`
+reads it so the seeder and the UI can never drift. The Quotation templates page gained
+**"Import Woodex starter templates"** (existing names skipped — same rule as v2.1) and
+the file upload now accepts a v2.1 `{templates:[…]}` pack or a bare list, mapping
+line/kind exactly as the seeder does.
+
+**Part 2 — design parity (fix list F1–F9).** Exact v2.1 palettes (classic navy
+`#0c1628`/gold `#b8956a`; minimal monochrome; premium espresso) in one rewritten
+`document-style` partial; company-first **Prepared for** box with **Attn.**; project rows
+Project/Site/Type/Area (`area_sft` from wholly-Sft sections); intro line before the
+blocks; whole-number Summary with a plain TOTAL footer; PDF unit labels (`L/S`, `sq m`);
+"Total"/Grand-total pill replacing the fabricated quote balance; "Terms & conditions"
+everywhere. Invoices: source boxes, Unit column, **Invoice total / Payments received /
+Balance due** with verified-payments table and a Paid·Part-paid·Unpaid stamp, signer +
+Received-by signatures; a new `signatures` block in the invoice catalogue, and `terms`
+now required. Woodex extras kept: milestones, notes, scope, optional lines, frozen
+snapshots. One real bug found by the new tests: the migration-seeded default accent
+`#0f1e36` froze into every quote's design copy and repainted over every palette — fixed
+by data migration `2026_10_26_190000` (default accent → `#0c1628`; the furniture green
+brand choice untouched) + a premium-ink rule so the default accent never masks espresso.
+
+**Frozen-PDF note.** Issued invoice PDFs stay stored bytes (drafts render live), so the
+new payments table/stamp reflect verified payments at issue time; later payments are
+proven by receipts and live tracking, not by re-rendering the issued document.
+
+**Proof.** New `StarterTemplateImportTest` (wipe-first 16-template import; Renovation =
+10 sections/42 items/first rate PKR 50,000/"50% advance"; uploaded-pack normalisation;
+priced quote from template) and `V21DesignParityTest` (palette, boxes, order, units,
+amounts, premiums, verified-only payments, stamps). Targeted **34 passed · 189
+assertions**; full suite **1,488 passed · 1 skipped · 7,977 assertions**; Pint clean on
+all 12 touched files; PHPStan 0. Live on 33143: the importer restored a deleted starter
+template with no duplicates, the templates tab renders the import button + 16 templates,
+and a draft quotation PDF rendered end-to-end over HTTP.
+
+**Also this step.** The v2.1 source + OS gap report and the refreshed queue (incl. the
+new integrations-redevelopment slice, TailAdmin reference) live in
+`docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md`.
+
+**Next.** Owner picks from the plan-35 queue (V recommended); one question, then start.

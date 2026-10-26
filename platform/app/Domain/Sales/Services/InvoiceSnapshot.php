@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\Domain\Sales\Services;
 
 use App\Domain\Crm\Enums\BusinessLine;
+use App\Domain\Sales\Enums\PaymentStatus;
+use App\Domain\Sales\Enums\Unit;
 use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\InvoiceItem;
+use App\Domain\Sales\Models\Payment;
 use App\Settings\BusinessSettings;
+use App\Settings\SalesSettings;
 use App\Support\AmountInWords;
 use App\Support\Money;
 
@@ -29,7 +33,7 @@ final class InvoiceSnapshot
      */
     public function build(Invoice $invoice): array
     {
-        $invoice->loadMissing(['items', 'contact', 'company', 'bankAccount', 'project', 'quote']);
+        $invoice->loadMissing(['items', 'contact', 'company', 'bankAccount', 'project', 'quote', 'payments']);
 
         $business = [
             'name' => $invoice->business_line === BusinessLine::Furniture ? $this->business->furniture_brand_name : $this->business->brand_name,
@@ -65,6 +69,7 @@ final class InvoiceSnapshot
             ->map(fn (InvoiceItem $item): array => [
                 'description' => $item->description,
                 'unit' => $item->unit,
+                'unit_label' => Unit::normalize((string) $item->unit)->pdfLabel(),
                 'qty' => (float) $item->qty,
                 'rate' => Money::ofMinor((int) $item->rate_minor, $invoice->currency)->format(),
                 'discount' => (int) $item->discount_minor,
@@ -80,6 +85,26 @@ final class InvoiceSnapshot
                 'provider' => $account->wallet_provider ?: $account->bank_name,
                 'number' => $account->account_number,
             ])->values()->all();
+
+        // Payments received (verified only) + the Paid / Part paid / Unpaid stamp, as on the v2.1 invoice.
+        $payments = $invoice->payments
+            ->where('status', PaymentStatus::Verified)
+            ->sortBy([['received_on', 'asc'], ['id', 'asc']])
+            ->map(fn (Payment $payment): array => [
+                'receipt' => (string) $payment->receipt_number,
+                'date' => $payment->received_on?->format('j M Y'),
+                'method' => $payment->method->label(),
+                'reference' => (string) $payment->reference,
+                'amount' => Money::ofMinor((int) $payment->amount_minor, $invoice->currency)->format(),
+            ])->values()->all();
+
+        $payStamp = match (true) {
+            (int) $invoice->balance_minor === 0 && (int) $invoice->paid_minor > 0 => ['label' => 'Paid', 'tone' => 'paid'],
+            (int) $invoice->paid_minor > 0 => ['label' => 'Part paid', 'tone' => 'part'],
+            default => ['label' => 'Unpaid', 'tone' => 'due'],
+        };
+
+        $signatory = app(SalesSettings::class)->signatories[0] ?? null;
 
         return [
             'schema' => self::SCHEMA,
@@ -110,9 +135,13 @@ final class InvoiceSnapshot
             'quote' => $invoice->quote === null ? null : [
                 'number' => $invoice->quote->number,
                 'title' => $invoice->quote->title,
+                'site' => $invoice->quote->site,
                 'total' => Money::ofMinor((int) $invoice->quote->total_minor, $invoice->currency)->format(),
             ],
             'items' => $items,
+            'payments' => $payments,
+            'pay_stamp' => $payStamp,
+            'signatory' => is_array($signatory) ? ['name' => (string) ($signatory['name'] ?? ''), 'title' => (string) ($signatory['title'] ?? '')] : null,
             'subtotal' => Money::ofMinor((int) $invoice->subtotal_minor, $invoice->currency)->format(),
             'discount' => Money::ofMinor((int) $invoice->discount_minor, $invoice->currency)->format(),
             'tax' => Money::ofMinor((int) $invoice->tax_minor, $invoice->currency)->format(),

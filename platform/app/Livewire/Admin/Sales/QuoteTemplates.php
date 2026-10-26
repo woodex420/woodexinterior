@@ -11,6 +11,7 @@ use App\Domain\Sales\Enums\TemplateKind;
 use App\Domain\Sales\Models\CatalogItem;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteTemplate;
+use App\Domain\Sales\Services\TemplatePackImporter;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Settings\SalesSettings;
 use App\Support\Html;
@@ -186,6 +187,15 @@ class QuoteTemplates extends Component
             return;
         }
 
+        // A v2.1 template pack ({templates: [...]}) imports as several templates at once.
+        if (isset($decoded['templates']) && is_array($decoded['templates'])) {
+            $summary = $this->packSummary(app(TemplatePackImporter::class)->import($decoded));
+            $this->importFile = null;
+            $this->toast($summary);
+
+            return;
+        }
+
         $validator = Validator::make($decoded, [
             'format' => ['required', 'in:woodex-quote-template'],
             'version' => ['required', 'integer', 'in:1'],
@@ -254,6 +264,37 @@ class QuoteTemplates extends Component
 
         $this->importFile = null;
         $this->toast("\"{$template->name}\" imported as a new template.");
+    }
+
+    /** The v2.1 "Import Woodex starter templates" button: the bundled pack, existing names skipped. */
+    public function importStarters(): void
+    {
+        $this->authorize('manageCatalog', Quote::class);
+
+        $decoded = TemplatePackImporter::starterContents();
+
+        if ($decoded === null) {
+            $this->toast('The starter template file is missing from this install.', 'error');
+
+            return;
+        }
+
+        $this->toast($this->packSummary(app(TemplatePackImporter::class)->import($decoded)));
+    }
+
+    /** @param  array{imported: list<string>, skipped: list<string>}  $result */
+    private function packSummary(array $result): string
+    {
+        $imported = count($result['imported']);
+        $skipped = count($result['skipped']);
+
+        if ($imported === 0) {
+            return $skipped > 0
+                ? 'All templates in that pack are already in your library.'
+                : 'No usable templates were found in that pack.';
+        }
+
+        return "{$imported} ".str('template')->plural($imported).' imported'.($skipped > 0 ? " ({$skipped} skipped — already exist)" : '').'.';
     }
 
     public function render(): View

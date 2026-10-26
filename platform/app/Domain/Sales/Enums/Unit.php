@@ -21,6 +21,16 @@ enum Unit: string
     case Lumpsum = 'lumpsum';
     case Views = 'views';
 
+    /** Unit as printed on documents (the v2.1 print module's labels). */
+    public function pdfLabel(): string
+    {
+        return match ($this) {
+            self::Lumpsum => 'L/S',
+            self::Sqmt => 'sq m',
+            default => $this->value,
+        };
+    }
+
     /**
      * Map legacy/variant spellings from v2.1 and the estimator to a canonical unit.
      */

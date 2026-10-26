@@ -1,7 +1,7 @@
 @php $wallets = $s['wallets'] ?? []; @endphp
 @if ($bank || $wallets !== [])
     <div class="avoid">
-        <h2>Pay to</h2>
+        <h2>Payment details</h2>
         <table class="meta">
             <tr>
                 @if ($bank)

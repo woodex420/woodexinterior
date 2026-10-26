@@ -26,13 +26,17 @@
         <x-admin.card class="mb-4">
             <form wire:submit="importTemplate" class="flex flex-wrap items-end gap-3">
                 <div class="min-w-64 flex-1">
-                    <x-admin.field label="Import template file" for="importFile" hint="A .woodex-template.json exported from Woodex OS. It is added as a new template — existing templates are never overwritten.">
+                    <x-admin.field label="Import template file" for="importFile" hint="A .woodex-template.json exported from Woodex OS, or a v2.1 template pack (quotation-templates.json). Existing template names are skipped — nothing is overwritten.">
                         <input id="importFile" type="file" wire:model="importFile" accept=".json,application/json" class="wx-input">
                     </x-admin.field>
                 </div>
                 <x-admin.button type="submit" variant="secondary" wire:loading.attr="disabled" wire:target="importTemplate,importFile">Import</x-admin.button>
             </form>
             @error('importFile')<p class="mt-2 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+            <div class="mt-3 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-3 dark:border-gray-800">
+                <x-admin.button variant="secondary" size="sm" icon="download" wire:click="importStarters" wire:loading.attr="disabled" wire:target="importStarters">Import Woodex starter templates</x-admin.button>
+                <span class="text-theme-xs text-gray-500">Re-adds any missing standard templates (Renovation, Civil Work, Interior Designing, scopes…) with sections, lines, rates and terms — ones you edited stay untouched.</span>
+            </div>
         </x-admin.card>
     @endif
 

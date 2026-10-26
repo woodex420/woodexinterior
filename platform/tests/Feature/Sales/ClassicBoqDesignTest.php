@@ -114,10 +114,10 @@ it('renders the invoice in the same design with wallets and branch code', functi
 
     expect($invoice->snapshot['wallets'])->toHaveCount(1)
         ->and($html)->toContain('INVOICE')
-        ->and($html)->toContain('Billed to')
-        ->and($html)->toContain('Amount due')
+        ->and($html)->toContain('Prepared for')
+        ->and($html)->toContain('Invoice details')
         ->and($html)->toContain('Balance due')
-        ->and($html)->toContain('Pay to')
+        ->and($html)->toContain('Payment details')
         ->and($html)->toContain('Mobile wallets')
         ->and($html)->toContain('(0293)')
         ->and($html)->toContain('Thank you for your business');

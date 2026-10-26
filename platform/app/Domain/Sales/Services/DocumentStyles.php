@@ -28,9 +28,9 @@ final class DocumentStyles
 
     /** @var array<string, string> */
     public const THEME_DESCRIPTIONS = [
-        'classic' => 'Today’s look — accent headings, shaded section rows, dark total band.',
-        'minimal' => 'Plain black-and-white — light table headers, no shading, rule above the total.',
-        'premium' => 'Stronger brand — solid accent headings and section bands, heavier header rule.',
+        'classic' => 'Navy and gold — dark table heads, cream boxes, dark total band with a gold amount.',
+        'minimal' => 'Black on white — white table heads ruled in black, plain boxes, black total band.',
+        'premium' => 'Espresso on cream — warm dark-brown ink and total band, cream boxes, gold accents.',
     ];
 
     /** @var array<string, string> Block key => label, in the original (default) render order. */
@@ -50,9 +50,10 @@ final class DocumentStyles
     public const INVOICE_BLOCKS = [
         'items' => 'Particulars',
         'totals' => 'Totals & amount in words',
-        'payment_details' => 'Pay to (bank)',
+        'terms' => 'Terms & conditions',
+        'payment_details' => 'Payment details',
         'notes' => 'Notes',
-        'terms' => 'Terms',
+        'signatures' => 'Signatures',
     ];
 
     /** Blocks that can move but never hide — a quote/invoice without its lines or totals is not a document. */

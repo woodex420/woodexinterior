@@ -47,6 +47,16 @@ final class QuoteSnapshot
             $discountLabel .= ' ('.rtrim(rtrim(number_format($quote->discount_value / 100, 2), '0'), '.').'%)';
         }
 
+        // Covered area for the project box: a section counts only when every priced line is
+        // sft-measured — the same rule the summary-of-cost table uses.
+        $areaSft = 0.0;
+        foreach ($quote->sections as $section) {
+            $priced = $section->items->filter(static fn (QuoteItem $item): bool => ! $item->is_optional);
+            if ($priced->isNotEmpty() && $priced->every(static fn (QuoteItem $item): bool => Unit::normalize((string) $item->unit) === Unit::Sft)) {
+                $areaSft += (float) $priced->sum(static fn (QuoteItem $item): float => (float) $item->qty);
+            }
+        }
+
         return [
             'schema' => self::SCHEMA,
             'document_design' => $quote->meta['document_design'] ?? null,
@@ -58,6 +68,7 @@ final class QuoteSnapshot
             'type' => $quote->type,
             'site' => $quote->site,
             'intro_line' => $quote->intro_line,
+            'area_sft' => $areaSft > 0 ? (int) round($areaSft) : null,
             'business_line' => $quote->business_line->value,
             'issued_on' => now()->toDateString(),
             'valid_until' => $quote->valid_until?->toDateString(),
@@ -84,7 +95,7 @@ final class QuoteSnapshot
                     'description' => $item->description,
                     'image' => self::imageDataUri($item->image_path),
                     'unit' => $item->unit,
-                    'unit_label' => Unit::normalize($item->unit)->label(),
+                    'unit_label' => Unit::normalize($item->unit)->pdfLabel(),
                     'qty' => (string) $item->qty,
                     'rate_minor' => (int) $item->rate_minor,
                     'discount_minor' => (int) $item->discount_minor,
