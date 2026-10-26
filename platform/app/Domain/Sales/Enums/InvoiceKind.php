@@ -14,4 +14,5 @@ enum InvoiceKind: string
     case Manual = 'manual';
     case Variation = 'variation';
     case CreditNote = 'credit_note';
+    case Recurring = 'recurring';
 }

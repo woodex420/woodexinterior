@@ -6,6 +6,7 @@ namespace App\Livewire\Admin\Hubs;
 
 use App\Livewire\Admin\Sales\InvoicesIndex;
 use App\Livewire\Admin\Sales\InvoiceTrackingBoard;
+use App\Livewire\Admin\Sales\RecurringInvoices;
 
 /**
  * P10.1: the Invoices workflow page — issued invoices and their delivery/payment tracking.
@@ -21,6 +22,7 @@ final class InvoicesHub extends Hub
             'tabs' => [
                 ['id' => 'all', 'label' => 'All invoices', 'component' => InvoicesIndex::class, 'permission' => 'invoices.view'],
                 ['id' => 'tracking', 'label' => 'Tracking', 'component' => InvoiceTrackingBoard::class, 'permission' => 'invoices.view'],
+                ['id' => 'recurring', 'label' => 'Recurring', 'component' => RecurringInvoices::class, 'permission' => 'invoices.view'],
             ],
         ];
     }

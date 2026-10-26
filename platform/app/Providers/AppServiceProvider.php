@@ -30,6 +30,7 @@ use App\Domain\Sales\Models\Estimate;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Models\Quote;
+use App\Domain\Sales\Models\RecurringInvoice;
 use App\Domain\Sales\Policies\InvoicePolicy;
 use App\Domain\Sales\Policies\PaymentPolicy;
 use App\Domain\Sales\Policies\QuotePolicy;
@@ -111,6 +112,7 @@ class AppServiceProvider extends ServiceProvider
             'description_template' => DescriptionTemplate::class,
             'document_design' => DocumentDesign::class,
             'invoice' => Invoice::class,
+            'recurring_invoice' => RecurringInvoice::class,
             'payment' => Payment::class,
             'estimate' => Estimate::class,
             'project' => Project::class,

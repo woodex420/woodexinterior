@@ -1920,3 +1920,60 @@ Settings yet."*; a second run fired 0. QA rows deleted afterwards.
 the owner's yes. Milestone invoices cover the project billing that produces most of the money.
 
 **Still open.** F (marketing live proof, blocked on Meta/LinkedIn), G (hygiene).
+
+### Step 31 — recurring invoices: a retainer bills itself (Slice E, part 2, 26 Oct 2026)
+
+Slice E gave the money side two automatic jobs — milestone invoices and the overdue ladder. The one billing shape it
+could not express was the simplest one a studio actually sells: the retainer. A client pays Rs 25,000 a month for
+maintenance, or a quarterly inspection, and somebody had to remember to raise the invoice. Approved by the owner on
+26 Oct as **one new table**; nothing else in the schema changed.
+
+**Schema (owner-approved, two migrations).**
+* `2026_10_26_120000_create_recurring_invoices_table` — `contact_id`, `company_id`, `title`, `business_line`,
+  `frequency` (`monthly|quarterly|yearly`), `lines` JSON (the same shape the quotation and invoice lines use),
+  `tax_bp`, `due_days` (null = `sales.invoice_due_days`), `notes`, `starts_on`, `next_issue_on` (indexed),
+  `ends_on`, `is_active`, `invoice_count`, `last_issued_at`, `created_by`, plus `public_id` (ULID).
+* `2026_10_26_120100_add_recurring_invoice_sequence` — the `recurring.invoice` row in `number_sequences`
+  (prefix `RI`, `{prefix}-{year}-{number}`, padding 4, yearly reset). Invoices raised by a schedule are numbered
+  `RI-2026-0001`, so they never collide with `INV-…` and a client can tell a retainer from a job invoice.
+
+**What shipped.**
+* `Sales\Enums\RecurringFrequency` — `advance()` uses `addMonthNoOverflow` / `addMonthsNoOverflow(3)` /
+  `addYearNoOverflow`, so a schedule that starts on the 31st never silently jumps to March.
+* `Sales\Models\RecurringInvoice` — casts the business line and frequency, `scopeDue()` (active, `next_issue_on`
+  on or before today, not past `ends_on`), and money accessors computed from the standing lines.
+* `Sales\Services\InvoiceFreezer` — the freeze/snapshot step extracted from `RaiseMilestoneInvoice` so both raisers
+  write the same immutable document: idempotent, verifies the sha256, refuses a tampered document.
+  `RaiseMilestoneInvoice` now delegates to it (constructor `SalesSettings, InvoiceFreezer, PostInvoiceToLedger`).
+* `Sales\Actions\IssueRecurringInvoice` — locks the schedule row, skips a paused/not-yet-due/ended schedule (an ended
+  one deactivates itself), creates the invoice (`kind = recurring`, `status = issued`, PKR, `RI-…` number, due date
+  from `due_days`), writes the items with their per-line tax, freezes the PDF, posts to the ledger as the person who
+  owns the schedule, then advances `next_issue_on`, bumps `invoice_count` and records `last_issued_at`.
+  A schedule that missed dates produces **one** invoice now, not a backlog: the next date is walked forward past
+  today before it is saved.
+* `woodex:invoice-recurring {--dry-run}` + `routes/console.php` — **daily 09:20**, gated by the existing
+  `Automation::enabled` switch, so it appears on `/admin/automation` as **Recurring invoices** and can be paused.
+* `Livewire\Admin\Sales\RecurringInvoices` + its blade, behind the **Recurring** tab of
+  `/admin/invoices` (`invoices.manage` for every mutator): list with the standing total and next run, a create form
+  (client, title, line, frequency, tax, due days, start/end), pause/resume, **Bill now**, delete.
+* `AppServiceProvider` — `'recurring_invoice' => RecurringInvoice::class` in the morph map, because the audit trail
+  and the invoice snapshot both store polymorphic subjects.
+
+**Tests.** `tests/Feature/Sales/RecurringInvoicesTest.php` (9): one invoice per period with the `RI-` series, 15% tax
+on 25,000.00 → 28,750.00, due date +7 days and the frozen PDF written; a second run raises nothing; a schedule 40
+days late catches up with exactly **one** invoice and moves its next run into the future; a paused and an ended
+schedule bill nothing; `ends_on = today` bills once and then deactivates; the screen saves a quarterly Rs 18,000
+schedule (20,700.00 with tax) with its creator; **Bill now** on a future-dated schedule bills immediately; pause and
+resume; the `sales` role is forbidden; `/admin/invoices?tab=recurring` and `/admin/automation` show the job.
+Full suite **1,341 passed · 1 skipped · 7,210 assertions**; Pint clean; PHPStan 0 (598 files).
+
+**Proof on 33143.** A QA schedule (*QA monthly retainer · Hamza Khan*, Rs 25,000 + 15%, monthly, due in 7 days) was
+created against the live database. `woodex:invoice-recurring --dry-run` printed
+*"would bill QA monthly retainer · Hamza Khan (every month)"* and *"Would raise 0 recurring invoice(s) from 1 due
+schedule(s)."*; the real run printed *"QA monthly retainer · Hamza Khan → RI-2026-0001 (Issued)"* and
+*"Raised 1 recurring invoice(s) from 1 due schedule(s)."*; the second run printed **0**. The invoice reads
+`RI-2026-0001 · issued · 25,000.00 + 3,750.00 = 28,750.00`, one item, PDF
+`invoices/…/invoice-RI-2026-0001.pdf`. `/admin/invoices?tab=recurring` showed the schedule at Rs 28,750 and the
+invoice list showed `RI-2026-0001`. The QA schedule, invoice, items, ledger entry and number were then deleted.
+
+**Still open.** F (marketing live proof, blocked on Meta/LinkedIn), G (hygiene).

@@ -137,6 +137,14 @@ class Automation extends Model
                 'toggleable' => true,
             ],
             [
+                'key' => 'woodex:invoice-recurring',
+                'scheduled' => true,
+                'name' => 'Recurring invoices',
+                'description' => 'Bills a standing charge on its own rhythm — a monthly retainer, a quarterly maintenance contract — with its own number series, PDF and ledger posting. Runs once per period, and stops itself at the schedule\'s end date.',
+                'cadence' => 'Daily 09:20',
+                'toggleable' => true,
+            ],
+            [
                 'key' => 'woodex:invoice-reminders',
                 'scheduled' => true,
                 'name' => 'Overdue payment ladder',

@@ -17,14 +17,11 @@ use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\InvoiceItem;
 use App\Domain\Sales\Models\Quote;
+use App\Domain\Sales\Services\InvoiceFreezer;
 use App\Domain\Sales\Services\InvoiceNumbering;
-use App\Domain\Sales\Services\InvoicePdf;
-use App\Domain\Sales\Services\InvoiceSnapshot;
 use App\Models\User;
 use App\Settings\SalesSettings;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use RuntimeException;
 
 /**
  * A milestone of an accepted quotation becomes an invoice (QUO-011, INV-001) — slice E.
@@ -39,8 +36,7 @@ final class RaiseMilestoneInvoice
 {
     public function __construct(
         private readonly SalesSettings $sales,
-        private readonly InvoiceSnapshot $snapshot,
-        private readonly InvoicePdf $pdf,
+        private readonly InvoiceFreezer $freezer,
         private readonly PostInvoiceToLedger $postToLedger,
     ) {}
 
@@ -143,42 +139,10 @@ final class RaiseMilestoneInvoice
         });
     }
 
-    /** The PDF and the snapshot of an invoice the client will see (INV-003). */
+    /** The PDF and the snapshot of an invoice the client will see (INV-003) — one implementation, shared. */
     public function freeze(Invoice $invoice): Invoice
     {
-        return DB::transaction(function () use ($invoice): Invoice {
-            $invoice = Invoice::query()->whereKey($invoice->id)->lockForUpdate()->firstOrFail();
-
-            if ($invoice->snapshot !== null || $invoice->pdf_path !== null || $invoice->pdf_sha256 !== null) {
-                if ($invoice->snapshot === null || $invoice->pdf_path === null || $invoice->pdf_sha256 === null
-                    || ! Storage::disk('local')->exists($invoice->pdf_path)
-                    || ! hash_equals($invoice->pdf_sha256, hash('sha256', Storage::disk('local')->get($invoice->pdf_path)))) {
-                    throw new RuntimeException('The frozen invoice needs a reviewed document repair.');
-                }
-
-                return $invoice;
-            }
-
-            if ($invoice->status !== InvoiceStatus::Issued) {
-                throw new QuoteActionDenied('Only an issued invoice can be frozen.');
-            }
-
-            $snapshot = $this->snapshot->build($invoice->load(['items', 'contact', 'company', 'bankAccount', 'project', 'quote']));
-            $bytes = $this->pdf->render($snapshot);
-            $path = 'invoices/'.$invoice->public_id.'/'.InvoicePdf::filename($invoice);
-
-            if (! Storage::disk('local')->put($path, $bytes)) {
-                throw new RuntimeException('The invoice PDF could not be stored.');
-            }
-
-            $invoice->forceFill([
-                'snapshot' => $snapshot,
-                'pdf_path' => $path,
-                'pdf_sha256' => hash('sha256', $bytes),
-            ])->save();
-
-            return $invoice;
-        });
+        return $this->freezer->freeze($invoice);
     }
 
     /** Interior → "WOODEX INTERIOR", Furniture → "WOODEX FURNITURE" (INV-004). */
