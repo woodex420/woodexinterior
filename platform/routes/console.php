@@ -69,6 +69,10 @@ Schedule::command('woodex:invoice-milestones')->hourlyAt(15)->withoutOverlapping
 Schedule::command('woodex:invoice-recurring')->dailyAt('09:20')->withoutOverlapping(30)
     ->when(fn (): bool => Automation::enabled('woodex:invoice-recurring'));
 
+// Slice I: the money-out side repeats too — rent, salaries and subscriptions post themselves.
+Schedule::command('woodex:expense-recurring')->dailyAt('09:10')->withoutOverlapping(30)
+    ->when(fn (): bool => Automation::enabled('woodex:expense-recurring'));
+
 // Slice E: the overdue ladder — 7, 14 and 30 days past due, once per rung, consent-gated.
 Schedule::command('woodex:invoice-reminders')->dailyAt('10:00')->withoutOverlapping(30)
     ->when(fn (): bool => Automation::enabled('woodex:invoice-reminders'));

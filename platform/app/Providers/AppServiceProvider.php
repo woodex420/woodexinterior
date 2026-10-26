@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Domain\Accounts\Models\Bill;
+use App\Domain\Accounts\Models\BillPayment;
+use App\Domain\Accounts\Models\Expense;
+use App\Domain\Accounts\Models\RecurringExpense;
+use App\Domain\Accounts\Models\Vendor;
 use App\Domain\Automation\Listeners\EnrollTriggeredLeads;
 use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Policies\ConversationPolicy;
@@ -24,13 +29,13 @@ use App\Domain\Projects\Models\Project;
 use App\Domain\Projects\Models\ProjectUpdate;
 use App\Domain\Projects\Policies\ProjectPolicy;
 use App\Domain\Sales\Listeners\RecordEstimatorEstimate;
+use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\DescriptionTemplate;
 use App\Domain\Sales\Models\DocumentDesign;
 use App\Domain\Sales\Models\Estimate;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Models\Quote;
-use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\RecurringInvoice;
 use App\Domain\Sales\Policies\InvoicePolicy;
 use App\Domain\Sales\Policies\PaymentPolicy;
@@ -120,6 +125,11 @@ class AppServiceProvider extends ServiceProvider
             'project' => Project::class,
             'project_update' => ProjectUpdate::class,
             'change_request' => ChangeRequest::class,
+            'vendor' => Vendor::class,
+            'bill' => Bill::class,
+            'bill_payment' => BillPayment::class,
+            'expense' => Expense::class,
+            'recurring_expense' => RecurringExpense::class,
         ]);
 
         Gate::policy(Lead::class, LeadPolicy::class);

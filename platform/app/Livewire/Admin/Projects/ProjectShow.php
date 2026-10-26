@@ -14,6 +14,8 @@ use App\Domain\Projects\Actions\ReachProjectMilestone;
 use App\Domain\Projects\Actions\RequestClientReviews;
 use App\Domain\Projects\Actions\ShareProjectUpdate;
 use App\Domain\Projects\Actions\StartHandover;
+use App\Domain\Accounts\Actions\PostProjectExpense;
+use App\Domain\Accounts\Actions\ReverseJournalEntry;
 use App\Domain\Projects\Enums\ProjectExpenseCategory;
 use App\Domain\Projects\Enums\ProjectStage;
 use App\Domain\Projects\Enums\ProjectStatus;
@@ -24,6 +26,8 @@ use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Models\User;
 use App\Settings\SalesSettings;
 use Illuminate\Contracts\View\View;
+use App\Domain\Accounts\Models\JournalEntry;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
@@ -131,7 +135,11 @@ class ProjectShow extends Component
         $this->toast('Project details saved.');
     }
 
-    /** PRJ-009: record a purchase or expense against the job. */
+    /**
+     * PRJ-009 + slice I: record a purchase against the job **and book it**. Until slice I the row lived only on
+     * this screen, so the ledger never learned what the work cost. The cost and its journal are now one act: if
+     * the books refuse it (closed period, missing account) the row is rolled back rather than left unposted.
+     */
     public function addExpense(): void
     {
         $this->authorize('update', $this->project);
@@ -141,31 +149,57 @@ class ProjectShow extends Component
             'expenseCategory' => ['required', 'in:'.implode(',', ProjectExpenseCategory::values())],
             'expenseQty' => ['required', 'numeric', 'gt:0'],
             'expenseUnit' => ['nullable', 'string', 'max:20'],
-            'expenseAmount' => ['required', 'numeric', 'min:0'],
+            'expenseAmount' => ['required', 'numeric', 'min:0.01'],
             'expenseIncurredOn' => ['required', 'date'],
         ]);
 
-        $this->project->expenses()->create([
-            'description' => $this->expenseDescription,
-            'category' => $this->expenseCategory,
-            'qty' => (float) $this->expenseQty,
-            'unit' => $this->expenseUnit !== '' ? $this->expenseUnit : null,
-            'amount_minor' => (int) round(((float) $this->expenseAmount) * 100),
-            'incurred_on' => $this->expenseIncurredOn,
-            'created_by' => $this->user()->id,
-        ]);
+        try {
+            DB::transaction(function (): void {
+                $expense = $this->project->expenses()->create([
+                    'description' => $this->expenseDescription,
+                    'category' => $this->expenseCategory,
+                    'qty' => (float) $this->expenseQty,
+                    'unit' => $this->expenseUnit !== '' ? $this->expenseUnit : null,
+                    'amount_minor' => (int) round(((float) $this->expenseAmount) * 100),
+                    'incurred_on' => $this->expenseIncurredOn,
+                    'created_by' => $this->user()->id,
+                ]);
+
+                app(PostProjectExpense::class)->handle($expense->refresh(), $this->user());
+            });
+        } catch (\Throwable $exception) {
+            $this->toast('Not recorded — '.$exception->getMessage(), 'error');
+
+            return;
+        }
 
         $this->reset('expenseDescription', 'expenseQty', 'expenseUnit', 'expenseAmount');
-        $this->toast('Expense recorded — the margin knows.');
+        $this->project->refresh();
+        $this->toast('Expense recorded and posted — the margin and the books both know.');
     }
 
+    /**
+     * Removing a cost reverses its journal first. The row leaves the project list, the books keep both halves
+     * of the story (entry and reversal) — the same rule the invoice screen follows for a void.
+     */
     public function deleteExpense(int $expenseId): void
     {
         $this->authorize('update', $this->project);
 
         $expense = $this->project->expenses()->findOrFail($expenseId);
+
+        if ($expense->journal_entry_id !== null) {
+            // A direct query, not the relation: screens run with lazy loading off.
+            $entry = JournalEntry::query()->find($expense->journal_entry_id);
+
+            if ($entry !== null && ! $entry->isReversed() && ! $entry->isReversal()) {
+                app(ReverseJournalEntry::class)->handle($entry, $this->user(), 'Project cost removed: '.$expense->description);
+            }
+        }
+
         $expense->delete();
-        $this->toast('Expense removed.');
+        $this->project->refresh();
+        $this->toast('Expense removed — its journal entry was reversed, not deleted.');
     }
 
     public function toggleMilestone(int $milestoneId): void

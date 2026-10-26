@@ -375,8 +375,9 @@
                 </ul>
             </x-admin.card>
 
-            {{-- PRJ-009: cost tracking — what it cost against what the quote said it would --}}
-            <x-admin.card title="Costs" description="Purchases and expenses against the quote's internal cost.">
+            {{-- PRJ-009 + slice I: cost tracking — what it cost against what the quote said it would, and every
+                 rupee of it booked (Dr the cost account / Cr accounts payable) the moment it is recorded. --}}
+            <x-admin.card title="Costs" description="Purchases and expenses against the quote's internal cost — each one is posted to the ledger when you record it.">
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <div class="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-800">
                         <p class="text-theme-xs text-gray-500">Quote's internal cost</p>
@@ -385,7 +386,7 @@
                         </p>
                     </div>
                     <div class="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-800">
-                        <p class="text-theme-xs text-gray-500">Spent (recorded)</p>
+                        <p class="text-theme-xs text-gray-500">Spent (posted to the books)</p>
                         <p class="text-theme-sm font-medium tabular-nums text-gray-800 dark:text-white/90">{{ Money::ofMinor($spentMinor)->format($lakh) }}</p>
                     </div>
                     <div class="rounded-xl border px-4 py-3 {{ $overQuoted ? 'border-warning-500/40 bg-warning-50 dark:bg-warning-500/10' : 'border-gray-200 dark:border-gray-800' }}">
@@ -404,12 +405,13 @@
                                 <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $expense->description }}</p>
                                 <p class="text-theme-xs text-gray-500">
                                     {{ $expense->category->label() }}@if ($expense->unit) · {{ rtrim(rtrim((string) $expense->qty, '0'), '.') }} {{ $expense->unit }}@endif · {{ $expense->incurred_on->format('j M Y') }}@if ($expense->author) · by {{ $expense->author->name }}@endif
+                                    · @if ($expense->journal_entry_id) <span class="text-success-600">posted</span> @else <span class="text-gray-400">not posted</span> @endif
                                 </p>
                             </div>
                             <div class="flex shrink-0 items-center gap-2">
                                 <p class="text-theme-sm tabular-nums text-gray-800 dark:text-white/90">{{ Money::ofMinor($expense->amount_minor)->format($lakh) }}</p>
                                 @can('update', $project)
-                                    <button type="button" wire:click="deleteExpense({{ $expense->id }})" wire:confirm="Remove this expense line?" class="text-gray-400 hover:text-error-600" aria-label="Remove expense"><x-icon name="x" class="size-4" /></button>
+                                    <button type="button" wire:click="deleteExpense({{ $expense->id }})" wire:confirm="Remove this expense line? Its journal entry is reversed, never deleted." class="text-gray-400 hover:text-error-600" aria-label="Remove expense"><x-icon name="x" class="size-4" /></button>
                                 @endcan
                             </div>
                         </li>

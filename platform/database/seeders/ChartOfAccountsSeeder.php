@@ -42,6 +42,8 @@ class ChartOfAccountsSeeder extends Seeder
             ['1100', 'Accounts receivable', 'asset', '1000', null],
             ['1150', 'Customer advances', 'asset', '1000', null],
             ['1200', 'Supplier advances', 'asset', '1000', null],
+            // Slice I: tax paid on a received invoice is an asset until it is claimed, not a payable.
+            ['1210', 'Input tax (recoverable)', 'asset', '1000', null],
             ['1300', 'Work in progress', 'asset', '1000', null],
             // Liabilities
             ['2010', 'Accounts payable', 'liability', '2000', null],

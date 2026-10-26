@@ -54,6 +54,10 @@ final class AdminNavigation
                 self::item('Chart of Accounts', 'book', 'admin.accounts.chart', 'accounts.view'),
                 self::item('Journals', 'layers', 'admin.accounts.journals', 'accounts.view'),
                 self::item('Trial balance', 'chart', 'admin.accounts.trial', 'accounts.view'),
+                // Slice I: the money-out side, which had no screen at all before 26 Oct.
+                self::item('Profit & loss', 'trending-up', 'admin.accounts.profit', 'accounts.view'),
+                self::item('Payables', 'invoice', 'admin.accounts.payables', 'accounts.view'),
+                self::item('Income & expenses', 'banknote', 'admin.accounts.expenses', 'accounts.view'),
                 self::item('Periods', 'clock', 'admin.accounts.periods', 'accounts.view'),
                 self::item('Payment Methods', 'wallet', 'admin.accounts.methods', 'accounts.view'),
             ]),

@@ -59,13 +59,14 @@ it('consolidates the sidebar to the confirmed P10.1 map', function () {
         ->and(collect($groups['Sales']['items'])->pluck('label')->all())->toBe(['Estimations', 'Estimator rates', 'Quotations', 'Invoices', 'Payments', 'Documents']);
 
     $live = collect(AdminNavigation::for($this->owner))->flatMap(fn (array $g): array => $g['items'])->filter(fn (array $item): bool => $item['route'] !== null);
-    // 45 live destinations: the P10.1 map plus the Website screens still switched on for OS 1, plus the
+    // 48 live destinations: the P10.1 map plus the Website screens still switched on for OS 1, plus the
     // three screens that were shipped but advertised as future work — Client portal, Handovers and Chat
     // Bot — with the eleven System entries folded into Settings + three hubs (deep QA 21 Oct, slice B:
     // Access & team, Connections, Platform: -7) and the duplicate Alert Rules placeholder removed, plus
-    // **Trial balance** under Accounts (CRM/Sales/Accounts deep QA, 26 Oct). The exact number is asserted
-    // on purpose — a screen cannot join or leave the sidebar without a test.
-    expect($live)->toHaveCount(45);
+    // **Trial balance** (part 2) and the money-out trio **Profit & loss / Payables / Income & expenses**
+    // (slice I, 26 Oct). The exact number is asserted on purpose — a screen cannot join or leave the sidebar
+    // without a test.
+    expect($live)->toHaveCount(48);
 });
 
 it('renders every hub tab for the owner', function (string $path, string $marker) {
@@ -89,6 +90,13 @@ it('renders every hub tab for the owner', function (string $path, string $marker
     'invoice tracking' => ['/admin/invoices?tab=tracking', 'Tracking'],
     'invoice recurring' => ['/admin/invoices?tab=recurring', 'Recurring invoices'],
     'invoice bank accounts' => ['/admin/invoices?tab=bank', 'Bank accounts'],
+    'payables bills' => ['/admin/accounts/payables', 'Received invoices'],
+    'payables vendors' => ['/admin/accounts/payables?tab=vendors', 'Vendors'],
+    'payables aging' => ['/admin/accounts/payables?tab=aging', 'Payables aging'],
+    'expenses' => ['/admin/accounts/expenses', 'Income & expenses'],
+    'other income' => ['/admin/accounts/expenses?tab=income', 'Other income'],
+    'recurring expenses' => ['/admin/accounts/expenses?tab=recurring', 'Recurring expenses'],
+    'profit and loss' => ['/admin/accounts/profit-loss', 'Profit & loss'],
     'payments all' => ['/admin/payments', 'Payments'],
     'due payments' => ['/admin/payments?tab=dues', 'Due payments'],
     'receivables' => ['/admin/payments?tab=receivables', 'Receivables'],

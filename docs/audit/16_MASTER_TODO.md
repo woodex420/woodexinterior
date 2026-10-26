@@ -2116,3 +2116,71 @@ rewound, and both screens returned to their honest empty state.
 **Observed once, not reproduced.** One full-suite run failed
 `EstimateToQuoteTest > it is offered only when the enquiry really carries an estimate`; it passed alone, in a subset
 with the new Accounts tests, and in two later full runs. Recorded rather than closed.
+
+### Step 35 — money out: vendors, received invoices, expenses, recurring overheads, P&L (Slice I, 26 Oct 2026)
+
+The owner picked **Slice I** from `docs/audit/32_MASTER_PLAN_2026-10-26.md` ("Both F3 + F4" was Slice H; this is the
+first slice of the new plan). The gap: every table in the OS faced the client. The ledger could only ever hear about
+money **arriving** — there was no vendor, no received invoice, no expense, no other income and no P&L, and project
+costs were recorded on the job screen but never posted, so job profit and the profit statement could not be true.
+
+**Schema (approved with the slice).** Six tables — `vendors`, `bills`, `bill_items`, `bill_payments`,
+`recurring_expenses`, `expenses` — two nullable columns on `project_expenses` (`account_id`, `journal_entry_id`) and
+one chart account, **1210 Input tax (recoverable)**, seeded for new installs and added to existing ones by an
+idempotent migration. Nothing existing was altered destructively; rollback is a revert.
+
+**Shipped.**
+* **Payables hub** (`/admin/accounts/payables`) — *Received invoices*, *Vendors*, *Aging*.
+  * A bill carries the vendor's own number (unique per vendor, so the same invoice cannot be entered twice), bill and
+    due dates, any number of lines each mapped to an expense or asset account, and tax. Saving it **posts** it:
+    Dr every line + Dr 1210 for tax / Cr Accounts payable 2010. Posted bills are immutable; a mistake is voided with a
+    reason and the journal is reversed.
+  * **Pay** takes part payments against the payable (Dr 2010 / Cr the method's cash or bank account), moves the bill to
+    part-paid and then paid, and refuses more than the balance.
+  * **Aging** buckets every open bill by how late it is against its due date (not due, 1–30, 31–60, 61+).
+* **Income & expenses hub** (`/admin/accounts/expenses`) — *Expenses*, *Other income*, *Recurring*.
+  * A one-off expense posts as it is saved: Dr the cost account / Cr cash, bank or wallet (or 2010 when on credit).
+    Other income is the same screen with the direction flipped (Dr cash/bank / Cr the income account); the form only
+    offers accounts of the matching type, so an expense can never be booked to revenue.
+  * **Recurring** schedules hold a cadence, a next run and an optional end date; `woodex:expense-recurring` runs daily
+    at 09:10, raises one expense per period, posts it and advances the date from itself (never from "today"), and
+    deactivates a schedule past its end. A failure on one schedule is reported and does not stop the rest.
+* **Project costs reach the books.** `ProjectShow::addExpense()` now creates the cost **and** its journal (Dr the
+  mapped cost account / Cr 2010) in one transaction; removing a posted cost reverses the entry instead of deleting it.
+  The project page shows *posted* on every line.
+* **Profit & loss** (`/admin/accounts/profit-loss`) — income minus cost of sales minus overheads, read from posted
+  journal lines with the same range presets and an honest empty state; gross and net profit, and the totals agree with
+  the trial balance by construction.
+* **Nav:** Profit & loss, Payables and Income & expenses under Accounts — 45 → **48** live destinations.
+
+**Tests.** 20 new — `tests/Feature/Accounts/PayablesTest.php` (10), `tests/Feature/Accounts/ExpensesLedgerTest.php` (7),
+`tests/Feature/Projects/ProjectCostPostingTest.php` (3): a draft stays out of the books and posts when received; tax
+lands on 1210; a duplicate vendor number is refused; two part payments clear the payable; over-payment is refused; a
+void reverses the journal and is refused once money has been paid; the trial balance stays balanced; aging buckets by
+due date; an expense posts both ways and income accounts are rejected on the expense form; a recurring schedule raises
+exactly once per period and stops past its end; the command honours `--dry-run`; the P&L reads posted lines only and
+says when nothing is posted; a closed period refuses the post; the screens open for `accounts.view` and 403 without it.
+`P10SidebarHubsTest` now expects **48** and covers the six new tabs.
+Full suite **1,403 passed · 1 skipped · 7,576 assertions**; Pint clean; PHPStan 0 errors.
+
+**Proof on 33143 — real actions only.** Vendor *QA Timber Supplier*; bill **QA-SUP-0001** of Rs 1,00,000 + 15% tax =
+**Rs 1,15,000** posted as `JE-2026-0006`; a payment of **Rs 45,000** left the bill **part paid with Rs 70,000
+outstanding**, and the aging tab agreed (Not due yet · Rs 70,000). A Rs 25,000 electricity expense and a Rs 5,000 scrap
+sale posted as their own entries; a Rs 20,000 monthly rent schedule was raised by the real command (`Raised 1 recurring
+expense(s) from 1 due schedule(s)`) and moved to **26 Nov 2026**. A quotation (*WI-10103*, Rs 6,00,000) was accepted,
+opening a project and an advance invoice (*WI-10103-1*, Rs 3,00,000), and a **Rs 1,50,000** project cost posted as
+`JE-2026-0011` — the project page read **Spent Rs 150,000 · Margin Rs 450,000 · posted**. The P&L read **income
+Rs 305,000 · costs Rs 295,000 · profit Rs 10,000**, and the trial balance **Balanced · 7 entries · Dr Rs 660,000 =
+Cr Rs 660,000**. Every QA row was deleted afterwards, the four demo quotations were re-created by `DemoQuotesSeeder`
+with their original numbers, the sequences were restored, and every screen returned to its honest empty state.
+
+**Bugs the proof caught (and fixed).** The expenses list threw a 500 in the browser because the blade touched
+`journalEntry` without eager-loading it (the app runs with lazy loading off) — the tests had passed because they
+asserted text, not the relation; the query now eager-loads every relation the blade reads. The chart test also caught
+the new 1210 account being inserted with no parent on a database where the migration ran before seeding — the seeder
+now carries 1210 and the migration refuses to insert a parentless leaf.
+
+**Observed once, not reproduced.** A full-suite run failed two `EstimateToQuoteTest` cases; the next full run was
+green, and the file passes alone and beside the new Accounts tests. Recorded, not closed.
+
+**Next.** Slice L — Telegram QR pairing and the connection health card (the owner's repeated complaint), then Slice J.
