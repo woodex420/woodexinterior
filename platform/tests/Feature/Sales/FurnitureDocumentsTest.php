@@ -52,6 +52,7 @@ beforeEach(function () {
         'product_name' => 'Executive workstation', 'description' => 'Al-Noor tactile top; powder-coated MS frame; imported hardware.',
         'unit' => 'nos', 'qty' => '1', 'rate_minor' => 49000000,
     ]);
+    app(QuoteEditor::class)->updateDetails($this->quote, ['advance_bp' => 7500]);
     $this->quote->refresh();
 });
 
@@ -67,7 +68,7 @@ it('offers both brands and filters new quotation templates without changing a ch
         ->assertSee('Furniture')->call('selectContact', $this->contact->id)->assertSet('line', 'furniture');
 });
 
-it('defaults new furniture quotations to the dedicated sheet and the correct requested advance', function () {
+it('renders the dedicated sheet with an explicitly selected 75 percent advance', function () {
     $s = app(QuoteSnapshot::class)->build($this->quote);
     expect($s['quote_layout'])->toBe('furniture')
         ->and($this->quote->meta['furniture_billing'])->toBe('full')
@@ -75,7 +76,7 @@ it('defaults new furniture quotations to the dedicated sheet and the correct req
         ->and($s['totals']['advance_minor'])->toBe(36750000)
         ->and($s['totals']['after_advance_minor'])->toBe(12250000);
     $html = app(QuotePdf::class)->html($s);
-    expect($html)->toContain('Item / Product')->toContain('Description / Specification')
+    expect($html)->toContain('>Product</th>')->toContain('>Description</th>')
         ->toContain('Executive workstation')->toContain('Al-Noor tactile top')
         ->toContain('367,500')->toContain('122,500')->toContain('data-furniture-document="quotation"')
         ->and(app(QuotePdf::class)->render($s, draft: true))->toStartWith('%PDF-');
@@ -122,7 +123,7 @@ it('roundtrips product specifications and advance through reusable templates and
 it('does not mistake a manually printed heading for an accounting invoice', function () {
     app(QuoteEditor::class)->updateFurnitureText($this->quote, ['document_title' => 'Invoice']);
     $html = app(QuotePdf::class)->html(app(QuoteSnapshot::class)->build($this->quote->refresh()));
-    expect($html)->toContain('Quotation record')->toContain('<strong>Invoice</strong>')
+    expect($html)->toContain('Quotation record')->toContain('<div class="document-title">Invoice</div>')
         ->and(Invoice::count())->toBe(0);
 });
 

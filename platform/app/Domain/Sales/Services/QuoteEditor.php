@@ -15,6 +15,7 @@ use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteItem;
 use App\Domain\Sales\Models\QuoteMilestone;
 use App\Domain\Sales\Models\QuoteSection;
+use App\Settings\SalesSettings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -72,7 +73,7 @@ final class QuoteEditor
     public function applyDocumentDesign(Quote $quote): void
     {
         $this->change($quote, function () use ($quote): void {
-            $quote->meta = array_merge($quote->meta ?? [], ['document_design' => app(DocumentStyles::class)->copy($quote->business_line)]);
+            $quote->meta = array_merge($quote->meta ?? [], ['document_design' => app(DocumentStyles::class)->copy($quote->business_line), 'furniture' => ['signatories_text' => FurnitureDocument::signatureText($quote->signatories ?: app(SalesSettings::class)->signatories), ...($quote->meta['furniture'] ?? [])]]);
             $quote->save();
         });
     }

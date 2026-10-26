@@ -178,6 +178,7 @@ final class DocumentStyles
 
         return [
             ...$identity,
+            'furniture_revision' => $line === BusinessLine::Furniture ? 2 : 1,
             'furniture_style' => FurnitureDocument::style($design->furniture_style),
             'quote_layout' => $line === BusinessLine::Furniture ? 'furniture' : 'classic',
             'pdf_theme' => self::theme($design->pdf_theme ?? null),

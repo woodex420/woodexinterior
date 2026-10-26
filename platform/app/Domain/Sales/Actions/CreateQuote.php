@@ -86,11 +86,11 @@ final class CreateQuote
                 'currency' => 'PKR',
                 'valid_until' => today()->addDays($this->settings->quote_validity_days),
                 'terms' => $terms,
-                'advance_bp' => $line === BusinessLine::Furniture ? (int) ($template?->blueprint['furniture']['advance_bp'] ?? 7500) : 0,
+                'advance_bp' => $line === BusinessLine::Furniture ? (int) ($template?->blueprint['furniture']['advance_bp'] ?? 5000) : 0,
                 'notes' => $template?->notes,
                 'scope_html' => Html::sanitize($template?->scope_html),
                 'owner_id' => $by->id,
-                'meta' => ['milestone_plan' => $plan->value, 'document_design' => $documentDesign, 'furniture' => FurnitureDocument::text($template?->blueprint['furniture'] ?? null), 'furniture_billing' => $line === BusinessLine::Furniture ? 'full' : 'milestone'],
+                'meta' => ['milestone_plan' => $plan->value, 'document_design' => $documentDesign, 'furniture' => FurnitureDocument::text(['signatories_text' => FurnitureDocument::signatureText($this->settings->signatories), ...($template?->blueprint['furniture'] ?? [])]), 'furniture_billing' => $line === BusinessLine::Furniture ? 'full' : 'milestone'],
             ]);
 
             $sections = $template !== null ? QuoteBlueprint::sections($template->blueprint) : [];

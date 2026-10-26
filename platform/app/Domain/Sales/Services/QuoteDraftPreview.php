@@ -124,7 +124,7 @@ final class QuoteDraftPreview
         $quote->meta = [...($quote->meta ?? []), 'document_design' => $design, 'client_override' => [...($quote->meta['client_override'] ?? []), ...$client]];
 
         $inputs = $sections->map(fn ($section) => $section->items->map(fn ($item) => new LineInput((string) $item->qty, $item->rate_minor, $item->discount_type, $item->discount_value, $item->is_optional))->all())->all();
-        $totals = app(QuoteCalculator::class)->calculate($inputs, $quote->discount_type, $quote->discount_value, $quote->other_charges_minor + $quote->shipping_minor, $quote->tax_bp, app(SalesSettings::class)->round_totals_to_rupee);
+        $totals = app(QuoteCalculator::class)->calculate($inputs, $quote->discount_type, $quote->discount_value, $quote->other_charges_minor + $quote->shipping_minor, $quote->tax_bp, (int) ($quote->meta['document_design']['furniture_revision'] ?? 1) >= 2 ? false : app(SalesSettings::class)->round_totals_to_rupee);
         foreach ($sections as $si => $section) {
             $section->subtotal_minor = $totals->sectionSubtotals[$si];
             foreach ($section->items as $ii => $item) {

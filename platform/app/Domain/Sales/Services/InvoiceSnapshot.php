@@ -116,6 +116,9 @@ final class InvoiceSnapshot
 
         return [
             'schema' => self::SCHEMA,
+            'furniture_revision' => (int) ($documentDesign['furniture_revision'] ?? 1),
+            'after_requested_advance' => Money::ofMinor(max(0, (int) $invoice->total_minor - (int) round((int) $invoice->total_minor * (int) $invoice->advance_bp / 10000)), $invoice->currency)->format(),
+            'furniture_amounts' => ['discount' => (int) $invoice->discount_minor, 'charges' => (int) $invoice->rent_minor + (int) $invoice->shipping_minor, 'tax' => (int) $invoice->tax_minor, 'rounding' => (int) ($commercial['rounding_minor'] ?? 0)],
             'furniture_renderer' => $commercial['renderer'] ?? null,
             'furniture' => FurnitureDocument::text($commercial['furniture'] ?? null),
             'scope_html' => Html::sanitize($commercial['scope_html'] ?? null),
@@ -169,7 +172,7 @@ final class InvoiceSnapshot
             'balance' => Money::ofMinor((int) $invoice->balance_minor, $invoice->currency)->format(),
             'total_in_words' => AmountInWords::rupees($total),
             'notes' => $invoice->notes,
-            'terms' => $invoice->terms,
+            'terms' => ($commercial['renderer'] ?? '') === 'furniture-v1' && (int) ($documentDesign['furniture_revision'] ?? 1) >= 2 ? implode("\n", FurnitureDocument::terms($invoice->terms, (int) $invoice->advance_bp)) : $invoice->terms,
         ];
     }
 

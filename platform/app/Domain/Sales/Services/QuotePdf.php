@@ -35,11 +35,12 @@ final class QuotePdf
         $pdf->render();
 
         // "Page X of Y", right-aligned in the footer: CSS counters in dompdf have no page total.
-        $pdf->getDomPDF()->getCanvas()->page_script(function (int $page, int $pages, Canvas $canvas, FontMetrics $metrics): void {
+        $footerY = (int) ($snapshot['furniture_revision'] ?? 1) >= 2 ? 20.0 : self::FOOTER_TEXT_Y;
+        $pdf->getDomPDF()->getCanvas()->page_script(function (int $page, int $pages, Canvas $canvas, FontMetrics $metrics) use ($footerY): void {
             $font = (string) $metrics->getFont('DejaVu Sans');
             $text = "Page {$page} of {$pages}";
             $width = $metrics->getTextWidth($text, $font, 6.0);
-            $canvas->text($canvas->get_width() - self::RIGHT_MARGIN - $width, $canvas->get_height() - self::FOOTER_TEXT_Y, $text, $font, 6.0, [0.431, 0.529, 0.675]);
+            $canvas->text($canvas->get_width() - self::RIGHT_MARGIN - $width, $canvas->get_height() - $footerY, $text, $font, 6.0, [0.431, 0.529, 0.675]);
         });
 
         return $pdf->output();

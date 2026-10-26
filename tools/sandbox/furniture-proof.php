@@ -32,7 +32,7 @@ $e->updateLine($line, ['product_name' => 'Three-seat sofa', 'description' => 'So
 $sec = $q->sections()->firstOrFail();
 $e->addLine($sec, ['product_name' => 'Mesh chair', 'description' => 'Imported black mesh, adjustable height and armrests.', 'qty' => '5', 'unit' => 'nos', 'rate_minor' => 2000000]);
 $e->addLine($sec, ['product_name' => 'Workstation', 'description' => 'Al-Noor tactile top; powder-coated MS frame; imported hardware.', 'qty' => '3', 'unit' => 'nos', 'rate_minor' => 5000000]);
-$e->updateFurnitureText($q, ['delivery_text' => '8–10 working days', 'tax_note' => 'Prices exclude applicable taxes unless stated.']);
+$e->updateFurnitureText($q, ['signatories_text' => "QA Director | Director\nQA Manager | Marketing Manager", 'delivery_text' => '8–10 working days', 'tax_note' => 'Prices exclude applicable taxes unless stated.']);
 $s = app(QuoteSnapshot::class)->build($q->refresh());
 file_put_contents('/tmp/woodex-run/shots/furniture-quotation.pdf', app(QuotePdf::class)->render($s));
 app(SendQuote::class)->handle($q, $by);
@@ -41,6 +41,17 @@ file_put_contents('/tmp/woodex-run/shots/furniture-invoice.pdf', app(InvoicePdf:
 // Pagination stress: data stays in this exported snapshot, never in the database.
 $long = $s;
 $long['sections'][0]['items'] = array_fill(0, 45, $s['sections'][0]['items'][2]);
+foreach ($long['sections'][0]['items'] as $i => &$item) {
+    $item['product_name'] = 'Pagination product '.($i + 1);
+    $item['description'] = 'Pagination description '.($i + 1).': '.str_repeat('Durable laminate and powder-coated frame; approved finish. ', 3);
+}
+unset($item);
 file_put_contents('/tmp/woodex-run/shots/furniture-long.pdf', app(QuotePdf::class)->render($long));
+$small = $s;
+$small['sections'][0]['items'] = [$s['sections'][0]['items'][0]];
+$small['sections'][0]['items'][0]['rate_minor'] = 4750000;
+$small['sections'][0]['items'][0]['line_total_minor'] = 4750000;
+$small['totals'] = [...$small['totals'], 'subtotal_minor' => 4750000, 'total_minor' => 4750000, 'advance_bp' => 5000, 'advance_minor' => 2375000, 'after_advance_minor' => 2375000];
+file_put_contents('/tmp/woodex-run/shots/furniture-47500.pdf', app(QuotePdf::class)->render($small));
 file_put_contents('/tmp/woodex-run/shots/furniture-proof.json', json_encode(['quote_id' => $q->id, 'invoice_id' => $inv->id, 'contact_id' => $contact->id]));
 echo json_encode(['quote_id' => $q->id, 'invoice_id' => $inv->id, 'total' => $q->total_minor]),"\n";

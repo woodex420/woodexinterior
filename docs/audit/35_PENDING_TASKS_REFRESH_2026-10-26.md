@@ -156,3 +156,14 @@ no schema change. Both business lines and cookie-restricted Arena frame verified
 **1,547 passed / 1 skipped / 8,257 assertions**. Sent PDFs stay frozen; legacy snapshots keep
 legacy rendering. Details and boundaries: `36_QUOTATION_WORKBENCH_2026-10-27.md`.
 **Next: owner reviews quotations before any decision to start W.**
+
+
+## Owner-interposed Furniture delivery and A4 polish (27 Oct)
+
+Initial Furniture native quotations/full WFI invoices shipped, followed by the explicitly approved screenshot-led
+A4 polish. New Furniture uses logo/company left, metadata right, repeated header/footer, Product / Description,
+wide optional summary, combined Rent / Transport, editable centred signatories and **50%** matching terms/advance.
+Old sent/issued renderers and explicit saved percentages remain frozen; drafts opt in through Apply current design.
+No new schema in the polish; native issue/ledger/verified-payment semantics retained. Final gate **1,577 passed /
+1 skipped / 8,418 assertions**; active33143 and isolated33144 iframe/browser/PDF evidence in
+`38_FURNITURE_A4_POLISH_2026-10-27.md`. **W is still paused. Next: owner accepts this Furniture design.**

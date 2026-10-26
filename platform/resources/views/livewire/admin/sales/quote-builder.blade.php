@@ -123,6 +123,7 @@
                           class="wx-input h-auto min-h-[76px] py-2.5" placeholder="- Site measurement and drawings&#10;- Supply and installation as per BOQ"></textarea>
                 @error('details.scope')<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
                 <div class="mt-4 max-w-sm border-t border-gray-100 pt-4 dark:border-gray-800">
+                    @if (($quote->meta['document_design']['furniture_revision'] ?? 1) < 2)
                     <x-admin.field label="Signed by" for="details-signed_by" hint="Printed on the quotation PDF. The company signatories are set in Sales settings.">
                         <select id="details-signed_by" wire:model.live="details.signed_by" @disabled($ro) class="wx-input">
                             <option value="">Company signatories (from Settings)</option>
@@ -131,6 +132,7 @@
                             @endforeach
                         </select>
                     </x-admin.field>
+                    @endif
                     @error('details.signed_by')<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
                 </div>
             </x-admin.card>
@@ -506,11 +508,27 @@
                     @foreach (['document_title' => 'Printed document heading', 'delivery_text' => 'Delivery time', 'po_reference' => 'PO / client reference', 'transport_text' => 'Transportation note', 'tax_note' => 'Tax note'] as $field => $label)
                         <x-admin.field :label="$label" :for="'details.'.$field" :error="'details.'.$field"><input id="details.{{ $field }}" wire:model.live.blur="details.{{ $field }}" @disabled($ro) class="wx-input" maxlength="{{ $field === 'document_title' ? 60 : 300 }}"></x-admin.field>
                     @endforeach
-                    <x-admin.field label="Shipping / transport (Rs)" for="details.shipping" error="details.shipping"><input id="details.shipping" wire:model.live.blur="details.shipping" @disabled($ro) class="wx-input" inputmode="decimal"></x-admin.field>
+                    @if ((int) $quote->shipping_minor !== 0)
+                    <p class="text-theme-xs text-gray-500">Previous transport charge is preserved and included in the combined Rent / Transport total. Set it to zero only when intentionally replacing it.</p>
+                    <x-admin.field label="Previous transport charge (Rs)" for="details.shipping" error="details.shipping"><input id="details.shipping" wire:model.live.blur="details.shipping" @disabled($ro) class="wx-input" inputmode="decimal"></x-admin.field>
+                    @endif
                     <x-admin.field label="Advance requested (%)" for="details.advance" error="details.advance"><input id="details.advance" wire:model.live.blur="details.advance" @disabled($ro) class="wx-input" inputmode="decimal"></x-admin.field>
                 </div>
-                <p class="mt-3 text-theme-xs text-gray-500">Rent is entered below. Tax applies to subtotal less discount plus rent and shipping. Changing the heading does not create an accounting invoice.</p>
+                <p class="mt-3 text-theme-xs text-gray-500">Rent / Transport is entered below. The advance sentence in Terms and conditions is generated from this percentage. Tax applies after discounts and charges. Changing the heading does not create an accounting invoice.</p>
             </x-admin.card>
+            @endif
+            @if ($quote->business_line->value === 'furniture')
+                <x-admin.card title="Furniture print options" description="Control empty rows and optional sections. Applied discounts, charges and tax always remain disclosed; these switches do not alter accounting.">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    @foreach (\App\Domain\Sales\Services\FurnitureDocument::OPTIONS as $field => $label)
+                        <x-admin.field :label="$label" :for="'details.'.$field"><select id="details.{{ $field }}" wire:model.live="details.{{ $field }}" @disabled($ro) class="wx-input"><option value="yes">Show</option><option value="no">Hide when optional</option></select></x-admin.field>
+                    @endforeach
+                    </div>
+                    <x-admin.field label="Signatories — add or remove a person" for="details.signatories_text" error="details.signatories_text" hint="One person per line: Name | Title. Delete a line to remove that person. Leave empty for no names. Printed centred; maximum six people.">
+                        <textarea id="details.signatories_text" wire:model.live.blur="details.signatories_text" @disabled($ro) rows="4" maxlength="2000" class="wx-input h-auto"></textarea>
+                    </x-admin.field>
+                    <p class="mt-2 text-theme-xs text-gray-500">Existing drafts: Apply current design above to opt into the new A4 layout. Stored advance percentages and charges are not reset.</p>
+                </x-admin.card>
             @endif
             <x-admin.card title="Discount, charges and tax">
                 <div class="space-y-4">
@@ -527,9 +545,9 @@
                             @endif
                         </div>
                     </x-admin.field>
-                    <x-admin.field :label="$quote->business_line->value === 'furniture' ? 'Rent (Rs)' : 'Other charges'" error="details.other_charges" hint="Rent, transport or scaffolding; added after the discount, before tax.">
+                    <x-admin.field :label="$quote->business_line->value === 'furniture' ? 'Rent / Transport (Rs)' : 'Other charges'" error="details.other_charges" hint="Rent, transport or scaffolding; added after the discount, before tax.">
                         <div class="flex gap-2">
-                            <input type="text" wire:model.live.blur="details.other_charges_label" @disabled($ro) placeholder="{{ $quote->business_line->value === 'furniture' ? 'Rent' : 'Label, e.g. Transport' }}" aria-label="Other charges label" class="wx-input">
+                            <input type="text" wire:model.live.blur="details.other_charges_label" @disabled($ro) placeholder="{{ $quote->business_line->value === 'furniture' ? 'Rent / Transport' : 'Label, e.g. Transport' }}" aria-label="Other charges label" class="wx-input">
                             <input type="text" inputmode="decimal" wire:model.live.blur="details.other_charges" @disabled($ro) placeholder="Rs" aria-label="Other charges amount" class="wx-input w-32 shrink-0 text-right tabular-nums">
                         </div>
                     </x-admin.field>

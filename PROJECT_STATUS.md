@@ -9,7 +9,7 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,567 passed · 1 skipped · 8,353 assertions** · Pint clean on touched files · PHPStan 0 errors |
+| Tests | **1,577 passed · 1 skipped · 8,418 assertions** · Pint clean on touched files · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
@@ -24,24 +24,31 @@ design against it. The current queue — with the v2.1-vs-OS gap report and the 
 integrations slice — is **[`docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md`](docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md)**;
 the owner picks the next slice from it.
 
-## Latest delivery — Furniture documents (27 October)
+## Latest delivery — Furniture A4 polish (27 October)
 
-Owner-approved Furniture redevelopment is implemented in the existing Sales module, including the additive
-migration. **Sales → Quotations → New** visibly offers Interior / Furniture with brand-specific templates.
-New Furniture quotes use the green/grey product/specification sheet and a 75% requested advance; actual invoices
-have their own **WFI-year-number** series. Sent/viewed/accepted Furniture quotes can create one full draft invoice,
-then use the existing issue → frozen PDF → ledger → verified payment → receipt path. Archived and milestone
-invoices cannot be bypassed to bill twice. Historical Furniture milestone contracts remain supported.
+The owner-approved second Furniture pass is complete in the existing Sales module. New Furniture quotations
+and invoices use the reference-like A4 letterhead: logo/company left, document metadata right, repeated print
+header/footer and grey/green thank-you band. The table now says **Product / Description**, without Amount in words.
 
-- Product/specification split; rent, shipping, tax, advance/remainder; delivery/transport/tax notes and PO reference.
-- Custom logo/reference icon, brand name, colours, headings and aligned header/footer; reusable templates.
-- Persistent quotation and new-invoice side previews; corrected sample **490,000 → 367,500 requested / 122,500 remainder**.
-- **Final gate:** 1,567 passed / 1 skipped / 8,353 assertions; PHPStan 0; Pint clean; build clean.
-- Chromium on33143 and an isolated33144 replay: live input/focus, phone width, conversion and issue, no JS errors.
-  Both cookie-restricted nested-frame scenarios pass. One-page quotation/invoice and four-page stress PDF inspected.
-- Full evidence, migration/rollback notes and boundaries: [audit37](docs/audit/37_FURNITURE_DOCUMENTS_2026-10-27.md).
+- Wider summary; optional zero discount/tax and combined **Rent / Transport**. Applied charges never disappear.
+- **50% editable new default**, with matching automatic Terms and conditions wording:
+  **Rs47,500 → Rs23,750 requested / Rs23,750 remaining**. Existing explicit 75% templates/documents stay 75%.
+- Per-document optional sections; editable centred signatories copied from settings, with individual removal or whole-section hiding.
+- New quotes use exact paisa, not a rounding row. Legacy transport charges remain preserved and disclosed.
+- Requested advance remains separate from actual verified payments/outstanding; native WFI full-invoice conversion,
+  issue/frozen snapshot, ledger and receipts remain intact. No new schema in this polish.
+- Versioned renderer preserves old sent/issued documents. Existing drafts adopt via **Apply current design**.
+- **Final gate:** 1,577 passed / 1 skipped / 8,418 assertions; PHPStan 0; Pint16 files; build successful.
+- Isolated Chromium: live fields, percentage/terms, optional sections/signatories, 390px, conversion/issue,
+  Interior regression, zero JS errors. Both cookie-restricted iframe modes pass on33144 **and33143**.
+- Real PDFs: quotation/invoice/Rs47,500 example **one page each**; 45-row long-description stress **eight pages**,
+  with repeated headers/footers, full text and embedded fonts checked; raster proofs inspected.
+- Full evidence/boundaries: [audit38](docs/audit/38_FURNITURE_A4_POLISH_2026-10-27.md).
+  Initial Furniture schema/workflow delivery remains documented in [audit37](docs/audit/37_FURNITURE_DOCUMENTS_2026-10-27.md).
 
-**W remains paused.** No production deployment or MySQL runtime validation is claimed. Public frontend v1 remains locked.
+**W remains paused for the owner's Furniture design acceptance.** Preview33143 is updated, the isolated QA server
+is stopped, and no owner's draft was changed or stale database restored. No production deployment/MySQL runtime
+validation is claimed. Public frontend v1 remains locked.
 
 ## Previous correction — Step 48 (27 October)
 

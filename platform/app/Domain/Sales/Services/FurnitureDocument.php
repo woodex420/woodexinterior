@@ -9,6 +9,49 @@ use Illuminate\Support\Facades\Validator;
 /** Safe furniture presentation and commercial text; never accepts arbitrary CSS or HTML. */
 final class FurnitureDocument
 {
+    public const OPTIONS = ['show_discount' => 'Discount row (including zero)', 'show_charges' => 'Rent / Transport row (including zero)', 'show_tax' => 'Tax row (including zero)', 'show_advance' => 'Advance and remainder', 'show_terms' => 'Terms and conditions', 'show_notes' => 'Additional notes', 'show_delivery' => 'Delivery note', 'show_transport' => 'Transportation note', 'show_signatories' => 'Centred signatories'];
+
+    /** @param list<array<string, mixed>> $people */
+    public static function signatureText(array $people): string
+    {
+        return implode("\n", array_map(static fn (array $person): string => (string) ($person['name'] ?? '').' | '.(string) ($person['title'] ?? ''), array_slice($people, 0, 6)));
+    }
+
+    /** @return list<array{name: string, title: string}> */
+    public static function signatories(string $text): array
+    {
+        $people = [];
+        foreach (preg_split('/\R/', $text) ?: [] as $line) {
+            [$name, $title] = array_pad(explode('|', $line, 2), 2, '');
+            if (count($people) >= 6) {
+                break;
+            }
+            if (trim($name) !== '') {
+                $people[] = ['name' => mb_substr(trim($name), 0, 160), 'title' => mb_substr(trim($title), 0, 160)];
+            }
+        }
+
+        return $people;
+    }
+
+    /** One percentage supplies both the amount and the payment sentence; custom non-payment terms survive.
+     * @return list<string>
+     */
+    public static function terms(?string $text, int $advanceBp): array
+    {
+        $percent = rtrim(rtrim(number_format($advanceBp / 100, 2, '.', ''), '0'), '.');
+        $terms = [$percent.'% advance payment with work order.'];
+        foreach (preg_split('/\R/', (string) $text) ?: [] as $line) {
+            $line = trim($line);
+            if ($line === '' || preg_match('/^(?:payment(?:\s+terms)?\s*[:–-]?\s*)?\d+(?:\.\d+)?\s*%\s+(?:advance|upfront)\b/i', $line) || str_starts_with($line, 'Advance requested and remainder are shown')) {
+                continue;
+            }
+            $terms[] = $line;
+        }
+
+        return $terms;
+    }
+
     public const TERMS = "Advance requested and remainder are shown in the totals above.\nMaterials, finish and fabric are subject to client approval.\nDelivery starts after advance confirmation and material approval.\nQuotation validity is shown above.";
 
     /** @return array<string, string> */
@@ -35,10 +78,10 @@ final class FurnitureDocument
     public static function text(mixed $value): array
     {
         $value = is_array($value) ? $value : [];
-        $defaults = ['document_title' => '', 'delivery_text' => '', 'transport_text' => 'Outstation charges depend on city, quantity and load.', 'tax_note' => '', 'po_reference' => ''];
+        $defaults = ['document_title' => '', 'delivery_text' => '', 'transport_text' => 'Outstation charges depend on city, quantity and load.', 'tax_note' => '', 'po_reference' => '', 'signatories_text' => '', 'show_discount' => 'no', 'show_charges' => 'no', 'show_tax' => 'no', 'show_advance' => 'yes', 'show_terms' => 'yes', 'show_notes' => 'yes', 'show_delivery' => 'yes', 'show_transport' => 'yes', 'show_signatories' => 'yes'];
         foreach ($defaults as $key => $default) {
             if (is_string($value[$key] ?? null)) {
-                $defaults[$key] = mb_substr(trim($value[$key]), 0, $key === 'document_title' ? 60 : 300);
+                $defaults[$key] = isset(self::OPTIONS[$key]) ? (in_array($value[$key], ['yes', 'no'], true) ? $value[$key] : $default) : mb_substr(trim($value[$key]), 0, $key === 'signatories_text' ? 2000 : ($key === 'document_title' ? 60 : 300));
             }
         }
 
@@ -50,7 +93,11 @@ final class FurnitureDocument
      */
     public static function validatedText(array $value): array
     {
-        Validator::make($value, ['document_title' => ['nullable', 'string', 'max:60'], 'delivery_text' => ['nullable', 'string', 'max:300'], 'transport_text' => ['nullable', 'string', 'max:300'], 'tax_note' => ['nullable', 'string', 'max:300'], 'po_reference' => ['nullable', 'string', 'max:300']])->validate();
+        $rules = ['signatories_text' => ['nullable', 'string', 'max:2000']];
+        foreach (array_keys(self::OPTIONS) as $key) {
+            $rules[$key] = ['sometimes', 'in:yes,no'];
+        }
+        Validator::make($value, [...$rules, 'document_title' => ['nullable', 'string', 'max:60'], 'delivery_text' => ['nullable', 'string', 'max:300'], 'transport_text' => ['nullable', 'string', 'max:300'], 'tax_note' => ['nullable', 'string', 'max:300'], 'po_reference' => ['nullable', 'string', 'max:300']])->validate();
 
         return self::text($value);
     }

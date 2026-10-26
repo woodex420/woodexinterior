@@ -1,5 +1,10 @@
 # 37 — Furniture quotation and invoice redevelopment
 
+> Follow-up: the owner approved a second A4 polish after this initial delivery. See
+> [audit38](38_FURNITURE_A4_POLISH_2026-10-27.md) for the current design, **50% new default**, versioned historical
+> renderer and final 1,577-test gate. The 75% defaults and original PDF pagination below are historical evidence.
+
+
 ## Approved decision (27 October 2026)
 
 Owner explicitly approved the complete furniture quotation/invoice redevelopment and additive database changes,

@@ -60,7 +60,7 @@ class InvoiceCreate extends Component
 
     public string $shipping = '';
 
-    public string $advance = '75';
+    public string $advance = '50';
 
     /** @var array<string, string> */
     public array $furniture = ['document_title' => '', 'delivery_text' => '', 'transport_text' => 'Outstation charges depend on city, quantity and load.', 'tax_note' => '', 'po_reference' => ''];
@@ -81,6 +81,7 @@ class InvoiceCreate extends Component
         $this->authorize('create', Invoice::class);
 
         $sales = app(SalesSettings::class);
+        $this->furniture = FurnitureDocument::text(['signatories_text' => FurnitureDocument::signatureText($sales->signatories)]);
         $this->issueDate = today()->toDateString();
         $this->dueDate = today()->addDays((int) $sales->invoice_due_days)->toDateString();
         $this->terms = (string) ($sales->invoice_terms ?? '');

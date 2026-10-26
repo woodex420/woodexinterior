@@ -60,6 +60,7 @@ final class QuoteSnapshot
         return [
             'schema' => self::SCHEMA,
             'quotation_renderer' => 'v21',
+            'furniture_revision' => (int) ($quote->meta['document_design']['furniture_revision'] ?? 1),
             'quote_layout' => DocumentStyles::quoteLayout($quote->meta['document_design']['quote_layout'] ?? ($furniture ? 'furniture' : 'classic')),
             'document_design' => $quote->meta['document_design'] ?? null,
             'number' => $quote->number,
@@ -128,7 +129,7 @@ final class QuoteSnapshot
                 'percent_bp' => (int) $milestone->percent_bp,
                 'amount_minor' => (int) $milestone->amount_minor,
             ])->values()->all(),
-            'terms' => array_values(array_filter(array_map('trim', preg_split('/\R/', (string) $quote->terms) ?: []))),
+            'terms' => $furniture && (int) ($quote->meta['document_design']['furniture_revision'] ?? 1) >= 2 ? FurnitureDocument::terms($quote->terms, (int) $quote->advance_bp) : array_values(array_filter(array_map('trim', preg_split('/\R/', (string) $quote->terms) ?: []))),
             'notes' => trim((string) $quote->notes),
             'company' => [
                 'brand' => $furniture ? $this->business->furniture_brand_name : $this->business->brand_name,

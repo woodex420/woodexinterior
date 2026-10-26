@@ -13,14 +13,14 @@
                 @if ($line === 'furniture')
                     <fieldset class="space-y-3 rounded-lg border border-gray-200 p-3"><legend>Furniture green / grey sheet</legend>
                         <x-admin.field label="Secondary band colour" for="furnitureStyle.secondary_color"><input id="furnitureStyle.secondary_color" type="color" wire:model="furnitureStyle.secondary_color"></x-admin.field>
-                        @foreach (['header_align' => 'Header alignment', 'footer_align' => 'Footer alignment'] as $key => $label)
+                        @foreach (['footer_align' => 'Footer alignment'] as $key => $label)
                             <x-admin.field :label="$label" :for="'furnitureStyle.'.$key"><select id="furnitureStyle.{{ $key }}" wire:model="furnitureStyle.{{ $key }}" class="wx-input">@foreach (['left', 'center', 'right'] as $align)<option value="{{ $align }}">{{ ucfirst($align) }}</option>@endforeach</select></x-admin.field>
                         @endforeach
                         @foreach (['quotation_title' => 'Default quotation heading', 'invoice_title' => 'Default invoice heading'] as $key => $label)
                             <x-admin.field :label="$label" :for="'furnitureStyle.'.$key"><input id="furnitureStyle.{{ $key }}" wire:model="furnitureStyle.{{ $key }}" maxlength="60" class="wx-input"></x-admin.field>
                         @endforeach
                         <x-admin.field label="Reference Woodex icon when no uploaded logo" for="furnitureStyle.use_default_logo"><select id="furnitureStyle.use_default_logo" wire:model="furnitureStyle.use_default_logo" class="wx-input"><option value="yes">Show reference icon</option><option value="no">No default icon</option></select></x-admin.field>
-                        <p class="text-theme-xs text-gray-500">Brand name, primary accent, header/footer and uploaded logo above apply to both Furniture quotations and invoices. The green/grey sheet uses these colours, not the Interior palette below.</p>
+                        <p class="text-theme-xs text-gray-500">Brand name, primary accent, header/footer and uploaded logo above apply to both Furniture quotations and invoices. New Furniture documents use the premium A4 layout: logo/company left, metadata right, fixed header and footer. Per-document optional sections and centred signatories are edited in the quotation or invoice builder. Existing sent/issued documents remain unchanged.</p>
                     </fieldset>
                 @endif
                 <div class="border-t border-gray-200 pt-4">

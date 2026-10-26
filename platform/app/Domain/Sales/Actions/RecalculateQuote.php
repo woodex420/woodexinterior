@@ -53,7 +53,7 @@ final class RecalculateQuote
                 discountValue: (int) $quote->discount_value,
                 otherChargesMinor: (int) $quote->other_charges_minor + (int) $quote->shipping_minor,
                 taxBp: (int) $quote->tax_bp,
-                roundToRupee: $this->settings->round_totals_to_rupee,
+                roundToRupee: (int) ($quote->meta['document_design']['furniture_revision'] ?? 1) >= 2 ? false : $this->settings->round_totals_to_rupee,
             );
 
             foreach ($sections->values() as $s => $section) {

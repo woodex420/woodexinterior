@@ -155,3 +155,21 @@ sample/stress PDFs under `/tmp/woodex-run/shots/furniture-*`, and restores **onl
 `finally`. The PHP fixture rejects a non-local or wrongly configured runtime, and the mutating browser proof
 refuses port33143. The second verifies brand selection and nested live invoice HTML with third-party cookies
 blocked and with all cookies stripped. Stop the isolated QA server afterwards; leave33143 alone.
+
+
+### Furniture A4 revision 2 polish
+
+New Furniture defaults to 50% advance, with automatic matching Terms and conditions. Old snapshots without
+revision2 retain the exact previous renderer; existing editable drafts adopt via Apply current design. Run
+`/tmp/woodex-run/php vendor/bin/pest tests/Feature/Sales/FurnitureDocumentsTest.php tests/Feature/Sales/FurniturePolishTest.php --colors=never`
+from the sandbox app for the 30-case focused check. See audit38 for final gate and explicit boundaries.
+
+The isolated browser replay additionally exercises 37.5% → matching terms/amount, terms/signatory show/hide,
+custom names in both builders, and a return to 50%. Exported PDFs include `furniture-47500.pdf` (47,500 with
+23,750 advance/remainder) and numbered long descriptions on 45 rows. Inspect PDF rasters and every page's
+header/footer/text bounds; HTTP success is not PDF/browser proof. Latest stress output is eight pages (not the
+initial short-description four-page fixture). HTML previews remain continuous rather than paginated PDF viewers.
+
+The iframe harness is non-document-mutating and can also verify the active preview with
+`PORT=33143 node tools/sandbox/furniture-iframe-check.mjs`. Never run the **mutating/restoring** document harness
+against33143. Final primary verification retained six quotes, 26 contacts, zero invoices and zero QA contacts.

@@ -92,14 +92,20 @@
                     </div>
                     @if ($line === 'furniture')
                         <div class="grid grid-cols-2 gap-3">
-                            @foreach (['rent' => 'Rent (Rs)', 'shipping' => 'Shipping / transport (Rs)', 'advance' => 'Advance requested (%)'] as $field => $label)
+                            @foreach (['rent' => 'Rent / Transport (Rs)', 'advance' => 'Advance payment (%)'] as $field => $label)
                                 <x-admin.field :label="$label" :for="$field" :error="$field"><input id="{{ $field }}" wire:model.live.debounce.350ms="{{ $field }}" class="wx-input" inputmode="decimal"></x-admin.field>
                             @endforeach
                         </div>
                         @foreach (['document_title' => 'Printed heading (not document type)', 'delivery_text' => 'Delivery time', 'transport_text' => 'Transport note', 'tax_note' => 'Tax note', 'po_reference' => 'PO reference'] as $field => $label)
                             <x-admin.field :label="$label" :for="'furniture.'.$field"><input id="furniture.{{ $field }}" wire:model.live.debounce.350ms="furniture.{{ $field }}" class="wx-input" maxlength="{{ $field === 'document_title' ? 60 : 300 }}"></x-admin.field>
                         @endforeach
-                        <p class="text-theme-xs text-gray-500">Advance requested is not paid. Actual balance changes only after a payment is verified.</p>
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        @foreach (\App\Domain\Sales\Services\FurnitureDocument::OPTIONS as $field => $label)
+                            <x-admin.field :label="$label" :for="'furniture.'.$field"><select id="furniture.{{ $field }}" wire:model.live="furniture.{{ $field }}" class="wx-input"><option value="yes">Show</option><option value="no">Hide when optional</option></select></x-admin.field>
+                        @endforeach
+                        </div>
+                        <x-admin.field label="Centred signatories — Name | Title, one person per line" for="furniture.signatories_text"><textarea id="furniture.signatories_text" wire:model.live.debounce.350ms="furniture.signatories_text" rows="4" maxlength="2000" class="wx-input h-auto"></textarea></x-admin.field>
+                        <p class="text-theme-xs text-gray-500">The advance percentage also supplies the payment term. Applied charges always print. Advance requested is not paid. Actual balance changes only after a payment is verified.</p>
                     @endif
                     <dl class="space-y-1.5 border-t border-gray-100 pt-3 text-theme-sm dark:border-gray-800">
                         <div class="flex justify-between"><dt class="text-gray-500">Subtotal</dt><dd class="tabular-nums">{{ Money::ofMinor($totals['subtotal'])->format($lakh) }}</dd></div>
@@ -108,7 +114,7 @@
                         <div class="flex justify-between border-t border-gray-100 pt-2 font-medium dark:border-gray-800"><dt>Total</dt><dd class="tabular-nums">{{ Money::ofMinor($totals['total'])->format($lakh) }}</dd></div>
                     </dl>
                     <x-admin.field label="Notes for the client" for="notes" error="notes"><textarea id="notes" wire:model.live.debounce.350ms="notes" rows="2" class="wx-input h-auto py-2.5"></textarea></x-admin.field>
-                    <x-admin.field label="Terms" for="terms" error="terms"><textarea id="terms" wire:model.live.debounce.350ms="terms" rows="3" class="wx-input h-auto py-2.5"></textarea></x-admin.field>
+                    <x-admin.field :label="$line === 'furniture' ? 'Terms and conditions — additional terms (advance line is automatic)' : 'Terms'" for="terms" error="terms"><textarea id="terms" wire:model.live.debounce.350ms="terms" rows="3" class="wx-input h-auto py-2.5"></textarea></x-admin.field>
                     <div class="flex flex-wrap gap-2 border-t border-gray-100 pt-4 dark:border-gray-800">
                         <x-admin.button variant="secondary" wire:click="saveDraft" wire:loading.attr="disabled" wire:target="saveDraft,saveAndIssue">Save draft</x-admin.button>
                         <x-admin.button icon="check" wire:click="saveAndIssue" wire:confirm="Issue now? The invoice is frozen and booked in the ledger immediately." wire:loading.attr="disabled" wire:target="saveDraft,saveAndIssue">Save &amp; issue</x-admin.button>

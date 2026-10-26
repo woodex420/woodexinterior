@@ -113,7 +113,7 @@ final class CreateManualInvoice
 
         $rent = $line === BusinessLine::Furniture ? (int) ($data['rent_minor'] ?? 0) : 0;
         $shipping = $line === BusinessLine::Furniture ? (int) ($data['shipping_minor'] ?? 0) : 0;
-        $furniture = FurnitureDocument::validatedText($data['furniture'] ?? []);
+        $furniture = FurnitureDocument::validatedText(['signatories_text' => FurnitureDocument::signatureText($this->sales->signatories), ...($data['furniture'] ?? [])]);
         $tax = (int) round(($subtotal - $discount + $rent + $shipping) * $taxBp / 10000);
         $total = $subtotal - $discount + $rent + $shipping + $tax;
 
@@ -150,7 +150,7 @@ final class CreateManualInvoice
                 'subtotal_minor' => $subtotal,
                 'discount_minor' => $discount,
                 'rent_minor' => $rent, 'shipping_minor' => $shipping, 'tax_bp' => $taxBp,
-                'advance_bp' => $line === BusinessLine::Furniture ? (int) ($data['advance_bp'] ?? 7500) : 0,
+                'advance_bp' => $line === BusinessLine::Furniture ? (int) ($data['advance_bp'] ?? 5000) : 0,
                 'commercial' => $line === BusinessLine::Furniture ? ['renderer' => 'furniture-v1', 'furniture' => $furniture, 'document_design' => app(DocumentStyles::class)->copy($line)] : null,
                 'tax_minor' => $tax,
                 'total_minor' => $total,
