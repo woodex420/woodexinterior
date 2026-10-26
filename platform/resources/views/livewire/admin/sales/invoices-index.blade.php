@@ -1,7 +1,12 @@
 @use('App\Support\Money')
 <div>
-    <x-admin.page-header title="Invoices" description="Every invoice raised against a quotation or a project, with what is still owed. The advance one appears the moment a client accepts."
-                         :breadcrumbs="['Sales' => null, 'Invoices' => null]" />
+    <x-admin.page-header title="Invoices" description="Every invoice — from quotations, projects and written by hand — with what is still owed. The advance one appears the moment a client accepts."
+                         :breadcrumbs="['Sales' => null, 'Invoices' => null]">
+        <x-slot:actions>
+            <x-admin.button variant="secondary" wire:click="export">Export CSV</x-admin.button>
+            @if ($canCreate)<x-admin.button icon="plus" :href="route('admin.invoices.create')" wire:navigate>New invoice</x-admin.button>@endif
+        </x-slot:actions>
+    </x-admin.page-header>
 
     {{-- Status chips --}}
     <div class="mb-4 flex gap-2 overflow-x-auto pb-1 no-scrollbar" role="tablist" aria-label="Filter by status">

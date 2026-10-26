@@ -9,7 +9,7 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,447 passed · 1 skipped · 7,780 assertions** · Pint clean on touched files · PHPStan 0 errors |
+| Tests | **1,469 passed · 1 skipped · 7,855 assertions** · Pint clean on touched files · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
@@ -43,6 +43,8 @@ only on the real bot token in the server `.env`.
 **Slice B (same day).** Client Portal and Handovers stopped being `P4b` badges and became real screens (signed portal links; handover progress), Chat Bot opens its live switches on Settings, the duplicate Alert Rules is gone, the eleven System entries became four pages with tabs, and the rate book moved to Sales as **Estimator rates**. 12 more tests; suite **1,296 passed / 1 skipped**.
 
 **Slice E (26 October).** Invoices now raise themselves. `woodex:invoice-milestones` bills every milestone an accepted quotation has reached — hourly, once per milestone, with the same number, tax, PDF and ledger posting as the advance invoice — and `woodex:invoice-reminders` runs the 7/14/30-day ladder, one rung per invoice, messaging the client on WhatsApp only with consent and telling the studio why when it cannot. Both are on the Automation screen with their cadence and switches. 10 more tests; suite **1,332 passed · 1 skipped · 7,165 assertions**.
+
+**Slice P — manual invoices, tracking filters, invoice export (26 October).** "New invoice" is a real flow now: client, lines, discount and tax, saved as a draft or issued in the same act — numbered in its own **MI-2026-####** series and frozen + booked exactly like milestone invoices (Dr receivable / Cr revenue / Cr tax). The shared issue step also fixes a latent gap: draft advance invoices could never be issued before; they can now. Invoice tracking filters by **year** and **Interior/Furniture**, and both the board and the list export CSV of what the filters select. 22 more tests; suite **1,469 passed · 1 skipped · 7,855 assertions**. Live proof on 33143: MI-2026-0001 issued at Rs 36,750 with an exact journal and frozen PDF, draft MI-2026-0002 issued through the new button, preview restored to baseline afterwards.
 
 **Slice O — the PDF design system (26 October).** Quotation and invoice PDFs are now restyled per brand without code: three themes (Classic, Minimal, Premium) and blocks — Scope, Items/BOQ, Totals & words, Payment schedule, Terms, Notes, Payment details, Signatures (invoice: Particulars, Totals & words, Pay to, Notes, Terms) — that reorder and hide from Document design, frozen into each new document so sent PDFs never change; Items and Totals always print. Quote templates travel as `.woodex-template.json` files (export/import, create-only), and the builder has a Signed-by picker. 15 more tests; suite **1,447 passed · 1 skipped · 7,780 assertions**. Live proof on 33143: Premium + signatures-first on draft WI-10101 produced a real 46.6 KB PDF in the new order, untouched WI-10102 kept the classic look, and everything was restored afterwards.
 

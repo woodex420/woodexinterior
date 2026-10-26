@@ -30,6 +30,18 @@ final class InvoicePolicy
         return $user->can('invoices.manage') && $invoice->status === InvoiceStatus::Draft;
     }
 
+    /** Writing an invoice by hand (manual kind) is accounts' work, like editing one. */
+    public function create(User $user): bool
+    {
+        return $user->can('invoices.manage');
+    }
+
+    /** Issuing freezes the document and books it in the ledger — drafts only. */
+    public function issue(User $user, Invoice $invoice): bool
+    {
+        return $user->can('invoices.manage') && $invoice->status === InvoiceStatus::Draft;
+    }
+
     public function void(User $user, Invoice $invoice): bool
     {
         return $user->can('invoices.void') && $invoice->status !== InvoiceStatus::Void;

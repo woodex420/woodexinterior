@@ -1,7 +1,22 @@
 <div>
     <x-admin.page-header title="Invoice tracking" description="Every invoice with money on it, grouped by where it really is — the board reads status and due date, it never invents them. Collecting from here is the one-act collection: recorded, verified, receipted and booked in the ledger."
                          :breadcrumbs="['Sales' => null, 'Invoice tracking' => null]">
+        <x-slot:actions>
+            <x-admin.button variant="secondary" wire:click="export">Export CSV</x-admin.button>
+            @if ($canCreate)<x-admin.button icon="plus" :href="route('admin.invoices.create')" wire:navigate>New invoice</x-admin.button>@endif
+        </x-slot:actions>
     </x-admin.page-header>
+
+    <div class="mb-4 flex flex-wrap items-center gap-3">
+        <select wire:model.live="year" class="wx-input w-auto" aria-label="Issue year">
+            <option value="">All years</option>
+            @foreach ($years as $y)<option value="{{ $y }}">{{ $y }}</option>@endforeach
+        </select>
+        <select wire:model.live="line" class="wx-input w-auto" aria-label="Brand line">
+            <option value="">All · Interior + Furniture</option>
+            @foreach ($lines as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach
+        </select>
+    </div>
 
     <div class="mb-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
         @foreach ($groups as $key => $summary)

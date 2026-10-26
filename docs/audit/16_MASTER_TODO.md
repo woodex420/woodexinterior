@@ -2388,3 +2388,38 @@ repaired with atomic rewrites and sequential edits. Tooling rule from here: neve
 
 **Next.** The owner re-ordered the parity plan: **Slice P** (manual New Invoice + tracking year/line filters
 + invoice CSV export) next, then Slice Q (Facebook Pages). Slice N stays blocked on the Google key.
+
+### Step 40 — manual invoices, tracking filters, invoice export (Slice P, 26 Oct 2026)
+
+v2.1 Pro parity slice 2 of 3 — the owner put P ahead of Q. **New invoice** is now a real flow: pick a client,
+the brand, dates and bank account, write lines (qty × rate, before tax), discount and tax %, then *Save draft*
+or *Save & issue*. Manual invoices carry their own number series (**MI-2026-0001**, migration-seeded like the
+recurring series) and — the point of the design — they freeze and book through the **same** `InvoiceFreezer` +
+`PostInvoiceToLedger` path as milestone invoices: Dr 1100 receivable, Cr revenue by line, Cr 2100 tax. That
+sharing is now an explicit `IssueInvoice` action, which also closes a latent gap this slice found: **draft
+advance invoices (advance-invoice mode "draft") previously had no way to be issued at all** — the invoice page
+gained an Issue button (drafts, `invoices.manage`) and honest copy ("nothing is frozen or booked yet").
+
+The tracking board gained the screenshot's **year** and **Interior (WI) / Furniture (WF)** filters, and both the
+board and the invoices list **export CSV** of exactly what their filters select (CSV-injection guard copied from
+Leads). *Import sheet* stays split out — its own money-safety decision, per the plan.
+
+**Proof.** 22 new tests (`ManualInvoicesTest`): MI numbering and exact totals, issue-at-create (frozen PDF +
+sha, journal by account code, served bytes), issue-later + double-issue refused by the action's own guard,
+zero-total refusal, the draft-advance issue path, ten validation refusals, the `invoices.manage` wall (sales
+403, accountant allowed, owner sees no Issue button on issued invoices), both screen saves, the missing-period
+explanation, year/line filters, both exports. Suite **1,469 passed · 1 skipped · 7,855 assertions**; Pint clean;
+PHPStan 0. Live on 33143 (preview restarted after a sandbox reset): MI-2026-0001 issued — Rs 36,750, journal
+Dr 1100 / Cr 4010 / Cr 2100 exact, 35 KB frozen PDF; draft MI-2026-0002 showed its Issue button and issued
+through the new door; both numbers listed; preview database then restored to its exact baseline (0
+invoices/journals/banks, MI series rewound).
+
+**Bugs the build caught.** (1) Backdating an issued invoice into a year with no accounting period exploded as a
+500 from the create screen — both issue paths now explain ("No accounting period covers … Nothing was saved").
+(2) `canIssue` trusted the policy alone, but the owner bypasses `Gate::before`, so an issued invoice still
+showed its owner an Issue button — state is now checked first (the QuoteBuilder rule), with a regression test.
+(3) The tracking filter test first placed its interior invoice in "Due this week", not the default Overdue
+group — board assertions must target the group actually rendered.
+
+**Next.** Slice Q — Facebook Pages connect (build against the fake; live proof needs the owner's Page ID +
+token). Slice N stays blocked on the Google key; invoice *import sheet* awaits its own yes/no.

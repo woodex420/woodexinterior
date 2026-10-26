@@ -1,0 +1,287 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Livewire\Admin\Sales;
+
+use App\Domain\Accounts\Exceptions\JournalPostingFailed;
+use App\Domain\Crm\Enums\BusinessLine;
+use App\Domain\Crm\Models\Contact;
+use App\Domain\Sales\Actions\CreateManualInvoice;
+use App\Domain\Sales\Enums\Unit;
+use App\Domain\Sales\Models\BankAccount;
+use App\Domain\Sales\Models\Invoice;
+use App\Livewire\Concerns\InteractsWithAdmin;
+use App\Settings\SalesSettings;
+use App\Support\NumberInput;
+use Illuminate\Contracts\View\View;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
+use Livewire\Component;
+
+/**
+ * New invoice (Slice P): bill work that has no quotation — pick the client, write the lines, then save a draft
+ * or issue in the same act (frozen + booked via IssueInvoice, like every other invoice).
+ */
+#[Layout('layouts::admin')]
+#[Title('New invoice')]
+class InvoiceCreate extends Component
+{
+    use InteractsWithAdmin;
+
+    #[Url(as: 'contact', except: 0)]
+    public int $contactId = 0;
+
+    public string $contactSearch = '';
+
+    public string $line = 'interior';
+
+    public string $issueDate = '';
+
+    public string $dueDate = '';
+
+    public string $bankAccountId = '';
+
+    /** @var list<array{description: string, qty: string, unit: string, rate: string}> */
+    public array $items = [['description' => '', 'qty' => '1', 'unit' => 'job', 'rate' => '']];
+
+    public string $discount = '';
+
+    public string $taxPercent = '';
+
+    public string $notes = '';
+
+    public string $terms = '';
+
+    public function mount(): void
+    {
+        $this->authorize('create', Invoice::class);
+
+        $sales = app(SalesSettings::class);
+        $this->issueDate = today()->toDateString();
+        $this->dueDate = today()->addDays((int) $sales->invoice_due_days)->toDateString();
+        $this->terms = (string) ($sales->invoice_terms ?? '');
+
+        if ($this->contactId > 0 && $this->visibleContact($this->contactId) === null) {
+            $this->contactId = 0;
+        }
+    }
+
+    public function updatedLine(): void
+    {
+        $this->bankAccountId = '';
+    }
+
+    public function selectContact(int $contactId): void
+    {
+        if ($this->visibleContact($contactId) === null) {
+            return;
+        }
+
+        $this->contactId = $contactId;
+        $this->contactSearch = '';
+        $this->resetValidation('contactId');
+    }
+
+    public function clearContact(): void
+    {
+        $this->contactId = 0;
+    }
+
+    public function addItem(): void
+    {
+        if (count($this->items) < 50) {
+            $this->items[] = ['description' => '', 'qty' => '1', 'unit' => 'job', 'rate' => ''];
+        }
+    }
+
+    public function removeItem(int $index): void
+    {
+        if (count($this->items) > 1 && isset($this->items[$index])) {
+            unset($this->items[$index]);
+            $this->items = array_values($this->items);
+        }
+    }
+
+    public function saveDraft(): void
+    {
+        $this->store(false);
+    }
+
+    public function saveAndIssue(): void
+    {
+        $this->store(true);
+    }
+
+    private function store(bool $issue): void
+    {
+        $this->authorize('create', Invoice::class);
+
+        $this->validate([
+            'contactId' => ['required', 'integer', 'min:1'],
+            'line' => ['required', Rule::in(['interior', 'furniture'])],
+            'issueDate' => ['required', 'date'],
+            'dueDate' => ['required', 'date', 'after_or_equal:issueDate'],
+            'items' => ['required', 'array', 'min:1', 'max:50'],
+            'items.*.description' => ['required', 'string', 'max:2000'],
+            'notes' => ['nullable', 'string', 'max:5000'],
+            'terms' => ['nullable', 'string', 'max:10000'],
+        ], [], ['contactId' => 'client', 'issueDate' => 'invoice date', 'dueDate' => 'due date', 'items.*.description' => 'description']);
+
+        if ($this->visibleContact($this->contactId) === null) {
+            $this->addError('contactId', 'Pick a client you can see.');
+
+            return;
+        }
+
+        $items = [];
+        $ok = true;
+
+        foreach ($this->items as $i => $row) {
+            try {
+                $qty = NumberInput::quantity(trim((string) $row['qty']));
+
+                if ((float) $qty <= 0) {
+                    throw new InvalidArgumentException;
+                }
+            } catch (InvalidArgumentException) {
+                $this->addError("items.{$i}.qty", 'Quantity like 2 or 2.5.');
+                $ok = false;
+                $qty = '0';
+            }
+
+            try {
+                $rate = trim((string) $row['rate']) === '' ? 0 : NumberInput::rupees(trim((string) $row['rate']));
+            } catch (InvalidArgumentException) {
+                $this->addError("items.{$i}.rate", 'Rate in rupees, e.g. 25000.');
+                $ok = false;
+                $rate = 0;
+            }
+
+            $items[] = ['description' => (string) $row['description'], 'unit' => (string) ($row['unit'] ?? 'job'), 'qty' => $qty, 'rate_minor' => $rate];
+        }
+
+        try {
+            $discount = trim($this->discount) === '' ? 0 : NumberInput::rupees(trim($this->discount));
+        } catch (InvalidArgumentException) {
+            $this->addError('discount', 'Discount in rupees.');
+            $ok = false;
+            $discount = 0;
+        }
+
+        try {
+            $taxBp = trim($this->taxPercent) === '' ? 0 : NumberInput::percent(trim($this->taxPercent));
+        } catch (InvalidArgumentException) {
+            $this->addError('taxPercent', 'Tax percent, e.g. 5.');
+            $ok = false;
+            $taxBp = 0;
+        }
+
+        if (! $ok) {
+            return;
+        }
+
+        try {
+            $invoice = app(CreateManualInvoice::class)->handle($this->user(), [
+                'contact_id' => $this->contactId,
+                'business_line' => $this->line,
+                'issue_date' => $this->issueDate,
+                'due_date' => $this->dueDate,
+                'bank_account_id' => $this->bankAccountId !== '' ? (int) $this->bankAccountId : null,
+                'discount_minor' => $discount,
+                'tax_bp' => $taxBp,
+                'notes' => $this->notes,
+                'terms' => $this->terms,
+                'items' => $items,
+                'issue' => $issue,
+            ]);
+        } catch (ValidationException $exception) {
+            $this->toastValidation($exception);
+
+            return;
+        } catch (JournalPostingFailed $exception) {
+            $this->toast($exception->getMessage().' Nothing was saved — save a draft, or fix the date or the period first.', 'error');
+
+            return;
+        }
+
+        session()->flash('status', $issue
+            ? "Invoice {$invoice->number} issued — frozen and booked in the ledger."
+            : "Invoice {$invoice->number} saved as a draft. Issue it when you are ready to send.");
+
+        $this->redirect(route('admin.invoices.show', $invoice), navigate: true);
+    }
+
+    /**
+     * Lenient totals for the on-screen preview only — the action recomputes strictly.
+     *
+     * @return array{subtotal: int, discount: int, tax: int, total: int}
+     */
+    private function totals(): array
+    {
+        $subtotal = 0;
+
+        foreach ($this->items as $row) {
+            try {
+                $qty = (float) NumberInput::quantity(trim((string) $row['qty']));
+                $rate = trim((string) $row['rate']) === '' ? 0 : NumberInput::rupees(trim((string) $row['rate']));
+                $subtotal += (int) round($qty * $rate);
+            } catch (InvalidArgumentException) {
+                // The preview ignores a half-typed row; saving validates it.
+            }
+        }
+
+        try {
+            $discount = trim($this->discount) === '' ? 0 : NumberInput::rupees(trim($this->discount));
+        } catch (InvalidArgumentException) {
+            $discount = 0;
+        }
+
+        try {
+            $taxBp = trim($this->taxPercent) === '' ? 0 : NumberInput::percent(trim($this->taxPercent));
+        } catch (InvalidArgumentException) {
+            $taxBp = 0;
+        }
+
+        $discount = min($discount, $subtotal);
+        $tax = (int) round(($subtotal - $discount) * $taxBp / 10000);
+
+        return ['subtotal' => $subtotal, 'discount' => $discount, 'tax' => $tax, 'total' => $subtotal - $discount + $tax];
+    }
+
+    private function visibleContact(int $contactId): ?Contact
+    {
+        /** @var Contact|null $contact */
+        $contact = Contact::query()->visibleTo($this->user())->find($contactId);
+
+        return $contact;
+    }
+
+    public function render(): View
+    {
+        $line = BusinessLine::tryFrom($this->line) ?? BusinessLine::Interior;
+
+        $results = collect();
+
+        if ($this->contactId === 0 && trim($this->contactSearch) !== '') {
+            $term = '%'.trim($this->contactSearch).'%';
+            $results = Contact::query()->visibleTo($this->user())
+                ->where(fn ($q) => $q->where('name', 'like', $term)->orWhere('phone', 'like', $term))
+                ->orderBy('name')->limit(8)->get(['id', 'name', 'phone']);
+        }
+
+        return view('livewire.admin.sales.invoice-create', [
+            'selectedContact' => $this->contactId > 0 ? $this->visibleContact($this->contactId) : null,
+            'contactResults' => $results,
+            'lines' => ['interior' => 'Interior (WI)', 'furniture' => 'Furniture (WF)'],
+            'units' => Unit::options(),
+            'bankAccounts' => BankAccount::query()->forLine($line)->get(),
+            'totals' => $this->totals(),
+            'lakh' => app(SalesSettings::class)->lakh_grouping,
+        ]);
+    }
+}

@@ -23,9 +23,9 @@ schema slice of its own whenever approved.
 | Signed by (Ahmad — Director) | Signatories in sales settings + per-quote list; no per-quote picker in the builder | **Shipped — Slice O** |
 | Live preview / Preview-PDF / Send / Saved | PDF download + client portal link + send exist; in-page preview via `x-admin.pdf-preview` | Exists (different shape) |
 | **Export / Import template (file)** | Templates are DB records; no file export/import | **Shipped — Slice O** |
-| **New invoice** (manual create) | `InvoiceKind::Manual` exists; **no create UI/action** — invoices come from quotes, milestones, recurring | **Missing — Slice P** |
-| Invoice tracking: year filter, WI/WF filter, Classic list | Board groups exist; classic list is the Invoices tab; **no year/business-line filters** | Partial — Slice P |
-| **Import sheet / Export (invoices)** | Payments export exists; invoice export/import do not | **Missing — Slice P (export first; import is its own decision)** |
+| **New invoice** (manual create) | `InvoiceKind::Manual` exists; **no create UI/action** — invoices come from quotes, milestones, recurring | **Shipped — Slice P** |
+| Invoice tracking: year filter, WI/WF filter, Classic list | Board groups exist; classic list is the Invoices tab; **no year/business-line filters** | **Shipped — Slice P** |
+| **Import sheet / Export (invoices)** | Payments export exists; invoice export/import do not | **Export shipped — Slice P (import still its own decision)** |
 | **Connect Facebook Pages** (Page ID + token + test) | WhatsApp has exactly this (real gateway + Meta test); **Facebook has no gateway** — the card still says phase P7 | **Missing — Slice Q** |
 
 ## Slice O — Document design system (quotes + invoices) · ✅ **shipped 26 Oct 2026**
@@ -41,7 +41,7 @@ quote-template **export/import as JSON files**, and a *Signed by* picker in the 
 per-quote signatories). **Schema:** two nullable columns on `document_designs` — needs approval.
 Acceptance: reorder/hide blocks → a new quote's PDF follows exactly; a previously sent quote's PDF is byte-identical.
 
-## Slice P — Invoice completeness
+## Slice P — Invoice completeness · ✅ **shipped 26 Oct 2026**
 
 A **New invoice** flow (manual kind): pick client, lines, tax, due date → posts to the ledger exactly like a
 milestone invoice (the freezer/snapshot path), numbered by the existing numbering. Tracking board gains the
@@ -61,6 +61,7 @@ ID + token** — the build itself is not blocked; every state is testable agains
 
 ## Order and why
 
-**O ✅ → P → Q** (owner's picks, 26 Oct). O shipped first — 100 % provable (PDF output changes on command,
-sent documents frozen). The owner then put **P ahead of Q**: manual invoice creation is unblocked work, while
-Q's live proof waits on a Facebook Page ID + token. Q remains ready to build the moment a token is pasted.
+**O ✅ → P ✅ → Q** (owner's picks, 26 Oct). O shipped first — 100 % provable (PDF output changes on command,
+sent documents frozen). The owner then put **P ahead of Q** — manual invoices were unblocked work, and P
+shipped the same day. Q is next: buildable today against the fake, live-provable the moment a Page ID +
+token is pasted.

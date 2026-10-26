@@ -17,6 +17,9 @@
                     <x-admin.button variant="secondary" icon="chat">Send on WhatsApp</x-admin.button>
                 </a>
             @endif
+            @if ($canIssue)
+                <x-admin.button icon="check" wire:click="issue" wire:confirm="Issue this invoice? It will be frozen and booked in the ledger.">Issue invoice</x-admin.button>
+            @endif
             @if ($canVoid)
                 <x-admin.button variant="danger" icon="trash" wire:click="openVoid">Void invoice</x-admin.button>
             @endif
@@ -42,7 +45,7 @@
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="space-y-6 xl:col-span-2">
-            <x-admin.card title="Lines" description="Frozen when the invoice was issued — this is the document the client received.">
+            <x-admin.card title="Lines" :description="$invoice->status === \App\Domain\Sales\Enums\InvoiceStatus::Draft ? 'Draft — nothing is frozen or booked yet. Issuing freezes this document and posts it to the ledger.' : 'Frozen when the invoice was issued — this is the document the client received.'">
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-left text-theme-sm">
                         <thead class="border-b border-gray-100 text-theme-xs tracking-wide text-gray-500 uppercase dark:border-gray-800">

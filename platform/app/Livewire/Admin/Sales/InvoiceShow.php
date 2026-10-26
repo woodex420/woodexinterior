@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Sales;
 
+use App\Domain\Accounts\Exceptions\JournalPostingFailed;
 use App\Domain\Accounts\Models\JournalEntry;
 use App\Domain\Sales\Actions\CollectPayment;
+use App\Domain\Sales\Actions\IssueInvoice;
 use App\Domain\Sales\Actions\VoidInvoice;
 use App\Domain\Sales\Enums\InvoiceStatus;
 use App\Domain\Sales\Enums\PaymentMethod;
+use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Services\InvoiceLinks;
 use App\Livewire\Concerns\InteractsWithAdmin;
@@ -117,6 +120,23 @@ class InvoiceShow extends Component
         session()->flash('status', "Invoice {$invoice->number} is void. Its ledger entry, if it had one, was reversed, not deleted.");
     }
 
+    public function issue(IssueInvoice $issue): void
+    {
+        $invoice = $this->invoice();
+
+        $this->authorize('issue', $invoice);
+
+        try {
+            $invoice = $issue->handle($invoice, $this->user());
+        } catch (QuoteActionDenied|JournalPostingFailed $exception) {
+            $this->toast($exception->getMessage(), 'error');
+
+            return;
+        }
+
+        session()->flash('status', "Invoice {$invoice->number} issued — frozen and booked in the ledger.");
+    }
+
     public function render(): View
     {
         $invoice = $this->invoice();
@@ -133,6 +153,8 @@ class InvoiceShow extends Component
             'journal' => $journal,
             'canCollect' => $this->canCollect($invoice),
             'canVoid' => Gate::allows('void', $invoice),
+            // State first: the owner passes every permission check (Gate::before), but an issued invoice stays issued.
+            'canIssue' => $invoice->status === InvoiceStatus::Draft && Gate::allows('issue', $invoice),
             'portal' => InvoiceLinks::portal($invoice),
             'whatsapp' => InvoiceLinks::whatsappShare($invoice),
             'methods' => PaymentMethod::cases(),
