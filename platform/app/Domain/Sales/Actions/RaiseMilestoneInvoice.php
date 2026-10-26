@@ -47,6 +47,9 @@ final class RaiseMilestoneInvoice
     {
         return DB::transaction(function () use ($quote, $milestone, $by, $issued): Invoice {
             $quote = Quote::query()->whereKey($quote->id)->lockForUpdate()->firstOrFail();
+            if (($quote->meta['furniture_billing'] ?? '') === 'full' || Invoice::withTrashed()->where('source_quote_id', $quote->id)->exists()) {
+                throw new QuoteActionDenied('This quotation uses a full Furniture invoice, not milestone billing.');
+            }
             $project = $quote->project()->lockForUpdate()->firstOrFail();
 
             $milestone = ProjectMilestone::query()

@@ -18,6 +18,7 @@ use App\Domain\Sales\Models\QuoteSection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 
 /**
@@ -30,19 +31,29 @@ final class QuoteEditor
     /** @var list<string> */
     private const DETAIL_FIELDS = [
         'title', 'type', 'site', 'intro_line', 'valid_until', 'discount_type', 'discount_value', 'other_charges_label', 'other_charges_minor',
-        'tax_bp', 'terms', 'notes', 'internal_notes', 'scope_html', 'signatories',
+        'tax_bp', 'shipping_minor', 'advance_bp', 'terms', 'notes', 'internal_notes', 'scope_html', 'signatories',
     ];
 
     /** @var list<string> */
     private const LINE_FIELDS = [
-        'description', 'image_path', 'unit', 'qty', 'rate_minor', 'discount_type', 'discount_value', 'is_optional', 'internal_cost_minor',
+        'product_name', 'description', 'image_path', 'unit', 'qty', 'rate_minor', 'discount_type', 'discount_value', 'is_optional', 'internal_cost_minor',
     ];
 
     public function __construct(private readonly RecalculateQuote $recalculate) {}
 
     /**
-     * @param  array<string, mixed>  $attributes
+     * @param  array<string, mixed>  $patch
      */
+    public function updateFurnitureText(Quote $quote, array $patch): void
+    {
+        $this->change($quote, function () use ($quote, $patch): void {
+            $text = FurnitureDocument::validatedText([...FurnitureDocument::text($quote->meta['furniture'] ?? null), ...$patch]);
+            $quote->meta = [...($quote->meta ?? []), 'furniture' => $text];
+            $quote->save();
+        });
+    }
+
+    /** @param array<string, mixed> $attributes */
     public function updateDetails(Quote $quote, array $attributes): void
     {
         $this->change($quote, function () use ($quote, $attributes): void {
@@ -52,6 +63,7 @@ final class QuoteEditor
                 $values['discount_value'] = 0;
             }
 
+            Validator::make($values, ['shipping_minor' => ['sometimes', 'integer', 'min:0', 'max:999999999900'], 'advance_bp' => ['sometimes', 'integer', 'min:0', 'max:10000']])->validate();
             $quote->fill($values)->save();
         });
     }
@@ -202,6 +214,7 @@ final class QuoteEditor
             if ($after !== null && $after->quote_section_id !== $section->id) {
                 throw new InvalidArgumentException('That line is in another section.');
             }
+            Validator::make($attributes, ['product_name' => ['nullable', 'string', 'max:160']])->validate();
             $items = $section->items()->get();
             $index = $after !== null ? (int) $items->search(fn (QuoteItem $item): bool => $item->is($after)) + 1 : $items->count();
 
@@ -246,6 +259,7 @@ final class QuoteEditor
         $this->change($this->quoteOf($item), function () use ($item, $attributes): void {
             $this->refreshChild($item);
             $values = array_intersect_key($attributes, array_flip(self::LINE_FIELDS));
+            Validator::make($values, ['product_name' => ['nullable', 'string', 'max:160']])->validate();
 
             if (array_key_exists('discount_type', $values) && $values['discount_type'] === null) {
                 $values['discount_value'] = 0;

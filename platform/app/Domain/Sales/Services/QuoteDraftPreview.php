@@ -44,7 +44,8 @@ final class QuoteDraftPreview
             'milestones.*' => ['array'],
             'milestones.*.*' => ['nullable', 'string', 'max:160'],
             'pdfTheme' => ['sometimes', 'string', 'in:classic,minimal,premium'],
-            'quoteLayout' => ['sometimes', 'string', 'in:classic,single,project'],
+            'quoteLayout' => ['sometimes', 'string', 'in:classic,single,project,furniture'],
+            'lines.*.product_name' => ['nullable', 'string', 'max:160'],
         ])->validate();
 
         $original->loadMissing(['sections.items', 'milestones']);
@@ -60,7 +61,7 @@ final class QuoteDraftPreview
             $section->setRelation('items', $originalSection->items->map(function ($originalItem) use ($form) {
                 $item = clone $originalItem;
                 $state = $form['lines'][$item->id] ?? [];
-                foreach (['description', 'is_optional'] as $field) {
+                foreach (['product_name', 'description', 'is_optional'] as $field) {
                     if (array_key_exists($field, $state)) {
                         $item->{$field} = $state[$field];
                     }
@@ -108,6 +109,14 @@ final class QuoteDraftPreview
         if (isset($details['other_charges'])) {
             $quote->other_charges_minor = $details['other_charges'] === '' ? 0 : NumberInput::rupees((string) $details['other_charges']);
         }
+        if (isset($details['shipping'])) {
+            $quote->shipping_minor = $details['shipping'] === '' ? 0 : NumberInput::rupees((string) $details['shipping']);
+        }
+        if (isset($details['advance'])) {
+            $quote->advance_bp = $details['advance'] === '' ? 0 : NumberInput::percent((string) $details['advance']);
+        }
+        $text = FurnitureDocument::validatedText(array_intersect_key($details, FurnitureDocument::text(null)));
+        $quote->meta = [...($quote->meta ?? []), 'furniture' => [...FurnitureDocument::text($quote->meta['furniture'] ?? null), ...array_intersect_key($text, $details)]];
         $design = $quote->meta['document_design'] ?? [];
         $design['pdf_theme'] = DocumentStyles::theme($form['pdfTheme'] ?? $design['pdf_theme'] ?? null);
         $design['quote_layout'] = DocumentStyles::quoteLayout($form['quoteLayout'] ?? $design['quote_layout'] ?? null);
@@ -115,7 +124,7 @@ final class QuoteDraftPreview
         $quote->meta = [...($quote->meta ?? []), 'document_design' => $design, 'client_override' => [...($quote->meta['client_override'] ?? []), ...$client]];
 
         $inputs = $sections->map(fn ($section) => $section->items->map(fn ($item) => new LineInput((string) $item->qty, $item->rate_minor, $item->discount_type, $item->discount_value, $item->is_optional))->all())->all();
-        $totals = app(QuoteCalculator::class)->calculate($inputs, $quote->discount_type, $quote->discount_value, $quote->other_charges_minor, $quote->tax_bp, app(SalesSettings::class)->round_totals_to_rupee);
+        $totals = app(QuoteCalculator::class)->calculate($inputs, $quote->discount_type, $quote->discount_value, $quote->other_charges_minor + $quote->shipping_minor, $quote->tax_bp, app(SalesSettings::class)->round_totals_to_rupee);
         foreach ($sections as $si => $section) {
             $section->subtotal_minor = $totals->sectionSubtotals[$si];
             foreach ($section->items as $ii => $item) {

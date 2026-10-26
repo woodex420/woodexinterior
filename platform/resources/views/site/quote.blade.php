@@ -38,7 +38,7 @@
         @if ($flash === 'accepted' || $status === QuoteStatus::Accepted)
             <div class="mb-6 rounded-2xl border border-green-600/20 bg-green-50 p-5 text-green-900" role="status">
                 <p class="text-lg font-medium">Thank you{{ $quote->accepted_name ? ', '.$quote->accepted_name : '' }}. Your acceptance is confirmed.</p>
-                <p class="mt-1 text-sm">Accepted on {{ $quote->accepted_at?->timezone('Asia/Karachi')->format('j M Y, g:i a') }}. Our team will contact you shortly with the advance invoice and the next steps.</p>
+                <p class="mt-1 text-sm">Accepted on {{ $quote->accepted_at?->timezone('Asia/Karachi')->format('j M Y, g:i a') }}. {{ ($quote->meta['furniture_billing'] ?? '') === 'full' ? 'Our team will contact you shortly with your Furniture invoice and the next steps.' : 'Our team will contact you shortly with the advance invoice and the next steps.' }}</p>
             </div>
         @elseif ($flash === 'changes_requested' || $status === QuoteStatus::ChangesRequested)
             <div class="mb-6 rounded-2xl border border-amber-600/20 bg-amber-50 p-5 text-amber-900" role="status">

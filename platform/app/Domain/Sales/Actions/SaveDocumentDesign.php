@@ -6,6 +6,7 @@ namespace App\Domain\Sales\Actions;
 
 use App\Domain\Sales\Models\DocumentDesign;
 use App\Domain\Sales\Services\DocumentStyles;
+use App\Domain\Sales\Services\FurnitureDocument;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,13 @@ final class SaveDocumentDesign
             'header_text' => ['present', 'string', 'max:100'],
             'footer_text' => ['present', 'string', 'max:120'],
             'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:96', 'dimensions:min_width=8,min_height=8,max_width=600,max_height=240'],
+            'furniture_style' => ['sometimes', 'array'],
+            'furniture_style.header_align' => ['sometimes', Rule::in(['left', 'center', 'right'])],
+            'furniture_style.footer_align' => ['sometimes', Rule::in(['left', 'center', 'right'])],
+            'furniture_style.secondary_color' => ['sometimes', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'furniture_style.quotation_title' => ['sometimes', 'required', 'string', 'max:60'],
+            'furniture_style.invoice_title' => ['sometimes', 'required', 'string', 'max:60'],
+            'furniture_style.use_default_logo' => ['sometimes', Rule::in(['yes', 'no'])],
             'pdf_theme' => ['sometimes', Rule::in(array_keys(DocumentStyles::THEMES))],
             'quote_blocks' => ['sometimes', 'array', 'max:20'],
             'quote_blocks.*.key' => ['required', 'string', Rule::in(array_keys(DocumentStyles::QUOTE_BLOCKS))],
@@ -41,6 +49,9 @@ final class SaveDocumentDesign
             'invoice_blocks.*.key' => ['required', 'string', Rule::in(array_keys(DocumentStyles::INVOICE_BLOCKS))],
             'invoice_blocks.*.visible' => ['required', 'boolean'],
         ])->validate();
+        if (array_key_exists('furniture_style', $data)) {
+            $data['furniture_style'] = FurnitureDocument::style($data['furniture_style']);
+        }
         unset($data['logo'], $data['business_line']);
         if (array_key_exists('quote_blocks', $data)) {
             $data['quote_blocks'] = DocumentStyles::blocks('quote', $data['quote_blocks']);

@@ -12,6 +12,8 @@ use App\Domain\Sales\Enums\Unit;
 use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\InvoiceItem;
+use App\Domain\Sales\Services\DocumentStyles;
+use App\Domain\Sales\Services\FurnitureDocument;
 use App\Models\User;
 use App\Settings\SalesSettings;
 use App\Support\Numbering;
@@ -55,6 +57,11 @@ final class CreateManualInvoice
             'due_date' => ['required', 'date', 'after_or_equal:issue_date'],
             'bank_account_id' => ['nullable', 'integer', 'exists:bank_accounts,id'],
             'discount_minor' => ['sometimes', 'integer', 'min:0'],
+            'rent_minor' => ['sometimes', 'integer', 'min:0', 'max:999999999900'],
+            'shipping_minor' => ['sometimes', 'integer', 'min:0', 'max:999999999900'],
+            'advance_bp' => ['sometimes', 'integer', 'min:0', 'max:10000'],
+            'furniture' => ['sometimes', 'array'],
+            'items.*.product_name' => ['nullable', 'string', 'max:160'],
             'tax_bp' => ['sometimes', 'integer', 'min:0', 'max:10000'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'terms' => ['nullable', 'string', 'max:10000'],
@@ -89,6 +96,7 @@ final class CreateManualInvoice
             $subtotal += $lineTotal;
 
             $items[] = [
+                'product_name' => trim((string) ($item['product_name'] ?? '')),
                 'description' => trim((string) $item['description']),
                 'unit' => Unit::normalize(isset($item['unit']) ? (string) $item['unit'] : null)->value,
                 'qty' => $qty,
@@ -103,8 +111,11 @@ final class CreateManualInvoice
             throw ValidationException::withMessages(['discount_minor' => 'The discount cannot be more than the subtotal.']);
         }
 
-        $tax = (int) round(($subtotal - $discount) * $taxBp / 10000);
-        $total = $subtotal - $discount + $tax;
+        $rent = $line === BusinessLine::Furniture ? (int) ($data['rent_minor'] ?? 0) : 0;
+        $shipping = $line === BusinessLine::Furniture ? (int) ($data['shipping_minor'] ?? 0) : 0;
+        $furniture = FurnitureDocument::validatedText($data['furniture'] ?? []);
+        $tax = (int) round(($subtotal - $discount + $rent + $shipping) * $taxBp / 10000);
+        $total = $subtotal - $discount + $rent + $shipping + $tax;
 
         if ($total <= 0) {
             throw ValidationException::withMessages(['items' => 'The invoice total must be more than zero — give at least one line a rate.']);
@@ -126,9 +137,9 @@ final class CreateManualInvoice
             ? (trim((string) ($data['terms'] ?? '')) ?: null)
             : $this->sales->invoice_terms;
 
-        return DB::transaction(function () use ($by, $data, $line, $contact, $items, $subtotal, $discount, $tax, $total, $bankId, $terms): Invoice {
+        return DB::transaction(function () use ($by, $data, $line, $contact, $items, $subtotal, $discount, $tax, $total, $bankId, $terms, $rent, $shipping, $taxBp, $furniture): Invoice {
             $invoice = Invoice::query()->create([
-                'number' => $this->numbering->next('manual.invoice'),
+                'number' => $this->numbering->next($line === BusinessLine::Furniture ? 'furniture.invoice' : 'manual.invoice'),
                 'kind' => InvoiceKind::Manual,
                 'status' => InvoiceStatus::Draft,
                 'contact_id' => $contact->id,
@@ -138,6 +149,9 @@ final class CreateManualInvoice
                 'currency' => 'PKR',
                 'subtotal_minor' => $subtotal,
                 'discount_minor' => $discount,
+                'rent_minor' => $rent, 'shipping_minor' => $shipping, 'tax_bp' => $taxBp,
+                'advance_bp' => $line === BusinessLine::Furniture ? (int) ($data['advance_bp'] ?? 7500) : 0,
+                'commercial' => $line === BusinessLine::Furniture ? ['renderer' => 'furniture-v1', 'furniture' => $furniture, 'document_design' => app(DocumentStyles::class)->copy($line)] : null,
                 'tax_minor' => $tax,
                 'total_minor' => $total,
                 'paid_minor' => 0,

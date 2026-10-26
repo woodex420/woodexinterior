@@ -64,6 +64,7 @@
                             @foreach ($invoice->items as $item)
                                 <tr>
                                     <td class="py-3 pr-4">
+                                        @if ($item->product_name)<strong class="block">{{ $item->product_name }}</strong>@endif
                                         <span class="block text-gray-800 dark:text-white/90">{{ $item->description }}</span>
                                         @if ($item->unit)
                                             <span class="text-theme-xs text-gray-500">{{ $item->unit }}</span>
@@ -86,6 +87,12 @@
                                     <td colspan="4" class="py-2 pr-4 text-right text-gray-500">Discount</td>
                                     <td class="py-2 text-right tabular-nums">− {{ Money::ofMinor((int) $invoice->discount_minor)->format($lakh) }}</td>
                                 </tr>
+                            @endif
+                            @if (($invoice->commercial['renderer'] ?? '') === 'furniture-v1')
+                                @foreach (['Rent' => (int) $invoice->rent_minor, 'Shipping / transport' => (int) $invoice->shipping_minor, 'Rounding' => (int) ($invoice->commercial['rounding_minor'] ?? 0)] as $label => $minor)
+                                <tr><td colspan="4" class="py-2 pr-4 text-right text-gray-500">{{ $label }}</td><td class="py-2 text-right tabular-nums">{{ Money::ofMinor($minor)->format($lakh) }}</td></tr>
+                                @endforeach
+                                <tr><td colspan="4" class="py-2 pr-4 text-right text-gray-500">Advance requested (not received)</td><td class="py-2 text-right tabular-nums">{{ Money::ofMinor((int) $invoice->total_minor)->percent((int) $invoice->advance_bp)->format($lakh) }}</td></tr>
                             @endif
                             @if ((int) $invoice->tax_minor > 0)
                                 <tr>

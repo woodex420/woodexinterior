@@ -15,6 +15,7 @@ class NumberSequenceSeeder extends Seeder
     public function run(): void
     {
         $sequences = [
+            ['key' => 'furniture.invoice', 'prefix' => 'WFI', 'next_number' => 1, 'padding' => 4, 'format' => '{prefix}-{year}-{number}', 'reset' => 'yearly'],
             ['key' => 'quote.interior', 'prefix' => 'WI', 'next_number' => 10100, 'padding' => 0, 'format' => '{prefix}-{number}', 'reset' => 'never'],
             ['key' => 'quote.furniture', 'prefix' => 'WF', 'next_number' => 10050, 'padding' => 0, 'format' => '{prefix}-{number}', 'reset' => 'never'],
             ['key' => 'receipt', 'prefix' => 'RC', 'next_number' => 1, 'padding' => 4, 'format' => '{prefix}-{year}-{number}', 'reset' => 'yearly'],

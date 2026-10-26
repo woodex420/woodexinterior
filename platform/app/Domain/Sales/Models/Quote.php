@@ -51,6 +51,8 @@ class Quote extends Model
             'discount_value' => 'integer',
             'discount_minor' => 'integer',
             'other_charges_minor' => 'integer',
+            'shipping_minor' => 'integer',
+            'advance_bp' => 'integer',
             'tax_bp' => 'integer',
             'tax_minor' => 'integer',
             'rounding_minor' => 'integer',

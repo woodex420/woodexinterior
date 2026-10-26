@@ -44,7 +44,26 @@ class QuoteCreate extends Component
 
     public string $line = 'interior';
 
+    public bool $brandChosen = false;
+
     public string $title = '';
+
+    public function chooseBrand(string $brand): void
+    {
+        if (! in_array($brand, ['interior', 'furniture'], true)) {
+            return;
+        }
+        $this->brandChosen = true;
+        $this->line = $brand;
+        $this->updatedLine();
+    }
+
+    public function updatedLine(): void
+    {
+        if ($this->templateId && ($template = QuoteTemplate::find($this->templateId)) && (($template->business_line === BusinessLine::Furniture) !== ($this->line === 'furniture'))) {
+            $this->templateId = null;
+        }
+    }
 
     public string $contactSearch = '';
 
@@ -91,7 +110,7 @@ class QuoteCreate extends Component
         $only = $openLeads->count() === 1 ? $openLeads->first() : null;
         $this->leadId = $only->id ?? 0;
 
-        if ($only !== null) {
+        if ($only !== null && ! $this->brandChosen) {
             $this->line = $only->business_line->value;
         }
     }
@@ -182,7 +201,7 @@ class QuoteCreate extends Component
             'results' => $contact === null && mb_strlen($term) >= 2
                 ? Contact::query()->visibleTo($this->user())->search($term)->with('company:id,name')->orderBy('name')->limit(8)->get()
                 : collect(),
-            'templates' => QuoteTemplate::query()->where('is_active', true)->orderBy('position')->get(),
+            'templates' => QuoteTemplate::query()->where('is_active', true)->where('business_line', $this->line === 'furniture' ? 'furniture' : 'interior')->orderBy('position')->get(),
             'lines' => BusinessLine::options(),
         ]);
     }

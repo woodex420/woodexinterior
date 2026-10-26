@@ -1,5 +1,14 @@
 # 35 — Pending-tasks refresh: v2.1 Pro source vs Woodex OS (26 Oct 2026)
 
+## 27 October Furniture scope update
+
+The owner approved the full Furniture quotation/invoice redevelopment and additive storage. It is now implemented
+and verified in preview: dedicated green/grey sheet, product/specification, charges/advance, brand selection,
+reusable templates, matching live invoice, WFI full-conversion workflow and verified receipts/accounting. This
+supersedes the older Furniture-only gaps below; it does not mark all Interior T/U work complete. See
+[37_FURNITURE_DOCUMENTS_2026-10-27.md](37_FURNITURE_DOCUMENTS_2026-10-27.md).
+**W stays paused; Sheets append and off-site backup remain deferred.**
+
 ## What was asked
 
 Complete the `import_and_verify` slice (use the already-developed v2.1 quotation/invoice

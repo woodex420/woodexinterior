@@ -42,6 +42,7 @@ class QuoteTemplateSeeder extends Seeder
                     'name' => (string) $section['name'],
                     'note' => (string) ($section['note'] ?? ''),
                     'items' => array_map(fn (array $item): array => [
+                        'product_name' => (string) ($item['product_name'] ?? ''),
                         'description' => (string) $item['desc'],
                         'unit' => Unit::normalize((string) ($item['unit'] ?? 'job'))->value,
                         'qty' => $item['qty'] === null || $item['qty'] === '' ? null : (string) $item['qty'],

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * BOQ line. qty is DECIMAL(14,3) (kept as string to avoid float), money in paisa.
  */
+/** @property string|null $product_name */
 class QuoteItem extends Model
 {
     protected $guarded = ['id'];
@@ -21,6 +22,7 @@ class QuoteItem extends Model
     protected function casts(): array
     {
         return [
+            'product_name' => 'string',
             'qty' => 'decimal:3',
             'rate_minor' => 'integer',
             'discount_type' => DiscountType::class,

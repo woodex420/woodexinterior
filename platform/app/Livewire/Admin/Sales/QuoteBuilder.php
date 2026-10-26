@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Admin\Sales;
 
 use App\Domain\Sales\Actions\AcceptQuote;
+use App\Domain\Sales\Actions\CreateFurnitureInvoice;
 use App\Domain\Sales\Actions\DecideQuoteApproval;
 use App\Domain\Sales\Actions\DeleteQuote;
 use App\Domain\Sales\Actions\DuplicateQuote;
@@ -30,6 +31,7 @@ use App\Domain\Sales\Models\QuoteSection;
 use App\Domain\Sales\Models\QuoteTemplate;
 use App\Domain\Sales\Models\QuoteVersion;
 use App\Domain\Sales\Services\DocumentStyles;
+use App\Domain\Sales\Services\FurnitureDocument;
 use App\Domain\Sales\Services\QuoteApprovalRules;
 use App\Domain\Sales\Services\QuoteDiff;
 use App\Domain\Sales\Services\QuoteEditor;
@@ -430,6 +432,16 @@ class QuoteBuilder extends Component
 
     // ----- Document actions ---------------------------------------------------------------------------------
 
+    public function createFullInvoice(): void
+    {
+        try {
+            $invoice = app(CreateFurnitureInvoice::class)->handle($this->quote, $this->user());
+            $this->redirect(route('admin.invoices.show', $invoice), navigate: true);
+        } catch (QuoteActionDenied $exception) {
+            $this->toast($exception->getMessage(), 'error');
+        }
+    }
+
     public function duplicate(): void
     {
         $this->authorize('duplicate', $this->quote);
@@ -547,7 +559,7 @@ class QuoteBuilder extends Component
 
         unset($this->quote);
         $this->fillForm();
-        $this->toast("{$quote->label()} accepted. The project is open and the advance invoice is raised.");
+        $this->toast(($quote->meta['furniture_billing'] ?? '') === 'full' ? "{$quote->label()} accepted. Use Create full invoice to bill this Furniture sale." : "{$quote->label()} accepted. The project is open and the advance invoice is raised.");
     }
 
     /** It was not a yes: clear the hint so the banner stops asking. */
@@ -740,6 +752,7 @@ class QuoteBuilder extends Component
 
         $saved = $this->saveField("lines.{$itemId}.{$field}", function () use ($item, $field, $raw): void {
             $this->editor()->updateLine($item, match ($field) {
+                'product_name' => ['product_name' => mb_substr(trim((string) $raw), 0, 160)],
                 'description' => ['description' => mb_substr(trim((string) $raw), 0, 2000)],
                 'unit' => ['unit' => Unit::tryFrom((string) $raw)->value ?? throw new InvalidArgumentException('Choose a unit from the list.')],
                 'qty' => ['qty' => NumberInput::quantity((string) $raw)],
@@ -816,6 +829,11 @@ class QuoteBuilder extends Component
     {
         $raw = trim((string) ($this->details[$field] ?? ''));
         $quote = $this->quote;
+        if (array_key_exists($field, FurnitureDocument::text(null))) {
+            $this->saveField("details.{$field}", fn () => $this->editor()->updateFurnitureText($quote, [$field => $raw]));
+
+            return;
+        }
 
         $saved = $this->saveField("details.{$field}", function () use ($quote, $field, $raw): void {
             $this->editor()->updateDetails($quote, match ($field) {
@@ -828,6 +846,8 @@ class QuoteBuilder extends Component
                 'discount_value' => ['discount_value' => $this->discountValue($quote->discount_type, $raw)],
                 'other_charges_label' => ['other_charges_label' => $raw !== '' ? mb_substr($raw, 0, 120) : null],
                 'other_charges' => ['other_charges_minor' => $raw === '' ? 0 : NumberInput::rupees($raw)],
+                'shipping' => ['shipping_minor' => $raw === '' ? 0 : NumberInput::rupees($raw)],
+                'advance' => ['advance_bp' => $raw === '' ? 0 : NumberInput::percent($raw)],
                 'tax' => ['tax_bp' => $raw === '' ? 0 : NumberInput::percent($raw)],
                 'terms' => ['terms' => $raw !== '' ? mb_substr($raw, 0, 10000) : null],
                 'notes' => ['notes' => $raw !== '' ? mb_substr($raw, 0, 5000) : null],
@@ -962,7 +982,7 @@ class QuoteBuilder extends Component
         $this->plan = $quote->milestonePlan()->value;
 
         $design = $quote->meta['document_design'] ?? null;
-        $this->quoteLayout = DocumentStyles::quoteLayout($quote->meta['document_design']['quote_layout'] ?? null);
+        $this->quoteLayout = DocumentStyles::quoteLayout($quote->meta['document_design']['quote_layout'] ?? ($quote->business_line->value === 'furniture' ? 'furniture' : 'classic'));
         $this->pdfTheme = DocumentStyles::theme(is_array($design) ? ($design['pdf_theme'] ?? null) : null);
         $this->quoteBlocks = DocumentStyles::blocks('quote', is_array($design) ? ($design['quote_blocks'] ?? null) : null);
 
@@ -989,6 +1009,7 @@ class QuoteBuilder extends Component
     private function lineState(QuoteItem $item): array
     {
         return [
+            'product_name' => (string) $item->product_name,
             'description' => $item->description,
             'unit' => $item->unit,
             'qty' => NumberInput::fromQuantity((string) $item->qty),
@@ -1021,6 +1042,9 @@ class QuoteBuilder extends Component
                 DiscountType::Amount => NumberInput::fromMinor((int) $quote->discount_value),
                 null => '',
             },
+            ...FurnitureDocument::text($quote->meta['furniture'] ?? null),
+            'shipping' => NumberInput::fromMinor((int) $quote->shipping_minor),
+            'advance' => NumberInput::fromBp((int) $quote->advance_bp),
             'other_charges_label' => (string) $quote->other_charges_label,
             'other_charges' => $quote->other_charges_minor > 0 ? NumberInput::fromMinor((int) $quote->other_charges_minor) : '',
             'tax' => $quote->tax_bp > 0 ? NumberInput::fromBp((int) $quote->tax_bp) : '',

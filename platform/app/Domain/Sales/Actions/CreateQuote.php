@@ -14,6 +14,7 @@ use App\Domain\Sales\Enums\TemplateKind;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteTemplate;
 use App\Domain\Sales\Services\DocumentStyles;
+use App\Domain\Sales\Services\FurnitureDocument;
 use App\Domain\Sales\Services\MilestonePlan;
 use App\Models\User;
 use App\Settings\SalesSettings;
@@ -63,6 +64,13 @@ final class CreateQuote
                     'quote_blocks' => DocumentStyles::blocks('quote', $presentation['quote_blocks'] ?? DocumentStyles::quoteLayoutBlocks(DocumentStyles::quoteLayout($presentation['quote_layout'] ?? null))),
                 ];
             }
+            if ($line === BusinessLine::Furniture && ! isset($template?->blueprint['furniture']) && in_array($presentation['quote_layout'] ?? '', ['', 'classic'], true)) {
+                $documentDesign['quote_layout'] = 'furniture';
+            }
+            $terms = trim((string) $template?->terms) !== '' ? $template->terms : ($line === BusinessLine::Furniture ? FurnitureDocument::TERMS : ($design ? $this->settings->design_terms : $this->settings->execution_terms));
+            if ($line === BusinessLine::Furniture && ! isset($template?->blueprint['furniture']) && in_array($terms, [$this->settings->execution_terms, $this->settings->design_terms, "50% advance payment with work order.\nRates are exclusive of GST / PST.\nDelivery time as mutually agreed."], true)) {
+                $terms = FurnitureDocument::TERMS;
+            }
             $quote = Quote::create([
                 'number' => $this->numbering->next($line->quoteSequenceKey()),
                 'sequence_key' => $line->quoteSequenceKey(),
@@ -77,20 +85,19 @@ final class CreateQuote
                 'status' => QuoteStatus::Draft,
                 'currency' => 'PKR',
                 'valid_until' => today()->addDays($this->settings->quote_validity_days),
-                'terms' => trim((string) $template?->terms) !== ''
-                    ? $template?->terms
-                    : ($design ? $this->settings->design_terms : $this->settings->execution_terms),
+                'terms' => $terms,
+                'advance_bp' => $line === BusinessLine::Furniture ? (int) ($template?->blueprint['furniture']['advance_bp'] ?? 7500) : 0,
                 'notes' => $template?->notes,
                 'scope_html' => Html::sanitize($template?->scope_html),
                 'owner_id' => $by->id,
-                'meta' => ['milestone_plan' => $plan->value, 'document_design' => $documentDesign],
+                'meta' => ['milestone_plan' => $plan->value, 'document_design' => $documentDesign, 'furniture' => FurnitureDocument::text($template?->blueprint['furniture'] ?? null), 'furniture_billing' => $line === BusinessLine::Furniture ? 'full' : 'milestone'],
             ]);
 
             $sections = $template !== null ? QuoteBlueprint::sections($template->blueprint) : [];
 
             if ($sections === []) {
                 $sections = [['name' => 'Work items', 'note' => null, 'items' => [[
-                    'description' => '', 'unit' => 'job', 'qty' => '1', 'rate_minor' => 0,
+                    'description' => '', 'unit' => $line === BusinessLine::Furniture ? 'nos' : 'job', 'qty' => '1', 'rate_minor' => 0,
                     'catalog_item_id' => null, 'is_optional' => false, 'internal_cost_minor' => null,
                 ]]]];
             }
@@ -99,6 +106,10 @@ final class CreateQuote
                 $model = $quote->sections()->create(['name' => $section['name'], 'note' => $section['note'], 'position' => $s]);
 
                 foreach ($section['items'] as $i => $item) {
+                    if ($line === BusinessLine::Furniture && empty($item['product_name'])) {
+                        $item['product_name'] = mb_substr($item['description'], 0, 160);
+                        $item['description'] = mb_strlen($item['description']) > 160 ? $item['description'] : '';
+                    }
                     $model->items()->create($item + ['quote_id' => $quote->id, 'position' => $i]);
                 }
             }

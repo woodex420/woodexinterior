@@ -2,13 +2,11 @@
 <div>
     <x-admin.page-header title="New invoice" description="Bill work that has no quotation — a repair, a supply, a fee. Save it as a draft, or issue it now and it is frozen and booked like every other invoice."
                          :breadcrumbs="['Sales' => null, 'Invoices' => route('admin.invoices.index'), 'New invoice' => null]">
-        <x-slot:actions>
-            <x-admin.button variant="secondary" icon="eye" wire:click="$toggle('showPreview')">{{ $showPreview ? 'Hide preview' : 'Live preview' }}</x-admin.button>
-        </x-slot:actions>
+
     </x-admin.page-header>
 
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div class="space-y-6 xl:col-span-2">
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div class="space-y-6 min-w-0">
             <x-admin.card title="Client and dates">
                 <div class="space-y-4">
                     <div>
@@ -41,13 +39,13 @@
                             <select id="line" wire:model.live="line" class="wx-input">@foreach ($lines as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach</select>
                         </x-admin.field>
                         <x-admin.field label="Bank account (Pay to)" for="bankAccountId" hint="Printed on the invoice. Empty uses the brand default.">
-                            <select id="bankAccountId" wire:model="bankAccountId" class="wx-input">
+                            <select id="bankAccountId" wire:model.live.debounce.350ms="bankAccountId" class="wx-input">
                                 <option value="">Brand default</option>
                                 @foreach ($bankAccounts as $account)<option value="{{ $account->id }}">{{ $account->title }} · {{ $account->bank_name }}</option>@endforeach
                             </select>
                         </x-admin.field>
-                        <x-admin.field label="Invoice date" for="issueDate" error="issueDate"><input id="issueDate" type="date" wire:model="issueDate" class="wx-input"></x-admin.field>
-                        <x-admin.field label="Due date" for="dueDate" error="dueDate"><input id="dueDate" type="date" wire:model="dueDate" class="wx-input"></x-admin.field>
+                        <x-admin.field label="Invoice date" for="issueDate" error="issueDate"><input id="issueDate" type="date" wire:model.live.debounce.350ms="issueDate" class="wx-input"></x-admin.field>
+                        <x-admin.field label="Due date" for="dueDate" error="dueDate"><input id="dueDate" type="date" wire:model.live.debounce.350ms="dueDate" class="wx-input"></x-admin.field>
                     </div>
                 </div>
             </x-admin.card>
@@ -58,7 +56,10 @@
                         <div class="rounded-lg border border-gray-100 p-3 dark:border-gray-800" wire:key="item-{{ $i }}">
                             <div class="flex items-start gap-2">
                                 <div class="min-w-0 flex-1">
-                                    <input type="text" wire:model="items.{{ $i }}.description" placeholder="Description, e.g. Wardrobe door repair" class="wx-input" aria-label="Line {{ $i + 1 }} description">
+                                    @if ($line === 'furniture')
+                                        <input type="text" wire:model.live.debounce.350ms="items.{{ $i }}.product_name" placeholder="Product name · chair, sofa, workstation" maxlength="160" class="wx-input mb-2" aria-label="Line {{ $i + 1 }} product name">
+                                    @endif
+                                    <input type="text" wire:model.live.debounce.350ms="items.{{ $i }}.description" placeholder="Description, e.g. Wardrobe door repair" class="wx-input" aria-label="Line {{ $i + 1 }} description">
                                     @error('items.'.$i.'.description')<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
                                 </div>
                                 @if (count($items) > 1)
@@ -67,12 +68,12 @@
                             </div>
                             <div class="mt-2 grid grid-cols-3 gap-2">
                                 <div>
-                                    <input type="text" inputmode="decimal" wire:model.live.blur="items.{{ $i }}.qty" placeholder="Qty" class="wx-input text-right tabular-nums" aria-label="Line {{ $i + 1 }} quantity">
+                                    <input type="text" inputmode="decimal" wire:model.live.debounce.350ms="items.{{ $i }}.qty" placeholder="Qty" class="wx-input text-right tabular-nums" aria-label="Line {{ $i + 1 }} quantity">
                                     @error('items.'.$i.'.qty')<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
                                 </div>
-                                <select wire:model="items.{{ $i }}.unit" class="wx-input" aria-label="Line {{ $i + 1 }} unit">@foreach ($units as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach</select>
+                                <select wire:model.live.debounce.350ms="items.{{ $i }}.unit" class="wx-input" aria-label="Line {{ $i + 1 }} unit">@foreach ($units as $value => $label)<option value="{{ $value }}">{{ $label }}</option>@endforeach</select>
                                 <div>
-                                    <input type="text" inputmode="decimal" wire:model.live.blur="items.{{ $i }}.rate" placeholder="Rate (Rs)" class="wx-input text-right tabular-nums" aria-label="Line {{ $i + 1 }} rate">
+                                    <input type="text" inputmode="decimal" wire:model.live.debounce.350ms="items.{{ $i }}.rate" placeholder="Rate (Rs)" class="wx-input text-right tabular-nums" aria-label="Line {{ $i + 1 }} rate">
                                     @error('items.'.$i.'.rate')<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
                                 </div>
                             </div>
@@ -83,23 +84,31 @@
                     <x-admin.button size="sm" variant="secondary" icon="plus" wire:click="addItem">Add line</x-admin.button>
                 </div>
             </x-admin.card>
-        </div>
-
-        <div class="space-y-6">
             <x-admin.card title="Totals">
                 <div class="space-y-4">
                     <div class="grid grid-cols-2 gap-3">
-                        <x-admin.field label="Discount (Rs)" for="discount" error="discount"><input id="discount" type="text" inputmode="decimal" wire:model.live.blur="discount" placeholder="0" class="wx-input text-right tabular-nums"></x-admin.field>
-                        <x-admin.field label="Tax %" for="taxPercent" error="taxPercent" hint="Empty = no tax."><input id="taxPercent" type="text" inputmode="decimal" wire:model.live.blur="taxPercent" placeholder="0" class="wx-input text-right tabular-nums"></x-admin.field>
+                        <x-admin.field label="Discount (Rs)" for="discount" error="discount"><input id="discount" type="text" inputmode="decimal" wire:model.live.debounce.350ms="discount" placeholder="0" class="wx-input text-right tabular-nums"></x-admin.field>
+                        <x-admin.field label="Tax %" for="taxPercent" error="taxPercent" hint="Empty = no tax."><input id="taxPercent" type="text" inputmode="decimal" wire:model.live.debounce.350ms="taxPercent" placeholder="0" class="wx-input text-right tabular-nums"></x-admin.field>
                     </div>
+                    @if ($line === 'furniture')
+                        <div class="grid grid-cols-2 gap-3">
+                            @foreach (['rent' => 'Rent (Rs)', 'shipping' => 'Shipping / transport (Rs)', 'advance' => 'Advance requested (%)'] as $field => $label)
+                                <x-admin.field :label="$label" :for="$field" :error="$field"><input id="{{ $field }}" wire:model.live.debounce.350ms="{{ $field }}" class="wx-input" inputmode="decimal"></x-admin.field>
+                            @endforeach
+                        </div>
+                        @foreach (['document_title' => 'Printed heading (not document type)', 'delivery_text' => 'Delivery time', 'transport_text' => 'Transport note', 'tax_note' => 'Tax note', 'po_reference' => 'PO reference'] as $field => $label)
+                            <x-admin.field :label="$label" :for="'furniture.'.$field"><input id="furniture.{{ $field }}" wire:model.live.debounce.350ms="furniture.{{ $field }}" class="wx-input" maxlength="{{ $field === 'document_title' ? 60 : 300 }}"></x-admin.field>
+                        @endforeach
+                        <p class="text-theme-xs text-gray-500">Advance requested is not paid. Actual balance changes only after a payment is verified.</p>
+                    @endif
                     <dl class="space-y-1.5 border-t border-gray-100 pt-3 text-theme-sm dark:border-gray-800">
                         <div class="flex justify-between"><dt class="text-gray-500">Subtotal</dt><dd class="tabular-nums">{{ Money::ofMinor($totals['subtotal'])->format($lakh) }}</dd></div>
                         @if ($totals['discount'] > 0)<div class="flex justify-between"><dt class="text-gray-500">Discount</dt><dd class="tabular-nums">− {{ Money::ofMinor($totals['discount'])->format($lakh) }}</dd></div>@endif
                         @if ($totals['tax'] > 0)<div class="flex justify-between"><dt class="text-gray-500">Tax</dt><dd class="tabular-nums">{{ Money::ofMinor($totals['tax'])->format($lakh) }}</dd></div>@endif
                         <div class="flex justify-between border-t border-gray-100 pt-2 font-medium dark:border-gray-800"><dt>Total</dt><dd class="tabular-nums">{{ Money::ofMinor($totals['total'])->format($lakh) }}</dd></div>
                     </dl>
-                    <x-admin.field label="Notes for the client" for="notes" error="notes"><textarea id="notes" wire:model="notes" rows="2" class="wx-input h-auto py-2.5"></textarea></x-admin.field>
-                    <x-admin.field label="Terms" for="terms" error="terms"><textarea id="terms" wire:model="terms" rows="3" class="wx-input h-auto py-2.5"></textarea></x-admin.field>
+                    <x-admin.field label="Notes for the client" for="notes" error="notes"><textarea id="notes" wire:model.live.debounce.350ms="notes" rows="2" class="wx-input h-auto py-2.5"></textarea></x-admin.field>
+                    <x-admin.field label="Terms" for="terms" error="terms"><textarea id="terms" wire:model.live.debounce.350ms="terms" rows="3" class="wx-input h-auto py-2.5"></textarea></x-admin.field>
                     <div class="flex flex-wrap gap-2 border-t border-gray-100 pt-4 dark:border-gray-800">
                         <x-admin.button variant="secondary" wire:click="saveDraft" wire:loading.attr="disabled" wire:target="saveDraft,saveAndIssue">Save draft</x-admin.button>
                         <x-admin.button icon="check" wire:click="saveAndIssue" wire:confirm="Issue now? The invoice is frozen and booked in the ledger immediately." wire:loading.attr="disabled" wire:target="saveDraft,saveAndIssue">Save &amp; issue</x-admin.button>
@@ -108,15 +117,14 @@
                 </div>
             </x-admin.card>
         </div>
+
+        <div class="min-w-0 space-y-6 xl:sticky xl:top-24 xl:self-start">
+
+    <div class="mt-0" aria-label="Invoice live preview pane">
+        <p class="mb-2 text-theme-sm font-medium">Live invoice preview · updates as you edit</p>
+        <iframe wire:ignore wire:key="invoice-live-preview" sandbox="allow-same-origin" x-data="{ fit() { const d = this.$el.contentDocument; if (d?.body) d.documentElement.style.zoom = String(Math.min(1, Math.max(.2, (this.$el.clientWidth - 20) / 794))); }, init() { this.resizeObserver = new ResizeObserver(() => this.fit()); this.resizeObserver.observe(this.$el); }, destroy() { this.resizeObserver?.disconnect(); } }" x-on:load="fit()" x-on:preview-refresh.window.debounce.150ms="const d = $event.detail; const h = d.html || (d[0] && d[0].html); if (h) $el.srcdoc = h;" srcdoc="{{ $previewHtml }}" class="h-[680px] w-full rounded-lg border border-gray-200 bg-gray-100" title="Invoice live preview"></iframe>
+    </div>
+        </div>
     </div>
 
-    @if ($showPreview)
-        <div class="fixed inset-y-0 right-0 z-40 flex w-full max-w-3xl flex-col bg-white shadow-2xl dark:bg-gray-900" role="dialog" aria-label="Live preview">
-            <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-800">
-                <p class="text-theme-sm font-medium text-gray-900 dark:text-white">Live preview <span class="font-normal text-gray-400">· updates as you edit</span></p>
-                <x-admin.button size="sm" variant="ghost" wire:click="$set('showPreview', false)">Close</x-admin.button>
-            </div>
-            <iframe wire:ignore wire:key="invoice-live-preview" x-data x-on:preview-refresh.window.debounce.600ms="const d = $event.detail; const h = d.html || (d[0] && d[0].html); if (h) { const y = $el.contentWindow ? $el.contentWindow.scrollY : 0; $el.onload = () => { try { $el.contentWindow.scrollTo(0, y) } catch (e) {} }; $el.srcdoc = h; }" srcdoc="{{ $previewHtml }}" class="min-h-0 flex-1 bg-gray-100" title="Invoice live preview"></iframe>
-        </div>
-    @endif
 </div>

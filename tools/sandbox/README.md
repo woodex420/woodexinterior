@@ -135,3 +135,23 @@ quantity/rate/client/scope updates with focus retained, the saved editor total u
 while a quantity is still unsaved, all three layout switches, and 390px mobile width.
 It restores the preview SQLite file in `finally`. Screenshots go under
 `/tmp/woodex-run/shots/step48-*`; never point this sandbox-only check at production.
+
+
+## Furniture documents proof (27 October)
+
+Prepare a **separate** local runtime at `/tmp/woodex-furniture-qa/app` with the current source/build, dependencies,
+a coherent copy of the demo SQLite database and its own `.env` DB_DATABASE pointing to
+`/tmp/woodex-furniture-qa/app/database/database.sqlite`. Never use a production copy or restore over the owner's
+active database. Start its server using the process tool:
+
+```sh
+APP_DIR=/tmp/woodex-furniture-qa/app PORT=33144 PREVIEW_COOKIE_MEMORY_FILE=/tmp/woodex-furniture-qa/cookies.json node --stack-size=8000 tools/sandbox/server.mjs
+```
+
+Then run `node tools/sandbox/furniture-documents-check.mjs` and
+`PORT=33144 node tools/sandbox/furniture-iframe-check.mjs`. The first creates temporary Furniture documents,
+checks unsaved product/spec/rate previews, phone width, full conversion/issue and Interior regression, exports
+sample/stress PDFs under `/tmp/woodex-run/shots/furniture-*`, and restores **only the isolated** SQLite file in
+`finally`. The PHP fixture rejects a non-local or wrongly configured runtime, and the mutating browser proof
+refuses port33143. The second verifies brand selection and nested live invoice HTML with third-party cookies
+blocked and with all cookies stripped. Stop the isolated QA server afterwards; leave33143 alone.

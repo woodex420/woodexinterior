@@ -10,6 +10,11 @@
 <div x-data="quoteWorkbench({ url: '{{ route('admin.quotes.preview', $quote, false) }}', csrf: '{{ csrf_token() }}' })" x-on:input="queuePreview($event)" x-on:change="queuePreview($event)" x-on:preview-refresh.window="queuePreview()">
     <x-admin.page-header :title="$quote->label()" :breadcrumbs="['Sales' => null, 'Quotations' => route('admin.quotes.index'), $quote->label() => null]">
         <x-slot:actions>
+            @if ($quote->business_line->value === 'furniture' && in_array($quote->status->value, ['sent', 'viewed', 'accepted'], true))
+                @can('create', \App\Domain\Sales\Models\Invoice::class)
+                    <x-admin.button variant="secondary" wire:click="createFullInvoice" wire:loading.attr="disabled" wire:confirm="Create or open the full Furniture invoice? It starts as a draft; no payment is assumed.">Create full invoice</x-admin.button>
+                @endcan
+            @endif
             @can('duplicate', $quote)
                 <x-admin.button variant="secondary" icon="copy" wire:click="duplicate" wire:loading.attr="disabled">Duplicate</x-admin.button>
             @endcan
@@ -57,12 +62,12 @@
         <div class="mb-5 flex flex-col gap-3 rounded-xl border border-warning-500/30 bg-warning-50 px-4 py-3 text-theme-sm text-warning-800 md:flex-row md:items-center md:justify-between dark:bg-warning-500/10 dark:text-warning-300" role="status">
             <div>
                 <p class="font-medium">{{ $contact->name }} may have accepted on WhatsApp · {{ $quote->acceptance_hint_at->diffForHumans() }}</p>
-                <p>They replied: “{{ $quote->acceptanceHintMessage?->body }}”. Accepting opens the project and raises the advance invoice.</p>
+                <p>They replied: “{{ $quote->acceptanceHintMessage?->body }}”. {{ ($quote->meta['furniture_billing'] ?? '') === 'full' ? 'Accepting opens the project. Use Create full invoice to bill this sale.' : 'Accepting opens the project and raises the advance invoice.' }}</p>
             </div>
             <div class="flex shrink-0 gap-2">
                 <x-admin.button variant="secondary" size="sm" wire:click="dismissAcceptanceHint">Not a yes</x-admin.button>
                 <x-admin.button size="sm" icon="check-circle" wire:click="acceptFromHint"
-                                wire:confirm="Accept {{ $quote->label() }}? This opens the project and raises the advance invoice.">Accept quotation</x-admin.button>
+                                wire:confirm="Accept {{ $quote->label() }}? {{ ($quote->meta['furniture_billing'] ?? '') === 'full' ? 'This opens the project; billing remains a separate Accounts action.' : 'This opens the project and raises the advance invoice.' }}">Accept quotation</x-admin.button>
             </div>
         </div>
         @error('acceptHint')<p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
@@ -93,7 +98,7 @@
         </div>
     @elseif ($status === \App\Domain\Sales\Enums\QuoteStatus::Accepted)
         <div class="mb-5 rounded-xl border border-success-500/30 bg-success-50 px-4 py-3 text-theme-sm text-success-800 dark:bg-success-500/10 dark:text-success-300" role="status">
-            Accepted online by <strong>{{ $quote->accepted_name }}</strong> on {{ $quote->accepted_at?->timezone('Asia/Karachi')->format('j M Y, g:i a') }}. The advance invoice arrives with P3.
+            Accepted online by <strong>{{ $quote->accepted_name }}</strong> on {{ $quote->accepted_at?->timezone('Asia/Karachi')->format('j M Y, g:i a') }}. {{ ($quote->meta['furniture_billing'] ?? '') === 'full' ? 'Use Create full invoice to bill this Furniture sale.' : 'The advance invoice was raised with the project.' }}
         </div>
     @elseif ($status === \App\Domain\Sales\Enums\QuoteStatus::ChangesRequested && $clientComment)
         <div class="mb-5 rounded-xl border border-warning-500/30 bg-warning-50 px-4 py-3 text-theme-sm text-warning-800 dark:bg-warning-500/10 dark:text-warning-300" role="status">
@@ -187,6 +192,12 @@
                                         <div class="min-w-0 flex-1">
                                             <div class="flex items-start gap-2">
                                                 <div class="min-w-0 flex-1">
+                                                    @if ($quote->business_line->value === 'furniture')
+                                                        <label for="line-{{ $item->id }}-product" class="sr-only">Product name</label>
+                                                        <input id="line-{{ $item->id }}-product" wire:model.live.blur="lines.{{ $item->id }}.product_name" @disabled($ro) maxlength="160" placeholder="Product name · workstation, chair, sofa" class="wx-input mb-2" aria-label="Product name">
+                                                        @error('lines.'.$item->id.'.product_name')<p class="text-theme-xs text-error-600">{{ $message }}</p>@enderror
+                                                        <p class="text-theme-xs text-gray-500">Description / material specification</p>
+                                                    @endif
                                                     <label for="line-{{ $item->id }}-description" class="sr-only">Description</label>
                                                     <textarea id="line-{{ $item->id }}-description" wire:model.live.blur="lines.{{ $item->id }}.description" rows="1" @disabled($ro)
                                                               x-data x-init="$nextTick(() => { $el.style.height = $el.scrollHeight + 'px' })"
@@ -457,6 +468,7 @@
                 </div>
             </x-admin.card>
 
+            @if ($quoteLayout !== 'furniture')
             <x-admin.card title="PDF design" description="For this quotation only. Brand defaults live in Document design.">
                 <div class="space-y-4">
                     <p class="text-theme-xs text-gray-500">Choose the v2.1 layout and colour design above the live preview. Below, customise the blocks for this quotation only.</p>
@@ -486,7 +498,20 @@
                     </div>
                 </div>
             </x-admin.card>
+            @endif
 
+            @if ($quote->business_line->value === 'furniture')
+            <x-admin.card title="Furniture quotation details" description="Advance is a payment request, never a payment received. Full invoices are created explicitly from this quotation.">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    @foreach (['document_title' => 'Printed document heading', 'delivery_text' => 'Delivery time', 'po_reference' => 'PO / client reference', 'transport_text' => 'Transportation note', 'tax_note' => 'Tax note'] as $field => $label)
+                        <x-admin.field :label="$label" :for="'details.'.$field" :error="'details.'.$field"><input id="details.{{ $field }}" wire:model.live.blur="details.{{ $field }}" @disabled($ro) class="wx-input" maxlength="{{ $field === 'document_title' ? 60 : 300 }}"></x-admin.field>
+                    @endforeach
+                    <x-admin.field label="Shipping / transport (Rs)" for="details.shipping" error="details.shipping"><input id="details.shipping" wire:model.live.blur="details.shipping" @disabled($ro) class="wx-input" inputmode="decimal"></x-admin.field>
+                    <x-admin.field label="Advance requested (%)" for="details.advance" error="details.advance"><input id="details.advance" wire:model.live.blur="details.advance" @disabled($ro) class="wx-input" inputmode="decimal"></x-admin.field>
+                </div>
+                <p class="mt-3 text-theme-xs text-gray-500">Rent is entered below. Tax applies to subtotal less discount plus rent and shipping. Changing the heading does not create an accounting invoice.</p>
+            </x-admin.card>
+            @endif
             <x-admin.card title="Discount, charges and tax">
                 <div class="space-y-4">
                     <x-admin.field label="Discount on the subtotal" error="details.discount_value">
@@ -502,9 +527,9 @@
                             @endif
                         </div>
                     </x-admin.field>
-                    <x-admin.field label="Other charges" error="details.other_charges" hint="Rent, transport or scaffolding; added after the discount, before tax.">
+                    <x-admin.field :label="$quote->business_line->value === 'furniture' ? 'Rent (Rs)' : 'Other charges'" error="details.other_charges" hint="Rent, transport or scaffolding; added after the discount, before tax.">
                         <div class="flex gap-2">
-                            <input type="text" wire:model.live.blur="details.other_charges_label" @disabled($ro) placeholder="Label, e.g. Transport" aria-label="Other charges label" class="wx-input">
+                            <input type="text" wire:model.live.blur="details.other_charges_label" @disabled($ro) placeholder="{{ $quote->business_line->value === 'furniture' ? 'Rent' : 'Label, e.g. Transport' }}" aria-label="Other charges label" class="wx-input">
                             <input type="text" inputmode="decimal" wire:model.live.blur="details.other_charges" @disabled($ro) placeholder="Rs" aria-label="Other charges amount" class="wx-input w-32 shrink-0 text-right tabular-nums">
                         </div>
                     </x-admin.field>
@@ -514,6 +539,7 @@
                 </div>
             </x-admin.card>
 
+            @if (($quote->meta['furniture_billing'] ?? '') !== 'full')
             <x-admin.card title="Payment milestones">
                 <x-slot:actions>
                     <select wire:model.live="plan" @disabled($ro) class="h-8 rounded-lg border border-gray-300 bg-white px-2 text-theme-xs dark:border-gray-700 dark:bg-gray-900" aria-label="Milestone plan">
@@ -550,6 +576,7 @@
                     @endunless
                 </div>
             </x-admin.card>
+            @endif
 
             {{-- What acceptance produced: the project that carries the work and the invoices that ask for payment --}}
             @if ($project || $invoices->isNotEmpty())
@@ -623,20 +650,24 @@
 
         <aside class="quotation-preview" aria-label="Quotation preview panel">
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
-                <div><p class="font-medium">Live preview · v2.1</p><p class="text-theme-xs text-gray-500">{{ $layouts[$quoteLayout] ?? 'Classic BOQ' }} · {{ $themes[$pdfTheme] ?? 'Classic' }}</p></div>
+                <div><p class="font-medium">Live preview · {{ $quoteLayout === 'furniture' ? 'Furniture' : 'v2.1' }}</p><p class="text-theme-xs text-gray-500">{{ $layouts[$quoteLayout] ?? 'Classic BOQ' }} · {{ $quoteLayout === 'furniture' ? 'Brand green / grey' : ($themes[$pdfTheme] ?? 'Classic') }}</p></div>
                 <x-admin.button size="sm" variant="secondary" icon="file" :href="route('admin.quotes.pdf', $quote)" x-on:click.prevent="$dispatch('document-preview', { url: $el.href })">Preview saved PDF</x-admin.button>
             </div>
             <div class="grid grid-cols-2 gap-3 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
-                <label class="text-theme-xs text-gray-500" for="quoteLayout">v2.1 layout
+                <label class="text-theme-xs text-gray-500" for="quoteLayout">Document layout
                     <select id="quoteLayout" wire:model.live="quoteLayout" @disabled($ro) class="wx-input mt-1" title="Single: one continuous table. Project: summary and a separate page per trade. Classic: summary and detailed BOQ.">
                         @foreach ($layouts as $layoutKey => $layoutLabel)<option value="{{ $layoutKey }}">{{ $layoutLabel }}</option>@endforeach
                     </select>
                 </label>
+                @if ($quoteLayout !== 'furniture')
                 <label class="text-theme-xs text-gray-500" for="pdfTheme">Colour design
                     <select id="pdfTheme" wire:model.live="pdfTheme" @disabled($ro) class="wx-input mt-1">
                         @foreach ($themes as $themeKey => $themeLabel)<option value="{{ $themeKey }}">{{ $themeLabel }}</option>@endforeach
                     </select>
                 </label>
+                @else
+                    <p class="text-theme-xs text-gray-500">Colours, logo and headings: Sales → Document design → Furniture. Use Apply current design to update this draft.</p>
+                @endif
                 @if ($quoteLayout === 'single')<p class="col-span-2 text-theme-xs text-gray-500">One continuous table; long quotations can continue onto more pages.</p>@endif
             </div>
             <p class="border-b border-gray-200 bg-white px-4 py-2 text-theme-xs text-gray-500 dark:bg-gray-900" role="status" x-text="previewStatus">Preview ready · saves when you leave a field</p>

@@ -14,6 +14,7 @@ use App\Domain\Sales\Models\Payment;
 use App\Settings\BusinessSettings;
 use App\Settings\SalesSettings;
 use App\Support\AmountInWords;
+use App\Support\Html;
 use App\Support\Money;
 
 /**
@@ -63,10 +64,17 @@ final class InvoiceSnapshot
             'city' => $invoice->contact->city,
         ];
 
+        $commercial = $invoice->commercial ?? [];
+        if (($commercial['renderer'] ?? '') === 'furniture-v1') {
+            $documentDesign = $commercial['document_design'] ?? $documentDesign;
+            $client = [...$client, ...($commercial['client'] ?? [])];
+        }
+
         $items = $invoice->items
             ->sortBy('position')
             ->values()
             ->map(fn (InvoiceItem $item): array => [
+                'product_name' => (string) $item->product_name,
                 'description' => $item->description,
                 'unit' => $item->unit,
                 'unit_label' => Unit::normalize((string) $item->unit)->pdfLabel(),
@@ -108,6 +116,16 @@ final class InvoiceSnapshot
 
         return [
             'schema' => self::SCHEMA,
+            'furniture_renderer' => $commercial['renderer'] ?? null,
+            'furniture' => FurnitureDocument::text($commercial['furniture'] ?? null),
+            'scope_html' => Html::sanitize($commercial['scope_html'] ?? null),
+            'signatories' => $commercial['signatories'] ?? null,
+            'source_number' => $commercial['source_number'] ?? null,
+            'rent' => Money::ofMinor((int) $invoice->rent_minor, $invoice->currency)->format(),
+            'shipping' => Money::ofMinor((int) $invoice->shipping_minor, $invoice->currency)->format(),
+            'rounding' => Money::ofMinor((int) ($commercial['rounding_minor'] ?? 0), $invoice->currency)->format(),
+            'advance_percent' => rtrim(rtrim(number_format((int) $invoice->advance_bp / 100, 2, '.', ''), '0'), '.'),
+            'advance' => Money::ofMinor((int) $invoice->total_minor, $invoice->currency)->percent((int) $invoice->advance_bp)->format(),
             'document_design' => $documentDesign,
             'number' => $invoice->number,
             'kind' => $invoice->kind->value,

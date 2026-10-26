@@ -6,6 +6,15 @@
 
     <form wire:submit="create" class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div class="min-w-0 space-y-6">
+            <x-admin.card title="Choose your Woodex brand" description="Both brands share Sales; each has its own quotation template, logo and number series.">
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    @foreach (['interior' => ['Woodex Interior', 'WI · interior design, execution and projects'], 'furniture' => ['Woodex Furniture', 'WF · products, specifications, advance and full invoices']] as $brand => $copy)
+                        <button type="button" wire:click="chooseBrand('{{ $brand }}')" aria-pressed="{{ ($line === 'furniture') === ($brand === 'furniture') ? 'true' : 'false' }}" class="rounded-xl border p-4 text-left {{ ($line === 'furniture') === ($brand === 'furniture') ? 'border-navy-900 bg-navy-50' : 'border-gray-200' }}">
+                            <strong class="block">{{ $copy[0] }}</strong><span class="mt-1 block text-theme-xs text-gray-500">{{ $copy[1] }}</span>
+                        </button>
+                    @endforeach
+                </div>
+            </x-admin.card>
             {{-- 1. Client --}}
             <x-admin.card title="1. Client" description="Quotations belong to a contact; link the enquiry so the lead shows it.">
                 @if ($contact)

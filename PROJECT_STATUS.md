@@ -9,7 +9,7 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,547 passed · 1 skipped · 8,257 assertions** · Pint clean on touched files · PHPStan 0 errors |
+| Tests | **1,567 passed · 1 skipped · 8,353 assertions** · Pint clean on touched files · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
@@ -24,7 +24,26 @@ design against it. The current queue — with the v2.1-vs-OS gap report and the 
 integrations slice — is **[`docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md`](docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md)**;
 the owner picks the next slice from it.
 
-## Latest correction — Step 48 (27 October)
+## Latest delivery — Furniture documents (27 October)
+
+Owner-approved Furniture redevelopment is implemented in the existing Sales module, including the additive
+migration. **Sales → Quotations → New** visibly offers Interior / Furniture with brand-specific templates.
+New Furniture quotes use the green/grey product/specification sheet and a 75% requested advance; actual invoices
+have their own **WFI-year-number** series. Sent/viewed/accepted Furniture quotes can create one full draft invoice,
+then use the existing issue → frozen PDF → ledger → verified payment → receipt path. Archived and milestone
+invoices cannot be bypassed to bill twice. Historical Furniture milestone contracts remain supported.
+
+- Product/specification split; rent, shipping, tax, advance/remainder; delivery/transport/tax notes and PO reference.
+- Custom logo/reference icon, brand name, colours, headings and aligned header/footer; reusable templates.
+- Persistent quotation and new-invoice side previews; corrected sample **490,000 → 367,500 requested / 122,500 remainder**.
+- **Final gate:** 1,567 passed / 1 skipped / 8,353 assertions; PHPStan 0; Pint clean; build clean.
+- Chromium on33143 and an isolated33144 replay: live input/focus, phone width, conversion and issue, no JS errors.
+  Both cookie-restricted nested-frame scenarios pass. One-page quotation/invoice and four-page stress PDF inspected.
+- Full evidence, migration/rollback notes and boundaries: [audit37](docs/audit/37_FURNITURE_DOCUMENTS_2026-10-27.md).
+
+**W remains paused.** No production deployment or MySQL runtime validation is claimed. Public frontend v1 remains locked.
+
+## Previous correction — Step 48 (27 October)
 
 The owner paused Slice W and approved the quotation correction after a source comparison.
 The existing quotation page now has an **always-shown desktop side preview**, updating from

@@ -60,12 +60,13 @@ final class QuoteSnapshot
         return [
             'schema' => self::SCHEMA,
             'quotation_renderer' => 'v21',
-            'quote_layout' => DocumentStyles::quoteLayout($quote->meta['document_design']['quote_layout'] ?? null),
+            'quote_layout' => DocumentStyles::quoteLayout($quote->meta['document_design']['quote_layout'] ?? ($furniture ? 'furniture' : 'classic')),
             'document_design' => $quote->meta['document_design'] ?? null,
             'number' => $quote->number,
             'revision' => $revision ?? (int) $quote->revision,
             'label' => $quote->number.(($revision ?? $quote->revision) > 0 ? ' R'.($revision ?? $quote->revision) : '')
                 .($quote->option_label !== '' && $quote->option_label !== null ? ' · '.$quote->option_label : ''),
+            'furniture' => FurnitureDocument::text($quote->meta['furniture'] ?? null),
             'title' => $quote->title,
             'type' => $quote->type,
             'site' => $quote->site,
@@ -94,6 +95,7 @@ final class QuoteSnapshot
                 'note' => $section->note,
                 'subtotal_minor' => (int) $section->subtotal_minor,
                 'items' => $section->items->map(fn (QuoteItem $item): array => [
+                    'product_name' => (string) $item->product_name,
                     'description' => $item->description,
                     'image' => self::imageDataUri($item->image_path),
                     'unit' => $item->unit,
@@ -111,6 +113,10 @@ final class QuoteSnapshot
                 'discount_minor' => (int) $quote->discount_minor,
                 'other_charges_label' => $quote->other_charges_label ?: 'Other charges',
                 'other_charges_minor' => (int) $quote->other_charges_minor,
+                'shipping_minor' => (int) $quote->shipping_minor,
+                'advance_bp' => (int) $quote->advance_bp,
+                'advance_minor' => Money::ofMinor((int) $quote->total_minor)->percent((int) $quote->advance_bp)->minor,
+                'after_advance_minor' => (int) $quote->total_minor - Money::ofMinor((int) $quote->total_minor)->percent((int) $quote->advance_bp)->minor,
                 'tax_bp' => (int) $quote->tax_bp,
                 'tax_minor' => (int) $quote->tax_minor,
                 'rounding_minor' => (int) $quote->rounding_minor,

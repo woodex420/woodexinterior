@@ -22,6 +22,7 @@ final class DocumentStyles
     /** v2.1 layouts are independent of the colour design. */
     public const QUOTE_LAYOUTS = [
         'classic' => 'Classic BOQ',
+        'furniture' => 'Furniture supply sheet',
         'single' => 'Single page',
         'project' => 'Project (summary + trades)',
     ];
@@ -167,8 +168,18 @@ final class DocumentStyles
     {
         $design = DocumentDesign::query()->where('business_line', $line === BusinessLine::Furniture ? 'furniture' : 'interior')->firstOrFail();
 
+        $identity = $design->only(['id', 'business_line', 'revision', 'brand_name', 'accent_color', 'header_text', 'footer_text', 'logo_data_uri', 'logo_sha256']);
+        $style = FurnitureDocument::style($design->furniture_style);
+        if ($line === BusinessLine::Furniture && empty($identity['logo_data_uri']) && ($style['use_default_logo'] ?? 'yes') === 'yes') {
+            $bytes = file_get_contents(public_path('images/furniture-mark.png'));
+            $identity['logo_data_uri'] = 'data:image/png;base64,'.base64_encode($bytes);
+            $identity['logo_sha256'] = hash('sha256', $bytes);
+        }
+
         return [
-            ...$design->only(['id', 'business_line', 'revision', 'brand_name', 'accent_color', 'header_text', 'footer_text', 'logo_data_uri', 'logo_sha256']),
+            ...$identity,
+            'furniture_style' => FurnitureDocument::style($design->furniture_style),
+            'quote_layout' => $line === BusinessLine::Furniture ? 'furniture' : 'classic',
             'pdf_theme' => self::theme($design->pdf_theme ?? null),
             'quote_blocks' => self::blocks('quote', $design->quote_blocks),
             'invoice_blocks' => self::blocks('invoice', $design->invoice_blocks),

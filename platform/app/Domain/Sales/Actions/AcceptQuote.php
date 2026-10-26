@@ -99,8 +99,8 @@ final class AcceptQuote
             ? 'Accepted online by “'.trim($name).'”. '
             : "Accepted on WhatsApp, confirmed by {$by->name}. ").(
                 $invoice === null
-                    ? 'No advance milestone: raise the first invoice when the work reaches one.'
-                    : 'Advance invoice '.$invoice->number.' ('.$invoice->total()->format().') is '.$invoice->status->label().'.'
+                    ? (($quote->meta['furniture_billing'] ?? '') === 'full' ? 'Furniture full billing: create and review the full invoice from Sales; no milestone invoice is raised.' : 'No advance milestone: raise the first invoice when the work reaches one.')
+                    : (($quote->meta['furniture_billing'] ?? '') === 'full' ? 'Full Furniture invoice ' : 'Advance invoice ').$invoice->number.' ('.$invoice->total()->format().') is '.$invoice->status->label().'.'
             )));
 
         return $quote;

@@ -154,6 +154,7 @@ final class TemplatePackImporter
                 }
 
                 $items[] = [
+                    'product_name' => mb_substr(trim((string) ($item['product_name'] ?? '')), 0, 160),
                     'description' => $description,
                     'unit' => (string) ($item['unit'] ?? ''),
                     'qty' => $item['qty'] ?? null,

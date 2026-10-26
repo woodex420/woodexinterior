@@ -34,6 +34,11 @@ final class RaiseAdvanceInvoice
             throw new QuoteActionDenied('Only an accepted quotation can raise an advance invoice.');
         }
 
+        $quote = $quote->fresh();
+        if (($quote->meta['furniture_billing'] ?? '') === 'full') {
+            return null;
+        }
+
         $milestone = $quote->milestones()->where('trigger', 'on_acceptance')->first();
 
         if ($milestone === null) {

@@ -64,6 +64,9 @@ final class RaiseMilestoneInvoice
             }
 
             $quote = $project->quote;
+            if ($quote !== null && (($quote->meta['furniture_billing'] ?? '') === 'full' || Invoice::withTrashed()->where('source_quote_id', $quote->id)->exists())) {
+                throw ValidationException::withMessages(['invoice' => 'This quotation uses a full Furniture invoice, not milestone billing.']);
+            }
             $number = InvoiceNumbering::next($project);
             $percent = (int) $milestone->percent_bp;
             $amount = (int) $milestone->amount_minor;

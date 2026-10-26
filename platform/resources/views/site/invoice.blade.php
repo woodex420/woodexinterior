@@ -73,7 +73,7 @@
             <ul class="mt-3 divide-y divide-line">
                 @foreach ($s['items'] as $item)
                     <li class="flex items-start justify-between gap-4 py-3">
-                        <span class="text-body">{{ $item['description'] }}</span>
+                        <span class="text-body">@if (!empty($item['product_name']))<strong class="block">{{ $item['product_name'] }}</strong>@endif{{ $item['description'] }}</span>
                         <span class="shrink-0 font-medium text-ink">{{ $item['line_total'] }}</span>
                     </li>
                 @endforeach

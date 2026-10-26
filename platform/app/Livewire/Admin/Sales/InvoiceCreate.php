@@ -14,6 +14,8 @@ use App\Domain\Sales\Enums\Unit;
 use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\InvoiceItem;
+use App\Domain\Sales\Services\DocumentStyles;
+use App\Domain\Sales\Services\FurnitureDocument;
 use App\Domain\Sales\Services\InvoicePdf;
 use App\Domain\Sales\Services\InvoiceSnapshot;
 use App\Livewire\Concerns\InteractsWithAdmin;
@@ -54,6 +56,15 @@ class InvoiceCreate extends Component
     /** @var list<array{description: string, qty: string, unit: string, rate: string}> */
     public array $items = [['description' => '', 'qty' => '1', 'unit' => 'job', 'rate' => '']];
 
+    public string $rent = '';
+
+    public string $shipping = '';
+
+    public string $advance = '75';
+
+    /** @var array<string, string> */
+    public array $furniture = ['document_title' => '', 'delivery_text' => '', 'transport_text' => 'Outstation charges depend on city, quantity and load.', 'tax_note' => '', 'po_reference' => ''];
+
     public string $discount = '';
 
     public string $taxPercent = '';
@@ -63,7 +74,7 @@ class InvoiceCreate extends Component
     public string $terms = '';
 
     /** Live preview drawer: the invoice document as it will print, from the form as typed. */
-    public bool $showPreview = false;
+    public bool $showPreview = true;
 
     public function mount(): void
     {
@@ -82,6 +93,13 @@ class InvoiceCreate extends Component
     public function updatedLine(): void
     {
         $this->bankAccountId = '';
+        if ($this->line === 'furniture') {
+            foreach ($this->items as &$item) {
+                if (empty($item['description']) && $item['unit'] === 'job') {
+                    $item['unit'] = 'nos';
+                }
+            }
+        }
     }
 
     public function updated(): void
@@ -140,6 +158,7 @@ class InvoiceCreate extends Component
             'issueDate' => ['required', 'date'],
             'dueDate' => ['required', 'date', 'after_or_equal:issueDate'],
             'items' => ['required', 'array', 'min:1', 'max:50'],
+            'items.*.product_name' => ['nullable', 'string', 'max:160'],
             'items.*.description' => ['required', 'string', 'max:2000'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'terms' => ['nullable', 'string', 'max:10000'],
@@ -175,7 +194,7 @@ class InvoiceCreate extends Component
                 $rate = 0;
             }
 
-            $items[] = ['description' => (string) $row['description'], 'unit' => (string) ($row['unit'] ?? 'job'), 'qty' => $qty, 'rate_minor' => $rate];
+            $items[] = ['product_name' => (string) ($row['product_name'] ?? ''), 'description' => (string) $row['description'], 'unit' => (string) ($row['unit'] ?? 'job'), 'qty' => $qty, 'rate_minor' => $rate];
         }
 
         try {
@@ -194,6 +213,16 @@ class InvoiceCreate extends Component
             $taxBp = 0;
         }
 
+        $extra = [];
+        foreach (['rent', 'shipping', 'advance'] as $field) {
+            try {
+                $extra[$field] = trim($this->{$field}) === '' ? 0 : ($field === 'advance' ? NumberInput::percent($this->{$field}) : NumberInput::rupees($this->{$field}));
+            } catch (InvalidArgumentException) {
+                $this->addError($field, 'Enter a valid non-negative amount or percentage.');
+                $ok = false;
+            }
+        }
+
         if (! $ok) {
             return;
         }
@@ -205,6 +234,7 @@ class InvoiceCreate extends Component
                 'issue_date' => $this->issueDate,
                 'due_date' => $this->dueDate,
                 'bank_account_id' => $this->bankAccountId !== '' ? (int) $this->bankAccountId : null,
+                'rent_minor' => $extra['rent'], 'shipping_minor' => $extra['shipping'], 'advance_bp' => $extra['advance'], 'furniture' => $this->furniture,
                 'discount_minor' => $discount,
                 'tax_bp' => $taxBp,
                 'notes' => $this->notes,
@@ -239,6 +269,9 @@ class InvoiceCreate extends Component
         $totals = $this->totals();
         $contact = $this->contactId > 0 ? $this->visibleContact($this->contactId) : null;
 
+        $bankAccount = BankAccount::query()->forLine(BusinessLine::tryFrom($this->line) ?? BusinessLine::Interior)
+            ->when($this->bankAccountId !== '', fn ($query) => $query->whereKey((int) $this->bankAccountId))->first();
+
         $invoice = new Invoice;
         $invoice->forceFill([
             'number' => 'Draft',
@@ -248,11 +281,15 @@ class InvoiceCreate extends Component
             'currency' => 'PKR',
             'issue_date' => $this->issueDate !== '' ? $this->issueDate : today()->toDateString(),
             'due_date' => $this->dueDate !== '' ? $this->dueDate : today()->toDateString(),
-            'bank_account_id' => $this->bankAccountId !== '' ? (int) $this->bankAccountId : null,
+            'bank_account_id' => $bankAccount?->id,
             'notes' => $this->notes !== '' ? $this->notes : null,
             'terms' => $this->terms !== '' ? $this->terms : null,
             'subtotal_minor' => $totals['subtotal'],
             'discount_minor' => $totals['discount'],
+            'rent_minor' => $this->line === 'furniture' ? $this->lenientAmount($this->rent) : 0,
+            'shipping_minor' => $this->line === 'furniture' ? $this->lenientAmount($this->shipping) : 0,
+            'advance_bp' => $this->lenientAmount($this->advance, true),
+            'commercial' => $this->line === 'furniture' ? ['renderer' => 'furniture-v1', 'furniture' => FurnitureDocument::text($this->furniture), 'document_design' => app(DocumentStyles::class)->copy(BusinessLine::Furniture)] : null,
             'tax_minor' => $totals['tax'],
             'total_minor' => $totals['total'],
             'paid_minor' => 0,
@@ -261,7 +298,7 @@ class InvoiceCreate extends Component
 
         $invoice->setRelation('contact', $contact ?? (new Contact)->forceFill(['name' => 'Select a client']));
         $invoice->setRelation('company', $contact?->company);
-        $invoice->setRelation('bankAccount', $this->bankAccountId !== '' ? BankAccount::query()->find((int) $this->bankAccountId) : null);
+        $invoice->setRelation('bankAccount', $bankAccount);
         $invoice->setRelation('project', null);
         $invoice->setRelation('quote', null);
         $invoice->setRelation('payments', collect());
@@ -290,6 +327,7 @@ class InvoiceCreate extends Component
             }
 
             $items[] = (new InvoiceItem)->forceFill([
+                'product_name' => (string) ($row['product_name'] ?? ''),
                 'description' => (string) ($row['description'] ?? ''),
                 'unit' => (string) ($row['unit'] ?? 'job'),
                 'qty' => $qty,
@@ -302,6 +340,15 @@ class InvoiceCreate extends Component
         }
 
         return $items;
+    }
+
+    private function lenientAmount(string $value, bool $percent = false): int
+    {
+        try {
+            return trim($value) === '' ? 0 : ($percent ? NumberInput::percent($value) : NumberInput::rupees($value));
+        } catch (InvalidArgumentException) {
+            return 0;
+        }
     }
 
     private function lenientTaxBp(): int
@@ -359,9 +406,10 @@ class InvoiceCreate extends Component
         }
 
         $discount = min($discount, $subtotal);
-        $tax = (int) round(($subtotal - $discount) * $taxBp / 10000);
+        $charges = $this->line === 'furniture' ? $this->lenientAmount($this->rent) + $this->lenientAmount($this->shipping) : 0;
+        $tax = (int) round(($subtotal - $discount + $charges) * $taxBp / 10000);
 
-        return ['subtotal' => $subtotal, 'discount' => $discount, 'tax' => $tax, 'total' => $subtotal - $discount + $tax];
+        return ['subtotal' => $subtotal, 'discount' => $discount, 'tax' => $tax, 'total' => $subtotal - $discount + $charges + $tax];
     }
 
     private function visibleContact(int $contactId): ?Contact
@@ -388,7 +436,7 @@ class InvoiceCreate extends Component
         return view('livewire.admin.sales.invoice-create', [
             'selectedContact' => $this->contactId > 0 ? $this->visibleContact($this->contactId) : null,
             'contactResults' => $results,
-            'lines' => ['interior' => 'Interior (WI)', 'furniture' => 'Furniture (WF)'],
+            'lines' => ['interior' => 'Interior (WI)', 'furniture' => 'Woodex Furniture (WFI)'],
             'units' => Unit::options(),
             'bankAccounts' => BankAccount::query()->forLine($line)->get(),
             'totals' => $this->totals(),

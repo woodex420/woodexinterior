@@ -10,6 +10,7 @@ use App\Domain\Sales\Enums\TemplateKind;
 use App\Domain\Sales\Models\Quote;
 use App\Domain\Sales\Models\QuoteTemplate;
 use App\Domain\Sales\Services\DocumentStyles;
+use App\Domain\Sales\Services\FurnitureDocument;
 use Illuminate\Support\Str;
 
 /**
@@ -30,7 +31,7 @@ final class SaveQuoteAsTemplate
             'terms' => $quote->terms,
             'notes' => $quote->notes,
             'scope_html' => $quote->scope_html,
-            'blueprint' => [...QuoteBlueprint::fromQuote($quote), 'presentation' => [
+            'blueprint' => [...QuoteBlueprint::fromQuote($quote), 'furniture' => [...FurnitureDocument::text($quote->meta['furniture'] ?? null), 'advance_bp' => (int) $quote->advance_bp], 'presentation' => [
                 'quote_layout' => DocumentStyles::quoteLayout($quote->meta['document_design']['quote_layout'] ?? null),
                 'pdf_theme' => DocumentStyles::theme($quote->meta['document_design']['pdf_theme'] ?? null),
                 'quote_blocks' => DocumentStyles::blocks('quote', $quote->meta['document_design']['quote_blocks'] ?? null),

@@ -50,6 +50,8 @@ final class DuplicateQuote
                 'discount_value' => $source->discount_value,
                 'other_charges_minor' => $source->other_charges_minor,
                 'other_charges_label' => $source->other_charges_label,
+                'shipping_minor' => $source->shipping_minor,
+                'advance_bp' => $source->advance_bp,
                 'tax_bp' => $source->tax_bp,
                 'valid_until' => today()->addDays($this->settings->quote_validity_days),
                 'terms' => $source->terms,
@@ -57,14 +59,14 @@ final class DuplicateQuote
                 'internal_notes' => $source->internal_notes,
                 'scope_html' => $source->scope_html,
                 'owner_id' => $by->id,
-                'meta' => ['milestone_plan' => $source->milestonePlan()->value, 'duplicated_from' => $source->id, 'document_design' => app(DocumentStyles::class)->copy($source->business_line)],
+                'meta' => ['milestone_plan' => $source->milestonePlan()->value, 'duplicated_from' => $source->id, 'furniture' => $source->meta['furniture'] ?? [], 'furniture_billing' => $source->meta['furniture_billing'] ?? 'milestone', 'document_design' => app(DocumentStyles::class)->copy($source->business_line)],
             ]);
 
             $source->sections->each(function (QuoteSection $section) use ($copy): void {
                 $newSection = $copy->sections()->create($section->only(['name', 'note', 'position']));
 
                 $section->items->each(fn (QuoteItem $item) => $newSection->items()->create($item->only([
-                    'catalog_item_id', 'description', 'unit', 'qty', 'rate_minor', 'discount_type', 'discount_value',
+                    'catalog_item_id', 'product_name', 'description', 'unit', 'qty', 'rate_minor', 'discount_type', 'discount_value',
                     'internal_cost_minor', 'is_optional', 'position',
                 ]) + ['quote_id' => $copy->id]));
             });

@@ -149,10 +149,11 @@ it('leaves the advance as a draft when the owner asks for that', function () {
         ->and($invoice->pdf_path)->toBeNull();
 });
 
-it('pays into the account of the business line', function () {
+it('preserves legacy furniture milestone billing into the account of its business line', function () {
     $lead = Lead::factory()->create(['owner_id' => $this->sales->id, 'business_line' => 'furniture']);
     $quote = app(CreateQuote::class)->handle($lead->contact, BusinessLine::Furniture, $this->sales, $lead, null, 'Wardrobe');
     $editor = app(QuoteEditor::class);
+    $quote->update(['meta' => [...$quote->meta, 'furniture_billing' => 'milestone']]); // Historical furniture contracts retain milestone billing.
     $section = $quote->sections()->first() ?? $editor->addSection($quote, 'Wardrobe');
     $editor->addLine($section, ['description' => 'Hinged wardrobe, matte laminate', 'unit' => 'sqft', 'qty' => '1', 'rate_minor' => 300_000_00]);
     $quote->items()->where('rate_minor', 0)->each(fn ($item) => $editor->deleteLine($item));

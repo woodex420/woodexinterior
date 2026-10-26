@@ -51,7 +51,7 @@ final class RecalculateQuote
                 sections: $input,
                 discountType: $quote->discount_type,
                 discountValue: (int) $quote->discount_value,
-                otherChargesMinor: (int) $quote->other_charges_minor,
+                otherChargesMinor: (int) $quote->other_charges_minor + (int) $quote->shipping_minor,
                 taxBp: (int) $quote->tax_bp,
                 roundToRupee: $this->settings->round_totals_to_rupee,
             );

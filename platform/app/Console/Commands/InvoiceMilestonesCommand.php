@@ -47,7 +47,7 @@ final class InvoiceMilestonesCommand extends Command
             $project = $milestone->project;
             $quote = $project?->quote;
 
-            if ($project === null || ! $quote instanceof Quote || $quote->status !== QuoteStatus::Accepted) {
+            if ($project === null || ! $quote instanceof Quote || $quote->status !== QuoteStatus::Accepted || ($quote->meta['furniture_billing'] ?? '') === 'full' || Invoice::withTrashed()->where('source_quote_id', $quote->id)->exists()) {
                 $skipped++;
 
                 continue;

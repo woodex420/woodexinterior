@@ -21,7 +21,7 @@ final class QuoteBlueprint
      * Rows ready for quote_sections / quote_items from a template blueprint.
      *
      * @param  array<string, mixed>|null  $blueprint
-     * @return list<array{name: string, note: string|null, items: list<array{description: string, unit: string, qty: string, rate_minor: int, catalog_item_id: int|null, is_optional: bool, internal_cost_minor: int|null}>}>
+     * @return list<array{name: string, note: string|null, items: list<array{product_name: string, description: string, unit: string, qty: string, rate_minor: int, catalog_item_id: int|null, is_optional: bool, internal_cost_minor: int|null}>}>
      */
     public static function sections(?array $blueprint): array
     {
@@ -32,6 +32,7 @@ final class QuoteBlueprint
 
             foreach ((array) ($section['items'] ?? []) as $item) {
                 $items[] = [
+                    'product_name' => mb_substr(trim((string) ($item['product_name'] ?? '')), 0, 160),
                     'description' => trim((string) ($item['description'] ?? '')),
                     'unit' => Unit::normalize(isset($item['unit']) ? (string) $item['unit'] : null)->value,
                     'qty' => self::quantity($item['qty'] ?? null),
@@ -65,6 +66,7 @@ final class QuoteBlueprint
             'name' => $section->name,
             'note' => (string) $section->note,
             'items' => $section->items->map(fn (QuoteItem $item): array => [
+                'product_name' => (string) $item->product_name,
                 'description' => $item->description,
                 'unit' => $item->unit,
                 'qty' => NumberInput::fromQuantity((string) $item->qty),
