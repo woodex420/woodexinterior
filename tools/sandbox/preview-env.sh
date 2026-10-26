@@ -30,6 +30,7 @@ set_env SESSION_SECURE_COOKIE true
 set_env SESSION_SAME_SITE none
 set_env SESSION_PARTITIONED_COOKIE true
 set_env SECURITY_FRAME_OPTIONS ""
+set_env SECURITY_PDF_FRAME_ANCESTORS "https://*.e2b.app"
 set_env QUEUE_CONNECTION sync
 set_env CACHE_STORE database
 set_env MAIL_MAILER log

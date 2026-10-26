@@ -62,6 +62,7 @@
     .watermark { position: fixed; top: 34%; left: 6%; width: 88%; text-align: center; font-size: 110px; color: #e3e1dc; transform: rotate(-30deg); z-index: -1; letter-spacing: 12px; }
 </style>
 @include('pdf.partials.document-style')
+@include('pdf.partials.preview-screen')
 </head>
 <body>
 <header>

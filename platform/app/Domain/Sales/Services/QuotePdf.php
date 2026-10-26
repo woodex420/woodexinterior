@@ -46,6 +46,18 @@ final class QuotePdf
     }
 
     /**
+     * The builder's live preview: the clean document HTML render() feeds to dompdf,
+     * with screen-only sheet styling layered on by pdf.partials.preview-screen.
+     * Page numbers are added to the PDF itself, so they are not part of this HTML.
+     *
+     * @param  array<string, mixed>  $snapshot
+     */
+    public function html(array $snapshot): string
+    {
+        return view('pdf.quote', ['s' => $snapshot, 'draft' => false, 'preview' => true])->render();
+    }
+
+    /**
      * @param  array<string, mixed>  $snapshot
      */
     public static function filename(array $snapshot): string

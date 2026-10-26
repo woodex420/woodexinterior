@@ -34,6 +34,8 @@ use App\Domain\Sales\Services\QuoteApprovalRules;
 use App\Domain\Sales\Services\QuoteDiff;
 use App\Domain\Sales\Services\QuoteEditor;
 use App\Domain\Sales\Services\QuoteLinks;
+use App\Domain\Sales\Services\QuotePdf;
+use App\Domain\Sales\Services\QuoteSnapshot;
 use App\Domain\System\Enums\ApprovalStatus;
 use App\Domain\System\Models\Approval;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
@@ -376,12 +378,21 @@ class QuoteBuilder extends Component
         };
     }
 
-    /** Asks the open preview iframe to reload (debounced in the browser); the PDF renders from saved state. */
+    /** Asks the open preview pane to redraw (debounced in the browser); it renders from saved state. */
     private function touchPreview(): void
     {
         if ($this->showPreview) {
-            $this->dispatch('preview-refresh', url: route('admin.quotes.pdf', $this->quoteId).'?v='.now()->timestamp);
+            $this->dispatch('preview-refresh', html: $this->previewHtml());
         }
+    }
+
+    /**
+     * The live pane's document: the same snapshot HTML the PDF is printed from (QuotePdf::html),
+     * so the preview can never drift from the file the client gets.
+     */
+    private function previewHtml(): string
+    {
+        return app(QuotePdf::class)->html(app(QuoteSnapshot::class)->build($this->quote->refresh()));
     }
 
     // ----- Milestones ---------------------------------------------------------------------------------------
@@ -647,6 +658,7 @@ class QuoteBuilder extends Component
             'catalogItems' => $this->showCatalog ? $this->catalogResults() : collect(),
             'catalogCategories' => $this->showCatalog ? CatalogItem::query()->where('is_active', true)->distinct()->orderBy('category')->pluck('category') : collect(),
             'templates' => $this->showTemplate ? QuoteTemplate::query()->orderBy('position')->get(['id', 'name']) : collect(),
+            'previewHtml' => $this->showPreview ? $this->previewHtml() : null,
             ...$this->sendState($quote, $settings->lakh_grouping),
         ])->title($quote->label().' · '.$quote->title);
     }

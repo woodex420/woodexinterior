@@ -800,7 +800,7 @@
                     <x-admin.button size="sm" variant="ghost" wire:click="$set('showPreview', false)">Close</x-admin.button>
                 </div>
             </div>
-            <iframe wire:key="quote-live-preview" x-data x-on:preview-refresh.window.debounce.800ms="const u = $event.detail.url || ($event.detail[0] && $event.detail[0].url); if (u) $el.src = u" src="{{ route('admin.quotes.pdf', $quote) }}" class="min-h-0 flex-1 bg-gray-100" title="Quotation live preview"></iframe>
+            <iframe wire:ignore wire:key="quote-live-preview" x-data x-on:preview-refresh.window.debounce.600ms="const d = $event.detail; const h = d.html || (d[0] && d[0].html); if (h) { const y = $el.contentWindow ? $el.contentWindow.scrollY : 0; $el.onload = () => { try { $el.contentWindow.scrollTo(0, y) } catch (e) {} }; $el.srcdoc = h; }" srcdoc="{{ $previewHtml }}" class="min-h-0 flex-1 bg-gray-100" title="Quotation live preview"></iframe>
         </div>
     @endif
 </div>

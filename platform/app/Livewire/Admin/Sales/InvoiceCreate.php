@@ -8,9 +8,14 @@ use App\Domain\Accounts\Exceptions\JournalPostingFailed;
 use App\Domain\Crm\Enums\BusinessLine;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Sales\Actions\CreateManualInvoice;
+use App\Domain\Sales\Enums\InvoiceKind;
+use App\Domain\Sales\Enums\InvoiceStatus;
 use App\Domain\Sales\Enums\Unit;
 use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\Invoice;
+use App\Domain\Sales\Models\InvoiceItem;
+use App\Domain\Sales\Services\InvoicePdf;
+use App\Domain\Sales\Services\InvoiceSnapshot;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Settings\SalesSettings;
 use App\Support\NumberInput;
@@ -57,6 +62,9 @@ class InvoiceCreate extends Component
 
     public string $terms = '';
 
+    /** Live preview drawer: the invoice document as it will print, from the form as typed. */
+    public bool $showPreview = false;
+
     public function mount(): void
     {
         $this->authorize('create', Invoice::class);
@@ -74,6 +82,11 @@ class InvoiceCreate extends Component
     public function updatedLine(): void
     {
         $this->bankAccountId = '';
+    }
+
+    public function updated(): void
+    {
+        $this->touchPreview();
     }
 
     public function selectContact(int $contactId): void
@@ -217,6 +230,104 @@ class InvoiceCreate extends Component
     }
 
     /**
+     * The invoice as typed so far, unsaved — exists only so the preview snapshot can be built by the
+     * same code the printed invoice uses. Lenient like totals(): a half-typed row previews with a
+     * zero amount; saving validates it strictly.
+     */
+    private function previewInvoice(): Invoice
+    {
+        $totals = $this->totals();
+        $contact = $this->contactId > 0 ? $this->visibleContact($this->contactId) : null;
+
+        $invoice = new Invoice;
+        $invoice->forceFill([
+            'number' => 'Draft',
+            'kind' => InvoiceKind::Manual,
+            'status' => InvoiceStatus::Draft,
+            'business_line' => BusinessLine::tryFrom($this->line) ?? BusinessLine::Interior,
+            'currency' => 'PKR',
+            'issue_date' => $this->issueDate !== '' ? $this->issueDate : today()->toDateString(),
+            'due_date' => $this->dueDate !== '' ? $this->dueDate : today()->toDateString(),
+            'bank_account_id' => $this->bankAccountId !== '' ? (int) $this->bankAccountId : null,
+            'notes' => $this->notes !== '' ? $this->notes : null,
+            'terms' => $this->terms !== '' ? $this->terms : null,
+            'subtotal_minor' => $totals['subtotal'],
+            'discount_minor' => $totals['discount'],
+            'tax_minor' => $totals['tax'],
+            'total_minor' => $totals['total'],
+            'paid_minor' => 0,
+            'balance_minor' => $totals['total'],
+        ]);
+
+        $invoice->setRelation('contact', $contact ?? (new Contact)->forceFill(['name' => 'Select a client']));
+        $invoice->setRelation('company', $contact?->company);
+        $invoice->setRelation('bankAccount', $this->bankAccountId !== '' ? BankAccount::query()->find((int) $this->bankAccountId) : null);
+        $invoice->setRelation('project', null);
+        $invoice->setRelation('quote', null);
+        $invoice->setRelation('payments', collect());
+        $invoice->setRelation('items', collect($this->previewItems()));
+
+        return $invoice;
+    }
+
+    /** @return list<InvoiceItem> */
+    private function previewItems(): array
+    {
+        $taxBp = $this->lenientTaxBp();
+        $items = [];
+
+        foreach ($this->items as $i => $row) {
+            try {
+                $qty = (float) NumberInput::quantity(trim((string) $row['qty']));
+            } catch (InvalidArgumentException) {
+                $qty = 0.0;
+            }
+
+            try {
+                $rate = trim((string) $row['rate']) === '' ? 0 : NumberInput::rupees(trim((string) $row['rate']));
+            } catch (InvalidArgumentException) {
+                $rate = 0;
+            }
+
+            $items[] = (new InvoiceItem)->forceFill([
+                'description' => (string) ($row['description'] ?? ''),
+                'unit' => (string) ($row['unit'] ?? 'job'),
+                'qty' => $qty,
+                'rate_minor' => $rate,
+                'discount_minor' => 0,
+                'tax_bp' => $taxBp,
+                'line_total_minor' => (int) round($qty * $rate),
+                'position' => $i + 1,
+            ]);
+        }
+
+        return $items;
+    }
+
+    private function lenientTaxBp(): int
+    {
+        try {
+            return trim($this->taxPercent) === '' ? 0 : NumberInput::percent(trim($this->taxPercent));
+        } catch (InvalidArgumentException) {
+            return 0;
+        }
+    }
+
+    /** The live pane's document: the same snapshot HTML the printed invoice is rendered from. */
+    private function previewHtml(): string
+    {
+        return app(InvoicePdf::class)->html(app(InvoiceSnapshot::class)->build($this->previewInvoice()));
+    }
+
+    /** Asks the open preview pane to redraw (debounced in the browser); it renders from the form as typed. */
+    private function touchPreview(): void
+    {
+        if ($this->showPreview) {
+            $this->dispatch('preview-refresh', html: $this->previewHtml());
+        }
+    }
+
+    /**
      * Lenient totals for the on-screen preview only — the action recomputes strictly.
      *
      * @return array{subtotal: int, discount: int, tax: int, total: int}
@@ -281,6 +392,7 @@ class InvoiceCreate extends Component
             'units' => Unit::options(),
             'bankAccounts' => BankAccount::query()->forLine($line)->get(),
             'totals' => $this->totals(),
+            'previewHtml' => $this->showPreview ? $this->previewHtml() : null,
             'lakh' => app(SalesSettings::class)->lakh_grouping,
         ]);
     }

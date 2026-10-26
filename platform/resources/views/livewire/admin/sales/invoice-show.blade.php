@@ -4,6 +4,9 @@
                          :description="'Invoice for '.$invoice->contact?->name.($invoice->project ? ' · project '.$invoice->project->code : ($invoice->quote ? ' · quotation '.$invoice->quote->number : ''))"
                          :breadcrumbs="['Sales' => null, 'Invoices' => route('admin.invoices.index'), $invoice->number => null]">
         <x-slot:actions>
+            @if ($invoice->status === \App\Domain\Sales\Enums\InvoiceStatus::Draft)
+                <x-admin.button variant="secondary" icon="eye" wire:click="$toggle('showPreview')">{{ $showPreview ? 'Hide preview' : 'Live preview' }}</x-admin.button>
+            @endif
             @if ($invoice->pdf_path)
                 <a href="{{ route('admin.invoices.pdf', $invoice) }}" target="_blank" rel="noopener">
                     <x-admin.button variant="secondary" icon="document">PDF</x-admin.button>
@@ -279,4 +282,14 @@
             </x-admin.card>
         </div>
     </div>
+
+    @if ($showPreview && $invoice->status === \App\Domain\Sales\Enums\InvoiceStatus::Draft)
+        <div class="fixed inset-y-0 right-0 z-40 flex w-full max-w-3xl flex-col bg-white shadow-2xl dark:bg-gray-900" role="dialog" aria-label="Live preview">
+            <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-800">
+                <p class="text-theme-sm font-medium text-gray-900 dark:text-white">Live preview <span class="font-normal text-gray-400">· the document as it will print</span></p>
+                <x-admin.button size="sm" variant="ghost" wire:click="$set('showPreview', false)">Close</x-admin.button>
+            </div>
+            <iframe srcdoc="{{ $previewHtml }}" class="min-h-0 flex-1 bg-gray-100" title="Invoice live preview"></iframe>
+        </div>
+    @endif
 </div>

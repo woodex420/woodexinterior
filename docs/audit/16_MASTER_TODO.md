@@ -2579,5 +2579,46 @@ PHPStan 0. Live on 33143: the import page renders, the leads header shows the bu
 line tabs and month input, `?month=2020-01` returns the empty state and
 `?line=furniture` marks the Furniture tab.
 
-**Next.** Owner picks from the plan-35 queue (INT integrations recommended); one
-question, then start.
+**Next (paused by the owner).** The owner picked INT and approved its two webhook tables,
+then interposed the live-preview rebuild (Step 46) before any INT code was written. The
+INT audit + schema approval stand; INT resumes next.
+
+### Step 46 — live preview rebuilt the v2.1 way: the document itself in the pane (26 Oct 2026)
+
+Owner correction with screenshot: the quote builder's live preview drawer showed "This page
+has been blocked by Chrome" where the quotation should be, and the invoice builder had no
+live preview at all. Root cause: the drawer (Slice S) framed the PDF file, and the app sends
+`X-Frame-Options: SAMEORIGIN` on every response — Chrome checks the whole ancestor chain,
+so whenever the admin sits inside another origin's frame (our preview window, any embed)
+the document is refused. Step 44's proof fetched the PDF over HTTP but never rendered the
+drawer in a browser; that gap is owned here and closed with headless-Chromium screenshots.
+
+The fix is v2.1's own mechanism (print17): the pane shows the document **HTML** — the exact
+snapshot markup dompdf prints — not the PDF. `QuotePdf::html()` / `InvoicePdf::html()`
+render the same blades with a `preview` flag that only adds a screen-only sheet style
+(`pdf.partials.preview-screen`: cream backdrop, A4 sheet, static header/footer), so printed
+output is byte-identical (pinned by test). The quote pane is clean like v2.1's (the DRAFT
+watermark stays a PDF-only guard); the invoice keeps its source-authentic DRAFT stamp. All
+three documents — interior quotation, furniture quotation, invoice — now preview this way:
+the quote builder (srcdoc pane refreshed after each saved edit, scroll kept), the
+new-invoice form (an unsaved transient invoice snapshot from the form as typed — lenient
+like its on-screen totals, saving still validates strictly), and the draft invoice page.
+Page numbers stay PDF-only (stamped on the canvas at print, like v2.1's jsPDF footer).
+
+**Also fixed:** PDF responses no longer send `X-Frame-Options`; they carry
+`Content-Security-Policy: frame-ancestors 'self'` (+ admin domain + configured extras,
+`SECURITY_PDF_FRAME_ANCESTORS`), so the document-preview modal works wherever the admin
+itself loads. HTML pages keep SAMEORIGIN.
+
+**Proof.** New `LiveDocumentPreviewTest` (the printed document carries no preview sheet;
+the pane carries the real document; a furniture quotation previews with its WF number and
+furniture accent; a new invoice previews from the unsaved form, DRAFT stamp included; a
+draft invoice previews on its page; framing headers differ per content type) and the Slice S
+pin extended to the document inside the pane. Targeted **41 passed · 221 assertions**; full
+suite **1,506 passed · 1 skipped · 8,083 assertions**; Pint clean, PHPStan 0. Live in
+headless Chromium against the 33143 preview — deliberately a *different* origin than
+APP_URL, the exact context that blocked the old drawer: both panes render the document
+(screenshots inspected: Classic BOQ quote with Summary + Grand-total pill; invoice with the
+typed line, totals and DRAFT stamp), PDF framing headers verified live.
+
+**Next.** Resume Slice INT (audit done, webhook tables approved) — owner's pick stands.

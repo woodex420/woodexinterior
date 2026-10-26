@@ -22,6 +22,8 @@ return [
         'require_2fa_roles' => ['admin', 'accountant'],
         // X-Frame-Options value; empty disables the header (only for embedded previews).
         'frame_options' => env('SECURITY_FRAME_OPTIONS', 'SAMEORIGIN'),
+        // Extra origins allowed to frame staff PDFs (e.g. a hosted preview shell).
+        'pdf_frame_ancestors' => array_values(array_filter(array_map('trim', explode(',', (string) env('SECURITY_PDF_FRAME_ANCESTORS', ''))))),
     ],
 
     'public_leads' => [

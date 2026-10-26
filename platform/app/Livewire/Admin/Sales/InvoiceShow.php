@@ -14,6 +14,8 @@ use App\Domain\Sales\Enums\PaymentMethod;
 use App\Domain\Sales\Exceptions\QuoteActionDenied;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Services\InvoiceLinks;
+use App\Domain\Sales\Services\InvoicePdf;
+use App\Domain\Sales\Services\InvoiceSnapshot;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Settings\SalesSettings;
 use App\Support\Money;
@@ -48,6 +50,9 @@ class InvoiceShow extends Component
     public string $voidReason = '';
 
     public bool $showVoid = false;
+
+    /** Live preview drawer (drafts only): the invoice document as it will print. */
+    public bool $showPreview = false;
 
     public function mount(Invoice $invoice): void
     {
@@ -155,6 +160,9 @@ class InvoiceShow extends Component
             'canVoid' => Gate::allows('void', $invoice),
             // State first: the owner passes every permission check (Gate::before), but an issued invoice stays issued.
             'canIssue' => $invoice->status === InvoiceStatus::Draft && Gate::allows('issue', $invoice),
+            'previewHtml' => $this->showPreview && $invoice->status === InvoiceStatus::Draft
+                ? app(InvoicePdf::class)->html(app(InvoiceSnapshot::class)->build($invoice))
+                : null,
             'portal' => InvoiceLinks::portal($invoice),
             'whatsapp' => InvoiceLinks::whatsappShare($invoice),
             'methods' => PaymentMethod::cases(),

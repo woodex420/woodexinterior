@@ -51,6 +51,7 @@
     .stamp { color: #b0453a; font-weight: bold; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
 </style>
 @include('pdf.partials.document-style')
+@include('pdf.partials.preview-screen')
 </head>
 <body>
 <header>

@@ -1,7 +1,11 @@
 @use('App\Support\Money')
 <div>
     <x-admin.page-header title="New invoice" description="Bill work that has no quotation — a repair, a supply, a fee. Save it as a draft, or issue it now and it is frozen and booked like every other invoice."
-                         :breadcrumbs="['Sales' => null, 'Invoices' => route('admin.invoices.index'), 'New invoice' => null]" />
+                         :breadcrumbs="['Sales' => null, 'Invoices' => route('admin.invoices.index'), 'New invoice' => null]">
+        <x-slot:actions>
+            <x-admin.button variant="secondary" icon="eye" wire:click="$toggle('showPreview')">{{ $showPreview ? 'Hide preview' : 'Live preview' }}</x-admin.button>
+        </x-slot:actions>
+    </x-admin.page-header>
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="space-y-6 xl:col-span-2">
@@ -105,4 +109,14 @@
             </x-admin.card>
         </div>
     </div>
+
+    @if ($showPreview)
+        <div class="fixed inset-y-0 right-0 z-40 flex w-full max-w-3xl flex-col bg-white shadow-2xl dark:bg-gray-900" role="dialog" aria-label="Live preview">
+            <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-800">
+                <p class="text-theme-sm font-medium text-gray-900 dark:text-white">Live preview <span class="font-normal text-gray-400">· updates as you edit</span></p>
+                <x-admin.button size="sm" variant="ghost" wire:click="$set('showPreview', false)">Close</x-admin.button>
+            </div>
+            <iframe wire:ignore wire:key="invoice-live-preview" x-data x-on:preview-refresh.window.debounce.600ms="const d = $event.detail; const h = d.html || (d[0] && d[0].html); if (h) { const y = $el.contentWindow ? $el.contentWindow.scrollY : 0; $el.onload = () => { try { $el.contentWindow.scrollTo(0, y) } catch (e) {} }; $el.srcdoc = h; }" srcdoc="{{ $previewHtml }}" class="min-h-0 flex-1 bg-gray-100" title="Invoice live preview"></iframe>
+        </div>
+    @endif
 </div>

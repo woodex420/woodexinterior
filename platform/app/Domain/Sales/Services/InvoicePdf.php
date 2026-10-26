@@ -42,6 +42,18 @@ final class InvoicePdf
         return $pdf->output();
     }
 
+    /**
+     * The invoice builder's live preview: the document HTML render() feeds to dompdf,
+     * with screen-only sheet styling layered on by pdf.partials.preview-screen.
+     * Page numbers are added to the PDF itself, so they are not part of this HTML.
+     *
+     * @param  array<string, mixed>  $snapshot
+     */
+    public function html(array $snapshot): string
+    {
+        return view('pdf.invoice', ['s' => $snapshot, 'preview' => true])->render();
+    }
+
     public static function filename(Invoice $invoice): string
     {
         return 'invoice-'.str_replace(['/', '\\'], '-', $invoice->number).'.pdf';

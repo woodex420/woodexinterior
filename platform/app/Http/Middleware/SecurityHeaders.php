@@ -46,6 +46,27 @@ final class SecurityHeaders
             $response->headers->set('Content-Security-Policy', 'frame-ancestors '.implode(' ', $ancestors));
         }
 
+        // Staff previews frame our own PDFs inside the admin (the document preview modal). A PDF has no
+        // scripts to protect; let the admin frame it while every HTML page keeps SAMEORIGIN.
+        if (str_starts_with((string) $response->headers->get('Content-Type'), 'application/pdf')) {
+            $response->headers->remove('X-Frame-Options');
+
+            $ancestors = ["'self'"];
+            $adminDomain = (string) config('woodex.admin.domain');
+
+            if ($adminDomain !== '') {
+                $ancestors[] = $request->getScheme().'://'.$adminDomain;
+            }
+
+            foreach ((array) config('woodex.security.pdf_frame_ancestors', []) as $extra) {
+                if (is_string($extra) && $extra !== '') {
+                    $ancestors[] = $extra;
+                }
+            }
+
+            $response->headers->set('Content-Security-Policy', 'frame-ancestors '.implode(' ', $ancestors));
+        }
+
         // OAuth callbacks carry short-lived authorization codes in the query string. Never forward them as Referer.
         $response->headers->set('Referrer-Policy', $request->routeIs('google.*') ? 'no-referrer' : 'strict-origin-when-cross-origin');
         if ($request->routeIs('google.*')) {
