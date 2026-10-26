@@ -1831,3 +1831,48 @@ estimator enquiries already present. QA rows deleted after the proof; screenshot
 `/tmp/woodex-run/shots/slice-c-estimations.png`, `slice-c-leads-hub.png`.
 
 **Still open.** D (Overview control view), E (invoice automation), F (marketing live proof), G (hygiene).
+
+### Step 29 — the Overview is a control view, not a report (Slice D, 26 Oct 2026)
+
+**Why.** `Dashboard` recomputed leads-per-day, pipeline and "needs attention" with its own queries while
+`SalesFunnelReport`, `RevenueCollectionsReport` and `ReceivablesReport` computed the same business twice; the
+attention rows offered a WhatsApp link but no way to open the work; the Leads list had no filter that could
+reproduce a dashboard count. A tile was a dead end and a number could not be checked. Finding **B10** in
+`docs/audit/31_DEEP_QA_2026-10-21.md`.
+
+**What changed.**
+
+* `Domain\System\Control\ControlPanel` — one query per number, each returned with the href of the screen that
+  filters to the same rows: enquiries today, quotations awaiting approval, overdue follow-ups, money due
+  (outstanding + late), jobs running, automations failing. A card is only returned when the person can open its
+  screen, so sales sees four, an accountant sees three, and an editor sees none (with an honest explanation
+  instead of an empty grid).
+* `Lead::followUpDue()` — the single definition of a follow-up that should already have happened: `next_action_at`
+  in the past, or a first reply past `sla_due_at`; closed leads excluded. The dashboard tile, the needs-attention
+  line and `LeadsIndex?due=overdue` all run it.
+* Dashboard (Overview tab) — six link tiles, a "needs attention" list whose button is the action itself (Open the
+  list / Decide now / Chase it / See what failed / Check the schedule), the five most overdue enquiries with
+  WhatsApp and call, then the 14-day trend, pipeline, go-live checklist and activity. `wire:poll.60s.visible` kept.
+* `LeadsIndex` — `?created=today|week` and `?due=overdue` are URL filters with a "Filtered:" chip and Clear, so a
+  dashboard number and the list under it are literally one query.
+* `LeadTrackingBoard::$group` is `#[Url]` (same five names, still defaulting to `overdue`), so a count can link to
+  its column.
+* Reports hub — the same six numbers above the tabs from `ControlPanel`; `ReportRange` gained a `today` preset and
+  both reports put `preset` in the URL, so "Today's reports" opens on the period the dashboard measures.
+* `automationsFailing()` — a task counts only while its **latest** run failed (a recovered task is not failing);
+  the failed-jobs queue is added; tasks with no run in 25 hours are named separately as "stopped reporting".
+
+**Tests.** New `tests/Feature/Overview/ControlViewTest.php` (15): tile set and hrefs, the overdue definition, tile
+count equals list rows, the `created=today` filter and its clear, money-due split, late-money and approval
+attention lines, failing vs recovered vs stale automations, per-role gating (sales/accountant/editor), own-book
+scoping, the reports strip and `preset=today`, tracking-board URL state, and an empty studio with no invented
+numbers. Full suite **1,322 passed · 1 skipped · 7,116 assertions**; Pint clean; PHPStan 0.
+
+**Live on 33143 (owner session).** `/admin` renders all six tiles; "Follow-ups overdue" reads **9** and its own
+href `/admin/leads?due=overdue` lists exactly **9** rows with the "Filtered: Follow-ups overdue" chip;
+`/admin/reports?tab=funnel&preset=today` shows the same six numbers and the Today period. The other five tiles are
+honest zeros on the fresh demo database ("nothing outstanding", "no active project yet", "last run of every task
+was clean"). This turn's workspace reset removed the browser kit's NSS libraries, so these checks were made over
+HTTP against the live preview with a real owner session — no screenshot is claimed.
+
+**Still open.** E (invoice automation that runs), F (marketing live proof, owner-blocked), G (hygiene).

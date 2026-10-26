@@ -11,7 +11,7 @@
     </x-admin.page-header>
 
     <div class="mb-4 flex flex-wrap gap-2 print:hidden">
-        @foreach (['this_month' => 'This month', 'last_month' => 'Last month', 'this_quarter' => 'This quarter', 'this_year' => 'This year'] as $key => $label)
+        @foreach (['today' => 'Today', 'this_month' => 'This month', 'last_month' => 'Last month', 'this_quarter' => 'This quarter', 'this_year' => 'This year'] as $key => $label)
             <button type="button" wire:click="setPreset('{{ $key }}')"
                     class="rounded-lg px-3 py-1.5 text-theme-sm font-medium {{ $preset === $key ? 'bg-brand-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10' }}">
                 {{ $label }}

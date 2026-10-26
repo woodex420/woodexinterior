@@ -14,7 +14,7 @@ use InvalidArgumentException;
  */
 final class ReportRange
 {
-    public const PRESETS = ['this_month', 'last_month', 'last_90_days', 'this_quarter', 'this_year', 'custom'];
+    public const PRESETS = ['today', 'this_month', 'last_month', 'last_90_days', 'this_quarter', 'this_year', 'custom'];
 
     public function __construct(
         public readonly string $preset,
@@ -27,6 +27,8 @@ final class ReportRange
         $now = CarbonImmutable::now();
 
         [$from, $to] = match ($preset) {
+            // The control view's period (deep QA slice D): the same day the dashboard's six numbers count.
+            'today' => [$now->startOfDay(), $now->endOfDay()],
             'this_month' => [$now->startOfMonth(), $now->endOfDay()],
             'last_month' => [$now->subMonthNoOverflow()->startOfMonth(), $now->subMonthNoOverflow()->endOfMonth()],
             'last_90_days' => [$now->subDays(89)->startOfDay(), $now->endOfDay()],
@@ -49,6 +51,7 @@ final class ReportRange
     public function label(): string
     {
         return match ($this->preset) {
+            'today' => 'Today',
             'this_month' => 'This month',
             'last_month' => 'Last month',
             'last_90_days' => 'Last 90 days',

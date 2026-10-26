@@ -63,6 +63,17 @@ class LeadsIndex extends Component
     #[Url(except: '')]
     public string $owner = '';
 
+    /**
+     * Quick filters the control view links to (deep QA slice D): `created=today|week` is the same
+     * "enquiries today" the dashboard counts, `due=overdue` is Lead::followUpDue() — the tile, the
+     * list and the CSV all run one query.
+     */
+    #[Url(except: '')]
+    public string $created = '';
+
+    #[Url(except: '')]
+    public string $due = '';
+
     #[Url(except: 'newest')]
     public string $sort = 'newest';
 
@@ -104,7 +115,7 @@ class LeadsIndex extends Component
 
     public function updating(string $name): void
     {
-        if (in_array($name, ['search', 'stage', 'line', 'source', 'owner', 'sort', 'perPage'], true)) {
+        if (in_array($name, ['search', 'stage', 'line', 'source', 'owner', 'created', 'due', 'sort', 'perPage'], true)) {
             $this->resetPage();
             $this->selected = [];
         }
@@ -117,7 +128,14 @@ class LeadsIndex extends Component
 
     public function clearFilters(): void
     {
-        $this->reset('search', 'stage', 'line', 'source', 'owner', 'sort', 'selected');
+        $this->reset('search', 'stage', 'line', 'source', 'owner', 'created', 'due', 'sort', 'selected');
+        $this->resetPage();
+    }
+
+    /** The chip's ✕ — clears the control-view filters and leaves the rest of the list alone. */
+    public function clearQuickFilters(): void
+    {
+        $this->reset('created', 'due');
         $this->resetPage();
     }
 
@@ -334,6 +352,9 @@ class LeadsIndex extends Component
             ->when($this->source !== '', fn (Builder $q) => $q->where('source', $this->source))
             ->when($this->owner === 'me', fn (Builder $q) => $q->where('owner_id', $user->id))
             ->when($this->owner === 'unassigned', fn (Builder $q) => $q->whereNull('owner_id'))
+            ->when($this->created === 'today', fn (Builder $q) => $q->where('created_at', '>=', now()->startOfDay()))
+            ->when($this->created === 'week', fn (Builder $q) => $q->where('created_at', '>=', now()->startOfWeek()))
+            ->when($this->due === 'overdue', fn (Builder $q) => $q->followUpDue())
             ->tap(fn (Builder $q) => match ($this->sort) {
                 'oldest' => $q->oldest('id'),
                 'score' => $q->orderByDesc('score')->latest('id'),
@@ -399,7 +420,7 @@ class LeadsIndex extends Component
             'stages' => PipelineStage::query()->ordered()->get(),
             'lines' => BusinessLine::options(),
             'sources' => LeadSource::options(),
-            'hasFilters' => trim($this->search) !== '' || $this->stage !== '' || $this->line !== '' || $this->source !== '' || $this->owner !== '',
+            'hasFilters' => trim($this->search) !== '' || $this->stage !== '' || $this->line !== '' || $this->source !== '' || $this->owner !== '' || $this->created !== '' || $this->due !== '',
             'views' => $this->savedViews(),
             'staff' => $user->can('leads.assign') ? $this->staff() : collect(),
             'canExport' => $user->can('leads.export'),

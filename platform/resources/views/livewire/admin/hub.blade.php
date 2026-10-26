@@ -18,5 +18,20 @@
         </div>
     </div>
 
+    @if (! empty($control))
+        {{-- The same six numbers, from the same queries, as the dashboard (deep QA slice D). --}}
+        <div class="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 2xl:grid-cols-6">
+            @foreach ($control as $card)
+                <a href="{{ $card['href'] }}" wire:navigate
+                   class="rounded-xl border border-gray-200 bg-white px-4 py-3 transition hover:shadow-theme-md dark:border-gray-800 dark:bg-white/[0.03]">
+                    <span class="flex items-center gap-1.5 text-theme-xs text-gray-500 dark:text-gray-400">
+                        <x-icon :name="$card['icon']" class="size-3.5" />{{ $card['label'] }}
+                    </span>
+                    <span class="mt-1 block font-heading text-theme-xl text-gray-900 dark:text-white">{{ $card['display'] }}</span>
+                </a>
+            @endforeach
+        </div>
+    @endif
+
     <livewire:dynamic-component :component="$activeAlias" :key="'hub-'.$active['id']" />
 </div>

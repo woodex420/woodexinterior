@@ -40,6 +40,20 @@
         </select>
     </div>
 
+    {{-- Control-view filters (?created=today, ?due=overdue): the dashboard's numbers, opened. --}}
+    @if ($created !== '' || $due !== '')
+        <div class="mb-4 flex flex-wrap items-center gap-2">
+            <span class="text-theme-xs text-gray-500 dark:text-gray-400">Filtered:</span>
+            @if ($created !== '')
+                <x-admin.badge color="navy" :dot="false">{{ $created === 'today' ? 'Enquiries today' : 'Enquiries this week' }}</x-admin.badge>
+            @endif
+            @if ($due === 'overdue')
+                <x-admin.badge color="error" :dot="false">Follow-ups overdue</x-admin.badge>
+            @endif
+            <button type="button" wire:click="clearQuickFilters" class="text-theme-xs font-medium text-brand-600 hover:underline dark:text-brand-400">Clear</button>
+        </div>
+    @endif
+
     {{-- List tools (GLB-003): sort, page size, saved views, columns, export --}}
     <div class="mb-4 flex flex-wrap items-center gap-2">
         <select wire:model.live="sort" class="wx-input h-9 w-auto text-theme-sm" aria-label="Sort">

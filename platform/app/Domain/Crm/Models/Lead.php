@@ -15,6 +15,7 @@ use App\Domain\Sales\Models\Quote;
 use App\Models\User;
 use App\Settings\SalesSettings;
 use App\Support\Money;
+use Carbon\CarbonImmutable;
 use Database\Factories\LeadFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -159,6 +160,27 @@ class Lead extends Model implements HasMedia
     public function scopeOpen(Builder $query): Builder
     {
         return $query->whereHas('stage', fn (Builder $stage) => $stage->where('type', StageType::Open->value));
+    }
+
+    /**
+     * Follow-ups that should already have happened (deep QA slice D): a next action whose time has
+     * passed, or a first reply past its SLA. One definition, used by the dashboard tile, the
+     * "needs attention" list and the Leads list's `?due=overdue` filter, so the number and the list
+     * under it can never disagree. Closed leads are never due.
+     *
+     * @param  Builder<Lead>  $query
+     * @return Builder<Lead>
+     */
+    public function scopeFollowUpDue(Builder $query): Builder
+    {
+        $now = CarbonImmutable::now();
+
+        return $query->open()->where(fn (Builder $inner): Builder => $inner
+            ->where(fn (Builder $next) => $next->whereNotNull('next_action_at')->where('next_action_at', '<', $now))
+            ->orWhere(fn (Builder $sla) => $sla
+                ->whereNull('first_response_at')
+                ->whereNotNull('sla_due_at')
+                ->where('sla_due_at', '<', $now)));
     }
 
     /**

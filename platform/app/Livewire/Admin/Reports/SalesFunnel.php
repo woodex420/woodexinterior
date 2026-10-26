@@ -12,6 +12,7 @@ use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -23,6 +24,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 #[Title('Sales funnel')]
 class SalesFunnel extends Component
 {
+    /** In the URL, so a link from the control view opens the report already on the same period. */
+    #[Url(except: 'this_month')]
     public string $preset = 'this_month';
 
     public ?string $from = null;

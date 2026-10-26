@@ -80,6 +80,7 @@ abstract class Hub extends Component
             'tabs' => $tabs,
             'active' => $active,
             'activeAlias' => $this->alias($active['component']),
+            'control' => $this->control(),
         ])->title($config['title']);
     }
 
@@ -105,6 +106,17 @@ abstract class Hub extends Component
         $user = auth()->user();
 
         return $user === null || $user->can($tab['permission']);
+    }
+
+    /**
+     * Optional control strip above the tabs — the six numbers the studio runs on, read from the
+     * same queries the dashboard uses (deep QA slice D). Hubs that do not want it return [].
+     *
+     * @return list<array{key: string, label: string, display: string, hint: string, href: string, icon: string, tone: string, count: int}>
+     */
+    protected function control(): array
+    {
+        return [];
     }
 
     /**

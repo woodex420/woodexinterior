@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 /**
@@ -31,6 +32,11 @@ class LeadTrackingBoard extends Component
 {
     use InteractsWithAdmin;
 
+    /**
+     * In the URL (slice D), so a count anywhere in the app can link straight to its column:
+     * /admin/leads/board?group=uncontacted. Unknown values fall back to overdue.
+     */
+    #[Url(except: 'overdue')]
     public string $group = 'overdue';
 
     public int $logLeadId = 0;

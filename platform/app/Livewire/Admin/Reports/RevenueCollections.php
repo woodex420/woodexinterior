@@ -12,6 +12,7 @@ use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -23,6 +24,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 #[Title('Revenue & collections')]
 class RevenueCollections extends Component
 {
+    /** In the URL, so both reports can be linked on any period, including today. */
+    #[Url(except: 'this_quarter')]
     public string $preset = 'this_quarter';
 
     public ?string $from = null;
