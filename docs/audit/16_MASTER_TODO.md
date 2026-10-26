@@ -2462,3 +2462,30 @@ quotation's. A sandbox reset mid-slice wiped /tmp and the local git ref; recover
 to the pushed remote tip (16-file diff verified before commit).
 
 **Next.** Plan 34 order: Slice S (builder live preview + per-quote PDF blocks) — or the owner's pick.
+
+### Step 43 — builder live preview, per-quotation PDF blocks & fields (Slice S, 26 Oct 2026)
+
+Plan 34, slice S. The quote builder gained v2.1 Pro's two signature tools. **Live preview**: a header toggle
+opens a right-hand drawer carrying the real draft PDF (the same bytes Preview PDF serves — never an HTML
+imitation), refreshed after every saved edit via a debounced browser event; the drawer names the active
+design. **PDF design card** (right rail): this quotation's own theme (Classic/Minimal/Premium) and its own
+block list — ↑↓ reorder, show/hide toggles, Reset order — stored in the design copy the quote already
+carries (`QuoteEditor::updateDocumentDesign`), so it freezes into the snapshot at send exactly like the brand
+design does; the brand master is untouched, and "Apply current design" still resets a draft to it. Locked
+blocks (items, totals) stay locked per quote too.
+
+New builder fields print on the document: **Type** and **Site** in the project-details box, and the **intro
+line** above the Summary of cost (nullable `type/site/intro_line` columns — the plan-34 schema ask). The
+Client card gained **"As printed on this quotation"** fields — per-quote display overrides
+(`meta.client_override`, blank = the contact's own details, reverting to the contact's value clears the
+override); the contact record is never mutated from the builder.
+
+**Proof.** 6 new tests (`QuoteBuilderDesignTest`): block hide/move/locked/reset persistence + render order,
+per-quote theme, the three fields' save + print positions, override wins without touching the contact and
+clears on revert, preview drawer + refresh dispatch, and a sent quote refusing design changes. Full suite
+**1,478 passed · 1 skipped · 7,918 assertions** (the known TelegramDigest flake passes alone); Pint clean,
+PHPStan 0. Live on 33143: builder shows the new cards; the demo draft was restyled to Premium with Terms
+moved before the BOQ, type/site/intro set and a client override — rendered, inspected page-by-page, then
+restored from its saved original meta.
+
+**Next.** Plan 34: Slice V (leads redevelopment) or T (quotation types & template cards) — owner's pick.

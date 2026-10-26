@@ -16,6 +16,7 @@
             @can('manageCatalog', \App\Domain\Sales\Models\Quote::class)
                 <x-admin.button variant="secondary" icon="templates" wire:click="openSaveTemplate">Save as template</x-admin.button>
             @endcan
+            <x-admin.button variant="secondary" icon="eye" wire:click="$toggle('showPreview')">{{ $showPreview ? 'Hide preview' : 'Live preview' }}</x-admin.button>
             <x-admin.button variant="secondary" icon="file" :href="route('admin.quotes.pdf', $quote)" x-on:click.prevent="$dispatch('document-preview', { url: $el.href })">{{ $sendable ? 'Preview PDF' : 'PDF' }}</x-admin.button>
             @if ($editable)<x-admin.button variant="ghost" wire:click="applyCurrentDesign" wire:confirm="Copy the latest saved brand design into this draft? Check the PDF before sending.">Apply current design</x-admin.button>@endif
             @if ($canRevise)
@@ -405,6 +406,24 @@
                         <x-admin.badge :color="$quote->lead->stage->badgeColor()">{{ $quote->lead->stage->name }}</x-admin.badge>
                     </a>
                 @endif
+                <div class="mt-4 space-y-3 border-t border-gray-100 pt-4 dark:border-gray-800">
+                    <p class="text-theme-xs font-medium text-gray-500">As printed on this quotation <span class="font-normal">(blank a field to use the contact's own details)</span></p>
+                    <x-admin.field label="Client name" for="client.name">
+                        <input id="client.name" type="text" wire:model.live.blur="client.name" @disabled($ro) class="wx-input">
+                    </x-admin.field>
+                    <x-admin.field label="Company" for="client.company">
+                        <input id="client.company" type="text" wire:model.live.blur="client.company" @disabled($ro) class="wx-input">
+                    </x-admin.field>
+                    <x-admin.field label="Phone" for="client.phone">
+                        <input id="client.phone" type="text" wire:model.live.blur="client.phone" @disabled($ro) class="wx-input">
+                    </x-admin.field>
+                    <x-admin.field label="Email" for="client.email">
+                        <input id="client.email" type="text" wire:model.live.blur="client.email" @disabled($ro) class="wx-input">
+                    </x-admin.field>
+                    <x-admin.field label="Client address" for="client.address">
+                        <input id="client.address" type="text" wire:model.live.blur="client.address" @disabled($ro) class="wx-input">
+                    </x-admin.field>
+                </div>
             </x-admin.card>
 
             <x-admin.card title="Details">
@@ -415,12 +434,62 @@
                     <x-admin.field label="Valid until" for="details.valid_until" hint="Default {{ app(\App\Settings\SalesSettings::class)->quote_validity_days }} days from today.">
                         <input id="details.valid_until" type="date" wire:model.live.blur="details.valid_until" @disabled($ro) class="wx-input">
                     </x-admin.field>
+                    <x-admin.field label="Type" for="details.type" hint="Printed in the project details box.">
+                        <input id="details.type" type="text" list="quote-types" wire:model.live.blur="details.type" @disabled($ro) placeholder="e.g. Renovation" class="wx-input">
+                        <datalist id="quote-types">
+                            @foreach (['Renovation', 'Civil Work', 'Interior Designing', 'Interior', 'Fit-out', 'Architecture'] as $typeOption)
+                                <option value="{{ $typeOption }}"></option>
+                            @endforeach
+                        </datalist>
+                    </x-admin.field>
+                    <x-admin.field label="Site" for="details.site">
+                        <input id="details.site" type="text" wire:model.live.blur="details.site" @disabled($ro) placeholder="e.g. DHA Phase 6, Lahore" class="wx-input">
+                    </x-admin.field>
+                    <x-admin.field label="Intro line on the summary page" for="details.intro_line" hint="Printed above the summary of cost. Optional.">
+                        <textarea id="details.intro_line" rows="2" wire:model.live.blur="details.intro_line" @disabled($ro) placeholder="Thank you for the opportunity. Please find below our quotation for the renovation work." class="wx-input"></textarea>
+                    </x-admin.field>
                     <dl class="grid grid-cols-2 gap-3 text-theme-sm">
                         <div><dt class="text-theme-xs text-gray-500">Number</dt><dd>{{ $quote->label() }}</dd></div>
                         <div><dt class="text-theme-xs text-gray-500">Line</dt><dd>{{ $quote->business_line->label() }}</dd></div>
                         <div><dt class="text-theme-xs text-gray-500">Template</dt><dd>{{ $quote->template->name ?? 'Blank' }}</dd></div>
                         <div><dt class="text-theme-xs text-gray-500">Owner</dt><dd>{{ $quote->owner->name ?? '—' }}</dd></div>
                     </dl>
+                </div>
+            </x-admin.card>
+
+            <x-admin.card title="PDF design" description="For this quotation only. Brand defaults live in Document design.">
+                <div class="space-y-4">
+                    <x-admin.field label="Design" for="pdfTheme">
+                        <select id="pdfTheme" wire:model.live="pdfTheme" @disabled($ro) class="wx-input">
+                            @foreach ($themes as $themeKey => $themeLabel)
+                                <option value="{{ $themeKey }}">{{ $themeLabel }}</option>
+                            @endforeach
+                        </select>
+                    </x-admin.field>
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <span class="wx-label">PDF blocks</span>
+                            <button type="button" wire:click="resetQuoteBlocks" @disabled($ro) class="text-theme-xs font-medium text-gray-500 hover:text-gray-900 disabled:opacity-40 dark:hover:text-white">Reset order</button>
+                        </div>
+                        <p class="mt-1 text-theme-xs text-gray-500">Blocks print top to bottom. Move with the arrows, untick to hide. Items and totals always print.</p>
+                        <ul class="mt-2 divide-y divide-gray-100 rounded-lg border border-gray-200 dark:divide-gray-800 dark:border-gray-700">
+                            @foreach ($quoteBlocks as $i => $block)
+                                @php $locked = in_array($block['key'], $lockedBlocks, true); @endphp
+                                <li class="flex items-center gap-2 px-2.5 py-1.5" wire:key="quote-block-{{ $block['key'] }}">
+                                    <span class="flex flex-col leading-none">
+                                        <button type="button" wire:click="moveQuoteBlock({{ $i }}, -1)" @disabled($ro || $loop->first) class="px-1 text-gray-400 hover:text-gray-900 disabled:opacity-30 dark:hover:text-white" aria-label="Move {{ $blockLabels[$block['key']] }} up">↑</button>
+                                        <button type="button" wire:click="moveQuoteBlock({{ $i }}, 1)" @disabled($ro || $loop->last) class="px-1 text-gray-400 hover:text-gray-900 disabled:opacity-30 dark:hover:text-white" aria-label="Move {{ $blockLabels[$block['key']] }} down">↓</button>
+                                    </span>
+                                    <span class="flex-1 text-theme-sm {{ $block['visible'] ? 'text-gray-900 dark:text-white' : 'text-gray-400 line-through' }}">{{ $blockLabels[$block['key']] }}</span>
+                                    @if ($locked)
+                                        <span class="text-theme-xs text-gray-400">Always shown</span>
+                                    @else
+                                        <input type="checkbox" wire:model.live="quoteBlocks.{{ $i }}.visible" @disabled($ro) class="wx-checkbox" aria-label="Show {{ $blockLabels[$block['key']] }}">
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
                 </div>
             </x-admin.card>
 
@@ -720,5 +789,18 @@
                 @endforelse
             </div>
         </x-admin.modal>
+    @endif
+
+    @if ($showPreview)
+        <div class="fixed inset-y-0 right-0 z-40 flex w-full max-w-3xl flex-col bg-white shadow-2xl dark:bg-gray-900" role="dialog" aria-label="Live preview">
+            <div class="flex items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-800">
+                <p class="text-theme-sm font-medium text-gray-900 dark:text-white">Live preview <span class="font-normal text-gray-400">· {{ $themes[$pdfTheme] }} · updates as you edit</span></p>
+                <div class="flex shrink-0 gap-2">
+                    <x-admin.button size="sm" variant="secondary" icon="file" :href="route('admin.quotes.pdf', $quote)" x-on:click.prevent="$dispatch('document-preview', { url: $el.href })">Preview PDF</x-admin.button>
+                    <x-admin.button size="sm" variant="ghost" wire:click="$set('showPreview', false)">Close</x-admin.button>
+                </div>
+            </div>
+            <iframe wire:key="quote-live-preview" x-data x-on:preview-refresh.window.debounce.800ms="const u = $event.detail.url || ($event.detail[0] && $event.detail[0].url); if (u) $el.src = u" src="{{ route('admin.quotes.pdf', $quote) }}" class="min-h-0 flex-1 bg-gray-100" title="Quotation live preview"></iframe>
+        </div>
     @endif
 </div>

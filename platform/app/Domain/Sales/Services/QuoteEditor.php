@@ -29,7 +29,7 @@ final class QuoteEditor
 {
     /** @var list<string> */
     private const DETAIL_FIELDS = [
-        'title', 'valid_until', 'discount_type', 'discount_value', 'other_charges_label', 'other_charges_minor',
+        'title', 'type', 'site', 'intro_line', 'valid_until', 'discount_type', 'discount_value', 'other_charges_label', 'other_charges_minor',
         'tax_bp', 'terms', 'notes', 'internal_notes', 'scope_html', 'signatories',
     ];
 
@@ -61,6 +61,61 @@ final class QuoteEditor
     {
         $this->change($quote, function () use ($quote): void {
             $quote->meta = array_merge($quote->meta ?? [], ['document_design' => app(DocumentStyles::class)->copy($quote->business_line)]);
+            $quote->save();
+        });
+    }
+
+    /**
+     * Per-quotation PDF design (Slice S): theme and/or block order edited in the builder, merged into the
+     * design copy this quote carries. Blocks are normalized through DocumentStyles (locked blocks stay
+     * visible); the brand master in Document design is never touched.
+     *
+     * @param  array{pdf_theme?: mixed, quote_blocks?: mixed}  $patch
+     */
+    public function updateDocumentDesign(Quote $quote, array $patch): void
+    {
+        $this->change($quote, function () use ($quote, $patch): void {
+            $design = $quote->meta['document_design'] ?? app(DocumentStyles::class)->copy($quote->business_line);
+
+            if (array_key_exists('pdf_theme', $patch)) {
+                $design['pdf_theme'] = DocumentStyles::theme($patch['pdf_theme']);
+            }
+
+            if (array_key_exists('quote_blocks', $patch)) {
+                $design['quote_blocks'] = DocumentStyles::blocks('quote', $patch['quote_blocks']);
+            }
+
+            $quote->meta = [...($quote->meta ?? []), 'document_design' => $design];
+            $quote->save();
+        });
+    }
+
+    /**
+     * How the client prints on THIS quotation (Slice S). Overrides live on the quote; the contact record
+     * is never mutated from the builder. An empty value clears the override (contact shows through).
+     *
+     * @param  array<string, mixed>  $override
+     */
+    public function updateClientOverride(Quote $quote, array $override): void
+    {
+        $this->change($quote, function () use ($quote, $override): void {
+            $current = is_array($quote->meta['client_override'] ?? null) ? $quote->meta['client_override'] : [];
+
+            foreach (['name', 'company', 'phone', 'email', 'address'] as $key) {
+                if (! array_key_exists($key, $override)) {
+                    continue;
+                }
+
+                $value = mb_substr(trim((string) $override[$key]), 0, 200);
+
+                if ($value === '') {
+                    unset($current[$key]);
+                } else {
+                    $current[$key] = $value;
+                }
+            }
+
+            $quote->meta = [...($quote->meta ?? []), 'client_override' => $current];
             $quote->save();
         });
     }

@@ -29,6 +29,7 @@ use App\Domain\Sales\Models\QuoteMilestone;
 use App\Domain\Sales\Models\QuoteSection;
 use App\Domain\Sales\Models\QuoteTemplate;
 use App\Domain\Sales\Models\QuoteVersion;
+use App\Domain\Sales\Services\DocumentStyles;
 use App\Domain\Sales\Services\QuoteApprovalRules;
 use App\Domain\Sales\Services\QuoteDiff;
 use App\Domain\Sales\Services\QuoteEditor;
@@ -82,6 +83,18 @@ class QuoteBuilder extends Component
     public array $details = [];
 
     public string $plan = '';
+
+    /** Live preview drawer (Slice S). */
+    public bool $showPreview = false;
+
+    /** Per-quotation PDF design (Slice S): theme for this quote only. */
+    public string $pdfTheme = 'classic';
+
+    /** @var list<array{key: string, visible: bool}> Per-quotation PDF block order/visibility. */
+    public array $quoteBlocks = [];
+
+    /** @var array<string, string> The client as printed on this quotation (name/company/phone/email/address). */
+    public array $client = [];
 
     // Rate book picker
     public bool $showCatalog = false;
@@ -149,8 +162,13 @@ class QuoteBuilder extends Component
             'milestones' => $this->saveMilestone((int) $key, $field),
             'details' => $this->saveDetail($key),
             'plan' => $this->savePlan(),
+            'quoteBlocks' => $this->saveQuoteBlocks(),
+            'pdfTheme' => $this->savePdfTheme(),
+            'client' => $this->saveClient($key),
             default => null,
         };
+
+        $this->touchPreview();
     }
 
     // ----- Sections -----------------------------------------------------------------------------------------
@@ -290,6 +308,80 @@ class QuoteBuilder extends Component
             $this->refreshAll();
             $this->toast('Current brand design copied into this draft.');
         });
+    }
+
+    // ----- PDF design & live preview (Slice S) ---------------------------------------------------------------
+
+    public function moveQuoteBlock(int $index, int $direction): void
+    {
+        $target = $index + ($direction < 0 ? -1 : 1);
+
+        if (! isset($this->quoteBlocks[$index], $this->quoteBlocks[$target])) {
+            return;
+        }
+
+        [$this->quoteBlocks[$index], $this->quoteBlocks[$target]] = [$this->quoteBlocks[$target], $this->quoteBlocks[$index]];
+        $this->quoteBlocks = array_values($this->quoteBlocks);
+        $this->saveQuoteBlocks();
+    }
+
+    public function resetQuoteBlocks(): void
+    {
+        $this->quoteBlocks = DocumentStyles::blocks('quote', null);
+        $this->saveQuoteBlocks();
+    }
+
+    private function savePdfTheme(): void
+    {
+        $this->saveField('pdfTheme', function (): void {
+            $this->editor()->updateDocumentDesign($this->quote, ['pdf_theme' => $this->pdfTheme]);
+        });
+    }
+
+    private function saveQuoteBlocks(): void
+    {
+        $saved = $this->saveField('quoteBlocks', function (): void {
+            $this->editor()->updateDocumentDesign($this->quote, ['quote_blocks' => $this->quoteBlocks]);
+        });
+
+        if ($saved) {
+            $this->quoteBlocks = DocumentStyles::blocks('quote', $this->quote->meta['document_design']['quote_blocks'] ?? null);
+            $this->touchPreview();
+        }
+    }
+
+    private function saveClient(string $field): void
+    {
+        if (! in_array($field, ['name', 'company', 'phone', 'email', 'address'], true)) {
+            return;
+        }
+
+        $value = trim((string) ($this->client[$field] ?? ''));
+        $quote = $this->quote;
+
+        $this->saveField("client.{$field}", function () use ($quote, $field, $value): void {
+            $this->editor()->updateClientOverride($quote, [$field => $value === $this->contactValue($quote, $field) ? '' : $value]);
+        });
+    }
+
+    /** What the contact record itself prints for a client field (before any per-quote override). */
+    private function contactValue(Quote $quote, string $field): string
+    {
+        $contact = $quote->contact;
+
+        return match ($field) {
+            'company' => (string) ($quote->company->name ?? $contact->company->name ?? ''),
+            'address' => trim(implode(', ', array_filter([$contact->area ?? null, $contact->city ?? null]))),
+            default => (string) $contact->{$field},
+        };
+    }
+
+    /** Asks the open preview iframe to reload (debounced in the browser); the PDF renders from saved state. */
+    private function touchPreview(): void
+    {
+        if ($this->showPreview) {
+            $this->dispatch('preview-refresh', url: route('admin.quotes.pdf', $this->quoteId).'?v='.now()->timestamp);
+        }
     }
 
     // ----- Milestones ---------------------------------------------------------------------------------------
@@ -541,6 +633,9 @@ class QuoteBuilder extends Component
             'editable' => $quote->isEditable() && $this->user()->can('update', $quote),
             'lakh' => $settings->lakh_grouping,
             'signatoryOptions' => $this->signatoryOptions(),
+            'themes' => DocumentStyles::THEMES,
+            'blockLabels' => DocumentStyles::QUOTE_BLOCKS,
+            'lockedBlocks' => DocumentStyles::LOCKED_BLOCKS['quote'],
             'units' => Unit::options(),
             'plans' => MilestonePlanKey::options(),
             'lineCount' => $items->count(),
@@ -694,6 +789,9 @@ class QuoteBuilder extends Component
         $saved = $this->saveField("details.{$field}", function () use ($quote, $field, $raw): void {
             $this->editor()->updateDetails($quote, match ($field) {
                 'title' => ['title' => $raw !== '' ? mb_substr($raw, 0, 200) : throw new InvalidArgumentException('Give the quotation a title.')],
+                'type' => ['type' => $raw !== '' ? mb_substr($raw, 0, 60) : null],
+                'site' => ['site' => $raw !== '' ? mb_substr($raw, 0, 160) : null],
+                'intro_line' => ['intro_line' => $raw !== '' ? mb_substr($raw, 0, 500) : null],
                 'valid_until' => ['valid_until' => $this->validUntil($raw)],
                 'discount_type' => ['discount_type' => DiscountType::tryFrom($raw), 'discount_value' => 0],
                 'discount_value' => ['discount_value' => $this->discountValue($quote->discount_type, $raw)],
@@ -828,12 +926,26 @@ class QuoteBuilder extends Component
 
         $this->details = $this->detailsState($quote);
         $this->plan = $quote->milestonePlan()->value;
+
+        $design = $quote->meta['document_design'] ?? null;
+        $this->pdfTheme = DocumentStyles::theme(is_array($design) ? ($design['pdf_theme'] ?? null) : null);
+        $this->quoteBlocks = DocumentStyles::blocks('quote', is_array($design) ? ($design['quote_blocks'] ?? null) : null);
+
+        $override = is_array($quote->meta['client_override'] ?? null) ? $quote->meta['client_override'] : [];
+        $this->client = [
+            'name' => (string) ($override['name'] ?? $this->contactValue($quote, 'name')),
+            'company' => (string) ($override['company'] ?? $this->contactValue($quote, 'company')),
+            'phone' => (string) ($override['phone'] ?? $this->contactValue($quote, 'phone')),
+            'email' => (string) ($override['email'] ?? $this->contactValue($quote, 'email')),
+            'address' => (string) ($override['address'] ?? $this->contactValue($quote, 'address')),
+        ];
     }
 
     private function refreshAll(): void
     {
         unset($this->quote);
         $this->fillForm();
+        $this->touchPreview();
     }
 
     /**
@@ -864,6 +976,9 @@ class QuoteBuilder extends Component
     {
         return [
             'title' => $quote->title,
+            'type' => (string) $quote->type,
+            'site' => (string) $quote->site,
+            'intro_line' => (string) $quote->intro_line,
             'valid_until' => $quote->valid_until?->format('Y-m-d') ?? '',
             'discount_type' => $quote->discount_type->value ?? '',
             'discount_value' => match ($quote->discount_type) {

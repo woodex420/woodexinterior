@@ -55,17 +55,26 @@ final class QuoteSnapshot
             'label' => $quote->number.(($revision ?? $quote->revision) > 0 ? ' R'.($revision ?? $quote->revision) : '')
                 .($quote->option_label !== '' && $quote->option_label !== null ? ' · '.$quote->option_label : ''),
             'title' => $quote->title,
+            'type' => $quote->type,
+            'site' => $quote->site,
+            'intro_line' => $quote->intro_line,
             'business_line' => $quote->business_line->value,
             'issued_on' => now()->toDateString(),
             'valid_until' => $quote->valid_until?->toDateString(),
             'currency' => $quote->currency,
-            'client' => [
-                'name' => $contact->name,
-                'company' => $quote->company->name ?? $contact->company?->name,
-                'phone' => $contact->phone,
-                'email' => $contact->email,
-                'address' => trim(implode(', ', array_filter([$contact->area ?? null, $contact->city ?? null]))),
-            ],
+            // Builder "as printed" overrides (Slice S) win over the contact for this document only.
+            'client' => (function () use ($quote, $contact): array {
+                $override = is_array($quote->meta['client_override'] ?? null) ? $quote->meta['client_override'] : [];
+                $pick = static fn (string $key, ?string $fallback): ?string => trim((string) ($override[$key] ?? '')) !== '' ? (string) $override[$key] : $fallback;
+
+                return [
+                    'name' => $pick('name', $contact->name),
+                    'company' => $pick('company', $quote->company->name ?? $contact->company?->name),
+                    'phone' => $pick('phone', $contact->phone),
+                    'email' => $pick('email', $contact->email),
+                    'address' => $pick('address', trim(implode(', ', array_filter([$contact->area ?? null, $contact->city ?? null])))),
+                ];
+            })(),
             'scope_html' => Html::sanitize($quote->scope_html),
             'sections' => $quote->sections->map(fn (QuoteSection $section): array => [
                 'name' => $section->name,

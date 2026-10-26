@@ -116,7 +116,7 @@ existing bank columns: `kind`, `wallet_provider`, `branch_code`), Accepted-by-cl
 the invoice document. *Schema: none* (snapshot keys only). Proof: byte-level renders of WI-10100 before/after
 + block tests. **← recommended first: it is what clients actually see.**
 
-**Slice S — Builder live preview + per-quote blocks.** Right-pane **live HTML preview** (same blade partials
+**Slice S — Builder live preview + per-quote blocks.** ✅ **Shipped 26 Oct 2026** (MASTER_TODO Step 43). Right-pane **live HTML preview** (same blade partials
 as the PDF, refreshed on change — no PDF cost per keystroke) with layout label; **per-quote PDF blocks panel**
 (↑↓ + toggles + Reset order, seeded from the brand design, stored on the quote, frozen into the snapshot);
 builder fields **Type, Site, Intro line** (+ project title exists as `title`); inline client display edit
@@ -152,7 +152,7 @@ in the document design; public estimator and bot keep the same rates (single sou
 signature-verified webhook → inbox/leads, delivery truth), social Settings connect, planner publish +
 Comments from connected pages. *Blocked for live proof until the owner provides Page ID + token.*
 
-**Order: R ✅ → S → V → T → U → W → X** (owner picked R first, 26 Oct). R+S deliver the owner's headline ask ("match the PDF,
+**Order: R ✅ → S ✅ → V → T → U → W → X** (owner picked R first, 26 Oct). R+S deliver the owner's headline ask ("match the PDF,
 blocks drag & switch"); V is the daily-driver; T/U are structured-data completions; W unifies; X waits on
 Meta credentials anyway.
 

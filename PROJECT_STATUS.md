@@ -9,7 +9,7 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,472 passed · 1 skipped · 7,893 assertions** · Pint clean on touched files · PHPStan 0 errors |
+| Tests | **1,478 passed · 1 skipped · 7,918 assertions** · Pint clean on touched files · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
@@ -43,6 +43,8 @@ only on the real bot token in the server `.env`.
 **Slice B (same day).** Client Portal and Handovers stopped being `P4b` badges and became real screens (signed portal links; handover progress), Chat Bot opens its live switches on Settings, the duplicate Alert Rules is gone, the eleven System entries became four pages with tabs, and the rate book moved to Sales as **Estimator rates**. 12 more tests; suite **1,296 passed / 1 skipped**.
 
 **Slice E (26 October).** Invoices now raise themselves. `woodex:invoice-milestones` bills every milestone an accepted quotation has reached — hourly, once per milestone, with the same number, tax, PDF and ledger posting as the advance invoice — and `woodex:invoice-reminders` runs the 7/14/30-day ladder, one rung per invoice, messaging the client on WhatsApp only with consent and telling the studio why when it cannot. Both are on the Automation screen with their cadence and switches. 10 more tests; suite **1,332 passed · 1 skipped · 7,165 assertions**.
+
+**Slice S — builder live preview, per-quotation PDF design (26 October).** The quote builder now has a **Live preview** drawer showing the real PDF as you edit, and each quotation carries its **own PDF theme and block order** (move blocks up/down, hide them, reset) without touching the brand defaults in Document design. New printing fields — **Type**, **Site** and an **intro line** above the summary — plus "as printed" client details that override the contact for one document only. 6 more tests; suite **1,478 passed · 1 skipped · 7,918 assertions**. Live proof: the demo draft restyled to Premium with Terms before the BOQ, rendered and checked, then restored.
 
 **Slice R — quotation & invoice design match, Classic BOQ (26 October).** Both client documents now follow the v2.1 Pro layout the owner shared as PDFs: a **Summary of cost** first page (total area and per-sft rates where a section is fully sft-priced, dashes otherwise), amount-in-words box + TOTAL pill, the detailed BOQ as one table per section with 1.1-style numbering, bank details with branch code beside a **Mobile wallets** box (JazzCash/Easypaisa), an accepted-by-client signature block, and the contact footer. Summary of cost is a normal PDF block — move or hide it in Document design like any other; designs saved earlier gain it automatically. 4 more tests; suite **1,472 passed · 1 skipped · 7,893 assertions**. Proof renders of the demo quotation and a manual invoice were inspected page-by-page against the owner's PDFs (fake account numbers; preview restored afterwards).
 

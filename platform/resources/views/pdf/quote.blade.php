@@ -132,6 +132,8 @@
             <div class="box">
                 <div class="boxlabel">Project details</div>
                 <div><span class="muted">Project</span>&nbsp;&nbsp;{{ ($s['title'] ?? '') !== '' ? $s['title'] : '—' }}</div>
+                @if (! empty($s['type']))<div style="margin-top: 2px;"><span class="muted">Type</span>&nbsp;&nbsp;{{ $s['type'] }}</div>@endif
+                @if (! empty($s['site']))<div style="margin-top: 2px;"><span class="muted">Site</span>&nbsp;&nbsp;{{ $s['site'] }}</div>@endif
                 @if ($s['prepared_by'])<div class="muted" style="margin-top: 2px;">Prepared by {{ $s['prepared_by'] }}</div>@endif
             </div>
         </td>

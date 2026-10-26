@@ -19,6 +19,7 @@
 @endphp
 @if ($rows !== [])
 <h2>Summary of cost</h2>
+@if (! empty($s['intro_line']))<p style="margin: 0 0 8px;">{{ $s['intro_line'] }}</p>@endif
 <table class="lines">
     <thead>
         <tr>
