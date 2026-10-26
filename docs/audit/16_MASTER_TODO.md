@@ -2423,3 +2423,17 @@ group — board assertions must target the group actually rendered.
 
 **Next.** Slice Q — Facebook Pages connect (build against the fake; live proof needs the owner's Page ID +
 token). Slice N stays blocked on the Google key; invoice *import sheet* awaits its own yes/no.
+
+### Step 41 — master plan 34: quotation/invoice/leads/estimations/marketing gap analysis (26 Oct 2026)
+
+The owner sent 10 v2.1 Pro screenshots + 2 PDFs (interior WI-10101 Classic BOQ, furniture WF-10185 Excel
+template) and asked for a complete what's-missing report + master plan before more building. Both PDFs were
+rendered and read, our own current quotation PDF was rendered from the preview for a true side-by-side, and
+every named screen was audited in code. Findings live in `docs/audit/34_QUOTATION_INVOICE_LEADS_MASTER_PLAN_2026-10-26.md`:
+the client-facing **Summary of cost** block and per-section BOQ structure are the top document gaps, followed
+by builder live preview + per-quote PDF blocks, quotation types/template cards, six invoice fields (PO #,
+delivery date, payment condition…), the leads side-panel redevelopment (our drawer is view-only; CSV import
+has no screen), one unified Estimations hub (estimator rates and estimates currently live in two homes), and
+Marketing connections (existing Slice Q, token-blocked). Slices **R→S→V→T→U→W→X** proposed, R (PDF design
+match) recommended first. Schema asks inside the plan: nullable quote `type/site/intro_line`, six nullable
+invoice columns, template `category` — all pending the owner's pick. No code changed in this step.
