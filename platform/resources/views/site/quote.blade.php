@@ -5,6 +5,9 @@
     $money = fn (int $minor) => Money::ofMinor($minor)->format($lakh);
     $qty = fn (string $q) => rtrim(rtrim(number_format((float) $q, 3, '.', ','), '0'), '.');
     $t = $s['totals'];
+    $currentFurniture = ($s['business_line'] ?? '') === 'furniture' && (int) ($s['furniture_revision'] ?? 1) >= 5;
+    $currentIdentity = $currentFurniture || (($s['business_line'] ?? '') !== 'furniture' && (int) ($s['interior_revision'] ?? 1) >= 3);
+    $displayBrand = $currentIdentity ? ($s['document_design']['brand_name'] ?? $s['company']['brand']) : $s['company']['brand'];
     $valid = $s['valid_until'] ? \Carbon\CarbonImmutable::parse($s['valid_until']) : null;
     $daysLeft = $valid ? (int) today()->diffInDays($valid, false) : null;
     $status = $quote->status;
@@ -19,14 +22,23 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="referrer" content="no-referrer">
     <meta name="theme-color" content="#0f1e36">
-    <title>Quotation {{ $s['label'] }} · {{ $s['company']['brand'] }}</title>
+    <title>Quotation {{ $s['label'] }} · {{ $displayBrand }}</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     @vite(['resources/css/site.css'])
 </head>
 <body class="bg-sand-50">
     <header class="bg-navy-900 text-white">
         <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-5 md:px-8">
-            <x-brand-logo subtitle="INTERIOR STUDIO" class="text-white" />
+            @if ($currentIdentity)
+                <span class="inline-flex items-center gap-2.5 text-white">
+                    @if (!empty($s['document_design']['logo_data_uri']) && preg_match('/^data:image\/(png|jpeg);base64,[A-Za-z0-9+\/=]+$/', $s['document_design']['logo_data_uri']))
+                        <img src="{{ $s['document_design']['logo_data_uri'] }}" alt="{{ $displayBrand }} logo" style="width:40px;height:40px;object-fit:contain;background:#fff;padding:4px;border-radius:4px">
+                    @endif
+                    <span class="font-heading text-xl">{{ $displayBrand }}</span>
+                </span>
+            @else
+                <x-brand-logo :subtitle="($s['business_line'] ?? '') === 'furniture' ? 'FURNITURE' : 'INTERIOR STUDIO'" class="text-white" />
+            @endif
             @if ($whatsapp)
                 <a href="{{ $whatsapp }}" target="_blank" rel="noopener" class="btn-studio">Ask on WhatsApp <span aria-hidden="true">↗</span></a>
             @endif
@@ -127,22 +139,31 @@
             <dl class="mt-8 ml-auto max-w-sm space-y-2 text-sm">
                 <div class="flex justify-between"><dt>Subtotal</dt><dd class="text-ink">{{ $money($t['subtotal_minor']) }}</dd></div>
                 @if ($t['discount_minor'] > 0)<div class="flex justify-between"><dt>{{ $t['discount_label'] }}</dt><dd class="text-ink">− {{ $money($t['discount_minor']) }}</dd></div>@endif
-                @if ($t['other_charges_minor'] > 0)<div class="flex justify-between"><dt>{{ $t['other_charges_label'] }}</dt><dd class="text-ink">{{ $money($t['other_charges_minor']) }}</dd></div>@endif
+                @if ($currentFurniture)
+                    @if ($t['other_charges_minor'] + ($t['shipping_minor'] ?? 0) !== 0)<div class="flex justify-between"><dt>Rent / Transport</dt><dd class="text-ink">{{ $money($t['other_charges_minor'] + ($t['shipping_minor'] ?? 0)) }}</dd></div>@endif
+                @else
+                    @if ($t['other_charges_minor'] > 0)<div class="flex justify-between"><dt>{{ $t['other_charges_label'] }}</dt><dd class="text-ink">{{ $money($t['other_charges_minor']) }}</dd></div>@endif
+                @endif
                 @if ($t['tax_minor'] > 0)<div class="flex justify-between"><dt>Tax</dt><dd class="text-ink">{{ $money($t['tax_minor']) }}</dd></div>@endif
-                @if ($t['rounding_minor'] !== 0)<div class="flex justify-between"><dt>Rounding</dt><dd class="text-ink">{{ $money($t['rounding_minor']) }}</dd></div>@endif
+                @if ($t['rounding_minor'] !== 0)<div class="flex justify-between"><dt>{{ $currentFurniture ? 'Previous adjustment' : 'Rounding' }}</dt><dd class="text-ink">{{ $money($t['rounding_minor']) }}</dd></div>@endif
                 <div class="flex justify-between border-t border-line pt-3 text-base font-medium text-ink"><dt>Total</dt><dd>{{ $money($t['total_minor']) }}</dd></div>
             </dl>
-            <p class="mt-2 text-right text-sm text-muted italic">{{ $t['total_words'] }}</p>
+            @unless ($currentFurniture)<p class="mt-2 text-right text-sm text-muted italic">{{ $t['total_words'] }}</p>@endunless
         </section>
 
         <div class="mt-8 grid gap-8 md:grid-cols-2">
-            @if ($s['milestones'] !== [])
+            @if ($currentFurniture || $s['milestones'] !== [])
                 <section class="rounded-3xl bg-white p-6 ring-1 ring-line md:p-8">
                     <h2 class="text-2xl">Payment schedule</h2>
                     <ul class="mt-4 divide-y divide-line text-sm">
+                        @if ($currentFurniture)
+                            <li class="flex justify-between gap-4 py-2.5"><span>Advance with work order · {{ $qty((string) ($t['advance_bp'] / 100)) }}%</span><span class="font-medium text-ink">{{ $money($t['advance_minor']) }}</span></li>
+                            <li class="flex justify-between gap-4 py-2.5"><span>Remaining after advance · {{ $qty((string) ((10000 - $t['advance_bp']) / 100)) }}%</span><span class="font-medium text-ink">{{ $money($t['after_advance_minor']) }}</span></li>
+                        @else
                         @foreach ($s['milestones'] as $milestone)
                             <li class="flex justify-between gap-4 py-2.5"><span>{{ $milestone['name'] }} · {{ rtrim(rtrim(number_format($milestone['percent_bp'] / 100, 2), '0'), '.') }}%</span><span class="font-medium text-ink">{{ $money($milestone['amount_minor']) }}</span></li>
                         @endforeach
+                        @endif
                     </ul>
                 </section>
             @endif
@@ -150,7 +171,11 @@
                 <section class="rounded-3xl bg-white p-6 ring-1 ring-line md:p-8">
                     <h2 class="text-2xl">Terms</h2>
                     <ol class="mt-4 list-decimal space-y-1.5 pl-5 text-sm">
-                        @foreach ($s['terms'] as $term)<li>{{ $term }}</li>@endforeach
+                        @if ($currentFurniture)
+                            @foreach (\App\Domain\Sales\Services\FurnitureDocument::commercialTerms($s) as [$label, $value])<li><strong>{{ $label }}:</strong> {{ $value }}</li>@endforeach
+                        @else
+                            @foreach ($s['terms'] as $term)<li>{{ $term }}</li>@endforeach
+                        @endif
                     </ol>
                 </section>
             @endif

@@ -9,6 +9,7 @@
  */
 import 'preline/plugins/dropdown';
 import { registerQuoteWorkbench } from './admin/quote-workbench';
+import { registerDocumentPreview } from './admin/document-preview';
 
 const PRELINE_PLUGINS = ['HSDropdown'];
 
@@ -20,6 +21,7 @@ const initPreline = () => {
 document.addEventListener('alpine:init', () => {
     const Alpine = window.Alpine;
     registerQuoteWorkbench(Alpine);
+    registerDocumentPreview(Alpine);
 
     Alpine.store('sidebar', {
         expanded: true,

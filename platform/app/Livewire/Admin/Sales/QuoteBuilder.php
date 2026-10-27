@@ -316,6 +316,22 @@ class QuoteBuilder extends Component
 
     // ----- PDF design & live preview (Slice S) ---------------------------------------------------------------
 
+    public function toggleQuoteBlock(int $index): void
+    {
+        if (! isset($this->quoteBlocks[$index])) {
+            return;
+        }
+        $this->quoteBlocks[$index]['visible'] = ! $this->quoteBlocks[$index]['visible'];
+        $this->saveQuoteBlocks();
+    }
+
+    public function toggleFurnitureOption(string $field): void
+    {
+        abort_unless(isset(FurnitureDocument::OPTIONS[$field]), 422);
+        $this->details[$field] = ($this->details[$field] ?? 'yes') === 'yes' ? 'no' : 'yes';
+        $this->saveDetail($field);
+    }
+
     public function moveQuoteBlock(int $index, int $direction): void
     {
         $target = $index + ($direction < 0 ? -1 : 1);
@@ -331,7 +347,7 @@ class QuoteBuilder extends Component
 
     public function resetQuoteBlocks(): void
     {
-        $this->quoteBlocks = DocumentStyles::quoteLayoutBlocks($this->quoteLayout);
+        $this->quoteBlocks = DocumentStyles::quoteLayoutBlocks($this->quoteLayout, DocumentStyles::flexible($this->quote->meta['document_design'] ?? null));
         $this->saveQuoteBlocks();
     }
 
@@ -342,8 +358,8 @@ class QuoteBuilder extends Component
                 throw new InvalidArgumentException('Choose a quotation layout.');
             }
             $oldLayout = DocumentStyles::quoteLayout($this->quote->meta['document_design']['quote_layout'] ?? null);
-            $blocks = $this->quoteBlocks === DocumentStyles::quoteLayoutBlocks($oldLayout)
-                ? DocumentStyles::quoteLayoutBlocks($this->quoteLayout) : $this->quoteBlocks;
+            $blocks = $this->quoteBlocks === DocumentStyles::quoteLayoutBlocks($oldLayout, DocumentStyles::flexible($this->quote->meta['document_design'] ?? null))
+                ? DocumentStyles::quoteLayoutBlocks($this->quoteLayout, DocumentStyles::flexible($this->quote->meta['document_design'] ?? null)) : $this->quoteBlocks;
             $this->editor()->updateDocumentDesign($this->quote, ['quote_layout' => $this->quoteLayout, 'quote_blocks' => $blocks]);
             $this->quoteBlocks = $blocks;
         });
@@ -363,7 +379,7 @@ class QuoteBuilder extends Component
         });
 
         if ($saved) {
-            $this->quoteBlocks = DocumentStyles::blocks('quote', $this->quote->meta['document_design']['quote_blocks'] ?? null);
+            $this->quoteBlocks = DocumentStyles::quotationBlocks($this->quote->meta['document_design']['quote_blocks'] ?? null, $this->quote->meta['document_design'] ?? null);
             $this->touchPreview();
         }
     }
@@ -674,7 +690,8 @@ class QuoteBuilder extends Component
             'themes' => DocumentStyles::THEMES,
             'layouts' => DocumentStyles::QUOTE_LAYOUTS,
             'blockLabels' => DocumentStyles::QUOTE_BLOCKS,
-            'lockedBlocks' => DocumentStyles::LOCKED_BLOCKS['quote'],
+            'lockedBlocks' => DocumentStyles::flexible($quote->meta['document_design'] ?? null) ? [] : DocumentStyles::LOCKED_BLOCKS['quote'],
+            'flexibleBlocks' => DocumentStyles::flexible($quote->meta['document_design'] ?? null),
             'units' => Unit::options(),
             'plans' => MilestonePlanKey::options(),
             'lineCount' => $items->count(),
@@ -685,7 +702,7 @@ class QuoteBuilder extends Component
             'descriptionTemplates' => $this->showDescriptions ? DescriptionTemplate::query()->where('is_active', true)->where('business_line', $quote->business_line->value === 'furniture' ? 'furniture' : 'interior')->when($this->descriptionSearch !== '', fn (Builder $q) => $q->where(fn (Builder $q) => $q->where('title', 'like', '%'.$this->descriptionSearch.'%')->orWhere('section', 'like', '%'.$this->descriptionSearch.'%')->orWhere('body', 'like', '%'.$this->descriptionSearch.'%')))->orderBy('section')->orderBy('title')->limit(30)->get() : collect(),
             'catalogItems' => $this->showCatalog ? $this->catalogResults() : collect(),
             'catalogCategories' => $this->showCatalog ? CatalogItem::query()->where('is_active', true)->distinct()->orderBy('category')->pluck('category') : collect(),
-            'templates' => $this->showTemplate ? QuoteTemplate::query()->orderBy('position')->get(['id', 'name']) : collect(),
+            'templates' => $this->showTemplate ? QuoteTemplate::query()->whereIn('business_line', $quote->business_line->value === 'furniture' ? ['furniture'] : ['interior', 'project'])->orderBy('position')->get(['id', 'name']) : collect(),
             'previewHtml' => $this->previewHtml(),
             ...$this->sendState($quote, $settings->lakh_grouping),
         ])->title($quote->label().' · '.$quote->title);
@@ -721,7 +738,9 @@ class QuoteBuilder extends Component
             'assessment' => $assessment,
             'approvedAsIs' => $assessment !== null && $assessment->needed && app(QuoteApprovalRules::class)->isApprovedAsIs($quote),
             'pendingApproval' => $quote->status === QuoteStatus::PendingApproval ? $this->pendingApproval() : null,
-            'portalUrl' => $versions->isNotEmpty() ? QuoteLinks::portal($quote) : null,
+            // Keep signed paths relative until the browser resolves its actual public origin.
+            'portalUrl' => $versions->isNotEmpty() ? QuoteLinks::signed('quotes.portal', $quote) : null,
+            'sharedPdfUrl' => $versions->isNotEmpty() ? QuoteLinks::signed('quotes.portal.pdf', $quote) : null,
             'whatsappShare' => $versions->isNotEmpty() ? QuoteLinks::whatsappShare($quote) : null,
             'clientComment' => $quote->status === QuoteStatus::ChangesRequested
                 ? ($quote->events()->where('type', 'changes_requested')->latest('occurred_at')->first()?->data['comment'] ?? null)
@@ -984,7 +1003,7 @@ class QuoteBuilder extends Component
         $design = $quote->meta['document_design'] ?? null;
         $this->quoteLayout = DocumentStyles::quoteLayout($quote->meta['document_design']['quote_layout'] ?? ($quote->business_line->value === 'furniture' ? 'furniture' : 'classic'));
         $this->pdfTheme = DocumentStyles::theme(is_array($design) ? ($design['pdf_theme'] ?? null) : null);
-        $this->quoteBlocks = DocumentStyles::blocks('quote', is_array($design) ? ($design['quote_blocks'] ?? null) : null);
+        $this->quoteBlocks = DocumentStyles::quotationBlocks(is_array($design) ? ($design['quote_blocks'] ?? null) : null, is_array($design) ? $design : null);
 
         $override = is_array($quote->meta['client_override'] ?? null) ? $quote->meta['client_override'] : [];
         $this->client = [

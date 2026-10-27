@@ -23,6 +23,11 @@ beforeEach(function () {
     $this->actingAs($this->owner);
     $this->client = Contact::factory()->create(['name' => 'Native preview client']);
     $this->quote = app(CreateQuote::class)->handle($this->client, BusinessLine::Interior, $this->owner);
+    // Explicit historical fixture: keep regression coverage for the pre-flexible document.
+    $meta = $this->quote->meta;
+    unset($meta['document_design']['quote_block_policy']);
+    $meta['document_design']['interior_revision'] = 2;
+    $this->quote->forceFill(['meta' => $meta])->save();
     $this->editor = app(QuoteEditor::class);
     $this->editor->updateLine($this->quote->items()->firstOrFail(), ['description' => 'Approved joinery', 'qty' => '2', 'unit' => 'sft', 'rate_minor' => 500000]);
 });

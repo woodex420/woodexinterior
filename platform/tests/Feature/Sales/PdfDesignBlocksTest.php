@@ -181,7 +181,7 @@ it('saves theme and blocks from the designer screen', function () {
         ->and($design->quote_blocks[1])->toBe(['key' => 'scope', 'visible' => false]);
 });
 
-it('keeps price and totals visible even when unticked, and resets order', function () {
+it('allows quotation price and totals to hide while preserving invoice requirements and reset order', function () {
     Livewire::test(DocumentDesigner::class)
         ->set('quoteBlocks.2.visible', false)
         ->set('quoteBlocks.3.visible', false)
@@ -189,8 +189,8 @@ it('keeps price and totals visible even when unticked, and resets order', functi
 
     $blocks = DocumentDesign::query()->where('business_line', 'interior')->firstOrFail()->quote_blocks;
 
-    expect(collect($blocks)->firstWhere('key', 'boq')['visible'])->toBeTrue()
-        ->and(collect($blocks)->firstWhere('key', 'totals')['visible'])->toBeTrue();
+    expect(collect($blocks)->firstWhere('key', 'boq')['visible'])->toBeFalse()
+        ->and(collect($blocks)->firstWhere('key', 'totals')['visible'])->toBeFalse();
 
     Livewire::test(DocumentDesigner::class)
         ->call('moveBlock', 'invoice', 2, 1)->assertSet('invoiceBlocks.3.key', 'terms')

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Services;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Validator;
 
 /** Safe furniture presentation and commercial text; never accepts arbitrary CSS or HTML. */
@@ -47,6 +48,43 @@ final class FurnitureDocument
                 continue;
             }
             $terms[] = $line;
+        }
+
+        return $terms;
+    }
+
+    /** Six default commercial rows, with custom conditions retained and dates/percentages from the snapshot.
+     * @param  array<string, mixed>  $snapshot
+     * @return list<array{string, string}>
+     */
+    public static function commercialTerms(array $snapshot): array
+    {
+        $text = self::text($snapshot['furniture'] ?? null);
+        $terms = [];
+        $validityAdded = false;
+        $validity = empty($snapshot['valid_until']) ? 'No expiry date specified.'
+            : 'Valid until '.CarbonImmutable::parse($snapshot['valid_until'])->format('d M Y').'.';
+        foreach ($snapshot['terms'] ?? [] as $index => $term) {
+            $label = $index === 0 ? 'Payment' : match ($term) {
+                'Materials, finish and fabric are subject to client approval.' => 'Materials',
+                'Delivery starts after advance confirmation and material approval.' => 'Delivery commencement',
+                'Quotation validity is shown above.' => 'Validity',
+                default => 'Additional condition',
+            };
+            if ($term === 'Quotation validity is shown above.') {
+                $term = $validity;
+                $validityAdded = true;
+            }
+            $terms[] = [$label, $term];
+        }
+        if (! $validityAdded) {
+            $terms[] = ['Validity', $validity];
+        }
+        if ($text['show_delivery'] === 'yes' && $text['delivery_text'] !== '') {
+            $terms[] = ['Delivery time', $text['delivery_text']];
+        }
+        if ($text['show_transport'] === 'yes' && $text['transport_text'] !== '') {
+            $terms[] = ['Transportation', $text['transport_text']];
         }
 
         return $terms;

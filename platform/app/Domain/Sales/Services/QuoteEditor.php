@@ -73,15 +73,25 @@ final class QuoteEditor
     public function applyDocumentDesign(Quote $quote): void
     {
         $this->change($quote, function () use ($quote): void {
-            $quote->meta = array_merge($quote->meta ?? [], ['document_design' => app(DocumentStyles::class)->quotationCopy($quote->business_line), 'furniture' => ['signatories_text' => FurnitureDocument::signatureText($quote->signatories ?: app(SalesSettings::class)->signatories), ...($quote->meta['furniture'] ?? [])]]);
+            $design = app(DocumentStyles::class)->quotationCopy($quote->business_line);
+            // Adopt legacy hidden closing sections once; current designs use only the common block controls.
+            if ($quote->business_line === BusinessLine::Furniture && ! DocumentStyles::flexible($quote->meta['document_design'] ?? null)) {
+                foreach ($design['quote_blocks'] as &$block) {
+                    $field = ['terms' => 'show_terms', 'notes' => 'show_notes', 'signatures' => 'show_signatories'][$block['key']] ?? null;
+                    if ($field !== null && ($quote->meta['furniture'][$field] ?? 'yes') === 'no') {
+                        $block['visible'] = false;
+                    }
+                }
+                unset($block);
+            }
+            $quote->meta = array_merge($quote->meta ?? [], ['document_design' => $design, 'furniture' => ['signatories_text' => FurnitureDocument::signatureText($quote->signatories ?: app(SalesSettings::class)->signatories), ...($quote->meta['furniture'] ?? [])]]);
             $quote->save();
         });
     }
 
     /**
      * Per-quotation PDF design (Slice S): theme and/or block order edited in the builder, merged into the
-     * design copy this quote carries. Blocks are normalized through DocumentStyles (locked blocks stay
-     * visible); the brand master in Document design is never touched.
+     * design copy this quote carries. DocumentStyles respects the frozen legacy/flexible block policy; the brand master in Document design is never touched.
      *
      * @param  array{pdf_theme?: mixed, quote_blocks?: mixed, quote_layout?: mixed}  $patch
      */
@@ -99,7 +109,7 @@ final class QuoteEditor
             }
 
             if (array_key_exists('quote_blocks', $patch)) {
-                $design['quote_blocks'] = DocumentStyles::blocks('quote', $patch['quote_blocks']);
+                $design['quote_blocks'] = DocumentStyles::quotationBlocks($patch['quote_blocks'], $design);
             }
 
             $quote->meta = [...($quote->meta ?? []), 'document_design' => $design];

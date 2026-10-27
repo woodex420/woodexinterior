@@ -54,7 +54,7 @@ final class SaveDocumentDesign
         }
         unset($data['logo'], $data['business_line']);
         if (array_key_exists('quote_blocks', $data)) {
-            $data['quote_blocks'] = DocumentStyles::blocks('quote', $data['quote_blocks']);
+            $data['quote_blocks'] = DocumentStyles::blocks('quote', $data['quote_blocks'], true);
         }
         if (array_key_exists('invoice_blocks', $data)) {
             $data['invoice_blocks'] = DocumentStyles::blocks('invoice', $data['invoice_blocks']);

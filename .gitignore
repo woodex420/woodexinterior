@@ -2,6 +2,8 @@
 woodex/generate.py
 woodex/README.md
 *.py
+# Version the isolated native-PDF QA source, not generated Python artifacts.
+!tools/sandbox/quotation-revision-pdf-check.py
 __pycache__/
 *.pyc
 

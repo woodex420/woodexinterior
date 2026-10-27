@@ -1,6 +1,11 @@
 # Woodex OS hardening (docs/06 §7)
 Options -Indexes
 
+# Locally bundled PDF.js ES-module worker; nosniff requires a JavaScript MIME type.
+<IfModule mod_mime.c>
+    AddType text/javascript .mjs
+</IfModule>
+
 # The original website is served as it is: its pages are real files in this folder (docs/11 §2), so a directory
 # request answers with the page's own index.html. Only when there is no file does the request reach the app.
 DirectoryIndex index.html index.php

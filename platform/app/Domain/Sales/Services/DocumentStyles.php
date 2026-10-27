@@ -28,9 +28,14 @@ final class DocumentStyles
     ];
 
     /** @return list<array{key: string, visible: bool}> */
-    public static function quoteLayoutBlocks(string $layout): array
+    public static function quoteLayoutBlocks(string $layout, bool $flexible = false): array
     {
         $blocks = self::blocks('quote', null);
+        if ($layout === 'furniture' && $flexible) {
+            $blocks[1]['visible'] = false;
+            $blocks[4]['visible'] = false;
+            [$blocks[2], $blocks[3]] = [$blocks[3], $blocks[2]];
+        }
         if ($layout === 'single') {
             $blocks[1]['visible'] = false;
             [$blocks[2], $blocks[3]] = [$blocks[3], $blocks[2]];
@@ -62,7 +67,7 @@ final class DocumentStyles
     public const QUOTE_BLOCKS = [
         'scope' => 'Scope of work',
         'summary' => 'Summary of cost',
-        'totals' => 'Totals & amount in words',
+        'totals' => 'Totals & commercial amounts',
         'boq' => 'Items / BOQ (detailed)',
         'payment' => 'Payment schedule',
         'terms' => 'Terms & conditions',
@@ -81,7 +86,7 @@ final class DocumentStyles
         'signatures' => 'Signatures',
     ];
 
-    /** Blocks that can move but never hide — a quote/invoice without its lines or totals is not a document. */
+    /** Legacy quotation and invoice locks. Current quotations opt into the explicit flexible policy. */
     /** @var array<string, list<string>> */
     public const LOCKED_BLOCKS = [
         'quote' => ['boq', 'totals'],
@@ -105,10 +110,10 @@ final class DocumentStyles
      *
      * @return list<array{key: string, visible: bool}>
      */
-    public static function blocks(string $kind, mixed $stored): array
+    public static function blocks(string $kind, mixed $stored, bool $flexible = false): array
     {
         $catalogue = self::catalogue($kind);
-        $locked = self::LOCKED_BLOCKS[$kind === 'invoice' ? 'invoice' : 'quote'];
+        $locked = $kind === 'quote' && $flexible ? [] : self::LOCKED_BLOCKS[$kind === 'invoice' ? 'invoice' : 'quote'];
         $blocks = [];
         $seen = [];
 
@@ -159,8 +164,22 @@ final class DocumentStyles
 
         return array_values(array_map(
             static fn (array $block): string => $block['key'],
-            array_filter(self::blocks($kind, $stored), static fn (array $block): bool => $block['visible']),
+            array_filter(self::blocks($kind, $stored, self::flexible($design)), static fn (array $block): bool => $block['visible']),
         ));
+    }
+
+    /** @param array<string, mixed>|null $design */
+    public static function flexible(?array $design): bool
+    {
+        return ($design['quote_block_policy'] ?? '') === 'flexible';
+    }
+
+    /** @param array<string, mixed>|null $design
+     * @return list<array{key: string, visible: bool}>
+     */
+    public static function quotationBlocks(mixed $stored, ?array $design): array
+    {
+        return self::blocks('quote', $stored, self::flexible($design));
     }
 
     /** Current quotation-only layout; invoices intentionally retain copy() revision 2.
@@ -168,9 +187,10 @@ final class DocumentStyles
      */
     public function quotationCopy(BusinessLine $line): array
     {
-        $design = $this->copy($line);
+        $design = $this->copy($line, true);
+        $design['quote_block_policy'] = 'flexible';
         if ($line === BusinessLine::Furniture) {
-            $design['furniture_revision'] = 4;
+            $design['furniture_revision'] = 5;
             if (empty($design['logo_data_uri']) || ($design['logo_sha256'] ?? '') === hash_file('sha256', public_path('images/furniture-mark.png'))) {
                 if (($design['furniture_style']['use_default_logo'] ?? 'yes') === 'yes') {
                     $bytes = file_get_contents(public_path('images/furniture-mark-v4.png'));
@@ -185,7 +205,7 @@ final class DocumentStyles
         }
 
         if ($line !== BusinessLine::Furniture) {
-            $design['interior_revision'] = 2;
+            $design['interior_revision'] = 3;
             if (empty($design['logo_data_uri'])) {
                 $bytes = file_get_contents(public_path('images/interior-mark.png'));
                 $design['logo_data_uri'] = 'data:image/png;base64,'.base64_encode($bytes);
@@ -197,7 +217,7 @@ final class DocumentStyles
     }
 
     /** @return array<string, mixed> */
-    public function copy(BusinessLine $line): array
+    public function copy(BusinessLine $line, bool $flexibleQuoteBlocks = false): array
     {
         $design = DocumentDesign::query()->where('business_line', $line === BusinessLine::Furniture ? 'furniture' : 'interior')->firstOrFail();
 
@@ -215,7 +235,9 @@ final class DocumentStyles
             'furniture_style' => FurnitureDocument::style($design->furniture_style),
             'quote_layout' => $line === BusinessLine::Furniture ? 'furniture' : 'classic',
             'pdf_theme' => self::theme($design->pdf_theme ?? null),
-            'quote_blocks' => self::blocks('quote', $design->quote_blocks),
+            'quote_blocks' => $flexibleQuoteBlocks && $line === BusinessLine::Furniture && $design->quote_blocks === null
+                ? self::quoteLayoutBlocks('furniture', true)
+                : self::blocks('quote', $design->quote_blocks, $flexibleQuoteBlocks),
             'invoice_blocks' => self::blocks('invoice', $design->invoice_blocks),
         ];
     }

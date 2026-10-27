@@ -134,7 +134,7 @@ it('imports v2.1 presentation and uses the single-table defaults on creation', f
         'sections' => [['name' => 'Supply', 'items' => [['desc' => 'Chair', 'unit' => 'nos', 'qty' => 2, 'rate' => 5000]]]],
     ]]]);
     $template = QuoteTemplate::query()->where('name', 'Single import proof')->firstOrFail();
-    $created = app(CreateQuote::class)->handle($this->quote->contact, BusinessLine::Furniture, $this->owner, template: $template);
+    $created = app(CreateQuote::class)->handle($this->quote->contact, $template->business_line, $this->owner, template: $template);
     $snapshot = app(QuoteSnapshot::class)->build($created);
     expect($snapshot['quote_layout'])->toBe('single')
         ->and(app(QuotePdf::class)->html($snapshot))->not->toContain('<h2>Summary of cost</h2>');

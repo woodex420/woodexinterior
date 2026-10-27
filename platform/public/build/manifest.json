@@ -5,6 +5,19 @@
     "src": "node_modules/apexcharts/dist/apexcharts.esm.js",
     "isDynamicEntry": true
   },
+  "node_modules/pdfjs-dist/build/pdf.mjs": {
+    "file": "assets/pdf-Y0kgJtFy.js",
+    "name": "pdf",
+    "src": "node_modules/pdfjs-dist/build/pdf.mjs",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/admin.js"
+    ]
+  },
+  "node_modules/pdfjs-dist/build/pdf.worker.min.mjs": {
+    "file": "assets/pdf.worker.min-CjEcRF4W.mjs",
+    "src": "node_modules/pdfjs-dist/build/pdf.worker.min.mjs"
+  },
   "node_modules/sortablejs/modular/sortable.esm.js": {
     "file": "assets/sortable.esm-B2mu1yQG.js",
     "name": "sortable.esm",
@@ -12,7 +25,7 @@
     "isDynamicEntry": true
   },
   "resources/css/admin.css": {
-    "file": "assets/admin-Dz5zQMt_.css",
+    "file": "assets/admin-8H9vJRd2.css",
     "name": "admin",
     "names": [
       "admin.css"
@@ -58,13 +71,17 @@
     "src": "resources/fonts/Nohemi-SemiBold.otf"
   },
   "resources/js/admin.js": {
-    "file": "assets/admin-Br79LEfE.js",
+    "file": "assets/admin-D5jOP5nF.js",
     "name": "admin",
     "src": "resources/js/admin.js",
     "isEntry": true,
     "dynamicImports": [
+      "node_modules/pdfjs-dist/build/pdf.mjs",
       "node_modules/sortablejs/modular/sortable.esm.js",
       "node_modules/apexcharts/dist/apexcharts.esm.js"
+    ],
+    "assets": [
+      "assets/pdf.worker.min-CjEcRF4W.mjs"
     ]
   },
   "resources/js/site.js": {

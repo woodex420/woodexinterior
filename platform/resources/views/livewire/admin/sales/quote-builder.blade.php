@@ -361,18 +361,7 @@
         <div class="space-y-5">
             @if ($portalUrl)
                 <x-admin.card title="Client link">
-                    <div class="flex items-center gap-2" x-data="{ copied: false }">
-                        <input type="text" readonly value="{{ $portalUrl }}" aria-label="Client link" class="wx-input h-9 min-w-0 flex-1 text-theme-xs" x-on:focus="$el.select()">
-                        <button type="button" class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-theme-xs text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
-                                x-on:click="navigator.clipboard.writeText(@js($portalUrl)).then(() => { copied = true; setTimeout(() => copied = false, 2000) })"
-                                x-text="copied ? 'Copied' : 'Copy'">Copy</button>
-                    </div>
-                    <div class="mt-3 flex flex-wrap gap-2 text-theme-xs">
-                        @if ($whatsappShare)
-                            <a href="{{ $whatsappShare }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-lg bg-success-50 px-2.5 py-1.5 text-success-700 hover:bg-success-100 dark:bg-success-500/10"><x-icon name="whatsapp" class="size-3.5" /> Share on WhatsApp</a>
-                        @endif
-                        <a href="{{ $portalUrl }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-lg bg-gray-50 px-2.5 py-1.5 text-gray-700 hover:bg-gray-100 dark:bg-white/5 dark:text-gray-300"><x-icon name="external" class="size-3.5" /> Open client page</a>
-                    </div>
+                    <x-admin.quote-share-links :portal-url="$portalUrl" :pdf-url="$sharedPdfUrl" :whatsapp-share="$whatsappShare" />
                     <dl class="mt-4 grid grid-cols-2 gap-3 text-theme-sm">
                         <div><dt class="text-theme-xs text-gray-500">Views</dt><dd class="font-medium">{{ $quote->view_count }}</dd></div>
                         <div><dt class="text-theme-xs text-gray-500">Last opened</dt><dd>{{ $quote->last_viewed_at?->diffForHumans() ?? 'not yet' }}</dd></div>
@@ -470,7 +459,6 @@
                 </div>
             </x-admin.card>
 
-            @if ($quoteLayout !== 'furniture')
             <x-admin.card title="PDF design" description="For this quotation only. Brand defaults live in Document design.">
                 <div class="space-y-4">
                     <p class="text-theme-xs text-gray-500">Choose the v2.1 layout and colour design above the live preview. Below, customise the blocks for this quotation only.</p>
@@ -479,7 +467,8 @@
                             <span class="wx-label">PDF blocks</span>
                             <button type="button" wire:click="resetQuoteBlocks" @disabled($ro) class="text-theme-xs font-medium text-gray-500 hover:text-gray-900 disabled:opacity-40 dark:hover:text-white">Reset order</button>
                         </div>
-                        <p class="mt-1 text-theme-xs text-gray-500">Blocks print top to bottom. Move with the arrows, untick to hide. Items and totals always print.</p>
+                        <p class="mt-1 text-theme-xs text-gray-500">Click Show / Hide. Hidden content is retained. Furniture amounts and closing sections stay together above the final footer; arrows reorder blocks within the main / closing sections.</p>
+                        @if (!$flexibleBlocks && !$ro)<p class="mt-2 text-theme-xs text-amber-700">Legacy draft: click Apply current design to enable every block switch without altering old sent versions.</p>@endif
                         <ul class="mt-2 divide-y divide-gray-100 rounded-lg border border-gray-200 dark:divide-gray-800 dark:border-gray-700">
                             @foreach ($quoteBlocks as $i => $block)
                                 @php $locked = in_array($block['key'], $lockedBlocks, true); @endphp
@@ -489,18 +478,13 @@
                                         <button type="button" wire:click="moveQuoteBlock({{ $i }}, 1)" @disabled($ro || $loop->last) class="px-1 text-gray-400 hover:text-gray-900 disabled:opacity-30 dark:hover:text-white" aria-label="Move {{ $blockLabels[$block['key']] }} down">↓</button>
                                     </span>
                                     <span class="flex-1 text-theme-sm {{ $block['visible'] ? 'text-gray-900 dark:text-white' : 'text-gray-400 line-through' }}">{{ $blockLabels[$block['key']] }}</span>
-                                    @if ($locked)
-                                        <span class="text-theme-xs text-gray-400">Always shown</span>
-                                    @else
-                                        <input type="checkbox" wire:model.live="quoteBlocks.{{ $i }}.visible" @disabled($ro) class="wx-checkbox" aria-label="Show {{ $blockLabels[$block['key']] }}">
-                                    @endif
+                                    <button type="button" wire:click="toggleQuoteBlock({{ $i }})" @disabled($ro || $locked) aria-label="Toggle {{ $blockLabels[$block['key']] }}" aria-pressed="{{ $block['visible'] ? 'true' : 'false' }}" class="rounded-md border border-gray-200 px-3 py-1 text-theme-xs font-medium disabled:opacity-40 dark:border-gray-700">{{ $block['visible'] ? 'Show' : 'Hide' }}</button>
                                 </li>
                             @endforeach
                         </ul>
                     </div>
                 </div>
             </x-admin.card>
-            @endif
 
             @if ($quote->business_line->value === 'furniture')
             <x-admin.card title="Furniture quotation details" description="Advance is a payment request, never a payment received. Full invoices are created explicitly from this quotation.">
@@ -653,10 +637,12 @@
                 </div>
             </x-admin.card>
             @if ($quote->business_line->value === 'furniture')
-                <x-admin.card title="Furniture print options" description="Bottom sections — always available here, even when hidden on the document. Show or hide terms and signatories without losing their saved content. Applied financial adjustments always remain disclosed.">
+                <x-admin.card title="Furniture print options" description="Bottom sections and detail rows — click Show / Hide. Terms, notes and signatures are controlled once in PDF blocks above. Applied discounts, charges and tax remain disclosed when nonzero; these row switches include or omit zero rows only.">
                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     @foreach (\App\Domain\Sales\Services\FurnitureDocument::OPTIONS as $field => $label)
-                        <x-admin.field :label="$label" :for="'details.'.$field"><select id="details.{{ $field }}" wire:model.live="details.{{ $field }}" @disabled($ro) class="wx-input"><option value="yes">Show</option><option value="no">Hide when optional</option></select></x-admin.field>
+                        @if (!$flexibleBlocks || !in_array($field, ['show_terms', 'show_notes', 'show_signatories'], true))
+                        <div class="flex items-center justify-between gap-2"><span class="text-theme-sm">{{ $label }}</span><button type="button" id="details.{{ $field }}" wire:click="toggleFurnitureOption('{{ $field }}')" @disabled($ro) aria-label="Toggle {{ $label }}" aria-pressed="{{ ($details[$field] ?? 'yes') === 'yes' ? 'true' : 'false' }}" class="rounded-md border border-gray-200 px-3 py-1.5 text-theme-xs font-medium disabled:opacity-40 dark:border-gray-700">{{ ($details[$field] ?? 'yes') === 'yes' ? 'Show' : 'Hide' }}</button></div>
+                        @endif
                     @endforeach
                     </div>
                     <x-admin.field label="Signatories — add or remove a person" for="details.signatories_text" error="details.signatories_text" hint="One person per line: Name | Title. Delete a line to remove that person. Leave empty for no names. Printed centred; maximum six people.">
@@ -807,15 +793,7 @@
                     </div>
                 @enderror
             @elseif ($portalUrl)
-                <div class="flex items-center gap-2" x-data="{ copied: false }">
-                    <input type="text" readonly value="{{ $portalUrl }}" aria-label="Client link" class="wx-input min-w-0 flex-1" x-on:focus="$el.select()">
-                    <button type="button" class="rounded-lg bg-navy-900 px-3 py-2.5 text-theme-sm text-white hover:bg-navy-800"
-                            x-on:click="navigator.clipboard.writeText(@js($portalUrl)).then(() => { copied = true; setTimeout(() => copied = false, 2000) })"
-                            x-text="copied ? 'Copied' : 'Copy link'">Copy link</button>
-                </div>
-                @if ($whatsappShare)
-                    <a href="{{ $whatsappShare }}" target="_blank" rel="noopener" class="mt-4 inline-flex items-center gap-2 rounded-lg bg-success-500 px-4 py-2.5 text-theme-sm font-medium text-white hover:bg-success-600"><x-icon name="whatsapp" class="size-4" /> Share on WhatsApp</a>
-                @endif
+                <x-admin.quote-share-links :portal-url="$portalUrl" :pdf-url="$sharedPdfUrl" :whatsapp-share="$whatsappShare" />
             @endif
             <x-slot:footer>
                 <x-admin.button variant="secondary" wire:click="$set('showSend', false)">{{ $sendable ? 'Cancel' : 'Close' }}</x-admin.button>

@@ -81,11 +81,22 @@ class DocumentDesigner extends Component
         $this->form = $design->only(['brand_name', 'accent_color', 'header_text', 'footer_text']);
         $this->furnitureStyle = FurnitureDocument::style($design->furniture_style);
         $this->pdfTheme = DocumentStyles::theme($design->pdf_theme ?? null);
-        $this->quoteBlocks = DocumentStyles::blocks('quote', $design->quote_blocks);
+        $this->quoteBlocks = $this->loadedLine === 'furniture' && $design->quote_blocks === null
+            ? DocumentStyles::quoteLayoutBlocks('furniture', true)
+            : DocumentStyles::blocks('quote', $design->quote_blocks, true);
         $this->invoiceBlocks = DocumentStyles::blocks('invoice', $design->invoice_blocks);
         $this->logo = null;
         $this->removeLogo = false;
         $this->resetValidation();
+    }
+
+    public function toggleBlock(string $kind, int $index): void
+    {
+        $this->authorize('settings.manage');
+        $prop = $kind === 'invoice' ? 'invoiceBlocks' : 'quoteBlocks';
+        if (isset($this->{$prop}[$index]) && ! ($kind === 'invoice' && in_array($this->{$prop}[$index]['key'], DocumentStyles::LOCKED_BLOCKS['invoice'], true))) {
+            $this->{$prop}[$index]['visible'] = ! $this->{$prop}[$index]['visible'];
+        }
     }
 
     public function moveBlock(string $kind, int $index, int $direction): void
@@ -109,7 +120,7 @@ class DocumentDesigner extends Component
         if ($kind === 'invoice') {
             $this->invoiceBlocks = DocumentStyles::blocks('invoice', null);
         } else {
-            $this->quoteBlocks = DocumentStyles::blocks('quote', null);
+            $this->quoteBlocks = DocumentStyles::quoteLayoutBlocks($this->loadedLine === 'furniture' ? 'furniture' : 'classic', true);
         }
     }
 
@@ -121,7 +132,7 @@ class DocumentDesigner extends Component
             'themeDescriptions' => DocumentStyles::THEME_DESCRIPTIONS,
             'quoteBlockLabels' => DocumentStyles::QUOTE_BLOCKS,
             'invoiceBlockLabels' => DocumentStyles::INVOICE_BLOCKS,
-            'lockedBlocks' => DocumentStyles::LOCKED_BLOCKS,
+            'lockedBlocks' => [...DocumentStyles::LOCKED_BLOCKS, 'quote' => []],
         ]);
     }
 }

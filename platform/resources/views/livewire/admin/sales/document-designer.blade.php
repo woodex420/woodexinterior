@@ -44,7 +44,7 @@
                             <span class="wx-label">{{ $group['title'] }}</span>
                             <button type="button" wire:click="resetBlocks('{{ $group['kind'] }}')" class="text-theme-xs font-medium text-gray-500 hover:text-gray-900 dark:hover:text-white">Reset order</button>
                         </div>
-                        <p class="mt-1 text-theme-xs text-gray-500">{{ $line === 'furniture' ? 'These controls apply to compatibility layouts only. The dedicated Furniture sheet has a fixed product grid and commercial summary.' : '' }} Blocks print top to bottom. Move with the arrows, untick to hide. Items and totals always print.</p>
+                        <p class="mt-1 text-theme-xs text-gray-500">{{ $group['kind'] === 'quote' ? 'Click Show / Hide for either brand. Furniture amounts and closing sections remain together above the final footer; arrows reorder within each section. Apply current design to an existing draft to adopt these defaults.' : 'Invoice items and totals are required; other invoice blocks can be hidden.' }}</p>
                         <ul class="mt-2 divide-y divide-gray-100 rounded-lg border border-gray-200">
                             @foreach ($group['blocks'] as $i => $block)
                                 @php $locked = in_array($block['key'], $lockedBlocks[$group['kind']], true); @endphp
@@ -55,9 +55,9 @@
                                     </span>
                                     <span class="flex-1 text-theme-sm {{ $block['visible'] ? 'text-gray-900 dark:text-white' : 'text-gray-400 line-through' }}">{{ $group['labels'][$block['key']] }}</span>
                                     @if ($locked)
-                                        <span class="text-theme-xs text-gray-400">Always shown</span>
+                                        <span class="text-theme-xs text-gray-400">Required for invoices</span>
                                     @else
-                                        <input type="checkbox" wire:model.live="{{ $group['prop'] }}.{{ $i }}.visible" class="wx-checkbox" aria-label="Show {{ $group['labels'][$block['key']] }}">
+                                        <button type="button" wire:click="toggleBlock('{{ $group['kind'] }}', {{ $i }})" aria-label="Toggle {{ $group['labels'][$block['key']] }}" aria-pressed="{{ $block['visible'] ? 'true' : 'false' }}" class="rounded-md border border-gray-200 px-3 py-1 text-theme-xs font-medium">{{ $block['visible'] ? 'Show' : 'Hide' }}</button>
                                     @endif
                                 </li>
                             @endforeach

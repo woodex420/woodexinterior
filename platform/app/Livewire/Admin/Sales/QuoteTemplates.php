@@ -267,7 +267,7 @@ class QuoteTemplates extends Component
             'blueprint' => ['sections' => $sections, 'furniture' => [...FurnitureDocument::text($data['blueprint']['furniture'] ?? null), 'advance_bp' => max(0, min(10000, (int) ($data['blueprint']['furniture']['advance_bp'] ?? 5000)))], 'presentation' => [
                 'quote_layout' => DocumentStyles::quoteLayout($presentation['quote_layout'] ?? null),
                 'pdf_theme' => DocumentStyles::theme($presentation['pdf_theme'] ?? null),
-                'quote_blocks' => DocumentStyles::blocks('quote', $presentation['quote_blocks'] ?? DocumentStyles::quoteLayoutBlocks(DocumentStyles::quoteLayout($presentation['quote_layout'] ?? null))),
+                'quote_blocks' => DocumentStyles::blocks('quote', $presentation['quote_blocks'] ?? DocumentStyles::quoteLayoutBlocks(DocumentStyles::quoteLayout($presentation['quote_layout'] ?? null), true), true),
             ]],
             'is_active' => true,
             'position' => (int) QuoteTemplate::query()->max('position') + 1,

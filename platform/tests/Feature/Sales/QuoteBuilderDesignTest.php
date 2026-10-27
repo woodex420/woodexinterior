@@ -19,6 +19,10 @@ beforeEach(function () {
     $this->actingAs($this->owner);
     $this->lead = Lead::factory()->create(['owner_id' => $this->owner->id]);
     $this->quote = app(CreateQuote::class)->handle($this->lead->contact, BusinessLine::Interior, $this->owner, $this->lead);
+    // Explicit historical fixture: keep regression coverage for the pre-flexible document.
+    $meta = $this->quote->meta;
+    unset($meta['document_design']['quote_block_policy']);
+    $this->quote->forceFill(['meta' => $meta])->save();
     app(QuoteEditor::class)->updateLine($this->quote->items()->firstOrFail(), ['description' => 'Reviewed joinery', 'rate_minor' => 100000]);
     $this->quote->refresh();
 });

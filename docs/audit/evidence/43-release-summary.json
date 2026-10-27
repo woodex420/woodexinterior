@@ -1,0 +1,37 @@
+{
+  "scope": "Quotation revision43 \u2014 Furniture5 / Interior3; invoice rendering unchanged",
+  "full_suite": {
+    "passed": 1638,
+    "skipped": 1,
+    "assertions": 8823,
+    "seconds": 453.7,
+    "skip_reason": "Existing installer connectivity failure probe requires a MySQL driver unavailable in PHP-WASM"
+  },
+  "focused_suite": {
+    "passed": 93,
+    "assertions": 548,
+    "seconds": 53.12
+  },
+  "phpstan_errors": 0,
+  "production_build": "PASS",
+  "public_v1_site_bundles": "unchanged",
+  "browser_checks": 18,
+  "browser_javascript_errors": [],
+  "anonymous_download": {
+    "staff_route_denied": true,
+    "signed_client_page_opened": true,
+    "actual_browser_download_completed": true,
+    "frozen_qa_pdf_sha256": "93f93f2788e22a7ad30a308436761a0029db5cb1e863c997125e7c93c10b6d2c",
+    "downloaded_file_matches_frozen_sha256": true,
+    "tampered_link_status": 403
+  },
+  "restricted_frames": {
+    "third_party_cookies_blocked": "PASS",
+    "all_cookie_headers_removed": "PASS",
+    "both_brands_live_and_native_pdf_canvas": "PASS"
+  },
+  "native_geometry": "PASS; see 43-native-pdf-results.json",
+  "production_deployed": false,
+  "schema_changes": false,
+  "fixture_privacy": "Isolated synthetic records only; no signed URLs, traffic tokens, passcodes or owner database exports included"
+}

@@ -24,6 +24,11 @@ beforeEach(function () {
     $this->actingAs($this->owner);
     $this->client = Contact::factory()->create(['name' => 'Furniture layout client']);
     $this->quote = app(CreateQuote::class)->handle($this->client, BusinessLine::Furniture, $this->owner, title: 'Office furniture');
+    // Explicit historical fixture: keep regression coverage for the pre-flexible document.
+    $meta = $this->quote->meta;
+    unset($meta['document_design']['quote_block_policy']);
+    $meta['document_design']['furniture_revision'] = 4;
+    $this->quote->forceFill(['meta' => $meta, 'advance_bp' => 5000])->save();
     $this->editor = app(QuoteEditor::class);
     $this->editor->updateLine($this->quote->items()->firstOrFail(), ['product_name' => 'Executive desk', 'description' => 'Approved oak finish', 'rate_minor' => 4750000, 'qty' => '1', 'unit' => 'nos']);
 });
@@ -80,7 +85,7 @@ it('preserves revision three HTML and stored PDFs while explicitly upgrading onl
     $this->editor->updateDetails($this->quote, ['title' => 'Still revision three']);
     expect($this->quote->refresh()->meta['document_design']['furniture_revision'])->toBe(3);
     $this->editor->applyDocumentDesign($this->quote);
-    expect(app(QuoteSnapshot::class)->build($this->quote->refresh())['furniture_revision'])->toBe(4)
+    expect(app(QuoteSnapshot::class)->build($this->quote->refresh())['furniture_revision'])->toBe(5)
         ->and(app(QuotePdf::class)->html($old))->toBe($html);
     $this->quote->meta = $meta;
     $this->quote->save();

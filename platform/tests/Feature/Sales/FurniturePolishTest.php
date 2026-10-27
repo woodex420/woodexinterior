@@ -37,6 +37,11 @@ beforeEach(function () {
     $settings->save();
     $this->contact = Contact::factory()->create();
     $this->quote = app(CreateQuote::class)->handle($this->contact, BusinessLine::Furniture, $this->owner);
+    // Explicit historical fixture: keep regression coverage for the pre-flexible document.
+    $meta = $this->quote->meta;
+    unset($meta['document_design']['quote_block_policy']);
+    $meta['document_design']['furniture_revision'] = 4;
+    $this->quote->forceFill(['meta' => $meta, 'advance_bp' => 5000])->save();
     app(QuoteEditor::class)->updateLine($this->quote->items()->firstOrFail(), ['product_name' => 'Office chair', 'description' => 'Premium mesh with adjustable height.', 'rate_minor' => 4750000, 'qty' => '1', 'unit' => 'nos']);
     $this->quote->refresh();
 });
@@ -111,7 +116,7 @@ it('retains the old renderer for unversioned historical snapshots and only upgra
     expect($html)->toContain('Item / Product', 'Commercial notes &amp; terms', '75%');
     app(QuoteEditor::class)->applyDocumentDesign($this->quote);
     expect($this->quote->refresh()->advance_bp)->toBe(7500)
-        ->and($this->quote->meta['document_design']['furniture_revision'])->toBe(4)
+        ->and($this->quote->meta['document_design']['furniture_revision'])->toBe(5)
         ->and(app(QuotePdf::class)->html($old))->toBe($html);
     app(SendQuote::class)->handle($this->quote, $this->owner, 'link', false);
     $frozen = $this->quote->versions()->firstOrFail()->snapshot;

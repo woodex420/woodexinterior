@@ -49,6 +49,10 @@ final class CreateQuote
             throw new InvalidArgumentException('That enquiry belongs to another client.');
         }
 
+        if ($template !== null && ($template->business_line === BusinessLine::Furniture) !== ($line === BusinessLine::Furniture)) {
+            throw new InvalidArgumentException('Choose a quotation template from the same business line.');
+        }
+
         $quote = DB::transaction(function () use ($contact, $line, $by, $lead, $template, $title): Quote {
             $plan = $template !== null
                 ? $template->milestone_plan
@@ -61,11 +65,20 @@ final class CreateQuote
                 $documentDesign = [...$documentDesign,
                     'quote_layout' => DocumentStyles::quoteLayout($presentation['quote_layout'] ?? null),
                     'pdf_theme' => DocumentStyles::theme($presentation['pdf_theme'] ?? null),
-                    'quote_blocks' => DocumentStyles::blocks('quote', $presentation['quote_blocks'] ?? DocumentStyles::quoteLayoutBlocks(DocumentStyles::quoteLayout($presentation['quote_layout'] ?? null))),
+                    'quote_blocks' => DocumentStyles::blocks('quote', $presentation['quote_blocks'] ?? DocumentStyles::quoteLayoutBlocks(DocumentStyles::quoteLayout($presentation['quote_layout'] ?? null)), true),
                 ];
             }
             if ($line === BusinessLine::Furniture && ! isset($template?->blueprint['furniture']) && in_array($presentation['quote_layout'] ?? '', ['', 'classic'], true)) {
                 $documentDesign['quote_layout'] = 'furniture';
+            }
+            if ($line === BusinessLine::Furniture && $template !== null) {
+                foreach ($documentDesign['quote_blocks'] as &$block) {
+                    $field = ['terms' => 'show_terms', 'notes' => 'show_notes', 'signatures' => 'show_signatories'][$block['key']] ?? null;
+                    if ($field !== null && ($template->blueprint['furniture'][$field] ?? 'yes') === 'no') {
+                        $block['visible'] = false;
+                    }
+                }
+                unset($block);
             }
             $terms = trim((string) $template?->terms) !== '' ? $template->terms : ($line === BusinessLine::Furniture ? FurnitureDocument::TERMS : ($design ? $this->settings->design_terms : $this->settings->execution_terms));
             if ($line === BusinessLine::Furniture && ! isset($template?->blueprint['furniture']) && in_array($terms, [$this->settings->execution_terms, $this->settings->design_terms, "50% advance payment with work order.\nRates are exclusive of GST / PST.\nDelivery time as mutually agreed."], true)) {
@@ -84,13 +97,13 @@ final class CreateQuote
                 'title' => trim((string) $title) !== '' ? trim((string) $title) : ($template->name ?? 'Quotation'),
                 'status' => QuoteStatus::Draft,
                 'currency' => 'PKR',
-                'valid_until' => today()->addDays($this->settings->quote_validity_days),
+                'valid_until' => today()->addDays($line === BusinessLine::Furniture ? 12 : $this->settings->quote_validity_days),
                 'terms' => $terms,
-                'advance_bp' => $line === BusinessLine::Furniture ? (int) ($template?->blueprint['furniture']['advance_bp'] ?? 5000) : 0,
+                'advance_bp' => $line === BusinessLine::Furniture ? (int) ($template?->blueprint['furniture']['advance_bp'] ?? 7500) : 0,
                 'notes' => $template?->notes,
                 'scope_html' => Html::sanitize($template?->scope_html),
                 'owner_id' => $by->id,
-                'meta' => ['milestone_plan' => $plan->value, 'document_design' => $documentDesign, 'furniture' => FurnitureDocument::text(['signatories_text' => FurnitureDocument::signatureText($this->settings->signatories), ...($template?->blueprint['furniture'] ?? [])]), 'furniture_billing' => $line === BusinessLine::Furniture ? 'full' : 'milestone'],
+                'meta' => ['milestone_plan' => $plan->value, 'document_design' => $documentDesign, 'furniture' => FurnitureDocument::text(['delivery_text' => $line === BusinessLine::Furniture ? '15–20 days' : '', 'signatories_text' => FurnitureDocument::signatureText($this->settings->signatories), ...($template?->blueprint['furniture'] ?? [])]), 'furniture_billing' => $line === BusinessLine::Furniture ? 'full' : 'milestone'],
             ]);
 
             $sections = $template !== null ? QuoteBlueprint::sections($template->blueprint) : [];

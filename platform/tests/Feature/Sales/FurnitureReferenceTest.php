@@ -30,6 +30,11 @@ beforeEach(function () {
     $this->actingAs($this->owner);
     $this->client = Contact::factory()->create(['name' => 'Reference QA person', 'city' => 'Lahore']);
     $this->quote = app(CreateQuote::class)->handle($this->client, BusinessLine::Furniture, $this->owner);
+    // Explicit historical fixture: keep regression coverage for the pre-flexible document.
+    $meta = $this->quote->meta;
+    unset($meta['document_design']['quote_block_policy']);
+    $meta['document_design']['furniture_revision'] = 4;
+    $this->quote->forceFill(['meta' => $meta, 'advance_bp' => 5000])->save();
     $this->editor = app(QuoteEditor::class);
     $this->editor->updateLine($this->quote->items()->firstOrFail(), ['product_name' => 'Office desk', 'description' => 'Solid oak veneer and cable management.', 'qty' => '2', 'rate_minor' => 8500000, 'unit' => 'nos']);
     $this->quote->refresh();
@@ -69,7 +74,7 @@ it('keeps version two snapshots byte-identical in HTML when a draft explicitly a
     expect($html)->toContain('data-furniture-revision="2"');
     $this->editor->applyDocumentDesign($this->quote);
     $fresh = app(QuoteSnapshot::class)->build($this->quote->refresh());
-    expect($fresh['furniture_revision'])->toBe(4)->and($fresh['totals'])->toBe($old['totals'])
+    expect($fresh['furniture_revision'])->toBe(5)->and($fresh['totals'])->toBe($old['totals'])
         ->and(app(QuotePdf::class)->html($old))->toBe($html)
         ->and(app(QuotePdf::class)->html($fresh))->toContain('37.5% advance payment with work order.');
 });
