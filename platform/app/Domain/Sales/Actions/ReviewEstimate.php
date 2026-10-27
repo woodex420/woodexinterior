@@ -6,6 +6,7 @@ namespace App\Domain\Sales\Actions;
 
 use App\Domain\Sales\Enums\EstimateStatus;
 use App\Domain\Sales\Models\Estimate;
+use App\Domain\Sales\Services\EstimateAccess;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,7 @@ final class ReviewEstimate
 
         return DB::transaction(function () use ($estimate, $by): Estimate {
             $estimate = Estimate::query()->lockForUpdate()->findOrFail($estimate->id);
+            EstimateAccess::authorize($estimate, $by);
 
             if ($estimate->status === EstimateStatus::Converted) {
                 throw ValidationException::withMessages(['estimate' => 'This estimate is already converted — reviewing history changes nothing.']);

@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Actions;
 
+use App\Domain\Crm\Models\Contact;
+use App\Domain\Crm\Models\Lead;
 use App\Domain\Sales\Enums\EstimateStatus;
 use App\Domain\Sales\Models\Estimate;
 use App\Domain\Sales\Models\EstimatorRate;
+use App\Domain\Sales\Services\EstimateAccess;
 use App\Models\User;
 use App\Support\Numbering;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -44,8 +48,24 @@ final class SaveEstimate
             'contingency_bp' => ['nullable', 'integer', 'min:0', 'max:10000'],
             'assumptions' => ['nullable', 'string', 'max:4000'],
             'exclusions' => ['nullable', 'string', 'max:4000'],
+            'catalog_lines' => ['sometimes', 'array', 'max:100'],
+            'catalog_lines.*.catalog_item_id' => ['required', 'integer', 'min:1'],
+            'catalog_lines.*.qty' => ['required', 'string', 'max:20'],
         ])->validate();
 
+        if ($estimate !== null) {
+            EstimateAccess::authorize($estimate, $by);
+        }
+        if (! empty($validated['lead_id'])) {
+            $lead = Lead::query()->findOrFail($validated['lead_id']);
+            EstimateAccess::lead($lead, $by);
+            if ((int) $lead->contact_id !== (int) ($validated['contact_id'] ?? 0)) {
+                throw ValidationException::withMessages(['contact_id' => 'The selected client must match the linked enquiry.']);
+            }
+        }
+        if (! empty($validated['contact_id'])) {
+            Gate::forUser($by)->authorize('view', Contact::query()->findOrFail($validated['contact_id']));
+        }
         $rate = EstimatorRate::query()->where('key', $validated['service_key'])->where('is_active', true)->first();
 
         if ($rate === null) {
@@ -62,7 +82,8 @@ final class SaveEstimate
 
         return DB::transaction(function () use ($validated, $by, $estimate, $rate, $catalogLines, $computed): Estimate {
             if ($estimate !== null) {
-                $estimate = Estimate::query()->findOrFail($estimate->id);
+                $estimate = Estimate::query()->lockForUpdate()->findOrFail($estimate->id);
+                EstimateAccess::authorize($estimate, $by);
 
                 if ($estimate->status === EstimateStatus::Converted) {
                     throw ValidationException::withMessages(['estimate' => 'This estimate is already converted to '.$estimate->quote?->number.' — the quotation carries it from here.']);
@@ -79,7 +100,15 @@ final class SaveEstimate
                     'contingency_bp' => (int) ($validated['contingency_bp'] ?? 0),
                     'catalog_lines' => $catalogLines,
                     'computed' => $computed,
-                ])->save();
+                ]);
+                // Unchanged saves preserve a review; any substantive change invalidates it.
+                $before = $estimate->getOriginal('computed') ?? [];
+                $now = $computed;
+                unset($before['effective_on'], $now['effective_on']);
+                if ($estimate->isDirty(['title', 'service_key', 'contact_id', 'lead_id', 'inputs', 'assumptions', 'exclusions', 'contingency_bp', 'catalog_lines']) || $before != $now) {
+                    $estimate->forceFill(['status' => EstimateStatus::Draft, 'reviewed_by' => null, 'reviewed_at' => null]);
+                }
+                $estimate->save();
 
                 return $estimate->refresh();
             }

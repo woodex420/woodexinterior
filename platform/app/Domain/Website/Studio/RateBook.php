@@ -146,7 +146,7 @@ final class RateBook
             foreach (self::FINISHES as $finish) {
                 $value = $rates[$finish] ?? null;
 
-                if (! is_numeric($value)) {
+                if (! is_numeric($value) || ! is_finite((float) $value) || (float) $value < 0 || (float) $value > 10000000 || floor((float) $value) !== (float) $value) {
                     throw new UnexpectedValueException("“{$label}”: the {$finish} rate is missing.");
                 }
 

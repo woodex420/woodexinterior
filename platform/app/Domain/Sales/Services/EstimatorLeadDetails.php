@@ -8,6 +8,7 @@ use App\Domain\Crm\Enums\LeadSource;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Sales\Models\EstimatorRate;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\ValidationException;
 
 /**
  * What a website cost-estimator enquiry actually told us (QUO-017).
@@ -40,9 +41,11 @@ final class EstimatorLeadDetails
             ?: ($useColumns ? trim((string) $lead->service) : '');
         $finish = trim((string) Arr::get($fields, 'finish', '')) ?: 'standard';
         $areaRaw = trim((string) Arr::get($fields, 'area', ''));
-        $area = $areaRaw !== ''
-            ? (float) preg_replace('/[^0-9.]/', '', $areaRaw)
-            : ($useColumns ? (float) ($lead->area_sqft ?? 0) : 0.0);
+        try {
+            $area = EstimateQuantity::parse($areaRaw !== '' ? $areaRaw : ($useColumns ? (string) ($lead->area_sqft ?? 0) : '0'));
+        } catch (ValidationException) {
+            $area = 0.0;
+        }
         $estimate = trim((string) Arr::get($fields, 'estimate', ''));
 
         $rate = $service === ''

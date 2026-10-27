@@ -190,7 +190,11 @@ it('keeps the screens that still have work to do', function (string $url) {
     $owner = User::factory()->create();
     $owner->givePermissionTo(['website.edit']);
 
-    $this->actingAs($owner)->get($url)->assertOk();
+    if ($url === '/admin/website/estimator') {
+        $this->actingAs($owner)->get($url)->assertRedirect(route('admin.estimations.index', ['tab' => 'rates']));
+    } else {
+        $this->actingAs($owner)->get($url)->assertOk();
+    }
 })->with([
     '/admin/website/forms',
     '/admin/website/estimator',

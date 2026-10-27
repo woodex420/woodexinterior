@@ -6,6 +6,7 @@ namespace App\Domain\Sales\Actions;
 
 use App\Domain\Sales\Models\CatalogItem;
 use App\Domain\Sales\Models\EstimatorRate;
+use App\Domain\Sales\Services\EstimateQuantity;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -25,7 +26,7 @@ final class ComputeEstimate
      */
     public function handle(EstimatorRate $rate, string $quantity, string $finish, array $catalogLines, int $contingencyBp): array
     {
-        $quantityValue = (float) preg_replace('/[^0-9.]/', '', $quantity);
+        $quantityValue = EstimateQuantity::parse($quantity);
         $finish = in_array($finish, self::FINISHES, true) ? $finish : 'standard';
         $contingencyBp = max(0, min($contingencyBp, 10_000));
 
@@ -41,7 +42,7 @@ final class ComputeEstimate
 
         foreach ($catalogLines as $line) {
             $itemId = (int) ($line['catalog_item_id'] ?? 0);
-            $qty = (float) preg_replace('/[^0-9.]/', '', (string) ($line['qty'] ?? '0'));
+            $qty = EstimateQuantity::parse((string) ($line['qty'] ?? '0'), 'catalogLines');
 
             if ($itemId <= 0 || $qty <= 0) {
                 throw ValidationException::withMessages(['catalogLines' => 'Every rate book line needs an item and a positive quantity.']);
@@ -71,6 +72,7 @@ final class ComputeEstimate
         $contingencyMinor = (int) round($subtotalMinor * $contingencyBp / 10_000);
 
         return [
+            'service_label' => $rate->label,
             'effective_on' => today()->toDateString(),
             'rate_minor' => $rateMinor,
             'headline_minor' => $headlineMinor,

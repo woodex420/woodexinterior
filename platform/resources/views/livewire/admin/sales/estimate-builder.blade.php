@@ -1,5 +1,5 @@
 <div>
-    <x-admin.page-header :title="$estimateId !== null ? 'Estimate '.$number : 'New estimate'" description="Same engine as the website estimator: pick the service, give the size and finish, and the range is honest — essential to premium. Add known rate book items and an explicit contingency. Converting creates a quotation draft; nothing reaches a client from here."
+    <x-admin.page-header :title="$estimateId !== null ? 'Estimate '.$number : 'New estimate'" description="Shared rates with the website estimator: pick the service, give the size and finish, and the range is honest — essential to premium. Add known rate book items and an explicit contingency. Converting creates a quotation draft; nothing reaches a client from here."
                          :breadcrumbs="['Sales' => null, 'Estimations' => route('admin.estimations.index'), $estimateId !== null ? $number : 'New' => null]">
         <x-slot:actions>
             @if ($estimateId !== null && $estimate?->quote !== null)
@@ -21,16 +21,18 @@
         </div>
     @endif
 
-    <div class="grid gap-6 lg:grid-cols-3">
-        <div class="lg:col-span-2 space-y-6">
+    @error('estimate')<p role="alert" class="mb-4 text-error-600">{{ $message }}</p>@enderror
+    <div class="grid min-w-0 gap-6 lg:grid-cols-3">
+        <fieldset @disabled($status === 'converted') class="min-w-0 lg:col-span-2 space-y-6">
             <x-admin.card title="The job">
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label class="wx-label">Service</label>
                         <select wire:model.live="serviceKey" class="wx-input">
                             <option value="">— choose the service —</option>
+                            @if ($serviceKey !== '' && ! $services->contains('key', $serviceKey))<option value="{{ $serviceKey }}">{{ $estimate?->computed['service_label'] ?? $serviceKey }} (saved / retired)</option>@endif
                             @foreach ($services as $service)
-                                <option value="{{ $service->key }}">{{ $service->label }} ({{ $service->unit_label ?? $service->unit->value }})</option>
+                                <option value="{{ $service->key }}">{{ $service->label }} ({{ $service->unit_label ?? $service->unit }})</option>
                             @endforeach
                         </select>
                         @error('serviceKey')<p class="mt-1 text-theme-sm text-red-600">{{ $message }}</p>@enderror
@@ -79,20 +81,20 @@
                 <div class="space-y-3">
                     @foreach ($catalogLines as $index => $line)
                         <div class="grid grid-cols-12 gap-2 items-end" wire:key="line-{{ $index }}">
-                            <div class="col-span-7">
+                            <div class="col-span-12 min-w-0 sm:col-span-7">
                                 <label class="wx-label">Item</label>
-                                <select wire:model="catalogLines.{{ $index }}.catalog_item_id" class="wx-input">
+                                <select wire:model.live="catalogLines.{{ $index }}.catalog_item_id" class="wx-input">
                                     <option value="">— item —</option>
                                     @foreach ($catalogItems as $item)
                                         <option value="{{ $item->id }}">{{ $item->category }} — {{ Str::limit($item->description, 60) }} · {{ \App\Support\Money::ofMinor($item->rate_minor)->format() }}/{{ $item->unit }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-span-3">
+                            <div class="col-span-7 min-w-0 sm:col-span-3">
                                 <label class="wx-label">Qty</label>
-                                <input wire:model="catalogLines.{{ $index }}.qty" class="wx-input" inputmode="decimal" />
+                                <input wire:model.live="catalogLines.{{ $index }}.qty" class="wx-input" inputmode="decimal" />
                             </div>
-                            <div class="col-span-2">
+                            <div class="col-span-5 sm:col-span-2">
                                 <x-admin.button variant="secondary" type="button" wire:click="removeLine({{ $index }})">Remove</x-admin.button>
                             </div>
                         </div>
@@ -116,12 +118,20 @@
                     </div>
                 </div>
             </x-admin.card>
-        </div>
+        </fieldset>
 
-        <div class="space-y-6">
-            <x-admin.card title="Priced now">
+        <div class="min-w-0 space-y-6">
+            @if ($saved = $this->savedSummary())
+                <x-admin.card title="Saved snapshot">
+                    <p class="text-2xl font-semibold">{{ $saved['total'] }}</p>
+                    <p class="text-theme-sm text-gray-500">Rate {{ $saved['rate_minor'] }} · {{ $saved['effective_on'] }} · {{ ucfirst($status) }}</p>
+                    <p class="mt-2 text-theme-xs text-gray-500">Conversion uses this saved amount, not today's preview. Contingency remains an internal allowance unless deliberately added to the quotation.</p>
+                </x-admin.card>
+            @endif
+            @if ($status !== 'converted')
+            <x-admin.card title="Current-rate preview (unsaved)">
                 @if ($summary === null)
-                    <p class="text-theme-sm text-gray-500 dark:text-gray-400">Choose a service and give the size to see the range.</p>
+                    <p class="text-theme-sm text-gray-500 dark:text-gray-400">Choose a service and enter valid quantities to see the range.</p>
                 @else
                     <dl class="space-y-2 text-theme-sm">
                         <div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Rate ({{ $finish }})</dt><dd class="font-medium">{{ $summary['rate_minor'] }}</dd></div>
@@ -131,17 +141,25 @@
                         <div class="flex justify-between"><dt class="text-gray-500 dark:text-gray-400">Contingency</dt><dd class="font-medium">{{ $summary['contingency'] }}</dd></div>
                         <div class="flex justify-between border-t border-gray-100 dark:border-gray-800 pt-2"><dt class="font-medium">Total</dt><dd class="font-semibold">{{ $summary['total'] }}</dd></div>
                     </dl>
-                    <p class="mt-3 text-xs text-gray-400">Rates as of {{ $summary['effective_on'] }} — the snapshot freezes them when you save.</p>
+                    <p class="mt-3 text-xs text-gray-400">Rates as of {{ $summary['effective_on'] }} — the snapshot freezes them when you save. Empty add-on drafts are not included in this preview; complete or remove them before saving.</p>
                 @endif
             </x-admin.card>
 
+            @endif
             @can('estimates.manage')
                 <x-admin.card title="Actions">
                     <div class="space-y-3">
+                        @if ($status !== 'converted')
+                        @if ($estimateId !== null)
+                            <label class="flex items-start gap-2 text-theme-sm"><input type="checkbox" wire:model="confirmReprice" class="mt-1">I compared saved/current amounts and confirm saving with today's rates.</label>
+                            @error('confirmReprice')<p class="text-error-600">{{ $message }}</p>@enderror
+                            <x-admin.button variant="ghost" wire:click="discard">Discard unsaved changes</x-admin.button>
+                        @endif
                         <x-admin.button wire:click="save" class="w-full justify-center">{{ $estimateId !== null ? 'Save changes' : 'Save estimate' }}</x-admin.button>
+                        @endif
                         @if ($estimateId !== null && $status !== 'converted')
                             <x-admin.button variant="secondary" wire:click="review" class="w-full justify-center">Mark reviewed</x-admin.button>
-                            <x-admin.button variant="secondary" wire:click="convert" class="w-full justify-center" wire:confirm="Create a quotation draft from this estimate?">Convert to quotation</x-admin.button>
+                            <x-admin.button variant="secondary" wire:click="convert" class="w-full justify-center" wire:confirm="Convert the saved snapshot to a draft? Contingency is disclosed internally, not automatically billed. Nothing is sent.">Convert to quotation</x-admin.button>
                         @endif
                         @if ($status === 'converted')
                             <p class="text-theme-sm text-gray-500 dark:text-gray-400">Converted — the quotation carries it from here.</p>

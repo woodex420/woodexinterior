@@ -32,9 +32,8 @@ beforeEach(function () {
 
 it('opens the estimator screen inside the OS session', function () {
     $this->get(route('admin.website.estimator'))
-        ->assertOk()
-        ->assertSee('Estimator')
-        ->assertSee('/assets/admin-v21/admin-estimator.js', false);
+        ->assertRedirect(route('admin.estimations.index', ['tab' => 'rates']));
+    $this->get(route('admin.estimations.index', ['tab' => 'rates']))->assertOk()->assertSee('Public estimator service rates')->assertDontSee('/assets/admin-v21/admin-estimator.js', false);
 });
 
 it('keeps people without website.edit out', function () {
@@ -177,7 +176,7 @@ it('lists Estimator as a live destination in the sidebar', function () {
         ->flatMap(fn (array $group): array => $group['items'])
         ->keyBy('label');
 
-    expect($items['Estimator rates']['route'])->toBe('admin.website.estimator')
+    expect($items['Estimations']['route'])->toBe('admin.estimations.index')
         // FAQs and Testimonials are live too; no Website screen is listed as planned any more.
         ->and($items->filter(fn (array $i): bool => ($i['phase'] ?? null) === 'soon'))->toHaveCount(0);
 });

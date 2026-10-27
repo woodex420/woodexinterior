@@ -7,6 +7,7 @@ namespace App\Domain\Sales\Actions;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Sales\Enums\EstimateStatus;
 use App\Domain\Sales\Models\Estimate;
+use App\Domain\Sales\Services\EstimateAccess;
 use App\Domain\Sales\Services\EstimatorLeadDetails;
 use App\Models\User;
 
@@ -54,6 +55,9 @@ final class DraftEstimateFromEstimatorLead
     /** Create the draft for this lead. Returns null when the enquiry cannot be priced honestly. */
     public function handle(Lead $lead, ?User $by = null): ?Estimate
     {
+        if ($by !== null) {
+            EstimateAccess::lead($lead, $by);
+        }
         $read = $this->details->read($lead);
         $rate = $read['rate'];
 

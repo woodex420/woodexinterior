@@ -20,9 +20,9 @@ final class MysqlProbe implements ProbesDatabase
         $tables = ($statement = $pdo->query('SHOW TABLES')) !== false ? $statement->fetchAll(PDO::FETCH_COLUMN) : [];
 
         return [
-            'version' => (string) $pdo->query('SELECT VERSION()')?->fetchColumn(),
+            'version' => ($version = $pdo->query('SELECT VERSION()')) !== false ? (string) $version->fetchColumn() : '',
             'tables' => array_values(array_map('strval', $tables)),
-            'user' => (string) $pdo->query('SELECT CURRENT_USER()')?->fetchColumn(),
+            'user' => ($user = $pdo->query('SELECT CURRENT_USER()')) !== false ? (string) $user->fetchColumn() : '',
         ];
     }
 }

@@ -34,9 +34,10 @@ it('lets only the four ported screens be reached by their hash', function () {
         ->and($source)->toContain('its edits would not reach the website');
 
     // Each allowed screen renders; the old ones answer 404 from the server, so a bookmark cannot open them either.
-    foreach (['blog', 'portfolio', 'forms', 'estimator'] as $screen) {
+    foreach (['blog', 'portfolio', 'forms'] as $screen) {
         $this->get(route('admin.website.'.$screen))->assertOk();
     }
+    $this->get(route('admin.website.estimator'))->assertRedirect(route('admin.estimations.index', ['tab' => 'rates']));
 });
 
 it('does not open a screen that is not switched on', function () {

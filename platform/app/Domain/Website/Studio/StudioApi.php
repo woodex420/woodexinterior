@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Website\Studio;
 
-use App\Domain\Bot\Models\BotKnowledge;
 use App\Domain\Crm\Models\Lead;
-use App\Domain\Sales\Enums\Unit;
-use App\Domain\Sales\Models\EstimatorRate;
+use App\Domain\Sales\Services\EstimatorRateBooks;
 use App\Domain\System\Models\Automation;
-use App\Domain\Website\Enums\PageStatus;
 use App\Domain\Website\Enums\PageType;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
@@ -18,10 +15,8 @@ use App\Domain\Website\Services\Menus;
 use App\Domain\Website\Services\PageCache;
 use App\Domain\Website\Services\PageCopier;
 use App\Models\User;
-use App\Settings\EstimatorSettings;
 use App\Settings\NotificationSettings;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -325,250 +320,25 @@ final class StudioApi
      */
     private function estimatorBook(array $payload): array
     {
-        return [
-            'book' => $this->rateBookForClient(RateBook::read()),
-            'templates' => $this->rateBookTemplates(),
-            'page' => '/estimator/',
-        ];
+        return app(EstimatorRateBooks::class)->read($this->user);
     }
 
-    /**
-     * Save the rate book: the file the public page loads and the `estimator_rates` rows in one transaction.
-     * If either side fails the file is put back, so the page can never show prices the bot does not use.
-     *
-     * @param  array<string, mixed>  $payload
-     * @return array{book: array<string, mixed>, templates: list<array{name: string, at: string, services: int}>, saved: string}
+    /** @param array<string, mixed> $payload
+     * @return array<string, mixed>
      */
     private function estimatorSave(array $payload): array
     {
         $input = $payload['book'] ?? $payload;
-        $book = RateBook::normalise(is_array($input) ? $input : []);
-        $before = RateBook::read();
 
-        // The screen never edits the catalogue: the 22 calculator add-ons stay exactly as they are.
-        $book['catalog'] = $before['catalog'];
-
-        try {
-            DB::transaction(function () use ($book): void {
-                RateBook::write($book);
-                $this->mirrorEstimatorRates($book['services']);
-            });
-        } catch (Throwable $e) {
-            // The public file is written inside the transaction; put it back if the rows did not commit.
-            try {
-                RateBook::write($before);
-            } catch (Throwable) {
-                // Nothing more can be done here — the error below still says the save failed.
-            }
-
-            throw $e;
-        }
-
-        return [
-            'book' => $this->rateBookForClient($book),
-            'templates' => $this->rateBookTemplates(),
-            'saved' => 'The estimator page and the bot now use these rates.',
-        ];
+        return app(EstimatorRateBooks::class)->publish($this->user, is_array($input) ? $input : [], $payload['revision'] ?? null);
     }
 
-    /**
-     * Saved rate books: save the current prices under a name, delete one, or load one back into the editor.
-     * Loading does not publish — the screen still has to press Save, as in v2.1.
-     *
-     * @param  array<string, mixed>  $payload
+    /** @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
     private function estimatorTemplate(array $payload): array
     {
-        $op = (string) ($payload['op'] ?? '');
-        $name = trim((string) ($payload['name'] ?? ''));
-        $settings = EstimatorSettings::shelf();
-        /** @var array<string, array{at: string, services: list<mixed>, finishes: list<mixed>, terms: list<mixed>}> $books */
-        $books = $settings->rate_books;
-
-        if ($op === 'delete') {
-            if (! isset($books[$name])) {
-                throw new RuntimeException('That rate book is not in the list.');
-            }
-
-            unset($books[$name]);
-            $settings->rate_books = $books;
-            $settings->save();
-
-            return ['templates' => $this->rateBookTemplates(), 'note' => "“{$name}” deleted."];
-        }
-
-        if ($op === 'apply') {
-            if (! isset($books[$name])) {
-                throw new RuntimeException('That rate book is not in the list.');
-            }
-
-            $snapshot = $books[$name];
-
-            return [
-                'book' => $this->rateBookForClient([
-                    'services' => $snapshot['services'],
-                    'finishes' => $snapshot['finishes'],
-                    'catalog' => RateBook::read()['catalog'],
-                    'terms' => $snapshot['terms'],
-                ]),
-                'note' => "“{$name}” loaded into the editor — check it, then press Save & publish.",
-            ];
-        }
-
-        if ($op !== 'save') {
-            throw new RuntimeException('Unknown action for the saved rate books.');
-        }
-
-        if ($name === '' || mb_strlen($name) > 60) {
-            throw new RuntimeException('Give the rate book a name of at most 60 characters.');
-        }
-
-        if (count($books) >= 12 && ! isset($books[$name])) {
-            throw new RuntimeException('There are already 12 saved rate books — delete one first.');
-        }
-
-        $now = RateBook::read();
-        $books[$name] = [
-            'at' => now()->toIso8601String(),
-            'services' => array_values($now['services']),
-            'finishes' => array_values($now['finishes']),
-            'terms' => array_values($now['terms']),
-        ];
-
-        // Newest first, so the list in the screen reads the same way the snapshots were taken.
-        $books = array_reverse($books, true);
-
-        $settings->rate_books = $books;
-        $settings->save();
-
-        return ['templates' => $this->rateBookTemplates(), 'note' => "“{$name}” saved."];
-    }
-
-    /**
-     * The book as the screen edits it: catalogue entries are counted, not sent — the screen says they are
-     * kept as they are. Finishes always arrive as the three the calculator uses, in order.
-     *
-     * @param  array<string, mixed>  $book
-     * @return array<string, mixed>
-     */
-    private function rateBookForClient(array $book): array
-    {
-        $services = [];
-
-        foreach ((array) ($book['services'] ?? []) as $row) {
-            if (! is_array($row)) {
-                continue;
-            }
-
-            $rates = is_array($row['rates'] ?? null) ? $row['rates'] : [];
-
-            $services[] = [
-                'key' => (string) ($row['key'] ?? ''),
-                'label' => (string) ($row['label'] ?? ''),
-                'hint' => (string) ($row['hint'] ?? ''),
-                'unit' => (string) ($row['unit'] ?? 'sqft'),
-                'unitLabel' => (string) ($row['unitLabel'] ?? ''),
-                'rates' => [
-                    'essential' => (int) ($rates['essential'] ?? 0),
-                    'standard' => (int) ($rates['standard'] ?? 0),
-                    'premium' => (int) ($rates['premium'] ?? 0),
-                ],
-            ];
-        }
-
-        $finishes = [];
-
-        foreach (RateBook::FINISHES as $finish) {
-            $label = ucfirst($finish);
-            $hint = '';
-
-            foreach ((array) ($book['finishes'] ?? []) as $row) {
-                if (is_array($row) && (string) ($row['key'] ?? '') === $finish) {
-                    $label = (string) ($row['label'] ?? $label);
-                    $hint = (string) ($row['hint'] ?? '');
-                    break;
-                }
-            }
-
-            $finishes[] = ['key' => $finish, 'label' => $label, 'hint' => $hint];
-        }
-
-        $terms = [];
-
-        foreach ((array) ($book['terms'] ?? []) as $term) {
-            if (is_scalar($term) && trim((string) $term) !== '') {
-                $terms[] = (string) $term;
-            }
-        }
-
-        return [
-            'services' => $services,
-            'finishes' => $finishes,
-            'terms' => $terms,
-            'catalog_count' => count((array) ($book['catalog'] ?? [])),
-        ];
-    }
-
-    /**
-     * The saved snapshots for the screen, newest first.
-     *
-     * @return list<array{name: string, at: string, services: int}>
-     */
-    private function rateBookTemplates(): array
-    {
-        try {
-            /** @var array<string, array{at?: string, services?: list<mixed>}> $books */
-            $books = EstimatorSettings::shelf()->rate_books;
-        } catch (Throwable) {
-            return [];
-        }
-
-        $rows = [];
-
-        foreach ($books as $name => $snapshot) {
-            $rows[] = [
-                'name' => (string) $name,
-                'at' => (string) ($snapshot['at'] ?? ''),
-                'services' => count((array) ($snapshot['services'] ?? [])),
-            ];
-        }
-
-        usort($rows, static fn (array $a, array $b): int => strcmp($b['at'], $a['at']));
-
-        return $rows;
-    }
-
-    /**
-     * Keep the bot and the staff estimate builder on the same prices as the public page. Rows are never
-     * deleted — a service taken off the website may still be referenced by an old estimate — they are
-     * switched off instead.
-     *
-     * @param  list<array<string, mixed>>  $services
-     */
-    private function mirrorEstimatorRates(array $services): void
-    {
-        $keys = [];
-
-        foreach ($services as $i => $service) {
-            $key = (string) $service['key'];
-            $keys[] = $key;
-            $rates = (array) $service['rates'];
-
-            EstimatorRate::updateOrCreate(['key' => $key], [
-                'label' => (string) $service['label'],
-                'hint' => $service['hint'] !== '' ? (string) $service['hint'] : null,
-                'unit' => Unit::normalize((string) $service['unit'])->value,
-                'unit_label' => (string) $service['unitLabel'],
-                'essential_minor' => (int) $rates['essential'] * 100,
-                'standard_minor' => (int) $rates['standard'] * 100,
-                'premium_minor' => (int) $rates['premium'] * 100,
-                'is_active' => true,
-                'position' => $i,
-            ]);
-        }
-
-        EstimatorRate::query()->whereNotIn('key', $keys)->update(['is_active' => false]);
+        return app(EstimatorRateBooks::class)->template($this->user, $payload);
     }
 
     /**

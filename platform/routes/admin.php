@@ -119,7 +119,7 @@ Route::livewire('/invoices/new', InvoiceCreate::class)->name('invoices.create')-
 Route::livewire('/invoices/{invoice}', InvoiceShow::class)->name('invoices.show')->middleware('can:invoices.view')->whereNumber('invoice');
 Route::get('/invoices/{invoice}/pdf', InvoicePdfController::class)->name('invoices.pdf')->middleware('can:invoices.view')->whereNumber('invoice');
 Route::livewire('/payments', PaymentsHub::class)->name('payments.index')->middleware('can:invoices.view');
-Route::livewire('/estimations', EstimationsIndex::class)->name('estimations.index')->middleware('can:estimates.view');
+Route::livewire('/estimations', EstimationsIndex::class)->name('estimations.index')->middleware('can:estimations.access');
 Route::livewire('/estimations/new', EstimateBuilder::class)->name('estimations.create')->middleware('can:estimates.view');
 Route::livewire('/estimations/{estimate}', EstimateBuilder::class)->name('estimations.show')->middleware('can:estimates.view')->whereNumber('estimate');
 Route::get('/sales/dues', fn () => redirect()->route('admin.payments.index', ['tab' => 'dues'], 301))->name('sales.dues')->middleware('can:invoices.view');
@@ -178,8 +178,10 @@ Route::post('/website/studio/api', WebsiteStudioApiController::class)
 Route::post('/website/studio/builder-api', WebsiteStudioApiController::class)
     ->name('website.studio.builder-api')->middleware('can:website.edit');
 
+Route::get('/website/estimator', fn () => redirect()->route('admin.estimations.index', ['tab' => 'rates']))->name('website.estimator')->middleware('can:website.edit');
+
 // The screens the OS navigation links to by name, instead of a route with a parameter.
-foreach (['blog' => 'website.blog', 'portfolio' => 'website.portfolio', 'forms' => 'website.forms', 'estimator' => 'website.estimator'] as $screen => $name) {
+foreach (['blog' => 'website.blog', 'portfolio' => 'website.portfolio', 'forms' => 'website.forms'] as $screen => $name) {
     Route::get('/website/'.$screen, [WebsiteStudioController::class, 'show'])
         ->defaults('screen', $screen)->name($name)->middleware('can:website.edit');
 }

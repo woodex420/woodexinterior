@@ -55,18 +55,18 @@ it('consolidates the sidebar to the confirmed P10.1 map', function () {
         ->and(collect($groups['Overview']['items'])->pluck('label')->all())->toBe(['Dashboard', 'Approvals', 'Reports'])
         ->and($groups['CRM']['items'])->toHaveCount(3)
         ->and(collect($groups['CRM']['items'])->pluck('label')->all())->toBe(['Leads', 'Contacts', 'Tasks & Visits'])
-        ->and($groups['Sales']['items'])->toHaveCount(6)
-        ->and(collect($groups['Sales']['items'])->pluck('label')->all())->toBe(['Estimations', 'Estimator rates', 'Quotations', 'Invoices', 'Payments', 'Documents']);
+        ->and($groups['Sales']['items'])->toHaveCount(5)
+        ->and(collect($groups['Sales']['items'])->pluck('label')->all())->toBe(['Estimations', 'Quotations', 'Invoices', 'Payments', 'Documents']);
 
     $live = collect(AdminNavigation::for($this->owner))->flatMap(fn (array $g): array => $g['items'])->filter(fn (array $item): bool => $item['route'] !== null);
-    // 48 live destinations: the P10.1 map plus the Website screens still switched on for OS 1, plus the
+    // 47 live destinations after estimator rates joined the native Estimations hub; previously 48: the P10.1 map plus the Website screens still switched on for OS 1, plus the
     // three screens that were shipped but advertised as future work — Client portal, Handovers and Chat
     // Bot — with the eleven System entries folded into Settings + three hubs (deep QA 21 Oct, slice B:
     // Access & team, Connections, Platform: -7) and the duplicate Alert Rules placeholder removed, plus
     // **Trial balance** (part 2) and the money-out trio **Profit & loss / Payables / Income & expenses**
     // (slice I, 26 Oct). The exact number is asserted on purpose — a screen cannot join or leave the sidebar
     // without a test.
-    expect($live)->toHaveCount(48);
+    expect($live)->toHaveCount(47);
 });
 
 it('renders every hub tab for the owner', function (string $path, string $marker) {

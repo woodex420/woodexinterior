@@ -27,7 +27,7 @@ beforeEach(function () {
     $this->owner = $this->userWithRole('owner');
     $this->sales = $this->userWithRole('sales');
     $this->support = $this->userWithRole('support');
-    $this->contact = Contact::factory()->create(['name' => 'Hira Sheikh']);
+    $this->contact = Contact::factory()->create(['name' => 'Hira Sheikh', 'owner_id' => $this->sales->id]);
 
     /** @var EstimatorRate */
     $this->rate = EstimatorRate::query()->where('key', 'interior-design')->where('is_active', true)->sole();

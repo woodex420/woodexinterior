@@ -21,7 +21,7 @@ final class AdminNavigation
      *
      * @var list<string>
      */
-    public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.blog', 'admin.website.portfolio', 'admin.website.forms', 'admin.website.estimator'];
+    public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.blog', 'admin.website.portfolio', 'admin.website.forms'];
 
     /**
      * @return list<array{title: string, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}>
@@ -42,9 +42,6 @@ final class AdminNavigation
             ]),
             self::group('Sales', [
                 self::item('Estimations', 'calculator', 'admin.estimations.index', 'estimates.view'),
-                // The website's rate book is a pricing screen, not content: it sits beside the estimates
-                // it prices (deep QA 21 Oct, slice B). The screen itself is unchanged.
-                self::item('Estimator rates', 'percent', 'admin.website.estimator', 'website.edit'),
                 self::item('Quotations', 'quote', 'admin.quotes.index', 'quotes.view'),
                 self::item('Invoices', 'invoice', 'admin.invoices.index', 'invoices.view'),
                 self::item('Payments', 'wallet', 'admin.payments.index', 'invoices.view'),
@@ -139,7 +136,7 @@ final class AdminNavigation
                     return false;
                 }
 
-                return $item['permission'] === null || ($user?->can($item['permission']) ?? false);
+                return ($item['route'] === 'admin.estimations.index' && ($user?->can('website.edit') ?? false)) || $item['permission'] === null || ($user?->can($item['permission']) ?? false);
             }));
 
             if ($items !== []) {

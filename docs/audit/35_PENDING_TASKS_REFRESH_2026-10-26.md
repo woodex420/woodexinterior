@@ -58,8 +58,7 @@ the gap report + the refreshed queue.
    apply), drawer tabs (Details / Log activity / Timeline), month + business-line tabs.
    Shipped without a schema change; see `16_MASTER_TODO.md` Step 45.
 2. ~~**Slice INT — Integrations redevelopment**~~ — **Done 27 Oct (Step 47).** Owner chose the unified grid + signed webhooks and approved two tables. Delivered scope and remaining connector work below.
-3. **Slice W — Estimations hub (paused for Step 48 quotation review)**. Merge Website-studio rates + Sales estimates into one
-   native hub. No new tables expected; verify at design time.
+3. ~~**Slice W — Estimations hub**~~ — **Implemented27 Oct after “start next”.** Native Estimates / Rates / Estimator Enquiries, all eight audit fixes, no schema changes; current evidence in report39.
 4. **Slice T remainder — quotation types & template cards.** Data half superseded by
    Step 44's importer; remaining = card/chip UI + advance-% surfaces. Small schema ask
    (template category) approved with the slice.
@@ -167,3 +166,23 @@ Old sent/issued renderers and explicit saved percentages remain frozen; drafts o
 No new schema in the polish; native issue/ledger/verified-payment semantics retained. Final gate **1,577 passed /
 1 skipped / 8,418 assertions**; active33143 and isolated33144 iframe/browser/PDF evidence in
 `38_FURNITURE_A4_POLISH_2026-10-27.md`. **W is still paused. Next: owner accepts this Furniture design.**
+
+
+## Slice W audit → approved implementation (27 Oct)
+
+Owner accepted Furniture, approved W's audit/plan with “Sure start”, then approved its implementation with
+**“start next”**. Delivered native Estimates / Rates / Estimator Enquiries; one sidebar and authorised legacy
+Rates redirect; scoped records/actions and website-only Rates access;20-row pagination/search; shared
+publisher with drift display, explicit publish, named backups/load-as-draft, native revision conflicts and
+file/DB compensation. All eight reproduced defects now have permanent passing regressions.
+
+Final exact-tree full Pest gate: **1,601 passed /1 skipped /8,565 assertions /438.16s**.
+PHPStan0, Pint30, Vite, native desktop/390px workflows,18 actual public-v1/native base parity cases, active33143
+restricted-cookie framing and Interior/Furniture generated-PDF inspection pass. No schema changes,
+production deployment, public-v1 redesign or Furniture-renderer change. Preview remains fresh demo data.
+See [report39](39_ESTIMATIONS_HUB_AUDIT_PLAN_2026-10-27.md) and its release evidence for limits/reproduction.
+
+**Current recommendation:** audit **T remainder** (quotation-template cards/chips) next, reusing source first;
+no T implementation/schema work until its own decision. U still requires invoice samples; X and deferred
+connector/off-site-backup work remain separate. Earlier “W paused/next” notes above are historical and are
+superseded by this section.

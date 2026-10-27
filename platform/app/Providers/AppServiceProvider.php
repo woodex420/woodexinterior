@@ -135,6 +135,8 @@ class AppServiceProvider extends ServiceProvider
             'recurring_expense' => RecurringExpense::class,
         ]);
 
+        Gate::define('estimations.access', fn (User $user): bool => $user->is_active && ($user->can('estimates.view') || $user->can('website.edit')));
+
         Gate::policy(Lead::class, LeadPolicy::class);
         Gate::policy(Contact::class, ContactPolicy::class);
         Gate::policy(Company::class, CompanyPolicy::class);

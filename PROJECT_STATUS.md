@@ -2,14 +2,20 @@
 
 **Updated:** 27 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (`owner@woodex.test` / `Woodex-Preview-2026`)
 
-**One line:** the OS is real and database-backed; the gap QA found was the path *between* screens — an enquiry could become a lead but never an estimate, and the Overview showed counts you could not open. Both paths are now closed and tested. Everything else that looks empty is either honestly empty (no data yet) or blocked on a key the owner must approve.
+> **Current phase — Slice W implemented:** native **Estimates / Rates / Estimator Enquiries** is built,
+> with all eight audited snapshot/review/quantity/Furniture/idempotency/scope fixes. Owner approved with
+> “start next”. Final exact-tree full gate: **1,601 passed / 1 skipped / 8,565 assertions / 438.16s**. PHPStan0 / Pint30 / Vite and desktop/mobile/active33143 iframe/both-brand PDF proof pass.
+> [Report39](docs/audit/39_ESTIMATIONS_HUB_AUDIT_PLAN_2026-10-27.md) and its evidence record track delivery.
+> **No schema changes or production deployment.** Preview33143 is a fresh demo, not recovered owner data.
+
+**One line:** the native OS now connects estimator enquiries, saved-price estimates and brand-aware quotation drafts in one tested workflow. Prices never silently refresh at conversion; external-key and later-slice blockers remain explicitly tracked.
 
 > The detailed findings, evidence and ordered plan are in **[`docs/audit/31_DEEP_QA_2026-10-21.md`](docs/audit/31_DEEP_QA_2026-10-21.md)**. That file is the current authority; older status claims in this repo are superseded.
 
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,577 passed · 1 skipped · 8,418 assertions** · Pint clean on touched files · PHPStan 0 errors |
+| Tests | **1,601 passed · 1 skipped · 8,565 assertions** · Pint clean on touched files · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
@@ -24,7 +30,23 @@ design against it. The current queue — with the v2.1-vs-OS gap report and the 
 integrations slice — is **[`docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md`](docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md)**;
 the owner picks the next slice from it.
 
-## Latest delivery — Furniture A4 polish (27 October)
+## Latest delivery — native Estimations hub (27 October)
+
+- One Sales hub: **Estimates / Rates / Estimator Enquiries**, search/filter/pagination and scoped actions;
+  website-only rate editors do not gain CRM access. Legacy Website estimator URL redirects to Rates.
+- Shared publisher: explicit publication, named published-price backups/load-as-draft, drift indicator,
+  native revision conflicts, cache lock, file/DB compensation and unchanged public catalogue.
+- Frozen saved prices and read-only converted history; explicit reprice, review invalidation, strict
+  quantities, labelled/responsive add-ons, unified retry-safe Interior/Furniture conversion.
+- Real browser publish250→275 retained the saved Rs2,500 quotation rather than Rs2,750 current preview;
+  selected add-on live pricing and390px fit passed. Authentic public JS/native PHP matched18 base cases.
+- Active33143 and isolated33144 pass third-party-cookie-blocked/no-cookie iframe checks. Actual generated
+  Furniture1-page and Interior2-page PDFs parsed/rasterised/visually inspected. Existing renderers unchanged.
+- No new schema, destructive data work or production deployment. Live MySQL is not validated here.
+- **Recommended next:** audit Slice T's remaining quotation-template cards/chips; request its own decision
+  before code/schema work. U remains sample-blocked. Evidence: [39 release results](docs/audit/evidence/39_estimations_release_results.md).
+
+## Previous delivery — Furniture A4 polish (27 October)
 
 The owner-approved second Furniture pass is complete in the existing Sales module. New Furniture quotations
 and invoices use the reference-like A4 letterhead: logo/company left, document metadata right, repeated print
