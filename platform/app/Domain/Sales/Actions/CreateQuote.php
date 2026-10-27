@@ -55,7 +55,7 @@ final class CreateQuote
                 : MilestonePlanKey::Execution;
             $design = $plan === MilestonePlanKey::Design || $template?->kind === TemplateKind::Design;
 
-            $documentDesign = app(DocumentStyles::class)->copy($line);
+            $documentDesign = app(DocumentStyles::class)->quotationCopy($line);
             $presentation = $template?->blueprint['presentation'] ?? null;
             if (is_array($presentation)) {
                 $documentDesign = [...$documentDesign,

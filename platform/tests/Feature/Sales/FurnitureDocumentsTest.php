@@ -123,7 +123,7 @@ it('roundtrips product specifications and advance through reusable templates and
 it('does not mistake a manually printed heading for an accounting invoice', function () {
     app(QuoteEditor::class)->updateFurnitureText($this->quote, ['document_title' => 'Invoice']);
     $html = app(QuotePdf::class)->html(app(QuoteSnapshot::class)->build($this->quote->refresh()));
-    expect($html)->toContain('Quotation record')->toContain('<div class="document-title">Invoice</div>')
+    expect($html)->toContain('Quotation document')->toContain('<div class="document-title">Invoice</div>')
         ->and(Invoice::count())->toBe(0);
 });
 

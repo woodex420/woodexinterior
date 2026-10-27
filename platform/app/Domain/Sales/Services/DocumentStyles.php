@@ -163,6 +163,23 @@ final class DocumentStyles
         ));
     }
 
+    /** Current quotation-only layout; invoices intentionally retain copy() revision 2.
+     * @return array<string, mixed>
+     */
+    public function quotationCopy(BusinessLine $line): array
+    {
+        $design = $this->copy($line);
+        if ($line === BusinessLine::Furniture) {
+            $design['furniture_revision'] = 3;
+            // Adopt the supplied palette only for the old default; keep custom brand colours.
+            if ($design['accent_color'] === '#276749') {
+                $design['accent_color'] = '#347647';
+            }
+        }
+
+        return $design;
+    }
+
     /** @return array<string, mixed> */
     public function copy(BusinessLine $line): array
     {

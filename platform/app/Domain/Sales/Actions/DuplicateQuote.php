@@ -59,7 +59,7 @@ final class DuplicateQuote
                 'internal_notes' => $source->internal_notes,
                 'scope_html' => $source->scope_html,
                 'owner_id' => $by->id,
-                'meta' => ['milestone_plan' => $source->milestonePlan()->value, 'duplicated_from' => $source->id, 'furniture' => $source->meta['furniture'] ?? [], 'furniture_billing' => $source->meta['furniture_billing'] ?? 'milestone', 'document_design' => app(DocumentStyles::class)->copy($source->business_line)],
+                'meta' => ['milestone_plan' => $source->milestonePlan()->value, 'duplicated_from' => $source->id, 'furniture' => $source->meta['furniture'] ?? [], 'furniture_billing' => $source->meta['furniture_billing'] ?? 'milestone', 'document_design' => app(DocumentStyles::class)->quotationCopy($source->business_line)],
             ]);
 
             $source->sections->each(function (QuoteSection $section) use ($copy): void {

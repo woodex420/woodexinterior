@@ -102,6 +102,8 @@ async function scenario(name, { dropCookies, blockThirdPartyCookies }) {
     console.log(`\n[${name}] app in a cross-site iframe via ${base}${dropCookies ? ' (proxy drops all cookies)' : ''}${blockThirdPartyCookies ? ', third-party cookies blocked' : ''}`);
     await page.goto(`http://localhost:${HARNESS_PORT}/?src=${encodeURIComponent(`${base}/admin/login`)}`, { waitUntil: 'networkidle0', timeout: 60000 });
 
+    await (await frame()).waitForSelector('#wx-preview-login', {timeout:60000});
+
     // What the browser lets the framed page keep (informational).
     const probe = await (await frame()).evaluate(() => {
         const has = (n) => { try { return document.cookie.split('; ').some((c) => c.startsWith(`${n}=`)); } catch { return 'error'; } };
@@ -189,6 +191,16 @@ async function scenario(name, { dropCookies, blockThirdPartyCookies }) {
     await hub.waitForFunction(() => document.querySelector('iframe[title="Invoice live preview"]')?.contentDocument?.body?.innerText.includes('Arena frame Furniture chair'), {timeout:30000});
     expect('Furniture live invoice renders in nested cookie-restricted frame', await hub.$eval('input[aria-label="Line 1 product name"]', e => document.activeElement === e), await state());
     await page.screenshot({path:`${SHOTS}/furniture-iframe-${name}.png`});
+
+    // Optional new-layout proof against a purpose-created, isolated draft only.
+    if (process.env.QA_FURNITURE_QUOTE_ID) {
+        if (PORT !== 33144 || ! /^\d+$/.test(process.env.QA_FURNITURE_QUOTE_ID)) throw Error('Quotation fixture requires isolated QA33144.');
+        await hub.goto(`${base}/admin/quotes/${process.env.QA_FURNITURE_QUOTE_ID}`, {waitUntil:'networkidle0',timeout:60000});
+        await hub.waitForFunction(()=>document.querySelector('iframe[title="Quotation live preview"]')?.contentDocument?.querySelector('[data-furniture-revision="3"]'),{timeout:30000});
+        await hub.type('input[aria-label="Product name"]',' iframe proof');
+        await hub.waitForFunction(()=>document.querySelector('iframe[title="Quotation live preview"]')?.contentDocument?.body?.innerText.includes('iframe proof'),{timeout:30000});
+        expect('New Furniture quotation live preview renders in nested restricted frame without focus loss', await hub.$eval('input[aria-label="Product name"]',e=>document.activeElement===e), await state());
+    }
 
     // Informational: "memory+" = the browser sent no cookie at all, "memory~" = it sent an older value.
     const missing = jarResponses.filter((r) => r.includes('memory+'));

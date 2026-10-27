@@ -2,11 +2,16 @@
 
 **Updated:** 27 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (`owner@woodex.test` / `Woodex-Preview-2026`)
 
-> **Current phase — Slice W implemented:** native **Estimates / Rates / Estimator Enquiries** is built,
-> with all eight audited snapshot/review/quantity/Furniture/idempotency/scope fixes. Owner approved with
-> “start next”. Final exact-tree full gate: **1,601 passed / 1 skipped / 8,565 assertions / 438.16s**. PHPStan0 / Pint30 / Vite and desktop/mobile/active33143 iframe/both-brand PDF proof pass.
-> [Report39](docs/audit/39_ESTIMATIONS_HUB_AUDIT_PLAN_2026-10-27.md) and its evidence record track delivery.
-> **No schema changes or production deployment.** Preview33143 is a fresh demo, not recovered owner data.
+> **Current phase — Furniture quotation reference update delivered:** owner approved the design-only scope
+> with “start”. New/explicitly-upgraded Furniture quotations use revision3 from the attached HTML, keeping
+> editable50%, native Product/Description and accounting. Existing invoice/Interior renderers and frozen
+> history are unchanged. Final gate: **1,608 passed /1 skipped /8,615 assertions /418.28s**, PHPStan0,
+> Pint10 + proof PHP1 and Vite pass. Real desktop/390px/nested-frame and1-page reference PDF proof pass.
+> [Report40](docs/audit/40_FURNITURE_HTML_REFERENCE_AUDIT_2026-10-27.md). No schema change or production
+> deployment. Preview33143 remains a fresh demo. **Next: owner reviews the updated Furniture quotation.**
+>
+> Previous Slice W remains delivered: native Estimates / Rates / Estimator Enquiries and all eight audited
+> workflow fixes; [report39](docs/audit/39_ESTIMATIONS_HUB_AUDIT_PLAN_2026-10-27.md).
 
 **One line:** the native OS now connects estimator enquiries, saved-price estimates and brand-aware quotation drafts in one tested workflow. Prices never silently refresh at conversion; external-key and later-slice blockers remain explicitly tracked.
 
@@ -15,7 +20,7 @@
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,601 passed · 1 skipped · 8,565 assertions** · Pint clean on touched files · PHPStan 0 errors |
+| Tests | **1,608 passed · 1 skipped · 8,615 assertions** · Pint clean on touched files · PHPStan 0 errors |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
@@ -30,7 +35,24 @@ design against it. The current queue — with the v2.1-vs-OS gap report and the 
 integrations slice — is **[`docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md`](docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md)**;
 the owner picks the next slice from it.
 
-## Latest delivery — native Estimations hub (27 October)
+## Latest delivery — Furniture quotation HTML-reference layout (27 October)
+
+- New quotation-only revision3 adopts the attached A4 header/client strip, green alternate-row table,
+  right-aligned totals/remainder, structured terms and slim footer; existing native fields and logo retained.
+- **50% editable default and native tax/transport calculations remain unchanged.** Example native total
+  Rs661,050 → Rs330,525 requested advance + Rs330,525 remainder, on1 A4 page. No fixed75%/13% rules imported.
+- Local embedded Inter fonts; no CDN dependencies or public-v1 change. Invoices retain their DM Sans/v2
+  renderer, including conversions from new quotation metadata. Revision1/2 templates remain unchanged.
+- Existing editable drafts upgrade only through **Apply current design**; sent history/stored PDFs remain
+  frozen.7 new permanent regression cases plus42 focused document/live-preview cases pass.
+- Actual normal/reference/small/invoice PDFs are1 page;45-row long-description pagination test is9 pages,
+  all products/bounds/page numbers checked. Desktop/390px/focus/optional-controls and nested-cookie proof pass.
+- Final full gate: **1,608 passed /1 skipped /8,615 assertions**. The skip is the live MySQL probe; no MySQL
+  production-runtime claim. No new schema or production deployment. Next: owner review before broader T.
+- Visual deliverable: [native demo PDF](docs/audit/evidence/40_furniture_quotation.pdf);
+  [verification](docs/audit/evidence/40_furniture_release_results.md).
+
+## Previous delivery — native Estimations hub (27 October)
 
 - One Sales hub: **Estimates / Rates / Estimator Enquiries**, search/filter/pagination and scoped actions;
   website-only rate editors do not gain CRM access. Legacy Website estimator URL redirects to Rates.

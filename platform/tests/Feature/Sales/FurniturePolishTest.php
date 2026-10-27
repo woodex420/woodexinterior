@@ -43,7 +43,7 @@ beforeEach(function () {
 
 it('prints the approved 47500 quotation with matching 50 percent terms and no obsolete labels', function () {
     $snapshot = app(QuoteSnapshot::class)->build($this->quote);
-    expect($snapshot['furniture_revision'])->toBe(2)
+    expect($snapshot['furniture_revision'])->toBe(3)
         ->and($snapshot['totals']['advance_bp'])->toBe(5000)
         ->and($snapshot['totals']['advance_minor'])->toBe(2375000)
         ->and($snapshot['totals']['after_advance_minor'])->toBe(2375000);
@@ -111,7 +111,7 @@ it('retains the old renderer for unversioned historical snapshots and only upgra
     expect($html)->toContain('Item / Product', 'Commercial notes &amp; terms', '75%');
     app(QuoteEditor::class)->applyDocumentDesign($this->quote);
     expect($this->quote->refresh()->advance_bp)->toBe(7500)
-        ->and($this->quote->meta['document_design']['furniture_revision'])->toBe(2)
+        ->and($this->quote->meta['document_design']['furniture_revision'])->toBe(3)
         ->and(app(QuotePdf::class)->html($old))->toBe($html);
     app(SendQuote::class)->handle($this->quote, $this->owner, 'link', false);
     $frozen = $this->quote->versions()->firstOrFail()->snapshot;

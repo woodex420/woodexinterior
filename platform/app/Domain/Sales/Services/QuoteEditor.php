@@ -73,7 +73,7 @@ final class QuoteEditor
     public function applyDocumentDesign(Quote $quote): void
     {
         $this->change($quote, function () use ($quote): void {
-            $quote->meta = array_merge($quote->meta ?? [], ['document_design' => app(DocumentStyles::class)->copy($quote->business_line), 'furniture' => ['signatories_text' => FurnitureDocument::signatureText($quote->signatories ?: app(SalesSettings::class)->signatories), ...($quote->meta['furniture'] ?? [])]]);
+            $quote->meta = array_merge($quote->meta ?? [], ['document_design' => app(DocumentStyles::class)->quotationCopy($quote->business_line), 'furniture' => ['signatories_text' => FurnitureDocument::signatureText($quote->signatories ?: app(SalesSettings::class)->signatories), ...($quote->meta['furniture'] ?? [])]]);
             $quote->save();
         });
     }
@@ -88,7 +88,7 @@ final class QuoteEditor
     public function updateDocumentDesign(Quote $quote, array $patch): void
     {
         $this->change($quote, function () use ($quote, $patch): void {
-            $design = $quote->meta['document_design'] ?? app(DocumentStyles::class)->copy($quote->business_line);
+            $design = $quote->meta['document_design'] ?? app(DocumentStyles::class)->quotationCopy($quote->business_line);
 
             if (array_key_exists('pdf_theme', $patch)) {
                 $design['pdf_theme'] = DocumentStyles::theme($patch['pdf_theme']);

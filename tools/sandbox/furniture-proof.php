@@ -7,6 +7,7 @@ use App\Domain\Crm\Models\Contact;
 use App\Domain\Sales\Actions\CreateFurnitureInvoice;
 use App\Domain\Sales\Actions\CreateQuote;
 use App\Domain\Sales\Actions\SendQuote;
+use App\Domain\Sales\Enums\DiscountType;
 use App\Domain\Sales\Services\InvoicePdf;
 use App\Domain\Sales\Services\InvoiceSnapshot;
 use App\Domain\Sales\Services\QuoteEditor;
@@ -55,3 +56,16 @@ $small['totals'] = [...$small['totals'], 'subtotal_minor' => 4750000, 'total_min
 file_put_contents('/tmp/woodex-run/shots/furniture-47500.pdf', app(QuotePdf::class)->render($small));
 file_put_contents('/tmp/woodex-run/shots/furniture-proof.json', json_encode(['quote_id' => $q->id, 'invoice_id' => $inv->id, 'contact_id' => $contact->id]));
 echo json_encode(['quote_id' => $q->id, 'invoice_id' => $inv->id, 'total' => $q->total_minor]),"\n";
+
+// Current HTML-reference layout, using real native values rather than the attachment's JS totals.
+$reference = app(CreateQuote::class)->handle($contact, BusinessLine::Furniture, $by, title: 'Furniture reference layout proof');
+$section = $reference->sections()->firstOrFail();
+$e->updateLine($reference->items()->firstOrFail(), ['product_name' => 'Office desk', 'description' => 'Solid oak veneer with cable management.', 'qty' => '2', 'rate_minor' => 8500000, 'unit' => 'nos']);
+foreach ([['Office chair', '2', 4250000], ['Conference table', '1', 14500000], ['Storage cabinet', '3', 5500000], ['Installation', '1', 3500000]] as [$product, $quantity, $rate]) {
+    $e->addLine($section, ['product_name' => $product, 'description' => $product.' in the approved finish with matching hardware.', 'qty' => $quantity, 'rate_minor' => $rate, 'unit' => 'nos']);
+}
+$e->updateDetails($reference, ['discount_type' => DiscountType::Percent, 'discount_value' => 500, 'tax_bp' => 1300, 'other_charges_minor' => 1500000, 'site' => 'Lahore QA site']);
+$e->updateFurnitureText($reference, ['signatories_text' => '', 'delivery_text' => 'As agreed after design approval.']);
+$referenceSnapshot = app(QuoteSnapshot::class)->build($reference->refresh());
+file_put_contents('/tmp/woodex-run/shots/furniture-reference.pdf', app(QuotePdf::class)->render($referenceSnapshot));
+file_put_contents('/tmp/woodex-run/shots/furniture-reference.html', app(QuotePdf::class)->html($referenceSnapshot));

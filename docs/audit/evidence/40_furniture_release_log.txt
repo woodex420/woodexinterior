@@ -1,0 +1,48 @@
+# Final exact-tree full gate
+   PASS  Tests\ArchTest
+  ✓ no debugging statements                                              8.11s
+  ✓ application code uses strict types                                   7.86s
+  ✓ domain code does not depend on Livewire or HTTP controllers          8.34s
+
+  Tests:    1 skipped, 1608 passed (8615 assertions)
+  Duration: 418.28s
+
+
+# PHPStan
+
+Note: Using configuration file /tmp/woodex-run/app/phpstan.neon.
+ [OK] No errors
+
+
+# Application formatting
+  ..........
+
+  ──────────────────────────────────────────────────────────────────── Laravel
+    PASS   .......................................................... 10 files
+
+
+# Isolated browser release
+NEW FURNITURE http://127.0.0.1:33144/admin/quotes/7
+QUOTE LIVE PRODUCT SPEC RATE ADVANCE WITHOUT BLUR PASS
+QUOTE EDITABLE ADVANCE TERMS SIGNATORIES SHOW HIDE PASS
+QUOTE PHONE NO OVERFLOW
+INVOICE LIVE PRODUCT SPEC RATE PREVIEW VISIBLE { top: 254, left: 952 }
+INVOICE OPTIONAL SIGNATORIES AND MATCHING TERMS PASS
+INVOICE PHONE NO OVERFLOW
+CONVERSION OPENS SAME FULL INVOICE; ISSUE BOOKS PASS
+INTERIOR V21 REGRESSION PASS
+JS_ERRORS []
+
+# Isolated nested-frame proof
+  ok   Furniture live invoice renders in nested cookie-restricted frame  {"path":"/admin/invoices/new","loginForm":false,"alert":null,"heading":"New invoice","sidebar":true}
+  ok   New Furniture quotation live preview renders in nested restricted frame without focus loss  {"path":"/admin/quotes/6","loginForm":false,"alert":null,"heading":"WF-10052","sidebar":true}
+  server cookie memory: browser sent no cookies on 22 requests (first: POST /admin/login memory+XSRF-TOKEN,woodex-os-session), older values on 0
+
+3pc-blocked: OK, no-cookies: OK
+IFRAME CHECK OK
+
+# Active preview proof
+  server cookie memory: browser sent no cookies on 19 requests (first: POST /admin/login memory+XSRF-TOKEN,woodex-os-session), older values on 0
+
+3pc-blocked: OK, no-cookies: OK
+IFRAME CHECK OK

@@ -56,7 +56,7 @@ it('previews a furniture quotation with its WF number and the dedicated green fu
 
     expect($snapshot['label'])->toStartWith('WF-')
         ->and($pane)->toContain('data-furniture-document="quotation"')
-        ->and($pane)->toContain('#276749')
+        ->and($pane)->toContain('#347647')
         ->and($pane)->toContain('Previewed joinery');
 });
 

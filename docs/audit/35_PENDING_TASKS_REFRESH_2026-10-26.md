@@ -186,3 +186,16 @@ See [report39](39_ESTIMATIONS_HUB_AUDIT_PLAN_2026-10-27.md) and its release evid
 no T implementation/schema work until its own decision. U still requires invoice samples; X and deferred
 connector/off-site-backup work remain separate. Earlier “W paused/next” notes above are historical and are
 superseded by this section.
+
+## Owner priority update — attached Furniture HTML (27 Oct)
+
+Owner approved the recommended **design-only** Furniture quotation update with **“start”**. Revision3 is
+implemented with native Product/Description, editable50%, native tax/transport totals, current-data preview
+and PDF. New/explicitly-upgraded quotations adopt it; revision1/2 history, invoice renderer and Interior
+are preserved. No schema or sample-data import. Seven new regression cases and real desktop/390px/nested
+cookie-restricted preview proof cover the boundary. The five-row example fits1 A4 page at the native
+Rs661,050 total and matching Rs330,525 advance/remainder;45-row stress paginates over9 pages without loss.
+Final release gate: **1,608 passed /1 skipped /8,615 assertions /418.28s**; PHPStan/formatting/build pass. See [report40](40_FURNITURE_HTML_REFERENCE_AUDIT_2026-10-27.md).
+
+**Next: owner reviews this updated Furniture quotation.** The broader T cards/chips audit waits for that
+review; no unrelated T/U schema or implementation work is started automatically.
