@@ -517,19 +517,6 @@
                 <p class="mt-3 text-theme-xs text-gray-500">Rent / Transport is entered below. The advance sentence in Terms and conditions is generated from this percentage. Tax applies after discounts and charges. Changing the heading does not create an accounting invoice.</p>
             </x-admin.card>
             @endif
-            @if ($quote->business_line->value === 'furniture')
-                <x-admin.card title="Furniture print options" description="Control empty rows and optional sections. Applied discounts, charges and tax always remain disclosed; these switches do not alter accounting.">
-                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    @foreach (\App\Domain\Sales\Services\FurnitureDocument::OPTIONS as $field => $label)
-                        <x-admin.field :label="$label" :for="'details.'.$field"><select id="details.{{ $field }}" wire:model.live="details.{{ $field }}" @disabled($ro) class="wx-input"><option value="yes">Show</option><option value="no">Hide when optional</option></select></x-admin.field>
-                    @endforeach
-                    </div>
-                    <x-admin.field label="Signatories — add or remove a person" for="details.signatories_text" error="details.signatories_text" hint="One person per line: Name | Title. Delete a line to remove that person. Leave empty for no names. Printed centred; maximum six people.">
-                        <textarea id="details.signatories_text" wire:model.live.blur="details.signatories_text" @disabled($ro) rows="4" maxlength="2000" class="wx-input h-auto"></textarea>
-                    </x-admin.field>
-                    <p class="mt-2 text-theme-xs text-gray-500">Existing drafts: Apply current design above to opt into the new A4 layout. Stored advance percentages and charges are not reset.</p>
-                </x-admin.card>
-            @endif
             <x-admin.card title="Discount, charges and tax">
                 <div class="space-y-4">
                     <x-admin.field label="Discount on the subtotal" error="details.discount_value">
@@ -651,7 +638,10 @@
 
             <x-admin.card title="Terms and notes">
                 <div class="space-y-4">
-                    <x-admin.field label="Terms and conditions" for="details.terms">
+                    @if ($quote->business_line->value === 'furniture')
+                    <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-theme-sm dark:border-gray-700 dark:bg-gray-800" aria-label="Automatic advance payment term">{{ \App\Domain\Sales\Services\FurnitureDocument::terms('', (int) $quote->advance_bp)[0] }}<p class="mt-1 text-theme-xs text-gray-500">Generated from Advance requested (%). Edit that percentage to keep the sentence and calculated amount in sync.</p></div>
+                    @endif
+                    <x-admin.field :label="$quote->business_line->value === 'furniture' ? 'Terms and conditions — additional terms' : 'Terms and conditions'" for="details.terms">
                         <textarea id="details.terms" wire:model.live.blur="details.terms" rows="5" @disabled($ro) class="wx-input h-auto py-2.5"></textarea>
                     </x-admin.field>
                     <x-admin.field label="Notes for the client" for="details.notes">
@@ -662,6 +652,20 @@
                     </x-admin.field>
                 </div>
             </x-admin.card>
+            @if ($quote->business_line->value === 'furniture')
+                <x-admin.card title="Furniture print options" description="Bottom sections — always available here, even when hidden on the document. Show or hide terms and signatories without losing their saved content. Applied financial adjustments always remain disclosed.">
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    @foreach (\App\Domain\Sales\Services\FurnitureDocument::OPTIONS as $field => $label)
+                        <x-admin.field :label="$label" :for="'details.'.$field"><select id="details.{{ $field }}" wire:model.live="details.{{ $field }}" @disabled($ro) class="wx-input"><option value="yes">Show</option><option value="no">Hide when optional</option></select></x-admin.field>
+                    @endforeach
+                    </div>
+                    <x-admin.field label="Signatories — add or remove a person" for="details.signatories_text" error="details.signatories_text" hint="One person per line: Name | Title. Delete a line to remove that person. Leave empty for no names. Printed centred; maximum six people.">
+                        <textarea id="details.signatories_text" wire:model.live.blur="details.signatories_text" @disabled($ro) rows="4" maxlength="2000" class="wx-input h-auto"></textarea>
+                    </x-admin.field>
+                    <p class="mt-2 text-theme-xs text-gray-500">Existing drafts: Apply current design above to opt into the new A4 layout. Stored advance percentages and charges are not reset.</p>
+                </x-admin.card>
+            @endif
+
 
         </div>
     </div>

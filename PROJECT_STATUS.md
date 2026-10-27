@@ -2,18 +2,19 @@
 
 **Updated:** 27 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (`owner@woodex.test` / `Woodex-Preview-2026`)
 
-> **Current phase — Interior visual preview ready; native update awaits visual approval.** Owner directed
-> **“start with preview first then update after approval.”** Separate preview33145 shows the source-derived
-> sample; [review PDF](docs/audit/evidence/41_interior_design_preview.pdf) fits all12 rows on1 A4 page with
-> matching **Rs1,488,750** totals. Desktop/390px/zoom/print/download/framing checks pass; no JS errors/CDN.
-> This is a standalone Chromium visual proof, **not** an integrated Laravel/dompdf renderer. No application,
-> schema or database changes. Furniture/invoices/frozen history remain unchanged. See
-> [report41](docs/audit/41_INTERIOR_HTML_REFERENCE_AUDIT_2026-10-27.md) for the approval gate and limits.
+> **Current phase — approved Interior integration and Furniture polish delivered.** Owner reviewed the
+> preview then said **“good update now”**, also requesting Furniture logo/header/cards/footer and bottom
+> terms/signatory controls. New quotation-only Interior2 / Furniture4 renderers are implemented. Native
+>12-row Interior and5-row Furniture references each fit1 A4; commercial/long documents paginate safely.
+> Final gate: **1,620 passed /1 skipped /8,704 assertions /461.13s**, focused74/434, PHPStan0, Pint11,
+> Vite/native desktop/390px/PDF/restricted-cookie framing pass. Existing invoices, old renderers and frozen
+> history are preserved. No schema or production deployment. [Report42](docs/audit/42_INTERIOR_IMPLEMENTATION_FURNITURE_POLISH_2026-10-27.md).
+> [Interior screenshot](docs/audit/evidence/42_interior_quotation.png) · [Furniture screenshot](docs/audit/evidence/42_furniture_quotation.png).
+> Existing editable drafts opt in via **Apply current design**; no silent historical upgrade.
 >
-> Furniture revision3 remains delivered at34f73c4: **1,608 passed /1 skipped /8,615 assertions /418.28s**,
-> PHPStan/formatting/build/native browser/PDF proof pass. [Report40](docs/audit/40_FURNITURE_HTML_REFERENCE_AUDIT_2026-10-27.md).
-> That is the previous delivery's gate, not proof of a completed Interior update. No production deployment;
-> preview33143 remains a fresh demo.
+> Previous Furniture revision3 release at34f73c4 remains available for frozen history;
+> [report40](docs/audit/40_FURNITURE_HTML_REFERENCE_AUDIT_2026-10-27.md) records its older gate. Current
+> verification is report42 above. Preview33143 remains a fresh demo, not restored owner data.
 >
 > Previous Slice W remains delivered: native Estimates / Rates / Estimator Enquiries and all eight audited
 > workflow fixes; [report39](docs/audit/39_ESTIMATIONS_HUB_AUDIT_PLAN_2026-10-27.md).
@@ -40,7 +41,23 @@ design against it. The current queue — with the v2.1-vs-OS gap report and the 
 integrations slice — is **[`docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md`](docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md)**;
 the owner picks the next slice from it.
 
-## Latest delivery — Furniture quotation HTML-reference layout (27 October)
+## Latest delivery — Interior reference integration + Furniture polish (27 October)
+
+- Owner-approved Interior Classic BOQ revision2: source navy/ochre layout, W identity, local fonts,
+  native section summary/BOQ/net totals, existing commercial blocks and historical-safe routing.
+- Furniture revision4: improved green W lockup/header and paired client/project cards; contact strip
+  above terms, centred editable signers, always-available bottom show/hide controls and automatic
+  editable-percentage payment sentence. Existing50% default and all pricing/accounting stay unchanged.
+- Actual native reference PDFs: Interior12 rows and Furniture5 rows each1 A4; Interior commercial2 pages,
+ 55-work stress5 pages; Furniture45-product stress8 pages, all text retained and in bounds.
+- Final full **1,620 passed /1 skipped /8,704 assertions**, focused74/434; static/build/browser/PDF and
+  nested cookie-restricted checks pass. Invoices/old revisions/frozen PDFs preserved; no schema/deploy.
+- [Native Interior screenshot](docs/audit/evidence/42_interior_quotation.png) ·
+  [native Furniture screenshot](docs/audit/evidence/42_furniture_quotation.png) ·
+  [report42](docs/audit/42_INTERIOR_IMPLEMENTATION_FURNITURE_POLISH_2026-10-27.md).
+- Existing editable drafts: **Apply current design**. Owner screenshot review next; broader T/U remains separate.
+
+## Previous delivery — Furniture quotation HTML-reference layout (27 October)
 
 - New quotation-only revision3 adopts the attached A4 header/client strip, green alternate-row table,
   right-aligned totals/remainder, structured terms and slim footer; existing native fields and logo retained.

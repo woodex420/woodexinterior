@@ -205,3 +205,15 @@ zoom/print/download/framing and PDF bounds/font checks pass. Native-calculator-c
 native Laravel/dompdf renderer. **Visual approval is required before application integration.** No
 application/schema/database changes; Furniture/invoices/alternative layouts/frozen history unchanged.
 See [report41](41_INTERIOR_HTML_REFERENCE_AUDIT_2026-10-27.md). Broader T/U work remains separate.
+
+## Owner approval and current delivery — Interior + Furniture polish
+
+The owner reviewed the private-branch screenshot and said **“good update now”**, also requesting Furniture
+header/logo/cards/footer and bottom terms/signatory controls. **Implemented:** quotation-only Interior2 and
+Furniture4, with source-derived styling, correct native totals and retained commercial controls. New quotes
+adopt the designs; existing editable drafts upgrade explicitly, frozen history and invoice renderers stay.
+Final full gate **1,620 passed /1 skipped /8,704 assertions /461.13s**, focused74/434, PHPStan0, Pint11,
+Vite/native browser/PDF/cookie-restricted framing pass. Both reference PDFs fit1 A4; longer/configured
+commercial documents paginate without dropping data. No schema or production deployment. This section
+supersedes the preview-awaiting-approval paragraph above; [report42](42_INTERIOR_IMPLEMENTATION_FURNITURE_POLISH_2026-10-27.md)
+has the two native screenshots, PDFs, reproduction and proof boundaries. Owner review next; unrelated T/U remains separate.

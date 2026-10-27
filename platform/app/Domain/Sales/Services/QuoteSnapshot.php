@@ -60,6 +60,7 @@ final class QuoteSnapshot
         return [
             'schema' => self::SCHEMA,
             'quotation_renderer' => 'v21',
+            'interior_revision' => (int) ($quote->meta['document_design']['interior_revision'] ?? 1),
             'furniture_revision' => (int) ($quote->meta['document_design']['furniture_revision'] ?? 1),
             'quote_layout' => DocumentStyles::quoteLayout($quote->meta['document_design']['quote_layout'] ?? ($furniture ? 'furniture' : 'classic')),
             'document_design' => $quote->meta['document_design'] ?? null,

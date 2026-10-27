@@ -52,7 +52,7 @@ final class FurnitureDocument
         return $terms;
     }
 
-    public const TERMS = "Advance requested and remainder are shown in the totals above.\nMaterials, finish and fabric are subject to client approval.\nDelivery starts after advance confirmation and material approval.\nQuotation validity is shown above.";
+    public const TERMS = "Materials, finish and fabric are subject to client approval.\nDelivery starts after advance confirmation and material approval.\nQuotation validity is shown above.";
 
     /** @return array<string, string> */
     public static function style(mixed $value): array

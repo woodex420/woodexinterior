@@ -1,0 +1,47 @@
+Interior/Furniture quotation release checks — 27 October 2026
+
+[full-final]
+  - it explains a database it cannot use → php-wasm (AI sandbox) has no… 0.05s
+  ✓ it cleans an imported library file and counts what it skipped        0.10s
+  Tests:    1 skipped, 1620 passed (8704 assertions)
+  Duration: 461.13s
+
+[focused-final]
+  Tests:    74 passed (434 assertions)
+  Duration: 26.43s
+
+[stan-final]
+Note: Using configuration file /tmp/woodex-run/app/phpstan.neon.
+ [OK] No errors
+
+[pint-final]
+  ...........
+  ──────────────────────────────────────────────────────────────────── Laravel
+    PASS   .......................................................... 11 files
+
+[build]
+✓ built in 4.65s
+(!) Some chunks are larger than 500 kB after minification. Consider:
+
+[browser-final]
+INTERIOR NEW RENDERER / LIVE DESCRIPTION / RATE / SUMMARY PASS
+FURNITURE CARDS / FOOTER BEFORE TERMS / BOTTOM CONTROLS / SHOW-HIDE-RESTORE / ADVANCE / 390PX PASS
+JS_ERRORS []
+  ok   New Furniture quotation live preview renders in nested restricted frame without focus loss  {"path":"/admin/quotes/7","loginForm":false,"alert":null,"heading":"WF-10051","sidebar":true}
+  ok   New Interior quotation live preview renders in nested restricted frame without focus loss  {"path":"/admin/quotes/5","loginForm":false,"alert":null,"heading":"WI-10103","sidebar":true}
+  ok   New Furniture quotation live preview renders in nested restricted frame without focus loss  {"path":"/admin/quotes/7","loginForm":false,"alert":null,"heading":"WF-10051","sidebar":true}
+  ok   New Interior quotation live preview renders in nested restricted frame without focus loss  {"path":"/admin/quotes/5","loginForm":false,"alert":null,"heading":"WI-10103","sidebar":true}
+3pc-blocked: OK, no-cookies: OK
+IFRAME CHECK OK
+
+[furniture-regression]
+QUOTE LIVE PRODUCT SPEC RATE ADVANCE WITHOUT BLUR PASS
+QUOTE EDITABLE ADVANCE TERMS SIGNATORIES SHOW HIDE PASS
+INVOICE OPTIONAL SIGNATORIES AND MATCHING TERMS PASS
+CONVERSION OPENS SAME FULL INVOICE; ISSUE BOOKS PASS
+INTERIOR V21 REGRESSION PASS
+JS_ERRORS []
+
+[iframe-active]
+3pc-blocked: OK, no-cookies: OK
+IFRAME CHECK OK

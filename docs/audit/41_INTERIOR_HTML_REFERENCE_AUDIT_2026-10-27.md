@@ -1,7 +1,7 @@
 # Interior quotation / BOQ — supplied HTML and screenshot audit
 
 **Date:** 27 October 2026
-**State:** source/schema/renderer audit and native arithmetic probe complete. Owner directed **“start with preview first then update after approval”**. A standalone visual prototype is now ready; **native application/template integration remains unapproved and unimplemented**.
+**State:** audit and preview stage complete. Owner first required **preview before approval**, then reviewed the screenshot and said **“good update now”**. Native integration and additional Furniture polish are now delivered in [report42](42_INTERIOR_IMPLEMENTATION_FURNITURE_POLISH_2026-10-27.md). The prototype-only descriptions below record the earlier stage, not the current implementation status.
 **Owner request:** next update the Woodex Interior quotation using the supplied `code.html` and `screen.png` after the Furniture design-only delivery.
 
 ## Recommendation
@@ -84,4 +84,4 @@ Transient build/check scripts live in `/tmp/interior-reference-audit/{build-prev
 
 ## Approval gate
 
-**Approve this visual preview before integrating it into the native Interior Classic BOQ renderer.** Until then, make no application update. No project-code storage or phase-progress tracking is introduced; any request for those remains a separate explicit scope decision.
+**Satisfied:** owner reviewed the screenshot and approved with **“good update now”**, adding Furniture polish. Native implementation and its final **1,620 passed /1 skipped /8,704 assertions** gate are in [report42](42_INTERIOR_IMPLEMENTATION_FURNITURE_POLISH_2026-10-27.md). No project-code storage or phase-progress tracking was introduced; those remain separate scope decisions.

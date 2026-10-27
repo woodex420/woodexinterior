@@ -170,10 +170,26 @@ final class DocumentStyles
     {
         $design = $this->copy($line);
         if ($line === BusinessLine::Furniture) {
-            $design['furniture_revision'] = 3;
+            $design['furniture_revision'] = 4;
+            if (empty($design['logo_data_uri']) || ($design['logo_sha256'] ?? '') === hash_file('sha256', public_path('images/furniture-mark.png'))) {
+                if (($design['furniture_style']['use_default_logo'] ?? 'yes') === 'yes') {
+                    $bytes = file_get_contents(public_path('images/furniture-mark-v4.png'));
+                    $design['logo_data_uri'] = 'data:image/png;base64,'.base64_encode($bytes);
+                    $design['logo_sha256'] = hash('sha256', $bytes);
+                }
+            }
             // Adopt the supplied palette only for the old default; keep custom brand colours.
             if ($design['accent_color'] === '#276749') {
                 $design['accent_color'] = '#347647';
+            }
+        }
+
+        if ($line !== BusinessLine::Furniture) {
+            $design['interior_revision'] = 2;
+            if (empty($design['logo_data_uri'])) {
+                $bytes = file_get_contents(public_path('images/interior-mark.png'));
+                $design['logo_data_uri'] = 'data:image/png;base64,'.base64_encode($bytes);
+                $design['logo_sha256'] = hash('sha256', $bytes);
             }
         }
 

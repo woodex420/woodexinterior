@@ -196,10 +196,19 @@ async function scenario(name, { dropCookies, blockThirdPartyCookies }) {
     if (process.env.QA_FURNITURE_QUOTE_ID) {
         if (PORT !== 33144 || ! /^\d+$/.test(process.env.QA_FURNITURE_QUOTE_ID)) throw Error('Quotation fixture requires isolated QA33144.');
         await hub.goto(`${base}/admin/quotes/${process.env.QA_FURNITURE_QUOTE_ID}`, {waitUntil:'networkidle0',timeout:60000});
-        await hub.waitForFunction(()=>document.querySelector('iframe[title="Quotation live preview"]')?.contentDocument?.querySelector('[data-furniture-revision="3"]'),{timeout:30000});
+        await hub.waitForFunction(()=>document.querySelector('iframe[title="Quotation live preview"]')?.contentDocument?.querySelector('[data-furniture-revision="4"]'),{timeout:30000});
         await hub.type('input[aria-label="Product name"]',' iframe proof');
         await hub.waitForFunction(()=>document.querySelector('iframe[title="Quotation live preview"]')?.contentDocument?.body?.innerText.includes('iframe proof'),{timeout:30000});
         expect('New Furniture quotation live preview renders in nested restricted frame without focus loss', await hub.$eval('input[aria-label="Product name"]',e=>document.activeElement===e), await state());
+    }
+
+    if (process.env.QA_INTERIOR_QUOTE_ID) {
+        if (PORT !== 33144 || ! /^\d+$/.test(process.env.QA_INTERIOR_QUOTE_ID)) throw Error('Interior fixture requires isolated QA33144.');
+        await hub.goto(`${base}/admin/quotes/${process.env.QA_INTERIOR_QUOTE_ID}`, {waitUntil:'networkidle0',timeout:60000});
+        await hub.waitForFunction(()=>document.querySelector('iframe[title="Quotation live preview"]')?.contentDocument?.querySelector('[data-interior-revision="2"]'),{timeout:30000});
+        await hub.type('textarea[id$="-description"]',' Interior iframe proof');
+        await hub.waitForFunction(()=>document.querySelector('iframe[title="Quotation live preview"]')?.contentDocument?.body?.innerText.includes('Interior iframe proof'),{timeout:30000});
+        expect('New Interior quotation live preview renders in nested restricted frame without focus loss', await hub.$eval('textarea[id$="-description"]',e=>document.activeElement===e), await state());
     }
 
     // Informational: "memory+" = the browser sent no cookie at all, "memory~" = it sent an older value.

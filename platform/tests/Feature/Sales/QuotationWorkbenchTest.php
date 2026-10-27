@@ -146,7 +146,7 @@ it('renders real PDFs for every v2.1 layout and both business lines', function (
     app(QuoteEditor::class)->updateDocumentDesign($quote, ['quote_layout' => $layout]);
     $snapshot = app(QuoteSnapshot::class)->build($quote->refresh());
     $html = app(QuotePdf::class)->html($snapshot);
-    expect($html)->toContain('data-quotation-layout="'.$layout.'"')->toContain("font-family: 'DM Sans'")
+    expect($html)->toContain('data-quotation-layout="'.$layout.'"')->toContain($line === BusinessLine::Interior && $layout === 'classic' ? "font-family: 'Jakarta'" : "font-family: 'DM Sans'")
         ->and(strpos($html, 'class="v21-footer"'))->toBeGreaterThan(strpos($html, 'PDF proof'))
         ->and(app(QuotePdf::class)->render($snapshot, draft: true))->toStartWith('%PDF-');
 })->with(['classic', 'single', 'project'])->with([BusinessLine::Interior, BusinessLine::Furniture]);

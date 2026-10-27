@@ -37,10 +37,10 @@ beforeEach(function () {
 
 it('uses a quotation-only revision and local fonts without importing the sample editor or commercial defaults', function () {
     $s = app(QuoteSnapshot::class)->build($this->quote);
-    expect($s['furniture_revision'])->toBe(3)->and($s['totals']['advance_bp'])->toBe(5000)
+    expect($s['furniture_revision'])->toBe(4)->and($s['totals']['advance_bp'])->toBe(5000)
         ->and(app(DocumentStyles::class)->copy(BusinessLine::Furniture)['furniture_revision'])->toBe(2);
     $html = app(QuotePdf::class)->html($s);
-    expect($html)->toContain('data-furniture-revision="3"', 'Prepared for', 'Attention', 'Location', 'class="financials"', 'font-family: \'Inter\'', 'data:font/ttf;base64,', '>Product</th>', '>Description</th>', '50% advance payment with work order.')
+    expect($html)->toContain('data-furniture-revision="4"', 'Prepared for', 'Project details', 'Location', 'class="financials"', 'font-family: \'Inter\'', 'data:font/ttf;base64,', '>Product</th>', '>Description</th>', '50% advance payment with work order.')
         ->not->toContain('cdn.tailwindcss.com', 'fonts.googleapis.com', 'contenteditable', 'calculateTotals', 'Item Code', '75%', '13%', '1-year warranty', 'Apex Office Solutions');
 });
 
@@ -69,7 +69,7 @@ it('keeps version two snapshots byte-identical in HTML when a draft explicitly a
     expect($html)->toContain('data-furniture-revision="2"');
     $this->editor->applyDocumentDesign($this->quote);
     $fresh = app(QuoteSnapshot::class)->build($this->quote->refresh());
-    expect($fresh['furniture_revision'])->toBe(3)->and($fresh['totals'])->toBe($old['totals'])
+    expect($fresh['furniture_revision'])->toBe(4)->and($fresh['totals'])->toBe($old['totals'])
         ->and(app(QuotePdf::class)->html($old))->toBe($html)
         ->and(app(QuotePdf::class)->html($fresh))->toContain('37.5% advance payment with work order.');
 });
@@ -89,13 +89,13 @@ it('projects unsaved product and advance changes into the same new renderer with
     $id = $this->quote->items()->firstOrFail()->id;
     $s = app(QuoteDraftPreview::class)->build($this->quote, ['lines' => [$id => ['product_name' => 'Unsaved preview desk']], 'details' => ['advance' => '37.5']]);
     $html = app(QuotePdf::class)->html($s);
-    expect($html)->toContain('data-furniture-revision="3"', 'Unsaved preview desk', '37.5% advance payment with work order.')
+    expect($html)->toContain('data-furniture-revision="4"', 'Unsaved preview desk', '37.5% advance payment with work order.')
         ->and($this->quote->refresh()->advance_bp)->toBe(5000)->and($this->quote->items()->firstOrFail()->product_name)->toBe('Office desk');
 });
 
 it('keeps Interior on its existing renderer and does not upgrade old furniture on ordinary edits', function () {
     $interior = app(CreateQuote::class)->handle($this->client, BusinessLine::Interior, $this->owner);
-    expect(app(QuotePdf::class)->html(app(QuoteSnapshot::class)->build($interior)))->not->toContain('data-furniture-revision="3"');
+    expect(app(QuotePdf::class)->html(app(QuoteSnapshot::class)->build($interior)))->not->toContain('data-furniture-revision="4"');
     $meta = $this->quote->meta;
     $meta['document_design']['furniture_revision'] = 2;
     $this->quote->meta = $meta;

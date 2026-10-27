@@ -19,6 +19,11 @@ beforeEach(function () {
     $this->actingAs($this->owner);
     $this->lead = Lead::factory()->create(['owner_id' => $this->owner->id]);
     $this->quote = app(CreateQuote::class)->handle($this->lead->contact, BusinessLine::Interior, $this->owner, $this->lead);
+    // These tests pin the original v2.1 contract; current Interior styling has its own reference suite.
+    $meta = $this->quote->meta;
+    unset($meta['document_design']['interior_revision']);
+    $this->quote->meta = $meta;
+    $this->quote->save();
 });
 
 function seedBankAndWallet(): void
