@@ -1,0 +1,69 @@
+{
+  "rows": 12,
+  "all_line_amounts_match_quantity_times_rate": true,
+  "summary_rows_total": 1325000,
+  "summary_footer_shown": 1325000,
+  "boq_footer_shown": 1435750,
+  "actual_boq_sum": 1488750,
+  "section_group_sums": [
+    145000,
+    918750,
+    260000,
+    165000
+  ],
+  "native_input_pairs": [
+    [
+      "1250",
+      6000
+    ],
+    [
+      "1",
+      7000000
+    ],
+    [
+      "340",
+      45000
+    ],
+    [
+      "2",
+      4250000
+    ],
+    [
+      "850",
+      9500
+    ],
+    [
+      "1150",
+      22000
+    ],
+    [
+      "1400",
+      14500
+    ],
+    [
+      "6",
+      2400000
+    ],
+    [
+      "1",
+      11500000
+    ],
+    [
+      "28",
+      250000
+    ],
+    [
+      "1",
+      7500000
+    ],
+    [
+      "2200",
+      7500
+    ]
+  ],
+  "native_calculator": {
+    "subtotal_minor": 148875000,
+    "total_minor": 148875000
+  },
+  "native_total_matches_boq_rows": true
+}

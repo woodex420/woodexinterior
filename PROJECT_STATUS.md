@@ -2,13 +2,18 @@
 
 **Updated:** 27 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (`owner@woodex.test` / `Woodex-Preview-2026`)
 
-> **Current phase — Furniture quotation reference update delivered:** owner approved the design-only scope
-> with “start”. New/explicitly-upgraded Furniture quotations use revision3 from the attached HTML, keeping
-> editable50%, native Product/Description and accounting. Existing invoice/Interior renderers and frozen
-> history are unchanged. Final gate: **1,608 passed /1 skipped /8,615 assertions /418.28s**, PHPStan0,
-> Pint10 + proof PHP1 and Vite pass. Real desktop/390px/nested-frame and1-page reference PDF proof pass.
-> [Report40](docs/audit/40_FURNITURE_HTML_REFERENCE_AUDIT_2026-10-27.md). No schema change or production
-> deployment. Preview33143 remains a fresh demo. **Next: owner reviews the updated Furniture quotation.**
+> **Current phase — Interior visual preview ready; native update awaits visual approval.** Owner directed
+> **“start with preview first then update after approval.”** Separate preview33145 shows the source-derived
+> sample; [review PDF](docs/audit/evidence/41_interior_design_preview.pdf) fits all12 rows on1 A4 page with
+> matching **Rs1,488,750** totals. Desktop/390px/zoom/print/download/framing checks pass; no JS errors/CDN.
+> This is a standalone Chromium visual proof, **not** an integrated Laravel/dompdf renderer. No application,
+> schema or database changes. Furniture/invoices/frozen history remain unchanged. See
+> [report41](docs/audit/41_INTERIOR_HTML_REFERENCE_AUDIT_2026-10-27.md) for the approval gate and limits.
+>
+> Furniture revision3 remains delivered at34f73c4: **1,608 passed /1 skipped /8,615 assertions /418.28s**,
+> PHPStan/formatting/build/native browser/PDF proof pass. [Report40](docs/audit/40_FURNITURE_HTML_REFERENCE_AUDIT_2026-10-27.md).
+> That is the previous delivery's gate, not proof of a completed Interior update. No production deployment;
+> preview33143 remains a fresh demo.
 >
 > Previous Slice W remains delivered: native Estimates / Rates / Estimator Enquiries and all eight audited
 > workflow fixes; [report39](docs/audit/39_ESTIMATIONS_HUB_AUDIT_PLAN_2026-10-27.md).

@@ -197,5 +197,11 @@ cookie-restricted preview proof cover the boundary. The five-row example fits1 A
 Rs661,050 total and matching Rs330,525 advance/remainder;45-row stress paginates over9 pages without loss.
 Final release gate: **1,608 passed /1 skipped /8,615 assertions /418.28s**; PHPStan/formatting/build pass. See [report40](40_FURNITURE_HTML_REFERENCE_AUDIT_2026-10-27.md).
 
-**Next: owner reviews this updated Furniture quotation.** The broader T cards/chips audit waits for that
-review; no unrelated T/U schema or implementation work is started automatically.
+**Superseded next step:** owner subsequently supplied an Interior quotation HTML/screenshot and asked for
+that update next. Owner then directed **preview first, update only after approval**. A standalone
+**Interior Classic BOQ** visual preview is ready on33145 with a1-page A4 sample PDF; desktop/390px,
+zoom/print/download/framing and PDF bounds/font checks pass. Native-calculator-compatible total is
+**Rs1,488,750**, correcting both conflicting reference aggregates. This Chromium prototype is not the
+native Laravel/dompdf renderer. **Visual approval is required before application integration.** No
+application/schema/database changes; Furniture/invoices/alternative layouts/frozen history unchanged.
+See [report41](41_INTERIOR_HTML_REFERENCE_AUDIT_2026-10-27.md). Broader T/U work remains separate.
