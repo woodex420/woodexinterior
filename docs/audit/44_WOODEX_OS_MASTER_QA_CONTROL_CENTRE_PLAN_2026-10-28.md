@@ -3,6 +3,7 @@
 **Date:** 28 October 2026
 **Decision:** approved by the owner’s “Start” for 44-A/44-B. Execution is in progress; this is not authorization for a whole-system rewrite.
 **Execution:** see [first increment and QA report](44_CONTROL_CENTRE_IMPLEMENTATION_QA_2026-10-28.md). Master every-action coverage remains incomplete.
+**Follow-up:** [45 transactional/ledger audit](45_TRANSACTIONAL_LEDGER_AUDIT_2026-10-28.md): selected chains tested; P1 Payments/GL discrepancies reproduced. Repairs await the scoped 45-B decision; no whole-OS sign-off.
 **Scope:** every owner-listed navigation entry, its tabs, secondary screens, links, actions, APIs, PHP/domain services, database effects, permissions, jobs and external dependencies.
 
 ## Execution checklist

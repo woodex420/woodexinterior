@@ -1,0 +1,41 @@
+45 — Selected transactional / ledger audit — 2026-10-28
+Authorization: owner "Start next" after revision44; audit and tests, not unrelated repairs.
+Base source: 7313d7e9578e3ec9a6e8bc4a66d9f9b0f63592f0.
+
+RUNTIME RECOVERY
+Sandbox reset removed /tmp runtime and local Git advancement, but source files persisted.
+Fetched current session branch; byte-hashed present files against pushed tree: zero differences.
+Restored only 13 omitted committed build files; mixed reset aligned metadata without changing work files.
+Rebuilt PHP-WASM / vendor and local demo DB in /tmp; reused committed build, no npm asset build.
+Primary preview restored on 0.0.0.0:33143; local demo only. No original owner DB imported.
+
+GREEN REGRESSION (NOT BUG REPAIR)
+Pest selection: 454 passed, 2394 assertions, 189.74s, exit 0.
+Paths: tests/Feature/{Audit,Accounts,Projects,Sales}
+Plus Feature/{ApprovalEditSafety,AdvanceInvoice,PaymentIntegrity,Payments,Quotes,QuotePortal,
+EstimateToQuote,Projects,LeadsIndex,LeadShow,ReportsKit}Test.php.
+New TransactionalFlowAuditTest: 6 passed, 69 assertions, 11.03s on dedicated final rerun, exit 0.
+PHP -l new test: no syntax errors.
+Pint --test new test: PASS 1 file.
+Full 1655-case suite and PHPStan were NOT rerun in45; production source is byte-unchanged from44.
+Revision44 full/static/build evidence remains historical, not a new execution claim.
+
+RED AUDIT CONTRACTS — OPEN FINDINGS, NOT A PASS
+Pest UnresolvedContractProbeTest.php standalone: 6 failed, 10 assertions, 6.66s, exit 1.
+Includes 2 brand datasets for missing form journal, closed-period bypass, pending posting,
+orphan invoice PDF and historical sent-period definition. See raw log and observations JSON.
+Verified-payment retry still creates no missing form journal.
+Probes archived as .php.txt and removed from runtime normal test discovery.
+These failures are explicitly tracked/release-blocking where P1, not fixed or silently ignored.
+Run normal regressions and RED probes sequentially; Storage::fake directories are shared within runtime.
+
+ISOLATION / LIMITATIONS
+SQLite :memory: + RefreshDatabase; Storage/Mail/Notification fake; stray Laravel HTTP prohibited
+in new workflow and contract probes. PDFs really rendered and hashed locally; domain actions/GL not mocked.
+No real provider send, production/customer/bank data, schema, policy, deployment or merge changes.
+Payments form tested with Livewire component/request harness, not Chromium mutation clicks.
+MySQL / concurrency / scale / all-role / whole-OS every-action coverage remains open.
+Production app/, routes/, resources/, public/build/ diff against7313d7e: zero.
+New files: tests, audit report/evidence; status/master-plan docs updated.
+Locked v1 site CSS/JS remain unchanged.
+Captured red-output formatting normalized for trailing whitespace only; failure results unchanged.

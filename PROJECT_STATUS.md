@@ -1,8 +1,19 @@
 # Woodex OS — Project Status
 
-**Updated:** 27 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (`owner@woodex.test` / `Woodex-Preview-2026`)
+**Updated:** 28 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (local demo)
 
-> **Current phase — approved Interior integration and Furniture polish delivered.** Owner reviewed the
+> **Current phase — revision45 transactional/ledger audit; financial repairs awaiting approval.**
+> Revision44 shipped the first native Control Centre increment (not deployed). Revision45 reran
+> **454 tests /2394 assertions**, with six new both-brand/ledger/rollback workflow cases. Separate
+> desired-contract probes correctly **fail six cases**: the Payments form omits GL posting/bypasses
+> period closure; the posting boundary accepts Pending money; failed invoice issue leaves an orphan
+> PDF; historical sent totals move with later revisions. **Do not treat green baseline tests as financial
+> reconciliation sign-off.** Recommended 45-B repair is scoped in [report45](docs/audit/45_TRANSACTIONAL_LEDGER_AUDIT_2026-10-28.md).
+> No production logic/schema/financial policy/data correction, provider sends, deployment or merge in45.
+> [Control Centre44](docs/audit/44_CONTROL_CENTRE_IMPLEMENTATION_QA_2026-10-28.md) ·
+> [Master plan44](docs/audit/44_WOODEX_OS_MASTER_QA_CONTROL_CENTRE_PLAN_2026-10-28.md).
+
+> **Historical revision42 — approved Interior integration and Furniture polish delivered.** Owner reviewed the
 > preview then said **“good update now”**, also requesting Furniture logo/header/cards/footer and bottom
 > terms/signatory controls. New quotation-only Interior2 / Furniture4 renderers are implemented. Native
 >12-row Interior and5-row Furniture references each fit1 A4; commercial/long documents paginate safely.
@@ -19,19 +30,19 @@
 > Previous Slice W remains delivered: native Estimates / Rates / Estimator Enquiries and all eight audited
 > workflow fixes; [report39](docs/audit/39_ESTIMATIONS_HUB_AUDIT_PLAN_2026-10-27.md).
 
-**One line:** the native OS now connects estimator enquiries, saved-price estimates and brand-aware quotation drafts in one tested workflow. Prices never silently refresh at conversion; external-key and later-slice blockers remain explicitly tracked.
+**One line:** native Control Centre baseline delivered; workflow/ledger audit found real payment discrepancies. Repair approval is next; whole-OS every-action certification remains incomplete.
 
-> The detailed findings, evidence and ordered plan are in **[`docs/audit/31_DEEP_QA_2026-10-21.md`](docs/audit/31_DEEP_QA_2026-10-21.md)**. That file is the current authority; older status claims in this repo are superseded.
+> The detailed findings, evidence and ordered plan are in **[`docs/audit/31_DEEP_QA_2026-10-21.md`](docs/audit/31_DEEP_QA_2026-10-21.md)**. It remains the historical baseline; reports44/45 above govern the current increment and outstanding financial findings.
 
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | **1,608 passed · 1 skipped · 8,615 assertions** · Pint clean on touched files · PHPStan 0 errors |
+| Tests | Last full gate44: **1649 passed /1 skipped /8873 assertions**. Fresh45 selection: **454 passed /2394 assertions**; **6 unresolved red audit contracts** tracked separately. |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
 
-## Next: the 26 October master plan
+## Earlier delivery plan: 26 October master plan
 
 `docs/audit/32_MASTER_PLAN_2026-10-26.md` sets the forward order. **Slices I–M are shipped** (below); the last
 planned slice, Search Console over MCP (N), is blocked on the Google key. Telegram is built end to end — it waits
