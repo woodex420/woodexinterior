@@ -49,6 +49,12 @@ final class InvoiceFreezer
             $bytes = $this->pdf->render($snapshot);
             $path = 'invoices/'.$invoice->public_id.'/'.InvoicePdf::filename($invoice);
 
+            // Never overwrite an unreferenced artifact left by an earlier failed issue.
+            // Existing valid frozen documents return above without registering cleanup.
+            if (Storage::disk('local')->exists($path)) {
+                throw new RuntimeException('An unreferenced invoice PDF needs reviewed document repair.');
+            }
+            DB::afterRollBack(fn () => Storage::disk('local')->delete($path));
             if (! Storage::disk('local')->put($path, $bytes)) {
                 throw new RuntimeException('The invoice PDF could not be stored.');
             }

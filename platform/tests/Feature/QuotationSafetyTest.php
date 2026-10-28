@@ -301,7 +301,9 @@ it('rolls back acceptance project advance and audit if advance PDF storage fails
     $quote = safetyDraft();
     app(SendQuote::class)->handle($quote, $this->sales);
     $disk = Mockery::mock(Filesystem::class);
+    $disk->shouldReceive('exists')->once()->andReturnFalse();
     $disk->shouldReceive('put')->once()->andReturnFalse();
+    $disk->shouldReceive('delete')->once()->andReturnTrue();
     Storage::shouldReceive('disk')->with('local')->andReturn($disk);
     expect(fn () => app(AcceptQuote::class)->handle($quote, 'Test client', null, null, null))->toThrow(RuntimeException::class, 'stored');
     expect($quote->fresh()->status)->toBe(QuoteStatus::Sent)->and(Project::count())->toBe(0)->and(Invoice::count())->toBe(0)

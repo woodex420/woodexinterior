@@ -1,5 +1,7 @@
 # 45 — Transactional workflow and ledger audit
 
+**Repair follow-up:** owner subsequently approved 45-B (“Start”). See [revision46 implementation/QA](46_PAYMENT_LEDGER_REPAIR_QA_2026-10-28.md) for F01–F04 dispositions. Findings and six red results below are the preserved pre-repair audit; F05 remains deferred.
+
 **Date:** 28 October 2026
 **Authorization:** owner “Start next” after revision44, continuing the approved master audit.
 **Status:** selected workflow audit completed; **repairs not implemented**. Whole-OS every-action coverage remains incomplete.

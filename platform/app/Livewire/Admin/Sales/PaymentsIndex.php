@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Sales;
 
+use App\Domain\Accounts\Exceptions\JournalPostingFailed;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Sales\Actions\RecordPayment;
 use App\Domain\Sales\Actions\RejectPayment;
@@ -115,16 +116,22 @@ class PaymentsIndex extends Component
             'receivedOn' => 'date received',
         ]);
 
-        $record->handle([
-            'contact_id' => $this->contactId,
-            'invoice_id' => $this->invoiceId,
-            'amount_minor' => Money::ofRupees($this->amount)->minor,
-            'received_on' => $this->receivedOn,
-            'method' => $this->method,
-            'reference' => $this->reference ?: null,
-            'bank_account_id' => $this->bankAccountId,
-            'notes' => $this->notes ?: null,
-        ], $this->user());
+        try {
+            $record->handle([
+                'contact_id' => $this->contactId,
+                'invoice_id' => $this->invoiceId,
+                'amount_minor' => Money::ofRupees($this->amount)->minor,
+                'received_on' => $this->receivedOn,
+                'method' => $this->method,
+                'reference' => $this->reference ?: null,
+                'bank_account_id' => $this->bankAccountId,
+                'notes' => $this->notes ?: null,
+            ], $this->user());
+        } catch (JournalPostingFailed $e) {
+            $this->addError('amount', $e->getMessage());
+
+            return;
+        }
 
         $this->reset(['amount', 'reference', 'notes', 'invoiceId', 'contactId', 'contactSearch']);
         $this->showForm = false;

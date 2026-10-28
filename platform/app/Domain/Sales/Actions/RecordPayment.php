@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales\Actions;
 
+use App\Domain\Accounts\Actions\PostPaymentToLedger;
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Sales\Enums\PaymentMethod;
 use App\Domain\Sales\Enums\PaymentStatus;
@@ -35,6 +36,7 @@ final class RecordPayment
         private readonly AllocatePayment $allocate,
         private readonly Numbering $numbering,
         private readonly ReceiptPdf $receipts,
+        private readonly PostPaymentToLedger $postToLedger,
     ) {}
 
     /**
@@ -87,7 +89,10 @@ final class RecordPayment
 
             $this->allocate->handle($payment, $allocations);
 
-            return $this->receipt($payment, $by);
+            $receipted = $this->receipt($payment, $by);
+            $this->postToLedger->handle($receipted, $by);
+
+            return $receipted->refresh();
         });
     }
 
