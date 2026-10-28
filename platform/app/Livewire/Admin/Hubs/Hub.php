@@ -66,6 +66,7 @@ abstract class Hub extends Component
     {
         $config = $this->hub();
         $active = $this->activeTab() ?? $config['tabs'][0];
+        abort_unless($this->tabVisible($active), 403, 'That tab is not available to you.');
 
         $tabs = array_map(function (array $tab): array {
             $tab['visible'] = $this->tabVisible($tab);
@@ -105,7 +106,7 @@ abstract class Hub extends Component
     {
         $user = auth()->user();
 
-        return $user === null || $user->can($tab['permission']);
+        return $user !== null && $user->can($tab['permission']);
     }
 
     /**

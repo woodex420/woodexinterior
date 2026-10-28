@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Domain\System\Control\OperationsSummary;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -76,7 +77,6 @@ final class AdminNavigation
             ]),
             self::group('Marketing', [
                 self::item('Marketing', 'megaphone', 'admin.marketing.index', 'social.manage'),
-                self::item('Lead Ads', 'sparkles', null, null, 'P7'),
             ]),
             // The Website section is the v2.1 front, grouped the way it is worked on (docs/16 §16.8):
             // build a page, fill it with content, then tune the site. The Content library left the nav on
@@ -134,6 +134,10 @@ final class AdminNavigation
 
                 if (! Route::has($item['route'])) {
                     return false;
+                }
+
+                if ($item['route'] === 'admin.approvals') {
+                    return $user !== null && OperationsSummary::canReview($user);
                 }
 
                 return ($item['route'] === 'admin.estimations.index' && ($user?->can('website.edit') ?? false)) || $item['permission'] === null || ($user?->can($item['permission']) ?? false);

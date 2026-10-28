@@ -11,7 +11,6 @@ use App\Domain\Sales\Enums\PaymentStatus;
 use App\Domain\Sales\Enums\QuoteStatus;
 use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\Invoice;
-use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Models\PaymentAllocation;
 use App\Domain\Sales\Models\Quote;
 use Carbon\CarbonImmutable;
@@ -30,42 +29,42 @@ final class RevenueCollectionsReport
     /**
      * @return array<string, mixed>
      */
-    public function handle(ReportRange $range): array
+    public function handle(ReportRange $range, ?BusinessLine $line = null): array
     {
         return [
-            'months' => $this->months($range),
-            'totals' => $this->totals($range),
-            'previous' => $this->totals($range->previous()),
-            'by_line' => $this->byLine($range),
-            'by_method' => $this->byMethod($range),
+            'months' => $this->months($range, $line),
+            'totals' => $this->totals($range, $line),
+            'previous' => $this->totals($range->previous(), $line),
+            'by_line' => $this->byLine($range, $line),
+            'by_method' => $this->byMethod($range, $line),
         ];
     }
 
     /**
      * @return list<array{month: string, quoted_minor: int, accepted_minor: int, invoiced_minor: int, collected_minor: int}>
      */
-    public function months(ReportRange $range): array
+    public function months(ReportRange $range, ?BusinessLine $line = null): array
     {
         // Plain table reads: these are aggregates, not models.
         $quoted = $this->byDay(
-            DB::table('quotes')->whereNot('status', QuoteStatus::Void->value)->whereBetween('sent_at', [$range->from, $range->to]),
+            DB::table('quotes')->when($line !== null, fn ($q) => $q->where('business_line', $line?->value))->whereNot('status', QuoteStatus::Void->value)->whereBetween('sent_at', [$range->from, $range->to]),
             'sent_at',
             'total_minor',
         );
         $accepted = $this->byDay(
-            DB::table('quotes')->where('status', QuoteStatus::Accepted->value)->whereBetween('accepted_at', [$range->from, $range->to]),
+            DB::table('quotes')->when($line !== null, fn ($q) => $q->where('business_line', $line?->value))->where('status', QuoteStatus::Accepted->value)->whereBetween('accepted_at', [$range->from, $range->to]),
             'accepted_at',
             'total_minor',
         );
         $invoiced = $this->byDay(
-            DB::table('invoices')->whereNot('status', InvoiceStatus::Void->value)->whereBetween('issue_date', [$range->from->toDateString(), $range->to->toDateString()]),
+            DB::table('invoices')->when($line !== null, fn ($q) => $q->where('business_line', $line?->value))->whereIn('status', [InvoiceStatus::Issued->value, InvoiceStatus::PartiallyPaid->value, InvoiceStatus::Paid->value])->where('issue_date', '>=', $range->from->toDateString())->where('issue_date', '<', $range->to->addDay()->toDateString()),
             'issue_date',
             'total_minor',
         );
         $collected = $this->byDay(
-            DB::table('payments')->where('status', PaymentStatus::Verified->value)->whereBetween('received_on', [$range->from->toDateString(), $range->to->toDateString()]),
-            'received_on',
-            'amount_minor',
+            $this->collections($range, $line),
+            'payments.received_on',
+            $line === null ? 'payments.amount_minor' : 'payment_allocations.amount_minor',
         );
 
         $month = fn (string $day): string => substr($day, 0, 7);
@@ -112,36 +111,34 @@ final class RevenueCollectionsReport
     /**
      * @return array{quoted_minor: int, accepted_minor: int, invoiced_minor: int, collected_minor: int, outstanding_minor: int}
      */
-    public function totals(ReportRange $range): array
+    public function totals(ReportRange $range, ?BusinessLine $line = null): array
     {
-        $quoted = (int) Quote::query()
+        $quoted = (int) Quote::query()->when($line !== null, fn ($q) => $q->where('business_line', $line?->value))
             ->whereNot('status', QuoteStatus::Void->value)
             ->whereBetween('sent_at', [$range->from, $range->to])->sum('total_minor');
-        $accepted = (int) Quote::query()
+        $accepted = (int) Quote::query()->when($line !== null, fn ($q) => $q->where('business_line', $line?->value))
             ->where('status', QuoteStatus::Accepted->value)
             ->whereBetween('accepted_at', [$range->from, $range->to])->sum('total_minor');
-        $invoiced = (int) Invoice::query()
-            ->whereNot('status', InvoiceStatus::Void->value)
-            ->whereBetween('issue_date', [$range->from->toDateString(), $range->to->toDateString()])->sum('total_minor');
-        $collected = (int) Payment::query()
-            ->where('status', PaymentStatus::Verified->value)
-            ->whereBetween('received_on', [$range->from->toDateString(), $range->to->toDateString()])->sum('amount_minor');
+        $invoiced = (int) Invoice::query()->when($line !== null, fn ($q) => $q->where('business_line', $line?->value))
+            ->whereIn('status', [InvoiceStatus::Issued->value, InvoiceStatus::PartiallyPaid->value, InvoiceStatus::Paid->value])
+            ->where('issue_date', '>=', $range->from->toDateString())->where('issue_date', '<', $range->to->addDay()->toDateString())->sum('total_minor');
+        $collected = (int) $this->collections($range, $line)->sum($line === null ? 'payments.amount_minor' : 'payment_allocations.amount_minor');
 
         return [
             'quoted_minor' => $quoted,
             'accepted_minor' => $accepted,
             'invoiced_minor' => $invoiced,
             'collected_minor' => $collected,
-            'outstanding_minor' => $this->outstandingMinor(),
+            'outstanding_minor' => $this->outstandingMinor($line),
         ];
     }
 
     /**
      * What is owed on issued invoices today, whatever the period — the number the report ends on.
      */
-    public function outstandingMinor(): int
+    public function outstandingMinor(?BusinessLine $line = null): int
     {
-        return (int) Invoice::query()
+        return (int) Invoice::query()->when($line !== null, fn ($q) => $q->where('business_line', $line?->value))
             ->whereIn('status', [InvoiceStatus::Issued->value, InvoiceStatus::PartiallyPaid->value])
             ->selectRaw('sum(total_minor - paid_minor) as outstanding')
             ->value('outstanding');
@@ -153,18 +150,18 @@ final class RevenueCollectionsReport
      *
      * @return list<array{label: string, accepted_minor: int, invoiced_minor: int, collected_minor: int}>
      */
-    public function byLine(ReportRange $range): array
+    public function byLine(ReportRange $range, ?BusinessLine $line = null): array
     {
-        $accepted = Quote::query()
+        $accepted = Quote::query()->when($line !== null, fn ($q) => $q->where('business_line', $line?->value))
             ->where('status', QuoteStatus::Accepted->value)
             ->whereBetween('accepted_at', [$range->from, $range->to])
             ->selectRaw('business_line, sum(total_minor) as value')
             ->groupBy('business_line')
             ->pluck('value', 'business_line');
 
-        $invoiced = Invoice::query()
-            ->whereNot('status', InvoiceStatus::Void->value)
-            ->whereBetween('issue_date', [$range->from->toDateString(), $range->to->toDateString()])
+        $invoiced = Invoice::query()->when($line !== null, fn ($q) => $q->where('business_line', $line?->value))
+            ->whereIn('status', [InvoiceStatus::Issued->value, InvoiceStatus::PartiallyPaid->value, InvoiceStatus::Paid->value])
+            ->where('issue_date', '>=', $range->from->toDateString())->where('issue_date', '<', $range->to->addDay()->toDateString())
             ->selectRaw('business_line, sum(total_minor) as value')
             ->groupBy('business_line')
             ->pluck('value', 'business_line');
@@ -173,7 +170,8 @@ final class RevenueCollectionsReport
             ->join('payments', 'payment_allocations.payment_id', '=', 'payments.id')
             ->join('invoices', 'payment_allocations.invoice_id', '=', 'invoices.id')
             ->where('payments.status', PaymentStatus::Verified->value)
-            ->whereBetween('payments.received_on', [$range->from->toDateString(), $range->to->toDateString()])
+            ->when($line !== null, fn ($q) => $q->where('invoices.business_line', $line?->value))
+            ->where('payments.received_on', '>=', $range->from->toDateString())->where('payments.received_on', '<', $range->to->addDay()->toDateString())
             ->selectRaw('invoices.business_line, sum(payment_allocations.amount_minor) as value')
             ->groupBy('invoices.business_line')
             ->pluck('value', 'business_line');
@@ -197,16 +195,14 @@ final class RevenueCollectionsReport
      *
      * @return list<array{label: string, count: int, amount_minor: int}>
      */
-    public function byMethod(ReportRange $range): array
+    public function byMethod(ReportRange $range, ?BusinessLine $line = null): array
     {
         // A plain table read: aggregate aliases like `count` do not belong on a model.
-        $rows = DB::table('payments')
-            ->where('status', PaymentStatus::Verified->value)
-            ->whereBetween('received_on', [$range->from->toDateString(), $range->to->toDateString()])
-            ->selectRaw('method, bank_account_id, count(*) as payment_count, sum(amount_minor) as value')
-            ->groupBy('method', 'bank_account_id')
-            ->orderByDesc('value')
-            ->get();
+        $sum = $line === null ? 'payments.amount_minor' : 'payment_allocations.amount_minor';
+        $rows = $this->collections($range, $line)
+            ->selectRaw('payments.method, payments.bank_account_id, count(distinct payments.id) as payment_count, sum('.$sum.') as value')
+            ->groupBy('payments.method', 'payments.bank_account_id')
+            ->orderByDesc('value')->get();
 
         $banks = BankAccount::query()->pluck('name', 'id');
 
@@ -222,6 +218,20 @@ final class RevenueCollectionsReport
                 ];
             })
             ->all();
+    }
+
+    /** Verified cash globally; allocations only when attributing it to one business line. */
+    private function collections(ReportRange $range, ?BusinessLine $line): Builder
+    {
+        $query = DB::table('payments')->where('payments.status', PaymentStatus::Verified->value)
+            ->where('payments.received_on', '>=', $range->from->toDateString())->where('payments.received_on', '<', $range->to->addDay()->toDateString());
+        if ($line !== null) {
+            $query->join('payment_allocations', 'payment_allocations.payment_id', '=', 'payments.id')
+                ->join('invoices', 'invoices.id', '=', 'payment_allocations.invoice_id')
+                ->where('invoices.business_line', $line->value);
+        }
+
+        return $query;
     }
 
     /**

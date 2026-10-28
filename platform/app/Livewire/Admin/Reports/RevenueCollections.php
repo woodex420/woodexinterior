@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Reports;
 
+use App\Domain\Crm\Enums\BusinessLine;
 use App\Settings\SalesSettings;
 use App\Support\Reports\Csv;
 use App\Support\Reports\ReportRange;
@@ -28,9 +29,14 @@ class RevenueCollections extends Component
     #[Url(except: 'this_quarter')]
     public string $preset = 'this_quarter';
 
+    #[Url]
     public ?string $from = null;
 
+    #[Url]
     public ?string $to = null;
+
+    #[Url]
+    public string $line = '';
 
     public function setPreset(string $preset): void
     {
@@ -45,6 +51,11 @@ class RevenueCollections extends Component
     #[Computed]
     public function range(): ReportRange
     {
+        abort_unless(in_array($this->preset, ReportRange::PRESETS, true), 422, 'Choose a report period.');
+        if ($this->preset === 'custom') {
+            $this->validate(['from' => ['required', 'date_format:Y-m-d'], 'to' => ['required', 'date_format:Y-m-d', 'after_or_equal:from']]);
+        }
+
         return ReportRange::fromPreset($this->preset, $this->from, $this->to);
     }
 
@@ -54,7 +65,10 @@ class RevenueCollections extends Component
     #[Computed]
     public function report(): array
     {
-        return app(RevenueCollectionsReport::class)->handle($this->range());
+        $this->authorize('reports.finance');
+        abort_unless($this->line === '' || BusinessLine::tryFrom($this->line) !== null, 422, 'Choose a business line.');
+
+        return app(RevenueCollectionsReport::class)->handle($this->range(), BusinessLine::tryFrom($this->line));
     }
 
     public function export(): StreamedResponse
@@ -66,6 +80,10 @@ class RevenueCollections extends Component
 
         $rows = [
             ['Revenue & collections', $range->label()],
+            ['Business line', BusinessLine::tryFrom($this->line)?->label() ?? 'All'],
+            ['Current dates', $range->from->format('Y-m-d').' to '.$range->to->format('Y-m-d')],
+            ['Previous dates', $range->previous()->from->format('Y-m-d').' to '.$range->previous()->to->format('Y-m-d')],
+            ['Basis', $this->line === '' ? 'Verified receipts, including unallocated cash' : 'Verified allocations to this business line'],
             ['Metric', 'This period', 'Previous period'],
             ['Quoted (Rs)', round($report['totals']['quoted_minor'] / 100, 2), round($report['previous']['quoted_minor'] / 100, 2)],
             ['Accepted (Rs)', round($report['totals']['accepted_minor'] / 100, 2), round($report['previous']['accepted_minor'] / 100, 2)],
@@ -99,6 +117,8 @@ class RevenueCollections extends Component
 
     public function render(SalesSettings $settings): View
     {
+        $this->authorize('reports.finance');
+
         return view('livewire.admin.reports.revenue-collections', [
             'lakh' => $settings->lakh_grouping,
         ]);

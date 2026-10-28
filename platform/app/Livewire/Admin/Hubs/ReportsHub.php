@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Admin\Hubs;
 
 use App\Domain\System\Control\ControlPanel;
+use App\Livewire\Admin\Reports\ReportSources;
 use App\Livewire\Admin\Reports\RevenueCollections;
 use App\Livewire\Admin\Reports\SalesFunnel;
 
@@ -33,6 +34,7 @@ final class ReportsHub extends Hub
             'tabs' => [
                 ['id' => 'funnel', 'label' => 'Sales funnel', 'component' => SalesFunnel::class, 'permission' => 'reports.view'],
                 ['id' => 'revenue', 'label' => 'Revenue & collections', 'component' => RevenueCollections::class, 'permission' => 'reports.finance'],
+                ['id' => 'sources', 'label' => 'Ledger & operations', 'component' => ReportSources::class, 'permission' => 'reports.view'],
             ],
         ];
     }

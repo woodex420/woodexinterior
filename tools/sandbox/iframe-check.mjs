@@ -179,10 +179,16 @@ async function scenario(name, { dropCookies, blockThirdPartyCookies }) {
     // 6. The redesigned hub and Livewire setup work inside the same cookie-restricted frame.
     const hub = await frame();
     await hub.goto(`${base}/admin/integrations`, { waitUntil: 'networkidle0', timeout: 60000 });
-    await hub.waitForSelector('#app-search');
-    await hub.type('#app-search', 'Notion');
-    await hub.waitForFunction(() => document.body.innerText.includes('View requirements') && !document.body.innerText.includes('Google Drive'));
-    expect('hub search works inside frame', await hub.$('#app-search') !== null, await state());
+    // The native INT grid replaced the old app-search / requirements-only catalogue.
+    const search = '[aria-label="Search integrations"]';
+    await hub.waitForSelector(search);
+    await hub.type(search, 'No such synthetic QA integration');
+    await hub.waitForFunction(() => document.body.innerText.includes('No integrations match your search'));
+    expect('native integration search works inside frame', await hub.$(search) !== null, await state());
+    await hub.$eval(search, (el) => { el.focus(); el.select(); });
+    await page.keyboard.press('Backspace');
+    await hub.waitForFunction(() => document.querySelector('[aria-label="Search integrations"]').value === '');
+    await hub.waitForSelector('[wire\\:click="openMcpSetup"]');
     await hub.click('[wire\\:click="openMcpSetup"]');
     await hub.waitForSelector('#bridgeName');
     expect('MCP setup works inside frame', await hub.$('#bridgePassword') !== null, await state());

@@ -135,7 +135,7 @@ Route::livewire('/accounts/methods', MethodAccounts::class)->name('accounts.meth
 Route::livewire('/accounts/payables', PayablesHub::class)->name('accounts.payables')->middleware('can:accounts.view');
 Route::livewire('/accounts/expenses', LedgerHub::class)->name('accounts.expenses')->middleware('can:accounts.view');
 Route::livewire('/accounts/profit-loss', ProfitLoss::class)->name('accounts.profit')->middleware('can:accounts.view');
-Route::livewire('/approvals', Approvals::class)->name('approvals')->middleware('can:quotes.approve');
+Route::livewire('/approvals', Approvals::class)->name('approvals')->middleware('can-any:quotes.approve,payments.verify,social.manage,system.change_requests');
 Route::livewire('/sales/documents', DocumentsHub::class)->name('sales.documents')->middleware('can:quotes.view');
 Route::get('/quote-templates', fn () => redirect()->route('admin.quotes.index', ['tab' => 'templates'], 301))->name('quote-templates')->middleware('can:quotes.view');
 Route::get('/rate-book', fn () => redirect()->route('admin.sales.documents', ['tab' => 'rate-book'], 301))->name('rate-book')->middleware('can:quotes.view');

@@ -19,6 +19,11 @@
         @endforeach
     </div>
 
+    <div class="mb-5 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+        <label class="flex flex-wrap items-center gap-3 text-theme-sm">Business line<select wire:model.live="line" aria-label="Revenue business line" class="wx-input w-auto"><option value="">All business lines</option>@foreach (\App\Domain\Crm\Enums\BusinessLine::cases() as $businessLine)<option value="{{ $businessLine->value }}">{{ $businessLine->label() }}</option>@endforeach</select></label>
+        <p class="mt-3 text-theme-xs text-gray-500">Current: {{ $this->range()->from->format('d M Y') }} – {{ $this->range()->to->format('d M Y') }} · Previous calendar/comparison period: {{ $this->range()->previous()->from->format('d M Y') }} – {{ $this->range()->previous()->to->format('d M Y') }} · {{ config('app.timezone') }}</p>
+        <p class="mt-1 text-theme-xs text-gray-500">Issued invoice values exclude drafts and voids; they are not posted ledger profit. {{ $line === '' ? 'Collections include verified receipts, including unallocated cash.' : 'Collections show verified allocations to this line only; unallocated cash is excluded.' }} Outstanding is the current balance, not a historical period-end balance.</p>
+    </div>
     @php
         $t = $this->report()['totals'];
         $p = $this->report()['previous'];

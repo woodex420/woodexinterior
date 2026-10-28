@@ -2,11 +2,12 @@
 <div>
     <x-admin.page-header :title="$greeting.', '.auth()->user()->name" :description="now()->format('l j F').' · Work top to bottom: new leads first, then overdue follow-ups.'" />
 
+    <p class="mb-4 text-theme-sm text-gray-500">Full queue totals are shown below. Lists preview up to20 new leads and30 follow-ups/tasks; use the workspace for the complete list. Uncontacted leads appear only in the first-contact queue.</p>
     <div class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <x-admin.stat label="Not contacted yet" :value="$uncontacted->count()" icon="hourglass" :tone="$uncontacted->isNotEmpty() ? 'error' : 'success'" hint="Respond within the SLA" />
-        <x-admin.stat label="Overdue follow-ups" :value="$overdue->count()" icon="alert" :tone="$overdue->isNotEmpty() ? 'warning' : 'success'" />
+        <x-admin.stat label="Not contacted yet" :value="$queueTotals['uncontacted']" icon="hourglass" :tone="$uncontacted->isNotEmpty() ? 'error' : 'success'" hint="Respond within the SLA" />
+        <x-admin.stat label="Overdue follow-ups" :value="$queueTotals['overdue']" icon="alert" :tone="$overdue->isNotEmpty() ? 'warning' : 'success'" />
         <x-admin.stat label="Site visits today" :value="$visits->count()" icon="map-pin" tone="wood" :href="route('admin.tasks.index', ['tab' => 'visits'])" />
-        <x-admin.stat label="Tasks due" :value="$tasks->count()" icon="tasks" :href="route('admin.tasks.index')" />
+        <x-admin.stat label="Tasks due" :value="$queueTotals['tasks']" icon="tasks" :href="route('admin.tasks.index')" />
     </div>
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">

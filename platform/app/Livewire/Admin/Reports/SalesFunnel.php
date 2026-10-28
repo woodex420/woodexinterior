@@ -28,8 +28,10 @@ class SalesFunnel extends Component
     #[Url(except: 'this_month')]
     public string $preset = 'this_month';
 
+    #[Url]
     public ?string $from = null;
 
+    #[Url]
     public ?string $to = null;
 
     public function setPreset(string $preset): void
@@ -45,6 +47,11 @@ class SalesFunnel extends Component
     #[Computed]
     public function range(): ReportRange
     {
+        abort_unless(in_array($this->preset, ReportRange::PRESETS, true), 422, 'Choose a report period.');
+        if ($this->preset === 'custom') {
+            $this->validate(['from' => ['required', 'date_format:Y-m-d'], 'to' => ['required', 'date_format:Y-m-d', 'after_or_equal:from']]);
+        }
+
         return ReportRange::fromPreset($this->preset, $this->from, $this->to);
     }
 
@@ -54,6 +61,8 @@ class SalesFunnel extends Component
     #[Computed]
     public function report(): array
     {
+        $this->authorize('reports.view');
+
         return app(SalesFunnelReport::class)->handle($this->range());
     }
 
@@ -108,6 +117,8 @@ class SalesFunnel extends Component
 
     public function render(SalesSettings $settings): View
     {
+        $this->authorize('reports.view');
+
         return view('livewire.admin.reports.sales-funnel', [
             'lakh' => $settings->lakh_grouping,
         ]);

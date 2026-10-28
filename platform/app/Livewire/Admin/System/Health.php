@@ -22,6 +22,8 @@ class Health extends Component
 {
     public function render(SystemHealthReport $health): View
     {
+        $this->authorize('system.health');
+
         return view('livewire.admin.system.health', [
             'checks' => $health->checks(),
             'environment' => $health->environment(),
@@ -36,6 +38,7 @@ class Health extends Component
      */
     public function sendTestMail(): void
     {
+        $this->authorize('system.health');
         $user = auth()->user();
 
         if ($user === null || $user->email === null || $user->email === '') {

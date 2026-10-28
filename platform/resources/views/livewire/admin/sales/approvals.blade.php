@@ -1,10 +1,20 @@
 @use('App\Support\Money')
 @use('App\Domain\Sales\Services\QuoteApprovalRules')
 <div>
-    <x-admin.page-header title="Approvals" description="Quotations above a discount limit or below the minimum margin wait here before they can be sent."
+    <x-admin.page-header title="Approvals" description="Decide quotation requests and open other permitted review queues. Each decision keeps its original domain safeguards."
                          :breadcrumbs="['Overview' => null, 'Approvals' => null]" />
 
-    <x-admin.card :title="'Waiting ('.$pending->count().')'" :padding="false">
+    @if ($reviews !== [])
+        <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+            @foreach ($reviews as $review)<x-admin.card :title="$review['title']"><p class="text-theme-sm text-gray-500">{{ $review['detail'] }}</p><x-admin.button variant="secondary" :href="$review['href']" wire:navigate class="mt-4">Open review queue</x-admin.button></x-admin.card>@endforeach
+        </div>
+    @endif
+    @if ($pending !== null)
+    <div class="mb-4 flex flex-wrap gap-3">
+        <input type="search" wire:model.live.debounce.300ms="search" aria-label="Search approvals" placeholder="Search client, quote number or title" class="wx-input max-w-sm">
+        <select wire:model.live="line" aria-label="Approval business line" class="wx-input w-auto"><option value="">All business lines</option>@foreach (\App\Domain\Crm\Enums\BusinessLine::cases() as $businessLine)<option value="{{ $businessLine->value }}">{{ $businessLine->label() }}</option>@endforeach</select>
+    </div>
+    <x-admin.card :title="'Waiting ('.$pending->total().')'" :padding="false">
         @forelse ($pending as $approval)
             @php $quote = $approval->approvable; @endphp
             <div wire:key="approval-{{ $approval->id }}" class="flex flex-col gap-4 border-b border-gray-100 px-5 py-4 last:border-0 lg:flex-row lg:items-center lg:justify-between dark:border-gray-800">
@@ -27,8 +37,11 @@
         @endforelse
     </x-admin.card>
 
+    <div class="mt-4">{{ $pending->links() }}</div>
+    @endif
+
     @if ($recent->isNotEmpty())
-        <x-admin.card title="Decided in the last 30 days" :padding="false" class="mt-6">
+        <x-admin.card title="Latest15 decisions in the last30days" :padding="false" class="mt-6">
             @foreach ($recent as $approval)
                 @php $quote = $approval->approvable; @endphp
                 <div wire:key="decided-{{ $approval->id }}" class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-3 text-theme-sm last:border-0 dark:border-gray-800">

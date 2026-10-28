@@ -1,17 +1,37 @@
 <div wire:poll.60s.visible>
     <x-admin.page-header :title="$greeting"
-                         description="The studio right now — six live numbers, each one click from the work behind it. Updates every minute.">
+                         description="Your control centre — selected-period performance above, live operating queues below. Updates every minute.">
         <x-slot:actions>
-            <x-admin.button variant="secondary" icon="chart" :href="route('admin.reports.index', ['tab' => 'funnel', 'preset' => 'today'])" wire:navigate>Today's reports</x-admin.button>
-            <x-admin.button icon="plus" :href="route('admin.leads.index', ['new' => 1])" wire:navigate>New lead</x-admin.button>
+            @can('reports.view')<x-admin.button variant="secondary" icon="chart" :href="route('admin.reports.index', ['tab' => 'funnel', 'preset' => 'today'])" wire:navigate>Today's reports</x-admin.button>@endcan
+            @can('leads.create')<x-admin.button icon="plus" :href="route('admin.leads.index', ['new' => 1])" wire:navigate>New lead</x-admin.button>@endcan
         </x-slot:actions>
     </x-admin.page-header>
+
+    <section class="mb-6 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900" aria-label="Period performance">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+            <div><p class="text-theme-xs font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-400">Business performance</p><h2 class="mt-1 text-theme-xl font-semibold">{{ $range->label() }}</h2><p class="text-theme-xs text-gray-500">{{ $range->from->format('d M Y') }} – {{ $range->to->format('d M Y') }} · {{ config('app.timezone') }} · refreshed {{ now()->format('H:i') }}</p></div>
+            <div class="flex flex-wrap gap-3">
+                <label class="text-theme-xs text-gray-500">Period<select wire:model.live="preset" aria-label="Performance period" class="wx-input mt-1"><option value="today">Today</option><option value="this_month">This month</option><option value="last_month">Last month</option><option value="last_90_days">Last90days</option><option value="this_quarter">This quarter</option><option value="this_year">This year</option></select></label>
+                <label class="text-theme-xs text-gray-500">Business line<select wire:model.live="line" aria-label="Performance business line" class="wx-input mt-1"><option value="">All business lines</option>@foreach (\App\Domain\Crm\Enums\BusinessLine::cases() as $businessLine)<option value="{{ $businessLine->value }}">{{ $businessLine->label() }}</option>@endforeach</select></label>
+            </div>
+        </div>
+        <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            @forelse ($periodCards as $card)
+                <div class="rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-800/40"><p class="text-theme-xs text-gray-500">{{ $card['label'] }}</p><p class="mt-2 text-theme-xl font-semibold">{{ $card['display'] }}</p><p class="mt-1 text-theme-xs text-gray-500">{{ $card['hint'] }}</p>@if ($card['href'])<a href="{{ $card['href'] }}" wire:navigate class="mt-3 inline-block text-theme-xs font-semibold text-brand-600 dark:text-brand-400">Open matching report →</a>@endif</div>
+            @empty
+                <p class="text-theme-sm text-gray-500">Your role has no period metrics. Open your permitted workspaces from Operations.</p>
+            @endforelse
+        </div>
+        <p class="mt-4 text-theme-xs text-gray-500">These filters apply only to period performance. Team access follows your existing permissions; no unsupported owner filter is implied. Invoice value excludes drafts/voids and is not ledger revenue.</p>
+    </section>
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-2"><h2 class="text-theme-lg font-semibold">Live operating queues</h2><a href="{{ route('admin.dashboard', ['tab' => 'operations']) }}" wire:navigate class="text-theme-sm text-brand-600 dark:text-brand-400">All operations →</a></div>
+    <p class="mb-4 text-theme-xs text-gray-500">Current position across all permitted records. Not filtered by the performance period or business line above.</p>
 
     {{-- The six control numbers: one query each, from ControlPanel, with the link to the same rows. --}}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
         @foreach ($control as $card)
             <x-admin.stat :label="$card['label']" :value="$card['display']" :icon="$card['icon']" :tone="$card['tone']"
-                          :hint="$card['hint']" :href="$card['href']" />
+                          :hint="$card['key'] === 'automations_failing' && $card['count'] === 0 ? 'No failures recorded; check task freshness in System.' : $card['hint']" :href="$card['href']" />
         @endforeach
     </div>
 
@@ -80,6 +100,7 @@
             @endif
         </x-admin.card>
 
+        @if ($checklist !== [])
         <x-admin.card title="Go-live checklist" description="Turns green as setup completes">
             <ul class="space-y-3">
                 @foreach ($checklist as $item)
@@ -99,8 +120,10 @@
                 @endforeach
             </ul>
         </x-admin.card>
+        @endif
     </div>
 
+    @can('leads.view')
     <div class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
         <x-admin.card title="New leads, last 14 days" class="min-w-0 xl:col-span-2">
             <div wire:ignore data-chart='@json($chart)' class="-mx-2 min-h-[240px] min-w-0"></div>
@@ -145,4 +168,5 @@
             <x-admin.empty icon="activity" title="No activity yet" description="New enquiries from the website, WhatsApp and the team will appear here." />
         @endforelse
     </x-admin.card>
+    @endcan
 </div>

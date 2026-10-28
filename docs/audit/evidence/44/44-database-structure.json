@@ -1,0 +1,10 @@
+{
+    "driver": "sqlite",
+    "scope": "local demo only; structural integrity is not accounting reconciliation or MySQL proof",
+    "read_only": true,
+    "integrity_check": [
+        "ok"
+    ],
+    "foreign_key_violation_counts_by_table": [],
+    "passed": true
+}

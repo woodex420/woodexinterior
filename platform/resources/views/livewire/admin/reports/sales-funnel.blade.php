@@ -19,6 +19,7 @@
         @endforeach
     </div>
 
+    <p class="mb-4 text-theme-xs text-gray-500">Current: {{ $this->range()->from->format('d M Y') }} – {{ $this->range()->to->format('d M Y') }} · Previous: {{ $this->range()->previous()->from->format('d M Y') }} – {{ $this->range()->previous()->to->format('d M Y') }}. These are events in each period, not a tracked conversion cohort.</p>
     @php
         $h = $this->report()['headline'];
         $p = $this->report()['previous'];

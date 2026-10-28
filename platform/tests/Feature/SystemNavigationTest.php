@@ -37,7 +37,7 @@ it('folds the eleven System entries into four live pages with their buttons insi
         ->and(collect($system['items'])->whereNull('route'))->toBeEmpty();
 });
 
-it('leaves only Lead Ads as a planned entry — no shipped module wears a phase badge', function () {
+it('does not advertise any unimplemented planned entry — no shipped module wears a phase badge', function () {
     $planned = collect(AdminNavigation::for($this->owner))
         ->flatMap(fn (array $group): array => $group['items'])
         ->filter(fn (array $item): bool => $item['route'] === null)
@@ -45,7 +45,7 @@ it('leaves only Lead Ads as a planned entry — no shipped module wears a phase 
         ->values()
         ->all();
 
-    expect($planned)->toBe(['Lead Ads']);
+    expect($planned)->toBe([]);
 });
 
 it('opens the four System pages for the owner', function (string $path, string $marker) {
