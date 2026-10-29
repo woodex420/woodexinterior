@@ -2,6 +2,16 @@
 
 **Updated:** 29 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (local demo)
 
+> **Current request — revision49: Website-first audit and four-phase plan; implementation approval pending.**
+> All seven requested Website pages reviewed in source and Chromium; v2.1 ported Media/Theme/Speed source
+> compared. Baseline **120 tests /845 assertions**; all seven pages HTTP200, no page JS errors.
+> Confirmed gaps: unheaded navigation, Media parity, missing live Theme/Settings preview, misleading
+> configured/verified labels, oversized staff chat and Speed mobile overflow/low-contrast cache pill.
+> Public chat is **off locally**; production state unverified. Owner requests charcoal instead of navy.
+> [Master plan49](docs/audit/49_WEBSITE_OS_FOUR_PHASE_MASTER_PLAN_2026-10-29.md) ·
+> [Seven-page QA49](docs/audit/49_WEBSITE_PAGE_QA_2026-10-29.md).
+> No application fixes, schema, cleanup/deletion, production sends, deploy or merge in this audit.
+>
 > **Current delivery — revision48-A: native theme and website-chat capture upgrade delivered.**
 > Light/Night/System, accurate environment note outside the top bar, early SQL-backed CRM capture,
 > Leads → Web Chat, closed-thread reopening and draft-safe targeted alerts reuse existing modules.
@@ -43,7 +53,7 @@
 > Previous Slice W remains delivered: native Estimates / Rates / Estimator Enquiries and all eight audited
 > workflow fixes; [report39](docs/audit/39_ESTIMATIONS_HUB_AUDIT_PLAN_2026-10-27.md).
 
-**One line:** revision48-A theme/web-chat upgrade delivered; social/provider foundation is next and remains separately gated. F05, production reconciliation and whole-OS certification remain open.
+**One line:** revision49 Website-first audit/plan delivered, Phase1 approval pending; revision48-A remains the implemented baseline. Social/provider work follows the new owner ordering and remains gated. F05, production reconciliation and whole-OS certification remain open.
 
 > The detailed findings, evidence and ordered plan are in **[`docs/audit/31_DEEP_QA_2026-10-21.md`](docs/audit/31_DEEP_QA_2026-10-21.md)**. It remains the historical baseline; reports44–48-A above govern the current increment and outstanding financial findings.
 
