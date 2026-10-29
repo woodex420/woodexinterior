@@ -15,7 +15,8 @@ Everything below is reproducible with the commands in the last section.
 | `woodex/` (v1 static site) | 16 crawled (18 files) | **52** | **0** | **0** |
 | Woodex OS dynamic site | 17 | — (new) | **0** | **0** |
 | Woodex OS static export | 17 | — | **0** | **0** |
-| Woodex OS automated tests | 5 suites | — | **89 passing, 0 failing** | — |
+| Woodex OS automated tests | 6 suites | — | **101 passing, 0 failing** | — |
+| Woodex OS admin end-to-end | 24 checks | — | **24 passing, 0 failing** | — |
 
 Baseline v1 issues (first crawl, before any change): 16 × missing canonical, 16 × missing
 `og:image`, 16 × missing Twitter card, 16 × no JSON-LD, 19 × heading-order errors,
@@ -25,6 +26,11 @@ meta description, 1 × unlabelled form control, 0 × broken links.
 ## 2. Bugs found and fixed
 
 ### Critical — user-facing or security
+
+| # | Bug | Evidence | Fix |
+| --- | --- | --- | --- |
+| C0 | **Admin error screens crashed.** Rendering `admin/error.ejs` before the locals middleware ran (signed-out POST, CSRF failure) threw `active is not defined`, turning a clean 401/403 into a 500. | Server log during the admin walkthrough; reproduced with a POST to `/admin/pages` without a session. | The shared admin head partial now defaults every local it uses, and each error render passes `active`/`flash`; a 401/403/404/409/500 always renders the branded shell. Covered by `tests/account.test.js`. |
+| C0b | **Export button returned 500.** `/admin/export` and `POST /api/v1/admin/export` passed the *site settings* object where the app config was expected, so `uploadDir` was undefined. | Admin check: `export 500`; log `mkdirSync ... Received undefined`. | Both routes now pass the real config, resolve the target from `system.export_dir` (default `dist`) and use `site.url` as the canonical base. The admin exports 47 files; covered by a test. |
 
 | # | Bug | Evidence | Fix |
 | --- | --- | --- | --- |
@@ -80,7 +86,17 @@ meta description, 1 × unlabelled form control, 0 × broken links.
   accounts, unknown sessions, login and enquiry rate limits, upload MIME/size/traversal
   handling, file deletion.
 - **Export:** route coverage, draft exclusion, asset + upload copying, hardened
-  `.htaccess`, export notes.
+  `.htaccess`, export notes, exporting from the admin to a configured folder and the
+  owner-only guard.
+- **Account & recovery:** profile edits, duplicate email rejection, current-password and
+  confirmation checks, password rotation (old password rejected, other sessions revoked,
+  current session kept), CSRF on the account form, and every admin error page rendering
+  the branded shell instead of a 500.
+
+`npm run admin:check` adds 24 live checks driven through the real forms: sign-in,
+all 18 screens, page create/edit/publish/unpublish/revision-restore, project, insight,
+service, upload, navigation, settings, enquiry inbox + CSV, viewer role enforcement, API
+token issue/use/revoke, profile + password round-trip, static export and cleanup.
 
 Crawl artefacts: `docs/qa/v1-site.json` and `docs/qa/os-export.json` (plus `.md` twins).
 

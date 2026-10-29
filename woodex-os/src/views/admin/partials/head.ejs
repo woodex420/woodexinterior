@@ -1,10 +1,22 @@
+<%
+/* Every admin view shares this partial, including error screens rendered before the
+   locals middleware has run. Defaults keep an error page from ever failing to render. */
+var current   = typeof active !== 'undefined' && active ? active : '';
+var navUser   = typeof user !== 'undefined' && user ? user : { name: 'Signed out', email: '', role: 'viewer' };
+var labels    = typeof roleLabels !== 'undefined' && roleLabels ? roleLabels : { owner: 'Owner', editor: 'Editor', viewer: 'Viewer' };
+var flashes   = typeof flash !== 'undefined' && flash ? flash : { ok: '', err: '', notice: '' };
+var csrfValue = typeof csrf !== 'undefined' ? csrf : '';
+var pending   = typeof newEnquiries !== 'undefined' ? newEnquiries : 0;
+var canDo     = typeof can === 'function' ? can : function () { return false; };
+var pageTitle = typeof title !== 'undefined' && title ? title : 'Woodex OS';
+%>
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title><%= title %> · Woodex OS</title>
+<title><%= pageTitle %> · Woodex OS</title>
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="stylesheet" href="/admin-assets/admin.css">
 <script src="/admin-assets/blocks-editor.js" defer></script>
@@ -20,51 +32,52 @@
     <div>
       <div class="sidebar-group-title">Website</div>
       <nav aria-label="Website">
-        <a href="/admin"<%- active === 'dashboard' ? ' class="active" aria-current="page"' : '' %>>Dashboard</a>
-        <a href="/admin/pages"<%- active === 'pages' ? ' class="active" aria-current="page"' : '' %>>Pages</a>
-        <a href="/admin/navigation"<%- active === 'navigation' ? ' class="active" aria-current="page"' : '' %>>Navigation</a>
-        <a href="/admin/media"<%- active === 'media' ? ' class="active" aria-current="page"' : '' %>>Media library</a>
-        <% if (can('settings:write')) { %><a href="/admin/settings"<%- active === 'settings' ? ' class="active" aria-current="page"' : '' %>>Settings</a><% } %>
+        <a href="/admin"<%- current === 'dashboard' ? ' class="active" aria-current="page"' : '' %>>Dashboard</a>
+        <a href="/admin/pages"<%- current === 'pages' ? ' class="active" aria-current="page"' : '' %>>Pages</a>
+        <a href="/admin/navigation"<%- current === 'navigation' ? ' class="active" aria-current="page"' : '' %>>Navigation</a>
+        <a href="/admin/media"<%- current === 'media' ? ' class="active" aria-current="page"' : '' %>>Media library</a>
+        <% if (canDo('settings:write')) { %><a href="/admin/settings"<%- current === 'settings' ? ' class="active" aria-current="page"' : '' %>>Settings</a><% } %>
       </nav>
     </div>
 
     <div>
       <div class="sidebar-group-title">Content</div>
       <nav aria-label="Content">
-        <a href="/admin/projects"<%- active === 'projects' ? ' class="active" aria-current="page"' : '' %>>Projects</a>
-        <a href="/admin/insights"<%- active === 'insights' ? ' class="active" aria-current="page"' : '' %>>Insights</a>
-        <a href="/admin/services"<%- active === 'services' ? ' class="active" aria-current="page"' : '' %>>Services</a>
-        <a href="/admin/enquiries"<%- active === 'enquiries' ? ' class="active" aria-current="page"' : '' %>>Enquiries<% if (newEnquiries > 0) { %><span class="count"><%= newEnquiries %></span><% } %></a>
+        <a href="/admin/projects"<%- current === 'projects' ? ' class="active" aria-current="page"' : '' %>>Projects</a>
+        <a href="/admin/insights"<%- current === 'insights' ? ' class="active" aria-current="page"' : '' %>>Insights</a>
+        <a href="/admin/services"<%- current === 'services' ? ' class="active" aria-current="page"' : '' %>>Services</a>
+        <a href="/admin/enquiries"<%- current === 'enquiries' ? ' class="active" aria-current="page"' : '' %>>Enquiries<% if (pending > 0) { %><span class="count"><%= pending %></span><% } %></a>
       </nav>
     </div>
 
     <div>
       <div class="sidebar-group-title">System</div>
       <nav aria-label="System">
-        <% if (can('users:manage')) { %><a href="/admin/users"<%- active === 'users' ? ' class="active" aria-current="page"' : '' %>>Users</a><% } %>
-        <% if (can('tokens:manage')) { %><a href="/admin/tokens"<%- active === 'tokens' ? ' class="active" aria-current="page"' : '' %>>API tokens</a><% } %>
-        <% if (can('audit:read')) { %><a href="/admin/activity"<%- active === 'activity' ? ' class="active" aria-current="page"' : '' %>>Activity log</a><% } %>
-        <a href="/admin/health"<%- active === 'health' ? ' class="active" aria-current="page"' : '' %>>Health &amp; QA</a>
+        <% if (canDo('users:manage')) { %><a href="/admin/users"<%- current === 'users' ? ' class="active" aria-current="page"' : '' %>>Users</a><% } %>
+        <% if (canDo('tokens:manage')) { %><a href="/admin/tokens"<%- current === 'tokens' ? ' class="active" aria-current="page"' : '' %>>API tokens</a><% } %>
+        <% if (canDo('audit:read')) { %><a href="/admin/activity"<%- current === 'activity' ? ' class="active" aria-current="page"' : '' %>>Activity log</a><% } %>
+        <a href="/admin/health"<%- current === 'health' ? ' class="active" aria-current="page"' : '' %>>Health &amp; QA</a>
+        <a href="/admin/account"<%- current === 'account' ? ' class="active" aria-current="page"' : '' %>>My account</a>
       </nav>
     </div>
 
     <div class="sidebar-foot">
       <a href="/" target="_blank" rel="noopener">View live site ↗</a>
-      <span>Signed in as <%= user.email %></span>
-      <form method="post" action="/admin/logout"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn secondary small" type="submit">Sign out</button></form>
+      <span>Signed in as <a href="/admin/account"><%= navUser.email %></a></span>
+      <form method="post" action="/admin/logout"><input type="hidden" name="_csrf" value="<%= csrfValue %>"><button class="btn secondary small" type="submit">Sign out</button></form>
     </div>
   </aside>
 
   <div class="main">
     <header class="topbar">
-      <h1><%= title %></h1>
+      <h1><%= pageTitle %></h1>
       <div class="topbar-actions">
-        <span class="user-chip"><span class="avatar"><%= (user.name || user.email).slice(0, 1).toUpperCase() %></span><%= user.name %> <span class="role-badge"><%= roleLabels[user.role] %></span></span>
+        <a class="user-chip" href="/admin/account" title="My account"><span class="avatar"><%= (navUser.name || navUser.email || '?').slice(0, 1).toUpperCase() %></span><%= navUser.name %> <span class="role-badge"><%= labels[navUser.role] || navUser.role %></span></a>
       </div>
     </header>
     <div class="content">
-      <% if (flash.ok) { %><div class="alert ok" role="status"><%= flash.ok %></div><% } %>
-      <% if (flash.err) { %><div class="alert err" role="alert"><%= flash.err %></div><% } %>
+      <% if (flashes.ok) { %><div class="alert ok" role="status"><%= flashes.ok %></div><% } %>
+      <% if (flashes.err) { %><div class="alert err" role="alert"><%= flashes.err %></div><% } %>
       <% if (typeof errors !== 'undefined' && errors && Object.keys(errors).length) { %>
       <div class="alert err" role="alert"><strong>Please check the highlighted fields.</strong>
         <ul class="small" style="margin:6px 0 0 16px"><% Object.entries(errors).forEach(function (entry) { %><li><%= entry[1] %></li><% }); %></ul>

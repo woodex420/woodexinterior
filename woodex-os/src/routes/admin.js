@@ -78,7 +78,11 @@ export function createAdminRouter({ db, config, getSiteConfig }) {
   router.use((req, res, next) => {
     if (!req.user) {
       if (req.method === 'GET') return res.redirect(`/admin/login?next=${encodeURIComponent(req.originalUrl)}`);
-      return res.status(401).render('admin/error', { title: 'Signed out', message: 'Your session expired. Sign in and try again.' });
+      return res.status(401).render('admin/error', {
+        title: 'Signed out',
+        message: 'Your session expired. Sign in and try again.',
+        active: '', flash: { ok: '', err: '', notice: '' },
+      });
     }
     next();
   });
@@ -106,6 +110,7 @@ export function createAdminRouter({ db, config, getSiteConfig }) {
       return res.status(403).render('admin/error', {
         title: 'Security check failed',
         message: 'Your form session expired. Reload the page and submit again.',
+        active: '', flash: { ok: '', err: '', notice: '' },
       });
     }
     next();
@@ -116,6 +121,7 @@ export function createAdminRouter({ db, config, getSiteConfig }) {
       return res.status(403).render('admin/error', {
         title: 'Not allowed',
         message: `Your ${ROLE_LABELS[req.user.role]} role cannot access this area.`,
+        active: '', flash: { ok: '', err: '', notice: '' },
       });
     }
     next();
@@ -383,7 +389,11 @@ export function createAdminRouter({ db, config, getSiteConfig }) {
   router.post('/media', guard('media:write'), upload.single('file'), (req, res, next) => {
     try {
       if (!csrfValid(req, readCsrf(req))) {
-        return res.status(403).render('admin/error', { title: 'Security check failed', message: 'Your form session expired. Reload the page and submit again.' });
+        return res.status(403).render('admin/error', {
+          title: 'Security check failed',
+          message: 'Your form session expired. Reload the page and submit again.',
+          active: '', flash: { ok: '', err: '', notice: '' },
+        });
       }
       if (!req.file) return res.redirect('/admin/media?err=' + encodeURIComponent('Choose an image to upload.'));
       const out = db.run(
@@ -604,6 +614,61 @@ export function createAdminRouter({ db, config, getSiteConfig }) {
     } catch (err) { return next(err); }
   });
 
+  /* --------------------------------------------------------------- account */
+  router.get('/account', (req, res) => {
+    res.render('admin/account', {
+      title: 'My account', active: 'account',
+      account: db.get('SELECT id, email, name, role, last_login_at, created_at FROM users WHERE id = ?', req.user.id),
+      form: {}, errors: {},
+    });
+  });
+
+  router.post('/account', (req, res, next) => {
+    try {
+      const me = db.get('SELECT * FROM users WHERE id = ?', req.user.id);
+      if (!me) return next();
+      const name = String(req.body.name || '').trim().slice(0, 120) || me.name;
+      const email = String(req.body.email || '').toLowerCase().trim() || me.email;
+      const current = String(req.body.current_password || '');
+      const next_ = String(req.body.new_password || '');
+      const confirm = String(req.body.confirm_password || '');
+
+      const errors = {};
+      if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)) errors.email = 'Enter a valid email address.';
+      const taken = db.get('SELECT id FROM users WHERE email = ? AND id <> ?', email, me.id);
+      if (taken) errors.email = 'That email is already used by another account.';
+
+      const wantsPassword = Boolean(next_ || confirm);
+      if (wantsPassword) {
+        if (!verifyPassword(current, me.password_hash)) errors.current_password = 'Your current password is not correct.';
+        if (next_ !== confirm) errors.confirm_password = 'The two new passwords do not match.';
+        const problems = passwordProblems(next_);
+        if (problems.length) errors.new_password = problems.join(' ');
+      }
+
+      if (Object.keys(errors).length) {
+        return res.status(422).render('admin/account', {
+          title: 'My account', active: 'account',
+          account: { ...me, name, email },
+          form: { name, email },
+          errors,
+        });
+      }
+
+      db.run("UPDATE users SET name = ?, email = ?, updated_at = strftime('%Y-%m-%dT%H:%M:%SZ','now') WHERE id = ?", name, email, me.id);
+      if (wantsPassword) {
+        db.run('UPDATE users SET password_hash = ? WHERE id = ?', hashPassword(next_), me.id);
+        // Sign out every other device, keep this session alive.
+        db.run('DELETE FROM sessions WHERE user_id = ? AND id <> ?', me.id, req.session.id);
+        db.run('UPDATE sessions SET csrf = ? WHERE id = ?', crypto.randomBytes(24).toString('hex'), req.session.id);
+        logActivity(db, { user: req.user, action: 'account.password_changed', entity: 'user', entityId: me.id, ip: clientIp(req) });
+        return redirectOk(res, '/admin/account', 'Password updated — other devices were signed out');
+      }
+      logActivity(db, { user: req.user, action: 'account.updated', entity: 'user', entityId: me.id, ip: clientIp(req), meta: { email } });
+      return redirectOk(res, '/admin/account', 'Account updated');
+    } catch (err) { return next(err); }
+  });
+
   /* --------------------------------------------------------------- tokens */
   router.get('/tokens', guard('tokens:manage'), (req, res) => {
     res.render('admin/tokens', {
@@ -660,8 +725,12 @@ export function createAdminRouter({ db, config, getSiteConfig }) {
 
   router.post('/export', guard('system:export'), async (req, res, next) => {
     try {
-      const target = path.resolve(config.dbPath, '..', '..', 'dist');
-      const result = await exportStatic(db, getSiteConfig(db), { targetDir: target });
+      const site = getSiteConfig(db);
+      const configured = String(site['system.export_dir'] || 'dist').trim();
+      const target = path.isAbsolute(configured)
+        ? configured
+        : path.resolve(path.dirname(config.dbPath), '..', configured);
+      const result = await exportStatic(db, { ...config, baseUrl: site['site.url'] }, { targetDir: target });
       db.run('INSERT INTO export_runs (target, pages, files, status) VALUES (?,?,?,?)', result.target, result.pages, result.files, 'ok');
       logActivity(db, { user: req.user, action: 'site.exported', entity: 'system', ip: clientIp(req), meta: { target: result.target, files: result.files } });
       return redirectOk(res, '/admin/health', `Exported ${result.files} files to ${result.target}`);
@@ -669,17 +738,25 @@ export function createAdminRouter({ db, config, getSiteConfig }) {
   });
 
   /* ------------------------------------------------------------------ 404 */
-  router.use((req, res) => res.status(404).render('admin/error', { title: 'Not found', message: 'That admin screen does not exist.' }));
+  router.use((req, res) => res.status(404).render('admin/error', {
+    title: 'Not found', message: 'That admin screen does not exist.', active: '',
+  }));
   // eslint-disable-next-line no-unused-vars
   router.use((err, req, res, next) => {
     if (err instanceof ApiError) {
       return res.status(err.status).render('admin/error', {
         title: 'Request failed',
         message: err.message,
+        active: '',
+        errors: err.details || {},
       });
     }
     console.error('[woodex-os admin]', err);
-    return res.status(500).render('admin/error', { title: 'Something went wrong', message: 'The action could not be completed. Check the server log.' });
+    return res.status(500).render('admin/error', {
+      title: 'Something went wrong',
+      message: 'The action could not be completed. Check the server log.',
+      active: '',
+    });
   });
 
   return router;

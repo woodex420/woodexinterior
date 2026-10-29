@@ -61,7 +61,11 @@ write; the renderer additionally relies on EJS escaping for every scalar.
 - **CSRF:** every session carries a token. Admin forms send it as `name="_csrf"`; API
   writes send `x-csrf-token`. Bearer-token requests do not need it (no ambient cookie).
   The public contact form uses a double-submit cookie (`woodex_form`) so anonymous
-  visitors can post without a session.
+  visitors can post without a session. Changing your own password rotates the session
+  token and revokes every other session for that account.
+- **Recovery:** `npm run set-password -- --email <address>` sets a password from the
+  server (and revokes sessions); `npm run set-password -- --list` lists accounts. This is
+  the only path that bypasses the UI, and it writes to the audit log.
 - **Roles and capabilities:**
 
 | Capability | owner | editor | viewer |
@@ -184,12 +188,21 @@ curl -s -X POST localhost:4321/api/v1/enquiries -H 'content-type: application/js
 | `/admin/users` | Create/edit/disable/reset/delete users | `users:manage` |
 | `/admin/tokens` | Issue and revoke API tokens | `tokens:manage` |
 | `/admin/activity` | Audit log | `audit:read` |
-| `/admin/health` | Database, uploads, SEO and content checks | `content:read` |
-| `/admin/export` (POST) | Write the static export | `system:export` |
+| `/admin/health` | Database, uploads, SEO and content checks, export button | `content:read` |
+| `/admin/account` | Own profile (name, email) and password change | any signed-in user |
+| `/admin/export` (POST) | Write the static export to `system.export_dir` | `system:export` |
 
 Every write is CSRF-checked, validated, logged to `activity_log`, and (for pages)
 preceded by a revision snapshot. Validation failures re-render the form at 422 with the
 submitted values and field-level messages.
+
+## 5.1 Admin error pages
+
+Every admin screen — including 401, 403, 404, 409 and 500 — renders the branded shell.
+The shared head partial defaults `active`, `user`, `roleLabels`, `flash`, `csrf`,
+`newEnquiries`, `can` and `title` when a screen is rendered before the locals middleware
+runs (for example the signed-out and CSRF failures). A failure to render an error page
+can therefore never cascade into a second 500.
 
 ## 6. Public site rendering
 
@@ -217,7 +230,8 @@ dist/
   assets/…  uploads/…  .htaccess  EXPORT-README.txt
 ```
 
-Latest run: **24 routes, 43 files**, 0 crawl errors. Directory-style URLs rely on
+Latest run: **24 routes, 47 files**, 0 crawl errors. The target folder comes from the
+`system.export_dir` setting (default `dist`, resolved relative to the database folder). Directory-style URLs rely on
 `DirectoryIndex`; `.htaccess` adds HTTPS, compression, caching, CSP, `Options -Indexes`,
 dotfile denial and `/404.html`. The export contains published content only.
 

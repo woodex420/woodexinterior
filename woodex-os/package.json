@@ -2,9 +2,11 @@
   "name": "woodex-os",
   "version": "2.1.0",
   "private": true,
-  "description": "Woodex OS v2.1 — CMS, admin and REST API for the Woodex Interior website",
+  "description": "Woodex OS v2.1 \u2014 CMS, admin and REST API for the Woodex Interior website",
   "type": "module",
-  "engines": { "node": ">=22.5.0" },
+  "engines": {
+    "node": ">=22.5.0"
+  },
   "scripts": {
     "start": "node --no-warnings server.js",
     "dev": "node --no-warnings --watch server.js",
@@ -12,7 +14,9 @@
     "export": "node --no-warnings scripts/export-static.js",
     "test": "node --no-warnings --test tests/*.test.js",
     "qa:site": "node --no-warnings scripts/qa-site.js",
-    "qa:v1": "node --no-warnings scripts/qa-site.js --dir ../woodex --label \"v1 static site\""
+    "qa:v1": "node --no-warnings scripts/qa-site.js --dir ../woodex --label \"v1 static site\"",
+    "set-password": "node --no-warnings scripts/set-password.js",
+    "admin:check": "node --no-warnings scripts/admin-check.js"
   },
   "dependencies": {
     "ejs": "^3.1.10",

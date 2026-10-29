@@ -5,7 +5,7 @@ The Woodex Interior website and its content platform.
 | Path | What it is | Status |
 | --- | --- | --- |
 | `woodex/` | The hand-built static site (18 HTML pages, `theme.css`, `site.js`, images). No build step; uploads straight to Hostinger. | Live-ready. Hardened and de-duplicated on 2026-10-26. |
-| `woodex-os/` | **Woodex OS v2.1** — the CMS, admin, REST API and static exporter that now owns the site content. Express 4 + EJS + `node:sqlite`, no external services. | Complete and tested (89 tests). |
+| `woodex-os/` | **Woodex OS v2.1** — the CMS, admin, REST API and static exporter that now owns the site content. Express 4 + EJS + `node:sqlite`, no external services. | Complete and tested (101 tests + 24 admin checks). |
 | `docs/` | QA report, gap analysis, backend/API reference and the completion plan. | — |
 
 ## Quick start
@@ -17,12 +17,20 @@ npm run seed          # creates data/woodex-os.sqlite from content/seed/*.json
 npm start             # http://localhost:4321  ·  /admin  ·  /api/v1
 ```
 
-The seeder prints the owner account. It is created from `WOODEX_ADMIN_EMAIL` /
-`WOODEX_ADMIN_PASSWORD`, or a random password that is shown once. **Never reuse the
-demo credentials that appear in old notes** — set your own before deploying.
+Sign in at `/admin` with the seeded owner account:
+
+```
+admin@woodexinterior.pk  /  WoodexStudio2026!
+```
+
+The seeder takes the account from `WOODEX_ADMIN_EMAIL` / `WOODEX_ADMIN_PASSWORD`, or
+prints a random password once. **Change it before deploying** — either at
+**My account** in the admin or with `npm run set-password -- --email <address>`.
+Never reuse the demo credentials that appear in old notes.
 
 ```bash
-npm test              # 89 tests: public site, API, admin, security, export
+npm test              # 101 tests: public site, API, admin, security, export
+npm run admin:check   # 24 end-to-end checks driven through the real admin forms
 npm run export        # renders the published content to woodex-os/dist for Apache
 npm run qa:site       # crawls the live site and fails on SEO/a11y/HTML regressions
 ```

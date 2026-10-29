@@ -618,8 +618,13 @@ export function createApiRouter({ db, config, getSiteConfig }) {
 
   admin.post('/export', authorize('system:export'), csrfGuard, async (req, res, next) => {
     try {
-      const target = vString(req.body?.target, { field: 'target', max: 200 }) || path.join(config.dbPath, '..', '..', 'dist');
-      const result = await exportStatic(db, getSiteConfig(db), { targetDir: target });
+      const site = getSiteConfig(db);
+      const configured = vString(req.body?.target, { field: 'target', max: 200 })
+        || String(site['system.export_dir'] || 'dist');
+      const target = path.isAbsolute(configured)
+        ? configured
+        : path.resolve(path.dirname(config.dbPath), '..', configured);
+      const result = await exportStatic(db, { ...config, baseUrl: site['site.url'] }, { targetDir: target });
       db.run('INSERT INTO export_runs (target, pages, files, status) VALUES (?,?,?,?)', target, result.pages, result.files, 'ok');
       logActivity(db, { user: req.user, action: 'site.exported', entity: 'system', ip: clientIp(req), meta: { target } });
       res.json({ data: result });

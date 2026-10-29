@@ -1,0 +1,67 @@
+<%- include('partials/head') %>
+<div class="grid cols-2">
+  <div class="card">
+    <div class="card-head"><h2>Profile</h2><span class="badge neutral"><%= roleLabels[account.role] %></span></div>
+    <p class="small muted">Your name and email appear on the activity log and in the sidebar. Changing your email changes the sign-in address immediately.</p>
+    <dl class="kv">
+      <dt>Last sign-in</dt>
+      <dd><%= account.last_login_at ? formatDate(account.last_login_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'This is your first session' %></dd>
+      <dt>Member since</dt>
+      <dd><%= formatDate(account.created_at) %></dd>
+    </dl>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Security</h2></div>
+    <p class="small muted">Pick a password of at least 10 characters that you do not use anywhere else. If you have lost your password, an owner can reset it from <a href="/admin/users">Users</a>, or run <code>npm run set-password</code> on the server.</p>
+    <dl class="kv">
+      <dt>Session</dt>
+      <dd>Signed in on this device</dd>
+      <dt>Two-factor</dt>
+      <dd class="muted">Not enabled</dd>
+    </dl>
+  </div>
+</div>
+
+<form method="post" action="/admin/account" class="card">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="card-head"><h2>Your details</h2></div>
+  <div class="form-row">
+    <div class="field">
+      <label for="name">Full name</label>
+      <input id="name" name="name" value="<%= form.name || account.name %>" maxlength="120" required<%- errors.name ? ' aria-invalid="true"' : '' %>>
+      <% if (errors.name) { %><span class="field-error"><%= errors.name %></span><% } %>
+    </div>
+    <div class="field">
+      <label for="email">Email address</label>
+      <input id="email" name="email" type="email" value="<%= form.email || account.email %>" maxlength="200" required autocomplete="email"<%- errors.email ? ' aria-invalid="true"' : '' %>>
+      <% if (errors.email) { %><span class="field-error"><%= errors.email %></span><% } %>
+    </div>
+  </div>
+
+  <div class="card-head" style="margin-top:26px"><h2>Change password</h2><span class="small muted">Leave blank to keep your current password</span></div>
+  <div class="form-row three">
+    <div class="field">
+      <label for="current_password">Current password</label>
+      <input id="current_password" name="current_password" type="password" autocomplete="current-password"<%- errors.current_password ? ' aria-invalid="true"' : '' %>>
+      <% if (errors.current_password) { %><span class="field-error"><%= errors.current_password %></span><% } %>
+    </div>
+    <div class="field">
+      <label for="new_password">New password</label>
+      <input id="new_password" name="new_password" type="password" autocomplete="new-password" minlength="10"<%- errors.new_password ? ' aria-invalid="true"' : '' %>>
+      <% if (errors.new_password) { %><span class="field-error"><%= errors.new_password %></span><% } %>
+    </div>
+    <div class="field">
+      <label for="confirm_password">Repeat new password</label>
+      <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" minlength="10"<%- errors.confirm_password ? ' aria-invalid="true"' : '' %>>
+      <% if (errors.confirm_password) { %><span class="field-error"><%= errors.confirm_password %></span><% } %>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn" type="submit">Save changes</button>
+    <a class="btn secondary" href="/admin">Cancel</a>
+  </div>
+</form>
+
+<%- include('partials/foot') %>

@@ -17,6 +17,25 @@ npm run seed                  # create data/woodex-os.sqlite from content/seed/*
 npm start                     # http://localhost:4321
 ```
 
+### Sign in
+
+| Surface | URL |
+| --- | --- |
+| Public site | `http://localhost:4321/` |
+| Admin | `http://localhost:4321/admin` |
+| API | `http://localhost:4321/api/v1/health` |
+
+The seeded owner account (change it before going live):
+
+```
+email:    admin@woodexinterior.pk
+password: WoodexStudio2026!
+```
+
+Lost the password? `npm run set-password -- --email <email>` prints a fresh one;
+`npm run set-password -- --list` shows the accounts. Owners can also reset anyone
+from **Users**, and everyone can change their own password at **My account**.
+
 Seeding is idempotent: it inserts missing content and keeps your edits. `npm run seed --
 --reset` clears the content tables first (accounts and settings survive).
 
@@ -33,7 +52,7 @@ Seeding is idempotent: it inserts missing content and keeps your edits. `npm run
 | `WOODEX_SECURE_COOKIES` | `1` in production | Requires HTTPS. |
 | `WOODEX_TRUST_PROXY` | on | Set `0` when not behind a proxy. |
 | `WOODEX_MAX_UPLOAD` | `5242880` | Bytes per upload. |
-| `WOODEX_LOGIN_MAX` | `8` | Failed logins per window per IP. |
+| `WOODEX_LOGIN_MAX` | `8` | Failed logins per window per IP (raise it to ~200 when running the admin check repeatedly). |
 | `WOODEX_ENQUIRY_MAX` | `5` | Enquiries per window per IP. |
 | `WOODEX_RATE_WINDOW_MS` | `600000` | Window for both limiters. |
 | `WOODEX_ADMIN_EMAIL` / `WOODEX_ADMIN_PASSWORD` | — | Used by the seeder only. |
@@ -46,7 +65,7 @@ Seeding is idempotent: it inserts missing content and keeps your edits. `npm run
 | --- | --- |
 | Website | Dashboard · Pages · Navigation · Media library · Settings |
 | Content | Projects · Insights · Services · Enquiries |
-| System | Users · API tokens · Activity log · Health · Export |
+| System | Users · API tokens · Activity log · Health & QA · Export · My account |
 
 - **Pages** carry a title, slug, template, hero, ordered content blocks (hero, page hero,
   rich text, image + text, cards, service cards, project grid, journal grid, process
@@ -96,11 +115,18 @@ assets, uploads and a hardened `.htaccess`.
 ## Tests and QA
 
 ```bash
-npm test                    # 89 tests across public site, API, admin, security, export
+npm test                    # 101 tests across public site, API, admin, security, export
+npm run admin:check         # 24 end-to-end checks through the real admin forms
 npm run qa:site             # crawl http://localhost:4321
 npm run qa:site -- --dir dist --label "export"
 npm run qa:site -- --dir ../woodex --label "v1 site"
 ```
+
+`npm run admin:check` drives the admin like a browser: it signs in, walks all 18
+screens, creates/edits/publishes/restores a page, creates a project, insight,
+service, upload, nav item and enquiry, checks role enforcement and token
+revocation, changes and restores the password, runs the export, then removes
+every `qa-` record it created. It exits non-zero on any failure.
 
 The QA crawler checks: HTTP status (including every internal link), `<title>` and meta
 description presence/length and duplicates, canonical, Open Graph/Twitter, JSON-LD
@@ -135,6 +161,7 @@ src/views/site/        55 templates: shell, partials, 14 block partials, page te
 src/views/admin/       admin screens
 src/public/admin/      admin.css + blocks-editor.js
 content/seed/          the current site content as JSON
-scripts/               seed.js, export-static.js, qa-site.js, patch-legacy-site.js
+scripts/               seed.js, set-password.js, admin-check.js, export-static.js,
+                       qa-site.js, patch-legacy-site.js
 tests/                 node:test suites and fixtures
 ```

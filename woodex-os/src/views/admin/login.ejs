@@ -30,7 +30,13 @@
       </div>
       <button class="btn" type="submit" style="width:100%">Sign in</button>
     </form>
-    <p class="small muted" style="margin-top:18px">Protected area. Sign-in attempts are rate limited and logged.</p>
+    <details class="small muted" style="margin-top:18px">
+      <summary style="cursor:pointer">Forgot your password?</summary>
+      <p style="margin-top:8px">Ask another owner to reset it under <strong>Users</strong>, or run this on the server:</p>
+      <pre style="background:#f5f5f3;padding:10px;border-radius:6px;overflow:auto"><code>cd woodex-os
+npm run set-password -- --email you@example.com</code></pre>
+      <p>Sign-in attempts are rate limited and logged.</p>
+    </details>
   </div>
 </div>
 </body>
