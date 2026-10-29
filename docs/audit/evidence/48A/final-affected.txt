@@ -1,0 +1,239 @@
+
+   PASS  Tests\Feature\ThemeWebChatUpgradeTest
+  ✓ it captures a phone before service and never assumes messaging cons… 2.43s
+  ✓ it qualifies the existing lead without recapture or duplicate enrol… 0.10s
+  ✓ it keeps a repeated number from becoming service or a second captur… 0.09s
+  ✓ it captures email immediately with the followup anchor and no autom… 0.11s
+  ✓ it does not create a CRM lead from invalid contact details           0.06s
+  ✓ it resumes legacy partial intake and preserves an existing open lea… 0.08s
+  ✓ it reloads intake state under lock rather than recapturing from a s… 0.09s
+  ✓ it hands intake to a real staff reply without a competing bot quest… 0.10s
+  ✓ it does not treat internal notes as staff takeover                   0.06s
+  ✓ it reopens a closed website thread when the visitor returns          0.10s
+  ✓ it records the first real staff reply on the linked lead             0.13s
+  ✓ it shows anonymous and incomplete SQL conversations in the Web Chat… 0.42s
+  ✓ it never includes other channels in website tracking                 0.11s
+  ✓ it scopes linked lead tracking to lead visibility while keeping ano… 0.17s
+  ✓ it requires both CRM and inbox permissions for the tab and its comp… 0.10s
+  ✓ it filters unread assignment status date and overdue lead targets    0.22s
+  ✓ it keeps an in-progress draft when a different website thread arriv… 0.22s
+  ✓ it keeps a closed drawer draft safe when a different thread trigger… 0.18s
+  ✓ it marks a matching open thread read without replacing the composer… 0.23s
+  ✓ it rejects cross-channel direct thread opening even with an existin… 0.11s
+  ✓ it offers a three-mode native theme without the misleading header p… 0.19s
+  ✓ it stores long valid email in the contact rather than overflowing t… 0.10s
+  ✓ it shows legacy captured contact details read-only without a histor… 0.14s
+  ✓ it does not discard a draft when reopening the already selected thr… 0.21s
+  ✓ it never turns visitor service text into privileged staff mention n… 0.09s
+  ✓ it uses PKT calendar boundaries for tracking dates rather than the…  0.14s
+
+   PASS  Tests\Feature\CommunicationsRedesignTest
+  ✓ it archives and restores own updates without schema changes or dele… 0.11s
+  ✓ it archives and restores own updates without schema changes or dele… 0.08s
+  ✓ it keeps other users notifications private and rejects cross-user m… 0.06s
+  ✓ it keeps other users notifications private and rejects cross-user m… 0.06s
+  ✓ it keeps other users notifications private and rejects cross-user m… 0.09s
+  ✓ it searches and filters actual own notification rows                 0.12s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.06s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.06s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.08s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.06s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.06s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.06s
+  ✓ it opens same-origin notifications using a root-relative native des… 0.06s
+  ✓ it makes Unread an exclusive real filter and clears it on other tab… 0.13s
+  ✓ it combines channel assignment and search with matching status coun… 0.14s
+  ✓ it rejects inactive or nonexistent assignees without changing owner… 0.15s
+  ✓ it rejects inactive or nonexistent assignees without changing owner… 0.13s
+  ✓ it shows the latest bounded thread and loads earlier messages on bo… 0.18s
+  ✓ it shows the latest bounded thread and loads earlier messages on bo… 0.17s
+  ✓ it does not read or mark non-website conversations through the live… 0.08s
+  ✓ it does not read or mark non-website conversations through the live… 0.08s
+  ✓ it keeps the website composer free of WhatsApp warnings and read-on… 0.12s
+  ✓ it scopes advanced lead statistics and drawer activity to the exist… 0.11s
+  ✓ it filters actual lead activity without changing recorded history    0.16s
+
+   PASS  Tests\Feature\P10LiveChatTest
+  ✓ it stays out of the header for staff who cannot use the inbox        0.10s
+  ✓ it shows the unread count and the live-visitor dot                   0.09s
+  ✓ it marks the visitor quiet after two minutes                         0.09s
+  ✓ it lists website chats only — WhatsApp never enters the live drawer  0.10s
+  ✓ it never replays history as a toast                                  0.10s
+  ✓ it toasts a new visitor message once and opens the drawer on it      0.13s
+  ✓ it stops toasting once a teammate has read the thread                0.10s
+  ✓ it opens the drawer on request, picks the newest thread and marks i… 0.11s
+  ✓ it answers the visitor from the drawer on the same thread            0.14s
+  ✓ it keeps the sound off by default and out of non-managers hands      0.10s
+  ✓ it switches the sound on for the whole studio from the drawer        0.14s
+  ✓ it rides along on every admin page through the header                0.16s
+
+   PASS  Tests\Feature\P10SidebarHubsTest
+  ✓ it consolidates the sidebar to the confirmed P10.1 map               0.09s
+  ✓ it renders every hub tab for the owner with dataset "dashboard over… 0.18s
+  ✓ it renders every hub tab for the owner with dataset "dashboard my d… 0.15s
+  ✓ it renders every hub tab for the owner with dataset "reports funnel… 0.21s
+  ✓ it renders every hub tab for the owner with dataset "reports revenu… 0.22s
+  ✓ it renders every hub tab for the owner with dataset "leads list"     0.16s
+  ✓ it renders every hub tab for the owner with dataset "leads pipeline… 0.15s
+  ✓ it renders every hub tab for the owner with dataset "leads tracking… 0.14s
+  ✓ it renders every hub tab for the owner with dataset "contacts peopl… 0.15s
+  ✓ it renders every hub tab for the owner with dataset "contacts compa… 0.14s
+  ✓ it renders every hub tab for the owner with dataset "tasks"          0.14s
+  ✓ it renders every hub tab for the owner with dataset "visits"         0.14s
+  ✓ it renders every hub tab for the owner with dataset "quotes all"     0.15s
+  ✓ it renders every hub tab for the owner with dataset "quote tracking… 0.28s
+  ✓ it renders every hub tab for the owner with dataset "quote template… 0.20s
+  ✓ it renders every hub tab for the owner with dataset "invoices all"   0.15s
+  ✓ it renders every hub tab for the owner with dataset "invoice tracki… 0.14s
+  ✓ it renders every hub tab for the owner with dataset "invoice recurr… 0.15s
+  ✓ it renders every hub tab for the owner with dataset "invoice bank a… 0.14s
+  ✓ it renders every hub tab for the owner with dataset "payables bills… 0.14s
+  ✓ it renders every hub tab for the owner with dataset "payables vendo… 0.15s
+  ✓ it renders every hub tab for the owner with dataset "payables aging… 0.14s
+  ✓ it renders every hub tab for the owner with dataset "expenses"       0.15s
+  ✓ it renders every hub tab for the owner with dataset "other income"   0.14s
+  ✓ it renders every hub tab for the owner with dataset "recurring expe… 0.15s
+  ✓ it renders every hub tab for the owner with dataset "profit and los… 0.14s
+  ✓ it renders every hub tab for the owner with dataset "payments all"   0.15s
+  ✓ it renders every hub tab for the owner with dataset "due payments"   0.14s
+  ✓ it renders every hub tab for the owner with dataset "receivables"    0.15s
+  ✓ it renders every hub tab for the owner with dataset "documents desc… 0.17s
+  ✓ it renders every hub tab for the owner with dataset "document desig… 0.14s
+  ✓ it renders every hub tab for the owner with dataset "rate book"      0.20s
+  ✓ it redirects every merged URL to its tab with dataset "my day"       0.07s
+  ✓ it redirects every merged URL to its tab with dataset "pipeline"     0.07s
+  ✓ it redirects every merged URL to its tab with dataset "companies"    0.07s
+  ✓ it redirects every merged URL to its tab with dataset "site visits"  0.07s
+  ✓ it redirects every merged URL to its tab with dataset "quote templa… 0.08s
+  ✓ it redirects every merged URL to its tab with dataset "quote tracki… 0.09s
+  ✓ it redirects every merged URL to its tab with dataset "invoice trac… 0.08s
+  ✓ it redirects every merged URL to its tab with dataset "due payments… 0.07s
+  ✓ it redirects every merged URL to its tab with dataset "receivables"  0.07s
+  ✓ it redirects every merged URL to its tab with dataset "rate book"    0.07s
+  ✓ it redirects every merged URL to its tab with dataset "description…  0.07s
+  ✓ it redirects every merged URL to its tab with dataset "document des… 0.07s
+  ✓ it redirects every merged URL to its tab with dataset "funnel"       0.07s
+  ✓ it redirects every merged URL to its tab with dataset "revenue coll… 0.08s
+  ✓ it hides tabs the user cannot open and refuses a directly requested… 0.31s
+  ✓ it shows live sidebar badges for unread conversations and pending a… 0.31s
+  ✓ it classifies the lead tracking board without inventing states       0.68s
+  ✓ it logs a follow-up onto the lead timeline and moves the next actio… 0.33s
+  ✓ it renders the tracking tab through the hub for the owner            0.24s
+  ✓ it renders one page heading per hub screen instead of stacking the…  0.19s
+
+   PASS  Tests\Feature\Conversations\WebChatWidgetTest
+  ✓ it keeps the widget invisible while it is switched off               0.12s
+  ✓ it serves the script and greets a new visitor by name flow           0.08s
+  ✓ it runs the intake: name, number, service — then the lead exists an… 0.16s
+  ✓ it accepts an email instead of a number and never asks for the numb… 0.15s
+  ✓ it re-asks for a number that is neither a number nor an email        0.09s
+  ✓ it lets the team reply from the inbox without a gateway and the wid… 0.24s
+  ✓ it starts a fresh thread for an unknown token instead of failing     0.09s
+  ✓ it stores the visitor message even when the intake is already live   0.20s
+  ✓ it bounds a message to two thousand characters                       0.22s
+  ✓ it ships the loader to the static v1 pages as well                   0.06s
+  ✓ it answers the loader with the widget only while the switch is on    0.13s
+  ✓ it counts the visitor message as unread for the inbox                0.14s
+  ✓ it shows web chat threads in the inbox and answers them there witho… 0.37s
+
+   PASS  Tests\Feature\PaymentIntegrityTest
+  ✓ it rejects another client invoice through the authorized payment fo… 0.19s
+  ✓ it never allocates to non-payable or foreign-currency invoice targe… 0.09s
+  ✓ it never allocates to non-payable or foreign-currency invoice targe… 0.09s
+  ✓ it never allocates to non-payable or foreign-currency invoice targe… 0.09s
+  ✓ it never allocates to non-payable or foreign-currency invoice targe… 0.09s
+  ✓ it never allocates to non-payable or foreign-currency invoice targe… 0.10s
+  ✓ it honors an explicit allocation map and keeps its unselected remai… 0.40s
+  ✓ it validates the whole explicit map before retaining any allocation… 0.10s
+  ✓ it validates the whole explicit map before retaining any allocation… 0.09s
+  ✓ it validates the whole explicit map before retaining any allocation… 0.09s
+  ✓ it validates the whole explicit map before retaining any allocation… 0.09s
+  ✓ it validates the whole explicit map before retaining any allocation… 0.10s
+  ✓ it validates the whole explicit map before retaining any allocation… 0.09s
+  ✓ it validates the whole explicit map before retaining any allocation… 0.09s
+  ✓ it pays the preferred invoice before older debt and retains only th… 0.33s
+  ✓ it does not spend automatic excess on ineligible invoice contexts    0.34s
+  ✓ it rejects an incompatible or inactive receiving account with (true… 0.11s
+  ✓ it rejects an incompatible or inactive receiving account with (fals… 0.09s
+  ✓ it rereads a pending proof and never renumbers or redelivers a stal… 0.33s
+  ✓ it cannot use rejection to undo verified money or verification to r… 0.35s
+  ✓ it enforces finance permission and active staff at action boundarie… 0.09s
+  ✓ it does not allocate an unverified proof or rewrite allocations aft… 0.34s
+  ✓ it removes a generated receipt and rolls back balances and numberin… 0.33s
+  ✓ it rolls back a verification rather than confirming money when rece… 0.32s
+  ✓ it validates fresh invoice state and positive integer amounts befor… 0.06s
+  ✓ it enforces client and project context on allocation targets with (… 0.10s
+  ✓ it enforces client and project context on allocation targets with (… 0.11s
+  ✓ it preserves paisa exactly and refuses scientific or overprecise am… 0.56s
+  ✓ it queues client mail and team alerts only after the money transact… 0.35s
+  ✓ it queues client mail and team alerts only after the money transact… 0.38s
+
+   PASS  Tests\Feature\TelegramDiagnosticsTest
+  ✓ it checks bot identity and webhook delivery without exposing secret… 0.11s
+  ✓ it reports failed bot API authentication and empty webhook registra… 0.04s
+  ✓ it registers a webhook without discarding pending user messages      0.04s
+  ✓ it shows runtime diagnostics to administrators with no false connec… 0.20s
+  ✓ it refuses diagnostics for staff without integration management per… 0.08s
+
+   PASS  Tests\Feature\TelegramSecurityTest
+  ✓ it requires the official secret header on the stable endpoint with…  0.05s
+  ✓ it requires the official secret header on the stable endpoint with…  0.04s
+  ✓ it allows the stable endpoint only with a configured matching heade… 0.07s
+  ✓ it requires a header even on the legacy path by default              0.05s
+  ✓ it restricts explicit temporary legacy mode to the correct path and… 0.05s
+  ✓ it registers and diagnoses the stable URL without putting secrets i… 0.19s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.06s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.05s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.05s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.05s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.05s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.04s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.04s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.04s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.05s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.04s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.05s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.04s
+  ✓ it never grants group members the authority of a previously linked…  0.04s
+  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.04s
+  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.04s
+  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.04s
+  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.04s
+  ✓ it refuses inactive expired rotated and used codes with ('inactive'… 0.04s
+  ✓ it refuses inactive expired rotated and used codes with ('expired')  0.05s
+  ✓ it refuses inactive expired rotated and used codes with ('rotated')  0.05s
+  ✓ it refuses inactive expired rotated and used codes with ('used')     0.05s
+  ✓ it consumes one code once and never steals a chat already linked to… 0.07s
+  ✓ it executes business commands only through the permission-gated com… 0.13s
+  ✓ it commits a change request with its replay marker and recovers a f… 0.08s
+  ✓ it keeps committed command effects when a reply transport fails and… 0.09s
+  ✓ it limits link guesses by authenticated sender without blocking a d… 0.10s
+  ✓ it limits ordinary commands independently from link attempts         0.25s
+  ✓ it ignores malformed update identifiers before admission with (null… 0.04s
+  ✓ it ignores malformed update identifiers before admission with ([])   0.04s
+  ✓ it ignores malformed update identifiers before admission with (true… 0.04s
+  ✓ it ignores malformed update identifiers before admission with (-1)   0.04s
+  ✓ it ignores malformed update identifiers before admission with ('abc… 0.05s
+  ✓ it ignores malformed update identifiers before admission with (1.25… 0.04s
+  ✓ it does not treat callback or edited-message updates as approval au… 0.05s
+  ✓ it does not treat callback or edited-message updates as approval au… 0.05s
+  ✓ it does not treat callback or edited-message updates as approval au… 0.05s
+  ✓ it rereads staff and notification routing rather than trusting a ca… 0.05s
+  ✓ it rereads staff and notification routing rather than trusting a ca… 0.04s
+  ✓ it rereads staff and notification routing rather than trusting a ca… 0.04s
+  ✓ it rereads staff and notification routing rather than trusting a ca… 0.04s
+  ✓ it does not let unauthenticated requests exhaust a real sender rate… 0.14s
+  ✓ it uses the stable secret-free URL from the console registration pa… 0.04s
+
+   PASS  Tests\Feature\Telegram\TelegramPairingTest
+  ✓ it renders the QR and the copyable deep link for a pending code      0.18s
+  ✓ it flips to linked when the webhook receives the start code          0.09s
+  ✓ it refuses a code that cannot pair and names the missing key         0.13s
+  ✓ it names the missing token and secret instead of saying not connect… 0.13s
+  ✓ it names a webhook that Telegram does not have, with its delivery e… 0.04s
+  ✓ it flags silence when no update has arrived in 24 hours              0.10s
+  ✓ it names a blocked bot for this chat and clears once a send lands    0.09s
+  ✓ it all steps pass on a healthy linked setup                          0.05s
+
+  Tests:    218 passed (884 assertions)
+  Duration: 30.54s

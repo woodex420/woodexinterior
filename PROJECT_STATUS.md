@@ -2,15 +2,19 @@
 
 **Updated:** 29 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (local demo)
 
-> **Current planning — revision48: theme, website capture and omnichannel audit complete; implementation awaits approval.**
-> Existing SQL chat, popup logic, CRM capture, provider capability gaps and Telegram private/channel boundaries
-> have been audited. Recommended first slice: Light/Night/System, accurate environment-label relocation,
-> reliable website alerts, early capture and a native Web Chat Leads tab; no new schema or live provider sends.
-> Targeted baseline: **98 passed /513 assertions** using an isolated test DB and provider fakes.
-> Production Telegram state/mobile receipt remain unverified; social source labels are not live transports.
-> [Phased TODO/master plan48](docs/audit/48_THEME_OMNICHANNEL_MASTER_PLAN_2026-10-29.md).
+> **Current delivery — revision48-A: native theme and website-chat capture upgrade delivered.**
+> Light/Night/System, accurate environment note outside the top bar, early SQL-backed CRM capture,
+> Leads → Web Chat, closed-thread reopening and draft-safe targeted alerts reuse existing modules.
+> Long emails no longer overflow intake state; public service text cannot invoke staff mention commands.
+> **Full:1722 passed /1 skipped /9199 assertions** before the final three safety guards;
+> **final affected:218/884**,26 new cases,PHPStan0,Pint8,Vite,7 theme unit tests and37 native browser checks pass.
+> Main preview has0 conversations/0 QA48 contacts; synthetic browser data stayed in a separate QA copy.
+> Local Telegram token/secret are absent; production/mobile delivery remain unverified. No schema,
+> provider connections/sends, historical backfill, deploy or merge. Social/provider phases remain gated.
+> [Implementation48-A and evidence](docs/audit/48A_NATIVE_THEME_WEB_CHAT_UPGRADE_2026-10-29.md) ·
+> [Phased master plan48](docs/audit/48_THEME_OMNICHANNEL_MASTER_PLAN_2026-10-29.md).
 >
-> **Latest delivered implementation — revision47: approved CRM and communications redesign delivered.**
+> **Previous implementation — revision47: approved CRM and communications redesign delivered.**
 > Advanced Leads workspace/detail/activity, Alerts dropdown/centre, Inbox and staff/visitor Live Chat
 > reuse the native Laravel/Livewire modules. Real archive/search/filter/assignment/history controls;
 > fresh access/channel guards; retained visitor drafts/retry; toasts no longer block the composer.
@@ -39,17 +43,17 @@
 > Previous Slice W remains delivered: native Estimates / Rates / Estimator Enquiries and all eight audited
 > workflow fixes; [report39](docs/audit/39_ESTIMATIONS_HUB_AUDIT_PLAN_2026-10-27.md).
 
-**One line:** revision48 theme/web-chat/omnichannel plan awaits approval; revision47 CRM/communications and earlier financial repairs are delivered. F05, production reconciliation and whole-OS certification remain open.
+**One line:** revision48-A theme/web-chat upgrade delivered; social/provider foundation is next and remains separately gated. F05, production reconciliation and whole-OS certification remain open.
 
-> The detailed findings, evidence and ordered plan are in **[`docs/audit/31_DEEP_QA_2026-10-21.md`](docs/audit/31_DEEP_QA_2026-10-21.md)**. It remains the historical baseline; reports44–47 above govern the current increment and outstanding financial findings.
+> The detailed findings, evidence and ordered plan are in **[`docs/audit/31_DEEP_QA_2026-10-21.md`](docs/audit/31_DEEP_QA_2026-10-21.md)**. It remains the historical baseline; reports44–48-A above govern the current increment and outstanding financial findings.
 
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | Revision47 full: **1699 passed /1 skipped /9109 assertions**; final UI/finance157/547, new24/82, browser20 checks. Financial F05 semantics remain deferred. |
+| Tests | Revision48-A full: **1722 passed /1 skipped /9199 assertions** before final guards; final affected218/884, new26 cases, browser37, theme unit7. Financial F05 remains deferred. |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
-| Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |
+| Environment | Preview remains `APP_ENV=local`; an accurate **Local preview** note is in the user menu. It does not infer record ownership or production status. |
 
 ## Earlier delivery plan: 26 October master plan
 

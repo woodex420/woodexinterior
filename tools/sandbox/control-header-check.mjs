@@ -39,7 +39,7 @@ try{
  await page.keyboard.press('Escape');
  await page.waitForSelector('[role="dialog"][aria-label="Search"]',{hidden:true});
  check('Search escape restores the page',true);
- check('Preview badge remains an honest environment marker',await page.$eval('header',e=>e.innerText.includes('Demo data')));
+ check('Environment is labeled without a misleading top-nav demo pill',await page.$eval('header',e=>!e.innerText.includes('Demo data'))&&await page.$eval('.wx-environment',e=>e.textContent.includes('Local preview')));
  check('No header JavaScript errors',errors.length===0);
  fs.writeFileSync('/tmp/woodex-run/shots/44/44-header-results.json',JSON.stringify({checks,errors,fixture:'copied isolated demo; opening chat may mark its messages read; no sends'},null,2)+'\n');
 }catch(error){await page.screenshot({path:'/tmp/woodex44/header-failure.png'});console.log('Header JS errors',errors);throw error}finally{await browser.close()}

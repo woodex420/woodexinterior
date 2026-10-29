@@ -220,6 +220,9 @@ final class SendConversationMessage
             ]);
 
             $conversation->touchLastMessage(MessageDirection::Out, $body);
+            $conversation->lead()->whereNull('first_response_at')->update([
+                'first_response_at' => now(), 'last_activity_at' => now(),
+            ]);
 
             return $message;
         });

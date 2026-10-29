@@ -1,5 +1,5 @@
 @props(['title' => null, 'description' => null, 'padding' => true])
-<section {{ $attributes->merge(['class' => 'rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]']) }}>
+<section {{ $attributes->merge(['class' => 'wx-surface rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]']) }}>
     @if ($title || isset($actions))
         <header class="flex items-start justify-between gap-4 border-b border-gray-100 px-5 py-4 dark:border-gray-800">
             <div>

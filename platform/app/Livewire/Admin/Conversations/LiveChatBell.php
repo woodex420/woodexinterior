@@ -42,6 +42,8 @@ class LiveChatBell extends Component
 
     public int $historyLimit = 60;
 
+    public ?int $pendingId = null;
+
     public function loadEarlier(): void
     {
         $this->historyLimit = min(600, max(60, $this->historyLimit) + 60);
@@ -78,11 +80,54 @@ class LiveChatBell extends Component
             name: $newest->conversation->contact->name ?? 'Website visitor',
             preview: (string) Str::limit($newest->body, 90),
             sound: (bool) app(NotificationSettings::class)->chat_alert_sound,
+            conversationId: $newest->conversation_id,
         );
 
-        if (! $this->drawer) {
-            // Open on the thread that just spoke, not simply the most recent one.
-            $this->selectedId = $newest->conversation_id;
+        if (! $this->drawer && trim($this->draft) === '') {
+            $this->select($newest->conversation_id);
+            $this->openDrawer();
+        } elseif ($this->selectedId === $newest->conversation_id) {
+            if ($this->drawer) {
+                $this->markSelectedRead();
+            } else {
+                $this->openDrawer();
+            }
+        } else {
+            // Never replace an in-progress reply, including one retained after closing the drawer.
+            $this->pendingId = $newest->conversation_id;
+            if (! $this->drawer) {
+                $this->openDrawer();
+            }
+        }
+    }
+
+    #[On('open-website-thread')]
+    public function openThread(int $id): void
+    {
+        $this->authorize('viewAny', Conversation::class);
+        $thread = Conversation::query()->where('channel', Channel::WebChat->value)->find($id);
+        abort_unless($thread instanceof Conversation, 403);
+        $this->authorize('view', $thread);
+        if ($this->selectedId === $id) {
+            $this->openDrawer();
+
+            return;
+        }
+        // Explicit switches with a draft require confirmation in the drawer, not data loss.
+        if ($this->selectedId !== $id && trim($this->draft) !== '') {
+            $this->pendingId = $id;
+            $this->openDrawer();
+
+            return;
+        }
+        $this->select($id);
+        $this->openDrawer();
+    }
+
+    public function switchPending(): void
+    {
+        if ($this->pendingId !== null) {
+            $this->select($this->pendingId);
             $this->openDrawer();
         }
     }
@@ -147,6 +192,7 @@ class LiveChatBell extends Component
         $this->authorize('view', $conversation);
 
         $this->selectedId = $conversation->id;
+        $this->pendingId = null;
         $this->historyLimit = 60;
         $this->draft = '';
         $this->markSelectedRead();
@@ -208,7 +254,6 @@ class LiveChatBell extends Component
                     ->where('unread_count', '>', 0);
             })
             ->with('conversation.contact:id,name')
-            ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->first();
     }

@@ -9,15 +9,21 @@
     <title>{{ isset($title) ? $title.' · ' : '' }}Woodex OS</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <script>
-        try {
-            if (localStorage.getItem('wx.theme') === 'dark') { document.documentElement.classList.add('dark'); }
-            if (localStorage.getItem('wx.sidebar') === 'collapsed') { document.documentElement.dataset.sidebar = 'collapsed'; }
-        } catch (e) {}
+        (() => {
+            let mode = 'system';
+            try { mode = localStorage.getItem('wx.theme') || 'system'; } catch (e) {}
+            if (!['light', 'dark', 'system'].includes(mode)) mode = 'system';
+            const dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.classList.toggle('dark', dark);
+            document.documentElement.dataset.themeMode = mode;
+            document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+            try { if (localStorage.getItem('wx.sidebar') === 'collapsed') document.documentElement.dataset.sidebar = 'collapsed'; } catch (e) {}
+        })();
     </script>
     @vite(['resources/css/admin.css', 'resources/js/admin.js'])
     @livewireStyles
 </head>
-<body class="h-full">
+<body class="wx-admin h-full">
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[999999] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2">Skip to content</a>
 
     {{-- GLB-016: keyboard shortcuts (N/Q//, G then D). Wires only the routes this user may use. --}}

@@ -4,7 +4,7 @@
 @endphp
 {{-- No backdrop-blur on the header: a filtered ancestor becomes the containing block for position: fixed,
      which trapped the website-chat drawer inside this 72px bar. A solid header looks the same. --}}
-<header class="sticky top-0 z-30 flex min-h-[72px] flex-wrap items-center py-2 sm:h-[72px] sm:flex-nowrap sm:py-0 gap-3 border-b border-gray-200 bg-white px-4 md:px-6 dark:border-gray-800 dark:bg-gray-900">
+<header class="wx-admin-header sticky top-0 z-30 flex min-h-[72px] flex-wrap items-center py-2 sm:h-[72px] sm:flex-nowrap sm:py-0 gap-3 border-b border-gray-200 bg-white px-4 md:px-6 dark:border-gray-800 dark:bg-gray-900">
     <button type="button" @click="$store.sidebar.toggle()"
             class="flex size-10 items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5"
             aria-label="Toggle sidebar">
@@ -15,21 +15,12 @@
     <livewire:admin.global-search />
 
     <div class="ml-auto flex items-center gap-2">
-        {{-- Honesty marker: a local install is seeded with demo contacts, leads, quotations and tasks.
-             They must never be read as client data, so every admin page says so where the team looks. --}}
-        @if (app()->isLocal())
-            <span class="flex items-center gap-1.5 rounded-full border border-warning-500/30 bg-warning-50 px-3 py-1 text-theme-xs font-medium text-warning-700 dark:bg-warning-500/10 dark:text-warning-400"
-                  title="APP_ENV=local: contacts, leads, quotations and tasks may be demo records created by DemoSeeder. Production installs start empty.">
-                <x-icon name="alert" class="size-4" /> Demo data
-            </span>
-        @endif
-
-        <button type="button" @click="$store.theme.toggle()"
-                class="flex size-10 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5"
-                aria-label="Toggle dark mode">
-            <x-icon name="moon" class="size-5 dark:hidden" />
-            <x-icon name="sun" class="hidden size-5 dark:block" />
-        </button>
+        <label class="wx-theme-picker flex items-center gap-1 rounded-full border px-2" title="Woodex Light / Night — follow your device with System">
+            <x-icon name="moon" class="size-4 shrink-0" />
+            <select :value="$store.theme.mode" @change="$store.theme.setMode($event.target.value)" aria-label="Color theme" class="h-9 max-w-24 cursor-pointer border-0 bg-transparent text-theme-xs outline-none">
+                <option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option>
+            </select>
+        </label>
 
         {{-- Notifications (GLB-008) --}}
         <livewire:admin.conversations.live-chat-bell />
@@ -53,6 +44,12 @@
                     <p class="truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $user?->name }}</p>
                     <p class="truncate text-theme-xs text-gray-500">{{ $user?->email }}</p>
                 </div>
+                @if (! app()->environment('production'))
+                    <div class="wx-environment m-1 rounded-lg border px-3 py-2 text-theme-xs" role="note">
+                        <strong>{{ app()->isLocal() ? 'Local preview' : 'Non-production environment' }}</strong>
+                        <p class="mt-1">Sample records may exist. This label describes the environment, not record ownership.</p>
+                    </div>
+                @endif
                 <a href="{{ route('admin.profile.security') }}" wire:navigate class="mt-1 flex items-center gap-3 rounded-lg px-3 py-2 text-theme-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5">
                     <x-icon name="shield" class="size-4" /> Security &amp; Telegram
                 </a>

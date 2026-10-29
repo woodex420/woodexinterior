@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Conversations\Actions;
 
 use App\Domain\Bot\Actions\ReplyWithBot;
+use App\Domain\Conversations\Enums\ConversationStatus;
 use App\Domain\Conversations\Enums\MessageDirection;
 use App\Domain\Conversations\Enums\MessageStatus;
 use App\Domain\Conversations\Enums\MessageType;
@@ -19,13 +20,14 @@ use App\Domain\Crm\Enums\LeadSource;
 use App\Domain\Crm\Jobs\AskForPhoneNumber;
 use App\Settings\BusinessSettings;
 use App\Support\Phone;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
  * One visitor message through the widget's rule-based intake (P8.5): asked_name → asked_number →
- * asked_service|<contact> → live. The service answer creates the lead via CaptureLead (the single
+ * asked_service → live (legacy encoded contact states are still readable). A valid contact immediately creates/links the lead via CaptureLead (the single
  * entry point, CAP-003) — that fires LeadCaptured, which alerts the team exactly like any other
- * enquiry. From there the thread is a normal web_chat conversation the team answers from the inbox.
+ * enquiry. Service completion enriches that same lead. From there the thread is a normal web_chat conversation the team answers from the inbox.
  *
  * Two consent rules hold: typing a number into a chat box is not WhatsApp consent (consent_whatsapp
  * stays false), and when the visitor gives an email instead of a number we ask for the number
@@ -52,35 +54,56 @@ final class ReceiveWebChatMessage
     {
         $body = trim($body);
         $body = $body === '' ? '👍' : mb_substr($body, 0, 2000);
+        $runBot = false;
 
-        $message = $conversation->messages()->create([
-            'direction' => MessageDirection::In,
-            'type' => MessageType::Text,
-            'body' => $body,
-            'status' => MessageStatus::Delivered,
-            'delivered_at' => now(),
-        ]);
-        $conversation->touchLastMessage(MessageDirection::In, $body); // also counts the unread badge
-
-        $state = (string) ($conversation->widget_state ?? self::STATE_LIVE);
-
-        if ($state === self::STATE_ASKED_NAME) {
-            $this->handleName($conversation, $body);
-        } elseif (str_starts_with($state, 'asked_service')) {
-            $this->handleService($conversation, $state, $body);
-        } elseif ($state === self::STATE_ASKED_NUMBER) {
-            $this->handleNumber($conversation, $body);
-        } else {
-            // Live thread: the assistant may answer (BOT-002) — if it is on, and only inside its
-            // rails; anything it declines becomes a hand-off the team hears about.
-            try {
-                app(ReplyWithBot::class)->handle($conversation->refresh());
-            } catch (Throwable $botFailure) {
-                report($botFailure); // the visitor's message is stored; a failed bot never loses it
+        // Serialize intake transitions: two requests with stale models must not capture twice.
+        $message = DB::transaction(function () use ($conversation, $body, &$runBot): Message {
+            $thread = Conversation::query()->lockForUpdate()->findOrFail($conversation->id);
+            if ($thread->status === ConversationStatus::Closed) {
+                $thread->update(['status' => ConversationStatus::Open, 'closed_at' => null]);
             }
-        }
+            $message = $thread->messages()->create([
+                'direction' => MessageDirection::In,
+                'type' => MessageType::Text,
+                'body' => $body,
+                'status' => MessageStatus::Delivered,
+                'delivered_at' => now(),
+            ]);
+            $thread->touchLastMessage(MessageDirection::In, $body);
+
+            // A real staff reply hands the thread to humans. Internal notes do not stop intake.
+            $human = $thread->messages()->whereNotNull('user_id')
+                ->where('direction', MessageDirection::Out->value)
+                ->where('type', '!=', MessageType::Note->value)->exists();
+            if ($human) {
+                $thread->update(['widget_state' => self::STATE_LIVE]);
+
+                return $message;
+            }
+
+            $state = (string) ($thread->widget_state ?? self::STATE_LIVE);
+            if ($state === self::STATE_ASKED_NAME) {
+                $this->handleName($thread, $body);
+            } elseif ($state === 'asked_service' || str_starts_with($state, 'asked_service|')) {
+                $this->handleService($thread, $state, $body);
+            } elseif ($state === self::STATE_ASKED_NUMBER) {
+                $this->handleNumber($thread, $body);
+            } else {
+                $runBot = true;
+            }
+
+            return $message;
+        });
 
         $conversation->refresh();
+        // Provider work is outside the intake transaction. A failed bot cannot lose the message.
+        if ($runBot) {
+            try {
+                app(ReplyWithBot::class)->handle($conversation);
+            } catch (Throwable $botFailure) {
+                report($botFailure);
+            }
+        }
 
         return $message;
     }
@@ -110,16 +133,20 @@ final class ReceiveWebChatMessage
         $candidate = trim(str_replace(['tel:', ' ', '-', '(', ')'], '', $body));
 
         if (Phone::isValid($candidate) || Phone::isValid('+'.ltrim($candidate, '+'))) {
-            $conversation->update(['widget_state' => 'asked_service|'.Phone::normalize($candidate)]);
-            $this->startWebChat->bot($conversation, 'Got it. And what do you need done — for example a wardrobe, a full home interior, an office fit-out, or a kitchen?');
+            $contact = (string) Phone::normalize($candidate);
+            $this->captureContact($conversation, $contact);
+            $conversation->update(['widget_state' => 'asked_service']);
+            $this->startWebChat->bot($conversation, 'Your enquiry is saved. And what do you need done — for example a wardrobe, a full home interior, an office fit-out, or a kitchen?');
 
             return;
         }
 
         $email = filter_var(trim($body), FILTER_VALIDATE_EMAIL);
         if ($email !== false) {
-            $conversation->update(['widget_state' => 'asked_service|email:'.mb_strtolower($email)]);
-            $this->startWebChat->bot($conversation, "Thanks — we'll use {$email}. What do you need done — a wardrobe, a full home interior, an office fit-out, a kitchen?");
+            $contact = 'email:'.mb_strtolower($email);
+            $this->captureContact($conversation, $contact);
+            $conversation->update(['widget_state' => 'asked_service']);
+            $this->startWebChat->bot($conversation, "Your enquiry is saved — we'll use {$email}. What do you need done — a wardrobe, a full home interior, an office fit-out, a kitchen?");
 
             return;
         }
@@ -127,54 +154,79 @@ final class ReceiveWebChatMessage
         $this->startWebChat->bot($conversation, "Hmm, that doesn't look like a number. Please reply with your WhatsApp number (like 0322 4000768) — or an email address if you prefer.");
     }
 
-    /** The service answer becomes the enquiry: one CaptureLead call and the thread goes live. */
-    private function handleService(Conversation $conversation, string $state, string $body): void
+    /** Capture at identification, not after the optional qualification question. */
+    private function captureContact(Conversation $conversation, string $contact): void
     {
-        $contact = mb_substr(substr($state, strlen('asked_service|')), 0, 100);
-        $isEmail = str_starts_with($contact, 'email:');
-        $email = $isEmail ? mb_substr($contact, strlen('email:')) : null;
-        $phone = $isEmail ? null : $contact;
-        $name = (string) ($conversation->subject ?? 'Website visitor');
-        $service = mb_substr(trim($body), 0, 190);
+        if ($conversation->lead_id !== null) {
+            return;
+        }
 
+        $isEmail = str_starts_with($contact, 'email:');
         $result = $this->captureLead->handle(new LeadInput(
-            name: $name,
-            phone: $phone,
-            email: $email,
+            name: (string) ($conversation->subject ?? 'Website visitor'),
+            phone: $isEmail ? null : $contact,
+            email: $isEmail ? substr($contact, strlen('email:')) : null,
             source: LeadSource::WebsiteChat,
-            service: $service,
-            message: 'Web chat enquiry: '.$service,
+            message: 'Web chat enquiry — service not provided yet.',
             sourceDetail: 'Chat widget',
         ));
-
         $lead = $result->lead;
+        $conversation->update(['contact_id' => $lead->contact_id, 'lead_id' => $lead->id]);
 
-        $conversation->update([
-            'contact_id' => $lead->contact_id,
-            'lead_id' => $lead->id,
-            'widget_state' => self::STATE_LIVE,
-        ]);
-
-        if ($isEmail) {
-            // AskForPhoneNumber's email job would send the same ask we just typed into the chat.
-            // Creating its anchor task here makes that job a no-op — one ask, never two.
-            if (! $lead->tasks()->where('title', AskForPhoneNumber::TASK_TITLE)->exists()) {
-                $this->manageTask->create(
-                    AskForPhoneNumber::TASK_TITLE,
-                    null,
-                    null,
-                    null,
-                    $lead,
-                );
-            }
-
-            $this->logActivity->handle(
-                $lead,
-                ActivityType::System,
-                null,
-                'Website chat: the visitor gave an email, not a number. The chat asked for their WhatsApp number; the team should follow up if they stay silent.',
-            );
+        // Anchor before the after-response email job runs. Supplying email does not consent to outreach.
+        if ($isEmail && ! $lead->tasks()->where('title', AskForPhoneNumber::TASK_TITLE)->exists()) {
+            $this->manageTask->create(AskForPhoneNumber::TASK_TITLE, null, null, null, $lead);
+            $this->logActivity->handle($lead, ActivityType::System, null,
+                'Website chat: email provided, no phone. Continue in this thread; ask for a number only if the visitor prefers WhatsApp.');
         }
+    }
+
+    /** Enrich the same enquiry; never fire LeadCaptured a second time for qualification. */
+    private function handleService(Conversation $conversation, string $state, string $body): void
+    {
+        $saved = $conversation->contact;
+        $contact = $state === 'asked_service'
+            ? ($saved->phone ?? ($saved?->email ? 'email:'.$saved->email : ''))
+            : substr($state, strlen('asked_service|'));
+        if ($contact === '') {
+            $conversation->update(['widget_state' => self::STATE_ASKED_NUMBER]);
+            $this->startWebChat->bot($conversation, 'Please share a valid phone number or email so the team can save your enquiry.');
+
+            return;
+        }
+        $isEmail = str_starts_with($contact, 'email:');
+        // A retried identification request is not a service answer.
+        if (($saved?->email !== null && mb_strtolower(trim($body)) === $saved->email)
+            || ($isEmail && mb_strtolower(trim($body)) === substr($contact, 6))
+            || (! $isEmail && Phone::normalize($body) === $contact)) {
+            $this->startWebChat->bot($conversation, 'Your enquiry is saved. What service do you need? You can also wait here for our team.');
+
+            return;
+        }
+
+        $this->captureContact($conversation, $contact); // also resumes pre-upgrade partial intake
+        $lead = $conversation->lead()->lockForUpdate()->firstOrFail();
+        $service = mb_substr(trim($body), 0, 190);
+        // Do not overwrite an existing open lead's established service when capture merged it.
+        if (blank($lead->service)) {
+            $lead->service = $service;
+        }
+        if ($lead->message === 'Web chat enquiry — service not provided yet.') {
+            $lead->message = 'Web chat enquiry: '.$service;
+        }
+        $lead->last_activity_at = now();
+        $lead->save();
+        // Visitor text is not a staff note: never interpret public @names as notification commands.
+        $lead->activities()->create([
+            'contact_id' => $lead->contact_id,
+            'type' => ActivityType::System,
+            'direction' => 'in',
+            'body' => 'Website chat service provided: '.$service,
+            'occurred_at' => now(),
+        ]);
+        $lead->contact()->update(['last_activity_at' => now()]);
+        $conversation->update(['widget_state' => self::STATE_LIVE]);
+        $name = (string) ($conversation->subject ?? 'Website visitor');
 
         $person = $this->business->brand_name.' team';
         $closing = "Thank you, {$name} — that's everything I need. I've passed your enquiry to the {$person}; they'll reply right here. You can also leave this page open and check back later.";

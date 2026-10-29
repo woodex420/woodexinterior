@@ -173,3 +173,24 @@ initial short-description four-page fixture). HTML previews remain continuous ra
 The iframe harness is non-document-mutating and can also verify the active preview with
 `PORT=33143 node tools/sandbox/furniture-iframe-check.mjs`. Never run the **mutating/restoring** document harness
 against33143. Final primary verification retained six quotes, 26 contacts, zero invoices and zero QA contacts.
+
+### Revision48 theme + early web-chat capture
+
+- `node --test tools/sandbox/theme-unit-check.mjs` exercises the actual theme store (legacy preferences,
+  System, device/cross-tab changes and blocked storage) without a browser/dependencies.
+- `theme-chat-fixture.php` mutates **only** `/tmp/woodex48/qa/app` with a separate SQLite database,
+  local environment, sync queue, array mail and blank Telegram/WhatsApp tokens. Prepare that isolated
+  copy first; never point it at owner/main/production data. `--init` is fresh-only; `--documents`
+  creates synthetic Interior/Furniture drafts and a draft invoice; `--issue-document` issues only that
+  synthetic invoice to exercise the actual PDF viewer. `--inspect` returns synthetic fixture state.
+- `node tools/sandbox/theme-chat-check.mjs` requires that fresh QA copy running on port33144 with
+  the sandbox demo-login helper, plus `--init`, `--documents` and `--issue-document` above. It uses
+  distinct Chromium **processes** for staff and visitor (serverless Chromium's `--single-process`
+  does not reliably support incognito contexts). No provider calls/sends are part of this proof.
+  It checks real visible polling/popup, native sends, SQL capture before service, draft-safe switching,
+  mobile layouts, theme/Assistant/charts and real Interior/Furniture/invoice PDF canvas output.
+  Output is transient under `/tmp/woodex48/browser`; curated release evidence belongs in `docs/audit/`.
+
+- `node tools/sandbox/theme-chat-draft-check.mjs` runs after that walkthrough against the same QA copy.
+  It checks the real serialized Livewire server response and native same-thread reopening without
+  sending a customer message. Do not wait for global network-idle on an actively polling page.

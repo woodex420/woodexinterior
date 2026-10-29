@@ -45,11 +45,11 @@ try {
  await go('/admin?tab=system');
  check('System tab renders native health checks',await page.$eval('main',e=>e.innerText.includes('System health')&&e.innerText.includes('Scheduled tasks')));
  await go('/admin');
- await page.click('[aria-label="Toggle dark mode"]');
+ await page.select('[aria-label="Color theme"]','dark');
  await page.waitForFunction(()=>document.documentElement.classList.contains('dark'));
  await page.reload({waitUntil:'networkidle0'});
  check('Theme choice survives reload',await page.$eval('html',e=>e.classList.contains('dark')));
- await page.click('[aria-label="Toggle dark mode"]');
+ await page.select('[aria-label="Color theme"]','light');
  await page.click('[aria-label="Toggle sidebar"]');
  await page.waitForFunction(()=>localStorage.getItem('wx.sidebar')==='collapsed');
  check('Desktop sidebar toggle persists',true);

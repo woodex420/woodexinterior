@@ -106,7 +106,7 @@ it('runs the intake: name, number, service — then the lead exists and the thre
 
     sendChat($token, '0321 1234567')->assertOk();
     $conversation->refresh();
-    expect($conversation->widget_state)->toBe('asked_service|+923211234567');
+    expect($conversation->widget_state)->toBe('asked_service');
 
     $reply = sendChat($token, 'Wardrobe for the master bedroom');
     $reply->assertOk();
@@ -139,7 +139,7 @@ it('accepts an email instead of a number and never asks for the number twice', f
     sendChat($token, 'sana@example.com');
 
     $conversation = Conversation::query()->where('widget_token', $token)->firstOrFail();
-    expect($conversation->widget_state)->toBe('asked_service|email:sana@example.com');
+    expect($conversation->widget_state)->toBe('asked_service');
 
     sendChat($token, 'Office fit-out in Gulberg');
 

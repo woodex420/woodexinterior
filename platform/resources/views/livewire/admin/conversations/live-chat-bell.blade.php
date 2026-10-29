@@ -1,4 +1,4 @@
-<div x-data="{ drawer: $wire.entangle('drawer') }" x-on:open-live-chat.window="$wire.openDrawer()" x-on:keydown.escape.window="if ($wire.drawer) $wire.closeDrawer()" @if ($canUse) wire:poll.10s.visible="poll" @endif>
+<div x-data="{ drawer: $wire.entangle('drawer') }" x-on:focus.window="$wire.poll()" x-on:visibilitychange.document="if (!document.hidden) $wire.poll()" x-on:keydown.escape.window="if ($wire.drawer) $wire.closeDrawer()" @if ($canUse) wire:poll.10s.visible="poll" @endif>
     @if ($canUse)
         <div class="relative">
             <button type="button" x-ref="trigger" wire:click="openDrawer" class="relative flex size-10 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400" aria-haspopup="dialog" aria-expanded="{{ $drawer ? 'true' : 'false' }}" aria-label="Website chat{{ $unread > 0 ? " ({$unread} unread)" : '' }}">
@@ -17,10 +17,16 @@
                     <button type="button" wire:click="closeDrawer" class="wx-icon-button" aria-label="Close"><x-icon name="x" class="size-4" /></button>
                 </div>
             </header>
+            @if ($pendingId !== null && $pendingId !== $selectedId)
+                <div class="wx-chat-pending flex shrink-0 flex-wrap items-center justify-between gap-2 border-b p-3 text-theme-xs" role="status">
+                    <span>Another website thread needs attention. Your current draft is kept.</span>
+                    <button type="button" wire:click="switchPending" @if (trim($draft) !== '') wire:confirm="Switch threads and discard the current draft?" @endif class="wx-history-button">Switch to new message</button>
+                </div>
+            @endif
             <div class="wx-live-chat-layout flex min-h-0 flex-1">
                 <nav class="wx-live-chat-list shrink-0 overflow-y-auto border-r border-gray-100 p-2 dark:border-gray-800" aria-label="Website conversations">
                     @forelse ($live as $conversation)
-                        <button type="button" wire:key="lc-{{ $conversation->id }}" wire:click="select({{ $conversation->id }})" aria-pressed="{{ $conversation->id === $selectedId ? 'true' : 'false' }}" @class(['mb-1 block w-full rounded-xl p-3 text-left text-theme-xs', 'bg-brand-50 text-navy-900 dark:bg-white/10 dark:text-white' => $conversation->id === $selectedId, 'hover:bg-gray-50 dark:hover:bg-white/5' => $conversation->id !== $selectedId])>
+                        <button type="button" wire:key="lc-{{ $conversation->id }}" wire:click="openThread({{ $conversation->id }})" aria-pressed="{{ $conversation->id === $selectedId ? 'true' : 'false' }}" @class(['mb-1 block w-full rounded-xl p-3 text-left text-theme-xs', 'bg-brand-50 text-navy-900 dark:bg-white/10 dark:text-white' => $conversation->id === $selectedId, 'hover:bg-gray-50 dark:hover:bg-white/5' => $conversation->id !== $selectedId])>
                             <span class="mb-2 flex items-center gap-2"><span class="wx-avatar size-8">{{ mb_strtoupper(mb_substr($conversation->contact?->name ?? $conversation->subject ?? 'V', 0, 1)) }}</span>@if ($conversation->unread_count > 0)<span class="wx-count ml-auto">{{ $conversation->unread_count }}</span>@endif</span>
                             <span class="block truncate font-semibold">{{ $conversation->contact?->name ?? $conversation->subject ?? 'Visitor' }}</span>
                             <span class="mt-1 block truncate text-gray-500 dark:text-gray-400">{{ $conversation->last_preview ?? '—' }}</span>

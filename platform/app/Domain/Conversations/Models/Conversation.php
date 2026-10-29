@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Support\Concerns\HasPublicId;
 use Carbon\CarbonImmutable;
 use Database\Factories\Conversations\ConversationFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -52,6 +53,13 @@ class Conversation extends Model
     }
 
     use HasPublicId;
+
+    /** @param Builder<self> $query */
+    public function scopeAwaitingService(Builder $query): void
+    {
+        $query->where(fn (Builder $state) => $state->where('widget_state', 'asked_service')
+            ->orWhere('widget_state', 'like', 'asked_service|%'));
+    }
 
     protected $fillable = [
         'channel', 'contact_id', 'lead_id', 'assignee_id', 'subject', 'status', 'external_number',

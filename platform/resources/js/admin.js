@@ -8,6 +8,7 @@
  * - Heavy libraries (SortableJS, ApexCharts) load only on screens that need them.
  */
 import 'preline/plugins/dropdown';
+import { createThemeStore, readStorage, writeStorage } from './admin/theme';
 import { registerQuoteWorkbench } from './admin/quote-workbench';
 import { registerDocumentPreview } from './admin/document-preview';
 
@@ -30,9 +31,9 @@ document.addEventListener('alpine:init', () => {
         groups: {},
         init() {
             // The desktop preference; below xl the sidebar is an off-canvas drawer (mobileOpen) at full width.
-            this.expanded = localStorage.getItem('wx.sidebar') !== 'collapsed';
+            this.expanded = readStorage('wx.sidebar') !== 'collapsed';
             try {
-                this.groups = JSON.parse(localStorage.getItem('wx.groups') || '{}') || {};
+                this.groups = JSON.parse(readStorage('wx.groups') || '{}') || {};
             } catch {
                 this.groups = {};
             }
@@ -43,7 +44,7 @@ document.addEventListener('alpine:init', () => {
         },
         toggleGroup(key) {
             this.groups[key] = !this.groupOpen(key);
-            localStorage.setItem('wx.groups', JSON.stringify(this.groups));
+            writeStorage('wx.groups', JSON.stringify(this.groups));
         },
         toggle() {
             if (window.innerWidth < 1280) {
@@ -51,7 +52,7 @@ document.addEventListener('alpine:init', () => {
                 return;
             }
             this.expanded = !this.expanded;
-            localStorage.setItem('wx.sidebar', this.expanded ? 'expanded' : 'collapsed');
+            writeStorage('wx.sidebar', this.expanded ? 'expanded' : 'collapsed');
             this.applyWidth();
         },
         applyWidth() {
@@ -63,14 +64,7 @@ document.addEventListener('alpine:init', () => {
         },
     });
 
-    Alpine.store('theme', {
-        dark: document.documentElement.classList.contains('dark'),
-        toggle() {
-            this.dark = !this.dark;
-            document.documentElement.classList.toggle('dark', this.dark);
-            localStorage.setItem('wx.theme', this.dark ? 'dark' : 'light');
-        },
-    });
+    Alpine.store('theme', createThemeStore());
 
     Alpine.store('toasts', {
         items: [],
@@ -92,14 +86,15 @@ window.addEventListener('toast', (event) => {
 });
 
 /* ---------- Live website chat (P10.2): toast + optional sound when a visitor texts the bubble.
-   The drawer never opens by itself (owner decision); the toast's Open button does it on request. ---------- */
+   New inbound messages open a closed drawer; draft-aware switches stay explicit. ---------- */
 window.addEventListener('chat-alert', (event) => {
     const detail = Array.isArray(event.detail) ? event.detail[0] : event.detail;
     const name = detail?.name ?? 'Website visitor';
     const preview = detail?.preview ?? 'New message';
     window.Alpine?.store('toasts')?.push(`Website chat — ${name}: ${preview}`, 'chat', {
         label: 'Open chat',
-        event: 'open-live-chat',
+        event: detail?.conversationId ? 'open-website-thread' : 'open-live-chat',
+        detail: { id: detail?.conversationId },
     });
 
     if (detail?.sound) {
@@ -205,6 +200,30 @@ window.addEventListener('quote-focus', (event) => {
     }, 60);
 });
 
+const activeCharts = new Map();
+const chartTheme = (element) => {
+    const dark = document.documentElement.classList.contains('dark');
+    const css = getComputedStyle(document.documentElement);
+    const muted = css.getPropertyValue('--wx-muted').trim();
+    const config = JSON.parse(element.dataset.chart || '{}');
+    return {
+        chart: { foreColor: muted, background: 'transparent' },
+        colors: config.colors ?? (dark ? ['#82b3f4', '#e7b687', '#6ce9a6'] : ['#344d75', '#a87442', '#027a48']),
+        xaxis: { labels: { style: { colors: muted } } },
+        yaxis: { labels: { style: { colors: muted } } },
+        legend: { labels: { colors: muted } },
+        grid: { borderColor: css.getPropertyValue('--wx-border').trim(), strokeDashArray: 4 },
+        tooltip: { theme: dark ? 'dark' : 'light' },
+        theme: { mode: dark ? 'dark' : 'light' },
+    };
+};
+window.addEventListener('wx-theme-changed', () => {
+    for (const [element, chart] of activeCharts) {
+        if (element.isConnected) chart.updateOptions(chartTheme(element), false, false);
+        else activeCharts.delete(element);
+    }
+});
+
 /* ---------- Charts (ApexCharts): <div data-chart='{"type":"area","series":[…],"categories":[…]}'> ---------- */
 async function initCharts() {
     const elements = [...document.querySelectorAll('[data-chart]:not([data-chart-ready])')];
@@ -250,8 +269,12 @@ async function initCharts() {
             legend: { position: 'top', horizontalAlign: 'left' },
             tooltip: { theme: dark ? 'dark' : 'light' },
         });
-        chart.render();
-        fitChartToBox(chart, element);
+        chart.render().then(() => {
+            if (!element.isConnected) { chart.destroy(); return; }
+            activeCharts.set(element, chart);
+            chart.updateOptions(chartTheme(element), false, false);
+            fitChartToBox(chart, element);
+        });
     });
 }
 
@@ -263,6 +286,7 @@ function fitChartToBox(chart, element) {
     const observer = new ResizeObserver(() => {
         if (!element.isConnected) {
             observer.disconnect();
+            activeCharts.delete(element);
             chart.destroy();
             return;
         }

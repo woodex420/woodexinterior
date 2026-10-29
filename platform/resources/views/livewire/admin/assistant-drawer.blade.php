@@ -51,7 +51,7 @@
 
                     @foreach ($turns as $index => $turn)
                         <div class="mt-5" wire:key="turn-{{ $index }}">
-                            <p class="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-navy-900 px-3 py-2 text-theme-sm text-white dark:bg-white dark:text-navy-900">{{ $turn['question'] }}</p>
+                            <p class="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md wx-primary-bubble px-3 py-2 text-theme-sm">{{ $turn['question'] }}</p>
                             <div class="mt-2 max-w-[92%] rounded-2xl rounded-tl-md bg-gray-50 px-3 py-2 dark:bg-white/5">
                                 <p class="text-theme-sm text-gray-800 dark:text-white/90">{{ $turn['answer']['headline'] }}</p>
                                 @foreach ($turn['answer']['rows'] as $row)

@@ -1,10 +1,10 @@
 # Revision48 — Theme, web-chat capture and omnichannel master plan
 
-**Date:** 29 October 2026 · **Code baseline:** `c47a36a` · **Status:** audit/plan only; implementation awaits the owner's decision.
+**Date:** 29 October 2026 · **Code baseline:** `c47a36a` · **Status:** 48-A approved and locally delivered; later schema/provider phases remain gated.
 
 ## 1. Recommendation and boundaries
 
-**Start with 48-A: native OS theme/header polish, reliable website-chat alerts, early enquiry capture and a dedicated Web Chat Leads tab. Audit Telegram's local diagnostics alongside it; authorize live pairing/testing separately.** Then deliver WhatsApp/Meta and other channels in individually verified slices.
+**Approved first slice, now delivered — 48-A: native OS theme/header polish, reliable website-chat alerts, early enquiry capture and a dedicated Web Chat Leads tab. Audit Telegram's local diagnostics alongside it; authorize live pairing/testing separately.** Then deliver WhatsApp/Meta and other channels in individually verified slices.
 
 Keep Laravel/Livewire, existing conversations/messages and the single CRM capture action. Give website chat its own usable tracking workspace, **not a second disconnected database or duplicate CRM**. A browser token resumes a conversation; it is not the database. Anonymous conversations must remain visible before visitors supply contact details.
 
@@ -46,47 +46,47 @@ The screenshot establishes an unwanted header pill, not the status of production
 
 ## 4. Ordered implementation / TODO backlog
 
-### 48-A — Recommended first approval: theme + website capture/tracking
+### 48-A — Approved native slice: locally delivered
 
 #### A1. Theme and header
 
-- [ ] Define native semantic tokens for page, surface, elevated surface, sidebar/header, border, primary/soft-primary, text/muted text, input, focus and success/warning/error. Apply consistently instead of adding broad unscoped color overrides.
-- [ ] Deliver **Woodex Light / Woodex Night**, plus **Light / Dark / System** preference. Night should use calm dark navy/slate surfaces and restrained blue/wood accents, not harsh white cards on a black page. Preline is a reference, not a licensed CRM template imported wholesale.
-- [ ] Migrate existing `wx.theme` choices without losing manual preferences; resolve System before first paint; handle blocked localStorage without breaking navigation; update on system-theme changes and synchronize tabs.
-- [ ] Cover shared navigation, tables, forms, filters, dialogs, toasts, status badges, empty/loading/error states, chart labels/grid/tooltips, Assistant, Inbox, Notifications, Activity and the live-chat drawer. Reinitialize safely across Livewire navigation; no duplicate event listeners.
-- [ ] Keep document paper/PDF previews white and brand-correct in either theme. Do not invert quotation/invoice output or rewrite frozen documents. Public v1/site-builder output is not redesigned.
-- [ ] Move the header's “Demo data” pill out of the top bar. Show an accurate **Local preview** environment label in the user/environment menu and relevant system diagnostics. Do not infer all local records are demo, imply a preview is production, remove owner data, or disable safety indicators.
-- [ ] Verify keyboard focus and contrast: normal text 4.5:1; large text and meaningful UI boundaries 3:1. Statuses need labels/icons, not color alone.
+- [x] Define native semantic tokens for page, surface, elevated surface, sidebar/header, border, primary/soft-primary, text/muted text, input, focus and success/warning/error. Apply consistently instead of adding broad unscoped color overrides.
+- [x] Deliver **Woodex Light / Woodex Night**, plus **Light / Dark / System** preference. Night should use calm dark navy/slate surfaces and restrained blue/wood accents, not harsh white cards on a black page. Preline is a reference, not a licensed CRM template imported wholesale.
+- [x] Migrate existing `wx.theme` choices without losing manual preferences; resolve System before first paint; handle blocked localStorage without breaking navigation; update on system-theme changes and synchronize tabs.
+- [x] Cover shared navigation, tables, forms, filters, dialogs, toasts, status badges, empty/loading/error states, chart labels/grid/tooltips, Assistant, Inbox, Notifications, Activity and the live-chat drawer. Reinitialize safely across Livewire navigation; no duplicate event listeners.
+- [x] Keep document paper/PDF previews white and brand-correct in either theme. Do not invert quotation/invoice output or rewrite frozen documents. Public v1/site-builder output is not redesigned.
+- [x] Move the header's “Demo data” pill out of the top bar. Show an accurate **Local preview** environment label in the user/environment menu and relevant system diagnostics. Do not infer all local records are demo, imply a preview is production, remove owner data, or disable safety indicators.
+- [x] Verify keyboard focus and contrast: normal text 4.5:1; large text and meaningful UI boundaries 3:1. Statuses need labels/icons, not color alone.
 
 #### A2. Reliable website-chat popup
 
-- [ ] Reproduce inbound delivery in separate visitor/staff browser contexts before changing logic. Instrument poll/alert state without logging visitor content or tokens.
-- [ ] Trace new-message baseline, unread/read transitions, selected thread, route navigation, reopened conversations, multiple tabs, session state, permissions and inactive-tab catch-up.
-- [ ] Closed drawer: a new inbound visitor message opens the correct thread once. Own replies, bot messages and historical unread messages do not repeatedly reopen it.
-- [ ] Same open thread: append/highlight the message without stealing the composer focus. Different thread while drafting: preserve the draft and present an explicit switch action rather than silently replace it.
-- [ ] Keep the existing lightweight poll transport initially. Target one visible polling interval plus request time (roughly 10 seconds under normal conditions), **not a promised subsecond/push service**. Resume/catch up on focus; offline and background browser behavior must be explained honestly.
-- [ ] Prevent toasts, dropdowns and drawers from intercepting Send/Close; preserve revision47's bounded-toast fix. Sound remains optional and browser-autoplay dependent.
-- [ ] Correct the stale click-only comment and lock the agreed behavior in feature and browser tests.
+- [x] Reproduce inbound delivery in separate visitor/staff browser contexts before changing logic. Instrument poll/alert state without logging visitor content or tokens.
+- [x] Trace new-message baseline, unread/read transitions, selected thread, route navigation, reopened conversations, multiple tabs, session state, permissions and inactive-tab catch-up.
+- [x] Closed drawer: a new inbound visitor message opens the correct thread once. Own replies, bot messages and historical unread messages do not repeatedly reopen it.
+- [x] Same open thread: append/highlight the message without stealing the composer focus. Different thread while drafting: preserve the draft and present an explicit switch action rather than silently replace it.
+- [x] Keep the existing lightweight poll transport initially. Target one visible polling interval plus request time (roughly 10 seconds under normal conditions), **not a promised subsecond/push service**. Resume/catch up on focus; offline and background browser behavior must be explained honestly.
+- [x] Prevent toasts, dropdowns and drawers from intercepting Send/Close; preserve revision47's bounded-toast fix. Sound remains optional and browser-autoplay dependent.
+- [x] Correct the stale click-only comment and lock the agreed behavior in feature and browser tests.
 
 #### A3. Early capture and Web Chat Leads tab
 
-- [ ] Surface a dedicated **Leads → Web Chat** tab powered by existing SQL conversations, contacts, leads and messages. Include anonymous/partial intake, linked lead, last visitor message, owner, unread, reply due, status and capture stage where derivable from existing data.
-- [ ] Search/filter by contact, number/email, date, assignee, unread, unassigned, overdue and capture status. Show genuine empty/error states; no demo metrics.
-- [ ] After validation of a phone/email, call the existing `CaptureLead` workflow immediately using the existing unqualified/default enquiry path. Service can be collected afterward and update the same enquiry. Confirm current required fields/default semantics before coding; do not invent interest, budget or marketing consent.
-- [ ] Normalize Pakistani and international numbers through existing helpers. Display **provided/unverified**, not verified ownership. Allow email/no-phone and human-assistance paths; invalid input must never advance the intake state or create junk CRM records.
-- [ ] Make capture/link/state updates transactional and retry-safe. Respect existing contact matching and open-lead merge rules. A shared phone is not authorization to expose another visitor's transcript.
-- [ ] Connect widget → transcript → contact → lead → activity without creating a second lead on refresh, service answer or repeated submission. Assess existing `LeadCaptured` listeners so enrichment/retries do not double-enroll or send follow-ups.
-- [ ] Preserve all anonymous messages before identification. Show accurate missing fields and incomplete stage, not guessed customer identities.
-- [ ] Human takeover pauses intake replies; reopening/returning visitors retain history. Add a clear handoff/offline expectation without false “agent online” promises.
-- [ ] Use existing schema only in 48-A. If reliable attribution/state/idempotency needs new fields or constraints, document the precise limitation and request additive-schema approval rather than silently encoding unlimited metadata in labels/state strings.
+- [x] Surface a dedicated **Leads → Web Chat** tab powered by existing SQL conversations, contacts, leads and messages. Include anonymous/partial intake, linked lead, last visitor message, owner, unread, reply due, status and capture stage where derivable from existing data.
+- [x] Search/filter by contact, number/email, date, assignee, unread, unassigned, overdue and capture status. Show genuine empty/error states; no demo metrics.
+- [x] After validation of a phone/email, call the existing `CaptureLead` workflow immediately using the existing unqualified/default enquiry path. Service can be collected afterward and update the same enquiry. Confirm current required fields/default semantics before coding; do not invent interest, budget or marketing consent.
+- [x] Normalize Pakistani and international numbers through existing helpers. Display **provided/unverified**, not verified ownership. Allow email/no-phone and human-assistance paths; invalid input must never advance the intake state or create junk CRM records.
+- [x] Make capture/link/state updates transactional and retry-safe. Respect existing contact matching and open-lead merge rules. A shared phone is not authorization to expose another visitor's transcript.
+- [x] Connect widget → transcript → contact → lead → activity without creating a second lead on refresh, service answer or repeated submission. Assess existing `LeadCaptured` listeners so enrichment/retries do not double-enroll or send follow-ups.
+- [x] Preserve all anonymous messages before identification. Show accurate missing fields and incomplete stage, not guessed customer identities.
+- [x] Human takeover pauses intake replies; reopening/returning visitors retain history. Add a clear handoff/offline expectation without false “agent online” promises.
+- [x] Use existing schema only in 48-A. If reliable attribution/state/idempotency needs new fields or constraints, document the precise limitation and request additive-schema approval rather than silently encoding unlimited metadata in labels/state strings.
 
 **48-A tracking limit:** existing SQL can support conversations, capture stage and CRM links. New historical page-view/session/UTM timelines are not magically available. Derive only what is stored today; mark unavailable fields honestly. Structured cross-channel event/attribution storage belongs to 48-B after schema approval.
 
 #### A4. Telegram audit alongside 48-A
 
-- [ ] Read sanitized local configuration/diagnostic flags; distinguish wrong environment file, stale cached config, wrong bot identity, missing token/secret, webhook mismatch, queue errors and an unlinked personal destination.
-- [ ] Fix only reproduced application/diagnostic defects, with faked tests first. Do not assume the token is absent or regenerate credentials to make a status green.
-- [ ] Prepare the owner-side verification checklist in §7. A preview code repair is not proof of production delivery.
+- [x] Read sanitized local configuration/diagnostic flags; distinguish wrong environment file, stale cached config, wrong bot identity, missing token/secret, webhook mismatch, queue errors and an unlinked personal destination.
+- [x] Fix only reproduced application/diagnostic defects, with faked tests first. Do not assume the token is absent or regenerate credentials to make a status green.
+- [x] Prepare the owner-side verification checklist in §7. A preview code repair is not proof of production delivery.
 
 **48-A exit:** A1–A4 code/UX work demonstrated locally, focused/full regression gates recorded, desktop/mobile browser capture→popup→reply→lead trace passes, and Telegram blockers are truthful. Live external tests are a separate gate.
 
@@ -207,8 +207,8 @@ Document the approved account/destination, permissions, webhook subscription/sig
 - [Pinterest REST API reference](https://developers.pinterest.com/docs/api/v5/introduction/?): official documented scope includes Pins/boards, ads, conversions, shopping and analytics; no general private-chat capability established by that overview.
 - Telegram Bot API and TikTok documentation fetches were denied (403); initially attempted Google/LinkedIn overview URLs returned 404 and were not used as evidence. Telegram findings above are grounded in existing native source/security behavior; detailed current provider requirements must be verified on implementation. TikTok's exact lead/messaging access remains an explicit discovery gate, not a promised feature.
 
-## 10. Decision to unlock implementation
+## 10. Decision and delivery status
 
-**Approve 48-A as recommended:** Woodex Light/Night/System + honest header cleanup + reliable website-chat popup + early CRM capture + dedicated Web Chat Leads tab, using existing schema and native modules, plus safe Telegram application diagnostics. Later social transports, new schema and real provider sends remain separately gated.
+**Owner approved 48-A; locally delivered:** Woodex Light/Night/System + honest header cleanup + reliable website-chat popup + early CRM capture + dedicated Web Chat Leads tab, using existing schema and native modules, plus safe Telegram application diagnostics. Later social transports, new schema and real provider sends remain separately gated.
 
-Until that decision, all implementation TODOs remain unchecked.
+48-A completion, evidence and verification limits are recorded in [the implementation report](48A_NATIVE_THEME_WEB_CHAT_UPGRADE_2026-10-29.md). Later phases remain unchecked; no new schema or real provider sends were authorized/performed. The owner will provide connection details later.

@@ -1,0 +1,5 @@
+PASS Same-thread server response retains the draft
+PASS Clicking the selected thread keeps the actual typed draft
+PASS Reopening the same thread from the tracking row keeps the draft
+PASS Draft-only interactions send no customer messages
+PASS No JavaScript page errors after the final guard
