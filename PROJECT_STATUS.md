@@ -1,18 +1,18 @@
 # Woodex OS — Project Status
 
-**Updated:** 28 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (local demo)
+**Updated:** 29 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (local demo)
 
-> **Current phase — revision46: approved 45-B payment/ledger repairs implemented.**
-> Staff-recorded payment/allocation/receipt/ledger now share one transaction; posting requires fresh
-> Verified state; new invoice PDFs are cleaned up on rollback while frozen history is preserved.
-> Closed-period form errors retain input. New operator CLI reports missing payment journals read-only;
-> it never posts/backfills historical receipts. **20 new tests /83 assertions**, PHPStan0 and isolated
-> Chromium payment/closed-period checks pass. **Full:1675 passed /1 skipped /9027 assertions**.
-> **Historical F05 reporting semantics remain deferred; whole-OS and historical-books certification
-> remain incomplete.** No schema/permission policy changes, production correction, provider sends,
-> deployment or merge. [Repair/QA report46](docs/audit/46_PAYMENT_LEDGER_REPAIR_QA_2026-10-28.md) ·
-> [Audit45](docs/audit/45_TRANSACTIONAL_LEDGER_AUDIT_2026-10-28.md) ·
-> [Control Centre44](docs/audit/44_CONTROL_CENTRE_IMPLEMENTATION_QA_2026-10-28.md).
+> **Current phase — revision47: approved CRM and communications redesign delivered.**
+> Advanced Leads workspace/detail/activity, Alerts dropdown/centre, Inbox and staff/visitor Live Chat
+> reuse the native Laravel/Livewire modules. Real archive/search/filter/assignment/history controls;
+> fresh access/channel guards; retained visitor drafts/retry; toasts no longer block the composer.
+> **Full:1699 passed /1 skipped /9109 assertions**; final UI/finance157/547; new24/82; PHPStan0,
+> Pint10, Vite and20 desktop/mobile Chromium checks pass. Tests mutate only a separate QA copy.
+> Revision46 financial repairs remain unchanged. **F05 definitions, production reconciliation and
+> whole-OS every-action certification remain open.** No schema, provider-send policy, production
+> corrections, deployment or merge. [Report47 and screenshots](docs/audit/47_CRM_COMMUNICATIONS_REDESIGN_2026-10-29.md) ·
+> [Financial repair46](docs/audit/46_PAYMENT_LEDGER_REPAIR_QA_2026-10-28.md) ·
+> [Master audit44](docs/audit/44_WOODEX_OS_MASTER_QA_CONTROL_CENTRE_PLAN_2026-10-28.md).
 
 > **Historical revision42 — approved Interior integration and Furniture polish delivered.** Owner reviewed the
 > preview then said **“good update now”**, also requesting Furniture logo/header/cards/footer and bottom
@@ -31,14 +31,14 @@
 > Previous Slice W remains delivered: native Estimates / Rates / Estimator Enquiries and all eight audited
 > workflow fixes; [report39](docs/audit/39_ESTIMATIONS_HUB_AUDIT_PLAN_2026-10-27.md).
 
-**One line:** native Control Centre baseline and approved F01–F04 payment/ledger repairs delivered; historical reporting definitions, production reconciliation and whole-OS every-action certification remain open.
+**One line:** approved native CRM/communications redesign and earlier payment/ledger repairs delivered; F05 definitions, production reconciliation and whole-OS every-action certification remain open.
 
-> The detailed findings, evidence and ordered plan are in **[`docs/audit/31_DEEP_QA_2026-10-21.md`](docs/audit/31_DEEP_QA_2026-10-21.md)**. It remains the historical baseline; reports44–46 above govern the current increment and outstanding financial findings.
+> The detailed findings, evidence and ordered plan are in **[`docs/audit/31_DEEP_QA_2026-10-21.md`](docs/audit/31_DEEP_QA_2026-10-21.md)**. It remains the historical baseline; reports44–47 above govern the current increment and outstanding financial findings.
 
 | Quick facts | |
 |---|---|
 | Stack | Laravel 13 · Livewire 4 · Tailwind 4 · SQLite (preview) → MySQL (production plan) |
-| Tests | Revision46 full: **1675 passed /1 skipped /9027 assertions**; new repair cases **20 passed /83 assertions**. Original red-contract replay: **5 fixed /F05 alone still red**, deferred semantics. |
+| Tests | Revision47 full: **1699 passed /1 skipped /9109 assertions**; final UI/finance157/547, new24/82, browser20 checks. Financial F05 semantics remain deferred. |
 | Frontend | v1 export (142 pages) is the only public site; the page builder writes into `woodex/` |
 | Scheduler | 25 jobs registered (SLA, reminders, automations, social publish, digests, backups) |
 | Environment | Preview runs `APP_ENV=local`; the header shows a **Demo data** pill so seeded records are never mistaken for clients |

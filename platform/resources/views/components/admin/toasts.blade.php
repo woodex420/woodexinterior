@@ -1,4 +1,4 @@
-<div x-data class="pointer-events-none fixed right-4 bottom-4 z-[99999] flex w-full max-w-sm flex-col gap-2" aria-live="polite">
+<div x-data class="wx-toast-stack pointer-events-none fixed z-[99999] flex flex-col gap-2" aria-live="polite">
     <template x-for="toast in $store.toasts.items" :key="toast.id">
         <div x-transition.opacity
              class="pointer-events-auto flex items-start gap-3 rounded-xl border bg-white px-4 py-3 text-theme-sm shadow-theme-lg dark:bg-gray-900"

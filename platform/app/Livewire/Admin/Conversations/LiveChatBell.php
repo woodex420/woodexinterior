@@ -33,12 +33,19 @@ class LiveChatBell extends Component
 {
     use InteractsWithAdmin;
 
-    /** The drawer is only ever opened by a click (owner decision: never auto-open). */
+    /** Click or new inbound message opens the drawer; closing it preserves the announcement baseline. */
     public bool $drawer = false;
 
     public ?int $selectedId = null;
 
     public string $draft = '';
+
+    public int $historyLimit = 60;
+
+    public function loadEarlier(): void
+    {
+        $this->historyLimit = min(600, max(60, $this->historyLimit) + 60);
+    }
 
     /**
      * The baseline is taken when the header mounts, not on every render: a message that arrives
@@ -54,6 +61,7 @@ class LiveChatBell extends Component
     /** One poll tick: announce a new visitor message and open the drawer on it. */
     public function poll(): void
     {
+        $this->dispatch('chat-scroll');
         if (! $this->user()->can('inbox.view')) {
             return;
         }
@@ -95,8 +103,8 @@ class LiveChatBell extends Component
 
         $messages = new Collection;
         if ($this->selectedId !== null) {
-            $conversation = Conversation::query()->findOrFail($this->selectedId);
-            $messages = $conversation->messages()->orderBy('created_at')->limit(100)->get();
+            $conversation = $this->selectedConversation();
+            $messages = $conversation->messages()->latest('id')->limit(min(600, max(60, $this->historyLimit)))->get()->reverse()->values();
         }
 
         return view('livewire.admin.conversations.live-chat-bell', [
@@ -105,6 +113,8 @@ class LiveChatBell extends Component
             'unread' => $unread,
             'visitorActive' => $visitorActive,
             'messages' => $messages,
+            'selectedConversation' => $this->selectedId !== null ? $this->selectedConversation() : null,
+            'hasEarlier' => $this->selectedId !== null && $this->selectedConversation()->messages()->count() > min(600, max(60, $this->historyLimit)),
             'soundOn' => (bool) app(NotificationSettings::class)->chat_alert_sound,
             'canManageSound' => $this->user()->can('settings.manage'),
         ]);
@@ -114,6 +124,7 @@ class LiveChatBell extends Component
     #[On('open-live-chat')]
     public function openDrawer(): void
     {
+        $this->authorize('viewAny', Conversation::class);
         $this->drawer = true;
 
         if ($this->selectedId === null) {
@@ -121,6 +132,7 @@ class LiveChatBell extends Component
         }
 
         $this->markSelectedRead();
+        $this->dispatch('chat-scroll', reset: true);
     }
 
     public function closeDrawer(): void
@@ -130,24 +142,28 @@ class LiveChatBell extends Component
 
     public function select(int $id): void
     {
-        $conversation = Conversation::query()->findOrFail($id);
+        $conversation = Conversation::query()->where('channel', Channel::WebChat->value)->find($id);
+        abort_unless($conversation instanceof Conversation, 403);
         $this->authorize('view', $conversation);
 
         $this->selectedId = $conversation->id;
+        $this->historyLimit = 60;
         $this->draft = '';
         $this->markSelectedRead();
+        $this->dispatch('chat-scroll', reset: true);
     }
 
     public function send(): void
     {
         $this->validate(['draft' => ['required', 'string', 'min:1', 'max:2000']]);
 
-        $conversation = Conversation::query()->findOrFail((int) $this->selectedId);
+        $conversation = $this->selectedConversation();
         $this->authorize('reply', $conversation);
 
         app(SendConversationMessage::class)->handle($conversation, $this->draft, $this->user());
 
         $this->draft = '';
+        $this->dispatch('chat-scroll');
         $this->toast('Sent — the visitor sees it on their next poll.');
     }
 
@@ -223,9 +239,15 @@ class LiveChatBell extends Component
             return;
         }
 
-        Conversation::query()
-            ->whereKey($this->selectedId)
-            ->where('unread_count', '>', 0)
-            ->update(['unread_count' => 0]);
+        $this->selectedConversation()->markRead();
+    }
+
+    private function selectedConversation(): Conversation
+    {
+        $conversation = Conversation::query()->where('channel', Channel::WebChat->value)->find((int) $this->selectedId);
+        abort_unless($conversation instanceof Conversation, 403);
+        $this->authorize('view', $conversation);
+
+        return $conversation;
     }
 }

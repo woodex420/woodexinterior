@@ -1,5 +1,5 @@
-<div>
-    <x-admin.page-header title="Leads" description="Every enquiry from every channel, one list. Search by name, phone in any format, or reference."
+<div class="wx-workspace wx-leads-workspace">
+    <x-admin.page-header title="Leads" description="Your lead workspace. Prioritise follow-ups, track ownership and move every enquiry to its next step."
                          :breadcrumbs="['CRM' => null, 'Leads' => null]">
         <x-slot:actions>
             @if ($canImport)
@@ -12,8 +12,20 @@
         </x-slot:actions>
     </x-admin.page-header>
 
+    <div class="wx-lead-summary mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="Lead workspace summary">
+        <div class="wx-summary-card"><span class="wx-eyebrow">Matching leads</span><strong>{{ number_format($workspaceStats['matching']) }}</strong><span class="text-theme-xs text-gray-400">Across the current filters</span></div>
+        <button type="button" wire:click="$set('due', 'overdue')" class="wx-summary-card text-left"><span class="wx-eyebrow">Follow-ups due</span><strong>{{ number_format($workspaceStats['due']) }}</strong><span class="text-theme-xs text-gray-400">Review the next action →</span></button>
+        <button type="button" wire:click="$set('owner', 'unassigned')" class="wx-summary-card text-left"><span class="wx-eyebrow">Unassigned</span><strong>{{ number_format($workspaceStats['unassigned']) }}</strong><span class="text-theme-xs text-gray-400">Within the current filters →</span></button>
+    </div>
+    <div class="mb-4 flex flex-wrap items-center gap-2" aria-label="Lead quick filters">
+        <span class="wx-eyebrow mr-2">Focus</span>
+        <button type="button" wire:click="$set('owner', 'me')" class="wx-filter-pill" aria-pressed="{{ $owner === 'me' ? 'true' : 'false' }}">My leads</button>
+        <button type="button" wire:click="$set('created', 'today')" class="wx-filter-pill" aria-pressed="{{ $created === 'today' ? 'true' : 'false' }}">New today</button>
+        <button type="button" wire:click="$set('due', 'overdue')" class="wx-filter-pill" aria-pressed="{{ $due === 'overdue' ? 'true' : 'false' }}">Follow-ups due</button>
+        @if ($hasFilters)<button type="button" wire:click="clearFilters" class="ml-auto text-theme-xs font-medium text-brand-600 dark:text-gray-300">Reset all filters</button>@endif
+    </div>
     {{-- Toolbar --}}
-    <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-6">
+    <div class="wx-filter-panel mb-4 grid grid-cols-1 gap-3 md:grid-cols-6">
         <div class="relative md:col-span-2">
             <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-gray-400" />
             <input type="search" wire:model.live.debounce.300ms="search" placeholder="Name, 0322…, L-2026-…" class="wx-input pl-10" aria-label="Search leads">
@@ -133,7 +145,7 @@
 
     <x-admin.card :padding="false">
         <div class="overflow-x-auto" wire:loading.class="opacity-60">
-            <table class="min-w-full text-left text-theme-sm">
+            <table class="wx-leads-table min-w-full text-left text-theme-sm">
                 <thead class="border-b border-gray-100 text-theme-xs tracking-wide text-gray-500 uppercase dark:border-gray-800">
                     <tr>
                         <th class="w-10 py-3 pl-5">

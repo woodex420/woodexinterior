@@ -1,0 +1,29 @@
+
+   PASS  Tests\Feature\CommunicationsRedesignTest
+  ✓ it archives and restores own updates without schema changes or dele… 2.52s
+  ✓ it archives and restores own updates without schema changes or dele… 0.13s
+  ✓ it keeps other users notifications private and rejects cross-user m… 0.07s
+  ✓ it keeps other users notifications private and rejects cross-user m… 0.07s
+  ✓ it keeps other users notifications private and rejects cross-user m… 0.07s
+  ✓ it searches and filters actual own notification rows                 0.11s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.07s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.08s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.07s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.07s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.06s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.07s
+  ✓ it opens same-origin notifications using a root-relative native des… 0.06s
+  ✓ it makes Unread an exclusive real filter and clears it on other tab… 0.18s
+  ✓ it combines channel assignment and search with matching status coun… 0.14s
+  ✓ it rejects inactive or nonexistent assignees without changing owner… 0.14s
+  ✓ it rejects inactive or nonexistent assignees without changing owner… 0.13s
+  ✓ it shows the latest bounded thread and loads earlier messages on bo… 0.18s
+  ✓ it shows the latest bounded thread and loads earlier messages on bo… 0.37s
+  ✓ it does not read or mark non-website conversations through the live… 0.11s
+  ✓ it does not read or mark non-website conversations through the live… 0.10s
+  ✓ it keeps the website composer free of WhatsApp warnings and read-on… 0.15s
+  ✓ it scopes advanced lead statistics and drawer activity to the exist… 0.20s
+  ✓ it filters actual lead activity without changing recorded history    0.31s
+
+  Tests:    24 passed (82 assertions)
+  Duration: 5.92s

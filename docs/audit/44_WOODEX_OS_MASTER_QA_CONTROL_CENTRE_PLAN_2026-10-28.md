@@ -3,7 +3,7 @@
 **Date:** 28 October 2026
 **Decision:** approved by the owner’s “Start” for 44-A/44-B. Execution is in progress; this is not authorization for a whole-system rewrite.
 **Execution:** see [first increment and QA report](44_CONTROL_CENTRE_IMPLEMENTATION_QA_2026-10-28.md). Master every-action coverage remains incomplete.
-**Follow-up:** [45 transactional/ledger audit](45_TRANSACTIONAL_LEDGER_AUDIT_2026-10-28.md) reproduced Payments/GL defects; owner approved 45-B with “Start”. [46 repair/QA](46_PAYMENT_LEDGER_REPAIR_QA_2026-10-28.md) records F01–F04 repairs and read-only reconciliation. F05 definitions, production reconciliation and whole-OS sign-off remain open.
+**Follow-up:** [45 transactional/ledger audit](45_TRANSACTIONAL_LEDGER_AUDIT_2026-10-28.md) reproduced Payments/GL defects; owner approved 45-B with “Start”. [46 repair/QA](46_PAYMENT_LEDGER_REPAIR_QA_2026-10-28.md) records F01–F04 repairs and read-only reconciliation. [47 CRM/communications redesign](47_CRM_COMMUNICATIONS_REDESIGN_2026-10-29.md) subsequently delivered the approved native Leads/Alerts/Inbox/Activity/Live Chat increment. F05 definitions, production reconciliation and whole-OS sign-off remain open.
 **Scope:** every owner-listed navigation entry, its tabs, secondary screens, links, actions, APIs, PHP/domain services, database effects, permissions, jobs and external dependencies.
 
 ## Execution checklist

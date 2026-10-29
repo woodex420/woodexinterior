@@ -22,6 +22,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -58,6 +59,11 @@ class Inbox extends Component
     #[Url(except: false)]
     public bool $unreadOnly = false;
 
+    #[Url(except: '')]
+    public string $assignment = '';
+
+    public int $historyLimit = 60;
+
     public ?int $selectedId = null;
 
     public string $draft = '';
@@ -74,14 +80,25 @@ class Inbox extends Component
 
     public function updating(string $name): void
     {
-        if (in_array($name, ['status', 'channel', 'search', 'unreadOnly'], true)) {
+        if (in_array($name, ['status', 'channel', 'search', 'unreadOnly', 'assignment'], true)) {
             $this->selectedId = null;
         }
     }
 
-    /**
-     * @return Collection<int, Conversation>
-     */
+    public function filterStatus(string $filter): void
+    {
+        abort_unless(in_array($filter, ['all', 'open', 'pending', 'closed', 'unread'], true), 422);
+        $this->status = $filter === 'unread' ? 'all' : $filter;
+        $this->unreadOnly = $filter === 'unread';
+        $this->selectedId = null;
+    }
+
+    public function loadEarlier(): void
+    {
+        $this->historyLimit = min(600, max(60, $this->historyLimit) + 60);
+    }
+
+    /** @return Collection<int, Conversation> */
     public function conversations(): Collection
     {
         return $this->query()->limit(60)->get();
@@ -90,7 +107,7 @@ class Inbox extends Component
     /** @return array{open: int, pending: int, unread: int, closed: int} */
     public function counts(): array
     {
-        $base = Conversation::query();
+        $base = $this->query(false);
 
         return [
             'open' => (clone $base)->where('status', ConversationStatus::Open->value)->count(),
@@ -106,10 +123,12 @@ class Inbox extends Component
         $this->authorize('view', $conversation);
 
         $this->selectedId = $id;
+        $this->historyLimit = 60;
         $this->draft = '';
         $this->note = '';
         $this->attachment = null;
         $conversation->markRead();
+        $this->dispatch('chat-scroll', reset: true);
     }
 
     /**
@@ -218,6 +237,7 @@ class Inbox extends Component
 
         $this->draft = '';
         $this->attachment = null;
+        $this->dispatch('chat-scroll');
         $this->toast($message->status === MessageStatus::Sent ? 'Sent.' : 'Saved as failed — WhatsApp refused it.');
     }
 
@@ -246,6 +266,9 @@ class Inbox extends Component
         }
 
         $this->authorize('update', $conversation);
+        if ($userId > 0) {
+            validator(['assignee' => $userId], ['assignee' => [Rule::exists('users', 'id')->where('is_active', true)]])->validate();
+        }
         $conversation->update(['assignee_id' => $userId > 0 ? $userId : null]);
         $this->toast($userId > 0 ? 'Assigned.' : 'Unassigned.');
     }
@@ -283,18 +306,21 @@ class Inbox extends Component
     /** Poll the thread: new messages and delivery ticks appear without a reload until broadcasting lands (CNV-006). */
     public function refresh(): void
     {
-        // Rendering re-reads the thread; the poll only has to wake the component up.
+        $this->dispatch('chat-scroll');
     }
 
     public function render(WhatsAppGateway $whatsapp): View
     {
+        $this->authorize('viewAny', Conversation::class);
         $conversation = $this->selected();
+        $limit = min(600, max(60, $this->historyLimit));
 
         return view('livewire.admin.conversations.inbox', [
             'conversations' => $this->conversations(),
             'counts' => $this->counts(),
             'selected' => $conversation,
-            'thread' => $conversation?->messages()->with('author')->oldest()->get() ?? new Collection,
+            'thread' => $conversation?->messages()->with('author')->latest('id')->limit($limit)->get()->reverse()->values() ?? new Collection,
+            'hasEarlier' => $conversation !== null && $conversation->messages()->count() > $limit,
             'configured' => $whatsapp->isConfigured(),
             'channels' => Channel::cases(),
             'staff' => $this->staff(),
@@ -303,19 +329,26 @@ class Inbox extends Component
 
     private function selected(): ?Conversation
     {
-        return $this->selectedId === null ? null : Conversation::query()->find($this->selectedId);
+        $conversation = $this->selectedId === null ? null : Conversation::query()->find($this->selectedId);
+        if ($conversation !== null) {
+            $this->authorize('view', $conversation);
+        }
+
+        return $conversation;
     }
 
     /** @return Builder<Conversation> */
-    private function query(): Builder
+    private function query(bool $withStatus = true): Builder
     {
         $status = ConversationStatus::tryFrom($this->status);
 
         return Conversation::query()
             ->with(['contact', 'assignee'])
-            ->when($status !== null, fn (Builder $q): Builder => $q->where('status', $status->value))
+            ->when($withStatus && $status !== null, fn (Builder $q): Builder => $q->where('status', $status->value))
+            ->when($this->assignment === 'me', fn (Builder $q): Builder => $q->where('assignee_id', $this->user()->id))
+            ->when($this->assignment === 'unassigned', fn (Builder $q): Builder => $q->whereNull('assignee_id'))
             ->when($this->channel !== '', fn (Builder $q): Builder => $q->where('channel', $this->channel))
-            ->when($this->unreadOnly, fn (Builder $q): Builder => $q->where('unread_count', '>', 0))
+            ->when($withStatus && $this->unreadOnly, fn (Builder $q): Builder => $q->where('unread_count', '>', 0))
             ->when($this->search !== '', function (Builder $q): Builder {
                 $term = '%'.$this->search.'%';
 

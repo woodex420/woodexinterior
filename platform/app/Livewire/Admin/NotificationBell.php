@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Admin;
 
 use App\Livewire\Concerns\InteractsWithAdmin;
+use App\Livewire\Concerns\ManagesNotificationInbox;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
 
@@ -14,31 +15,16 @@ use Livewire\Component;
  */
 class NotificationBell extends Component
 {
-    use InteractsWithAdmin;
+    use InteractsWithAdmin, ManagesNotificationInbox;
 
-    public function open(string $id): void
-    {
-        $notification = $this->user()->notifications()->findOrFail($id);
-        $notification->markAsRead();
-
-        $url = $notification->data['url'] ?? null;
-
-        if (is_string($url) && $url !== '') {
-            $this->redirect($url, navigate: str_starts_with($url, url('/')));
-        }
-    }
-
-    public function markAllRead(): void
-    {
-        $this->user()->unreadNotifications()->update(['read_at' => now()]);
-    }
+    public string $filter = 'all';
 
     public function render(): View
     {
         $user = $this->user();
 
         return view('livewire.admin.notification-bell', [
-            'notifications' => $user->notifications()->latest()->limit(8)->get(),
+            'notifications' => $this->notificationQuery()->latest()->limit(12)->get(),
             'unread' => $user->unreadNotifications()->count(),
         ]);
     }

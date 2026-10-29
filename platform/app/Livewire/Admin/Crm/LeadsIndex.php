@@ -533,6 +533,7 @@ class LeadsIndex extends Component
         $drawerActivities = collect();
         $drawerActivityCount = 0;
         if ($this->drawerId !== null && ($drawerLead = Lead::query()->find($this->drawerId)) !== null) {
+            $this->authorize('view', $drawerLead);
             $drawerTimeline = Activity::query()
                 ->where(fn (Builder $q) => $q->where('lead_id', $drawerLead->id)
                     ->orWhere(fn (Builder $c) => $c->where('contact_id', $drawerLead->contact_id)->whereNull('lead_id')));
@@ -542,6 +543,11 @@ class LeadsIndex extends Component
 
         return view('livewire.admin.crm.leads-index', [
             'leads' => $leads,
+            'workspaceStats' => [
+                'matching' => $leads->total(),
+                'due' => (clone $this->query())->followUpDue()->count(),
+                'unassigned' => (clone $this->query())->whereNull('owner_id')->count(),
+            ],
             'stages' => PipelineStage::query()->ordered()->get(),
             'lines' => BusinessLine::options(),
             'sources' => LeadSource::options(),

@@ -54,6 +54,20 @@ class LeadShow extends Component
     #[Locked]
     public int $leadId;
 
+    public string $activityType = '';
+
+    public int $activityLimit = 60;
+
+    public function updatedActivityType(): void
+    {
+        $this->activityLimit = 60;
+    }
+
+    public function loadMoreActivity(): void
+    {
+        $this->activityLimit = min(600, max(60, $this->activityLimit) + 60);
+    }
+
     // Quick log
     public string $logType = 'call';
 
@@ -411,6 +425,7 @@ class LeadShow extends Component
     public function render(): View
     {
         $lead = $this->lead;
+        $this->authorize('view', $lead);
         $sales = app(SalesSettings::class);
 
         $activities = Activity::query()
@@ -419,9 +434,10 @@ class LeadShow extends Component
                 $q->where('lead_id', $lead->id)
                     ->orWhere(fn (Builder $c) => $c->where('contact_id', $lead->contact_id)->whereNull('lead_id'));
             })
+            ->when(ActivityType::tryFrom($this->activityType) !== null, fn (Builder $q) => $q->where('type', $this->activityType))
             ->latest('occurred_at')
             ->latest('id')
-            ->limit(60)
+            ->limit(min(600, max(60, $this->activityLimit)))
             ->get();
 
         return view('livewire.admin.crm.lead-show', [

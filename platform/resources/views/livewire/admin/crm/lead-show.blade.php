@@ -11,7 +11,7 @@
     $value = $lead->expectedValue()?->format($lakh);
     $isClosed = $current->isClosed();
 @endphp
-<div>
+<div class="wx-workspace wx-lead-detail">
     {{-- Header --}}
     <x-admin.page-header :title="$contact->name" :breadcrumbs="['CRM' => null, 'Leads' => route('admin.leads.index'), $lead->ref => null]">
         <x-slot:actions>
@@ -86,7 +86,8 @@
         @endif
     </x-admin.card>
 
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+    <nav class="wx-section-nav mb-5 flex gap-1 overflow-x-auto" aria-label="Lead workspace sections"><a href="#lead-actions" class="wx-underline-tab">Overview & actions</a>@can('quotes.view')<a href="#lead-quotes" class="wx-underline-tab">Quotations</a>@endcan<a href="#activity-stream" class="wx-underline-tab">Activity</a><a href="#lead-tasks" class="wx-underline-tab">Tasks & details</a></nav>
+    <div id="lead-actions" class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {{-- Main column --}}
         <div class="space-y-6 xl:col-span-2">
             @if ($canUpdate)
@@ -160,7 +161,7 @@
 
             {{-- Quotations (QUO-003/016) --}}
             @can('viewAny', \App\Domain\Sales\Models\Quote::class)
-                <x-admin.card title="Quotations">
+                <x-admin.card id="lead-quotes" title="Quotations">
                     @can('create', \App\Domain\Sales\Models\Quote::class)
                         @if ($current->key !== 'lost')
                             <x-slot:actions>
@@ -186,13 +187,14 @@
             @endcan
 
             {{-- Timeline (CRM-009) --}}
-            <x-admin.card title="Timeline" :description="$activities->count() >= 60 ? 'Latest 60 entries' : null">
+            <x-admin.card id="activity-stream" class="wx-activity-card" title="Activity" description="Recorded lead and shared contact history. Latest matching entries first.">
+                <div class="mb-5 flex flex-wrap items-center justify-between gap-3"><span class="wx-eyebrow">{{ $activities->count() }} entries shown</span><select wire:model.live="activityType" class="wx-input w-auto" aria-label="Filter activity type"><option value="">All activity</option>@foreach (\App\Domain\Crm\Enums\ActivityType::cases() as $kind)<option value="{{ $kind->value }}">{{ $kind->label() }}</option>@endforeach</select></div>
                 @php
                     $grouped = $activities->groupBy(fn ($a) => $a->occurred_at->isToday() ? 'Today' : ($a->occurred_at->isYesterday() ? 'Yesterday' : $a->occurred_at->format('D j M Y')));
                 @endphp
                 @forelse ($grouped as $day => $items)
                     <h3 class="mb-3 text-theme-xs font-medium tracking-wide text-gray-400 uppercase {{ $loop->first ? '' : 'mt-6' }}">{{ $day }}</h3>
-                    <ol class="relative space-y-4 before:absolute before:top-2 before:bottom-2 before:left-4 before:w-px before:bg-gray-200 dark:before:bg-gray-800">
+                    <ol class="wx-activity-timeline relative space-y-4 before:absolute before:top-2 before:bottom-2 before:left-4 before:w-px before:bg-gray-200 dark:before:bg-gray-800">
                         @foreach ($items as $activity)
                             <li class="relative flex gap-3" wire:key="activity-{{ $activity->id }}">
                                 <span class="relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full ring-4 ring-white dark:ring-gray-900 {{ $activity->type->tone() }}">
@@ -221,6 +223,7 @@
                 @empty
                     <x-admin.empty icon="activity" title="No activity yet" description="Log the first call or WhatsApp message above." />
                 @endforelse
+                @if ($activities->count() >= min(600, max(60, $activityLimit)) && $activityLimit < 600)<button type="button" wire:click="loadMoreActivity" class="wx-history-button mt-5">Load earlier activity</button>@endif
             </x-admin.card>
         </div>
 
@@ -305,7 +308,7 @@
             </x-admin.card>
 
             {{-- Tasks (CRM-007) --}}
-            <x-admin.card title="Tasks">
+            <x-admin.card id="lead-tasks" title="Tasks">
                 <ul class="space-y-1">
                     @foreach ($openTasks as $task)
                         <li class="flex items-start gap-2.5 rounded-lg px-1 py-1.5 hover:bg-gray-50 dark:hover:bg-white/[0.02]" wire:key="task-{{ $task->id }}">

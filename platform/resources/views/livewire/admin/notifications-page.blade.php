@@ -1,36 +1,23 @@
-<div>
-    <x-admin.page-header title="Notifications" :description="$unread ? $unread.' unread' : 'You are all caught up.'" :breadcrumbs="['Notifications' => null]">
-        <x-slot:actions>
-            @if ($unread > 0)
-                <x-admin.button variant="secondary" icon="check" wire:click="markAllRead">Mark all read</x-admin.button>
-            @endif
-        </x-slot:actions>
+<div class="wx-workspace">
+    <x-admin.page-header title="Notification centre" description="Your Woodex updates, reminders and mentions. Read, review or archive without losing the history." :breadcrumbs="['Notifications' => null]">
+        <x-slot:actions><x-admin.button variant="secondary" icon="check" wire:click="markAllRead" :disabled="$unread === 0">Mark all read</x-admin.button></x-slot:actions>
     </x-admin.page-header>
-
-    <div class="mb-4 inline-flex rounded-lg border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-white/[0.03]" role="tablist">
-        @foreach (['all' => 'All', 'unread' => 'Unread'] as $value => $label)
-            <button type="button" wire:click="$set('filter', '{{ $value }}')" role="tab" aria-selected="{{ $filter === $value ? 'true' : 'false' }}"
-                    @class(['rounded-md px-3 py-1.5 text-theme-sm font-medium transition', 'bg-navy-900 text-white dark:bg-white dark:text-navy-900' => $filter === $value, 'text-gray-600 hover:text-gray-900 dark:text-gray-400' => $filter !== $value])>{{ $label }}</button>
-        @endforeach
-    </div>
-
-    <x-admin.card :padding="false">
-        <ul class="divide-y divide-gray-100 dark:divide-gray-800">
+    <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+        <header class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 px-5 dark:border-gray-800">
+            <div class="flex gap-1" role="group" aria-label="Notification filters">
+                @foreach (['all' => 'All updates', 'unread' => 'Unread', 'archived' => 'Archived'] as $value => $label)
+                    <button type="button" wire:click="$set('filter', '{{ $value }}')" aria-pressed="{{ $filter === $value ? 'true' : 'false' }}" @class(['wx-underline-tab', 'is-active' => $filter === $value])>{{ $label }} @if ($value === 'unread')<span class="wx-count">{{ $unread }}</span>@endif</button>
+                @endforeach
+            </div>
+            <div class="relative my-3 w-full sm:w-72"><x-icon name="search" class="absolute top-3 left-3 size-4 text-gray-400" /><input type="search" wire:model.live.debounce.300ms="search" class="wx-input pl-10" placeholder="Search your updates…" aria-label="Search notifications"></div>
+        </header>
+        <div class="mx-auto max-w-4xl">
             @forelse ($notifications as $notification)
-                <li wire:key="n-{{ $notification->id }}">
-                    <button type="button" wire:click="open('{{ $notification->id }}')" class="flex w-full items-start gap-3 px-5 py-4 text-left hover:bg-gray-50 dark:hover:bg-white/[0.02]">
-                        <span @class(['mt-1.5 size-2 shrink-0 rounded-full', 'bg-wood-500' => $notification->read_at === null, 'bg-gray-200 dark:bg-gray-700' => $notification->read_at !== null])></span>
-                        <span class="min-w-0 flex-1">
-                            <span @class(['block text-theme-sm text-gray-800 dark:text-white/90', 'font-medium' => $notification->read_at === null])>{{ $notification->data['title'] ?? 'Update' }}</span>
-                            <span class="block text-theme-sm text-gray-500">{{ $notification->data['body'] ?? '' }}</span>
-                        </span>
-                        <span class="shrink-0 text-theme-xs text-gray-400" title="{{ $notification->created_at?->format('j M Y, g:i a') }}">{{ $notification->created_at?->diffForHumans() }}</span>
-                    </button>
-                </li>
+                <x-admin.notification-row :notification="$notification" />
             @empty
-                <li><x-admin.empty icon="bell" title="No notifications" description="New leads, missed response times, reminders and @mentions appear here and on Telegram." /></li>
+                <x-admin.empty icon="bell" title="No notifications" description="No updates match this view. Try another filter or search." />
             @endforelse
-        </ul>
+        </div>
         {{ $notifications->links('components.admin.pagination') }}
-    </x-admin.card>
+    </section>
 </div>

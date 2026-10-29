@@ -1,0 +1,176 @@
+
+   PASS  Tests\Feature\CommunicationsRedesignTest
+  ✓ it archives and restores own updates without schema changes or dele… 2.64s
+  ✓ it archives and restores own updates without schema changes or dele… 0.11s
+  ✓ it keeps other users notifications private and rejects cross-user m… 0.07s
+  ✓ it keeps other users notifications private and rejects cross-user m… 0.07s
+  ✓ it keeps other users notifications private and rejects cross-user m… 0.07s
+  ✓ it searches and filters actual own notification rows                 0.10s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.07s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.07s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.06s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.06s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.06s
+  ✓ it never redirects notification readers to unsafe destinations with… 0.06s
+  ✓ it opens same-origin notifications using a root-relative native des… 0.07s
+  ✓ it makes Unread an exclusive real filter and clears it on other tab… 0.24s
+  ✓ it combines channel assignment and search with matching status coun… 0.15s
+  ✓ it rejects inactive or nonexistent assignees without changing owner… 0.15s
+  ✓ it rejects inactive or nonexistent assignees without changing owner… 0.14s
+  ✓ it shows the latest bounded thread and loads earlier messages on bo… 0.16s
+  ✓ it shows the latest bounded thread and loads earlier messages on bo… 0.14s
+  ✓ it does not read or mark non-website conversations through the live… 0.09s
+  ✓ it does not read or mark non-website conversations through the live… 0.08s
+  ✓ it keeps the website composer free of WhatsApp warnings and read-on… 0.12s
+  ✓ it scopes advanced lead statistics and drawer activity to the exist… 0.18s
+  ✓ it filters actual lead activity without changing recorded history    0.30s
+
+   PASS  Tests\Feature\P10LiveChatTest
+  ✓ it stays out of the header for staff who cannot use the inbox        0.12s
+  ✓ it shows the unread count and the live-visitor dot                   0.11s
+  ✓ it marks the visitor quiet after two minutes                         0.11s
+  ✓ it lists website chats only — WhatsApp never enters the live drawer  0.10s
+  ✓ it never replays history as a toast                                  0.11s
+  ✓ it toasts a new visitor message once and opens the drawer on it      0.15s
+  ✓ it stops toasting once a teammate has read the thread                0.11s
+  ✓ it opens the drawer on request, picks the newest thread and marks i… 0.12s
+  ✓ it answers the visitor from the drawer on the same thread            0.15s
+  ✓ it keeps the sound off by default and out of non-managers hands      0.09s
+  ✓ it switches the sound on for the whole studio from the drawer        0.15s
+  ✓ it rides along on every admin page through the header                0.34s
+
+   PASS  Tests\Feature\P10SidebarHubsTest
+  ✓ it consolidates the sidebar to the confirmed P10.1 map               0.12s
+  ✓ it renders every hub tab for the owner with dataset "dashboard over… 0.31s
+  ✓ it renders every hub tab for the owner with dataset "dashboard my d… 0.22s
+  ✓ it renders every hub tab for the owner with dataset "reports funnel… 0.28s
+  ✓ it renders every hub tab for the owner with dataset "reports revenu… 0.28s
+  ✓ it renders every hub tab for the owner with dataset "leads list"     0.19s
+  ✓ it renders every hub tab for the owner with dataset "leads pipeline… 0.18s
+  ✓ it renders every hub tab for the owner with dataset "leads tracking… 0.15s
+  ✓ it renders every hub tab for the owner with dataset "contacts peopl… 0.19s
+  ✓ it renders every hub tab for the owner with dataset "contacts compa… 0.21s
+  ✓ it renders every hub tab for the owner with dataset "tasks"          0.22s
+  ✓ it renders every hub tab for the owner with dataset "visits"         0.29s
+  ✓ it renders every hub tab for the owner with dataset "quotes all"     0.28s
+  ✓ it renders every hub tab for the owner with dataset "quote tracking… 0.20s
+  ✓ it renders every hub tab for the owner with dataset "quote template… 0.35s
+  ✓ it renders every hub tab for the owner with dataset "invoices all"   0.21s
+  ✓ it renders every hub tab for the owner with dataset "invoice tracki… 0.22s
+  ✓ it renders every hub tab for the owner with dataset "invoice recurr… 0.22s
+  ✓ it renders every hub tab for the owner with dataset "invoice bank a… 0.20s
+  ✓ it renders every hub tab for the owner with dataset "payables bills… 0.30s
+  ✓ it renders every hub tab for the owner with dataset "payables vendo… 0.28s
+  ✓ it renders every hub tab for the owner with dataset "payables aging… 0.23s
+  ✓ it renders every hub tab for the owner with dataset "expenses"       0.19s
+  ✓ it renders every hub tab for the owner with dataset "other income"   0.20s
+  ✓ it renders every hub tab for the owner with dataset "recurring expe… 0.20s
+  ✓ it renders every hub tab for the owner with dataset "profit and los… 0.20s
+  ✓ it renders every hub tab for the owner with dataset "payments all"   0.27s
+  ✓ it renders every hub tab for the owner with dataset "due payments"   0.28s
+  ✓ it renders every hub tab for the owner with dataset "receivables"    0.30s
+  ✓ it renders every hub tab for the owner with dataset "documents desc… 0.23s
+  ✓ it renders every hub tab for the owner with dataset "document desig… 0.19s
+  ✓ it renders every hub tab for the owner with dataset "rate book"      0.29s
+  ✓ it redirects every merged URL to its tab with dataset "my day"       0.12s
+  ✓ it redirects every merged URL to its tab with dataset "pipeline"     0.11s
+  ✓ it redirects every merged URL to its tab with dataset "companies"    0.10s
+  ✓ it redirects every merged URL to its tab with dataset "site visits"  0.11s
+  ✓ it redirects every merged URL to its tab with dataset "quote templa… 0.10s
+  ✓ it redirects every merged URL to its tab with dataset "quote tracki… 0.09s
+  ✓ it redirects every merged URL to its tab with dataset "invoice trac… 0.11s
+  ✓ it redirects every merged URL to its tab with dataset "due payments… 0.11s
+  ✓ it redirects every merged URL to its tab with dataset "receivables"  0.09s
+  ✓ it redirects every merged URL to its tab with dataset "rate book"    0.11s
+  ✓ it redirects every merged URL to its tab with dataset "description…  0.14s
+  ✓ it redirects every merged URL to its tab with dataset "document des… 0.12s
+  ✓ it redirects every merged URL to its tab with dataset "funnel"       0.10s
+  ✓ it redirects every merged URL to its tab with dataset "revenue coll… 0.12s
+  ✓ it hides tabs the user cannot open and refuses a directly requested… 0.67s
+  ✓ it shows live sidebar badges for unread conversations and pending a… 0.68s
+  ✓ it classifies the lead tracking board without inventing states       1.11s
+  ✓ it logs a follow-up onto the lead timeline and moves the next actio… 0.45s
+  ✓ it renders the tracking tab through the hub for the owner            0.27s
+  ✓ it renders one page heading per hub screen instead of stacking the…  0.24s
+
+   PASS  Tests\Feature\LeadsIndexTest
+  ✓ it finds a lead by phone typed in local format                       0.26s
+  ✓ it creates a lead from the quick-add form through CaptureLead        0.31s
+  ✓ it limits sales users to their own leads                             0.15s
+  ✓ it sorts, pages and remembers a saved view as the default            0.34s
+  ✓ it exports the filtered leads as CSV for people with the export per… 0.19s
+  ✓ it bulk assigns, moves and deletes selected leads within permission… 0.45s
+  ✓ it lands the N shortcut: /leads?new=1 opens the composer straight a… 0.13s
+  ✓ it opens the leads list quiet when no shortcut asks for the compose… 0.10s
+  ✓ it filters the list to one enquiry month                             0.16s
+  ✓ it filters by business line from the line tabs                       0.23s
+
+   PASS  Tests\Feature\LeadShowTest
+  ✓ it opens the lead page for its owner and blocks other sales users    0.66s
+  ✓ it stops the response timer on the first call even without an answe… 0.78s
+  ✓ it moves a new lead to Contacted once the client is reached          0.40s
+  ✓ it suggests WhatsApp after three unanswered calls                    0.59s
+  ✓ it requires a note body for notes                                    0.29s
+  ✓ it sets the next action with a quick preset                          0.25s
+  ✓ it books a site visit, moves the lead to Site visit and makes it th… 0.41s
+  ✓ it rejects a site visit in the past                                  0.31s
+  ✓ it adds and completes a task from the lead page                      0.40s
+  ✓ it lets a manager reassign the lead                                  0.37s
+  ✓ it does not let a sales user act on another person's lead            0.10s
+
+   PASS  Tests\Feature\ConversationsTest
+  ✓ it answers Meta's handshake and refuses one with the wrong token     0.06s
+  ✓ it refuses a webhook that is not signed with the app secret          0.06s
+  ✓ it turns an inbound message into a contact and a conversation        0.07s
+  ✓ it matches a second message from the same client to the same conver… 0.08s
+  ✓ it ignores a replayed message instead of storing it twice            0.07s
+  ✓ it hears an opt-out keyword and stops marketing consent              0.07s
+  ✓ it reopens a closed conversation when the client writes again        0.07s
+  ✓ it sends a reply inside the window and stores what came back from M… 0.16s
+  ✓ it refuses a free-form reply outside the 24-hour window              0.20s
+  ✓ it saves a failed send with Meta's error instead of pretending it w… 0.19s
+  ✓ it keeps an internal note out of the client's hands                  0.17s
+  ✓ it records delivered and read receipts from Meta, and never moves a… 0.07s
+  ✓ it downloads inbound media so a photograph outlives Meta's link      0.19s
+  ✓ it shows the inbox to the team and hides it from a role that may no… 0.19s
+  ✓ it lets the team close a conversation and reopen it                  0.22s
+
+   PASS  Tests\Feature\Conversations\WebChatWidgetTest
+  ✓ it keeps the widget invisible while it is switched off               0.11s
+  ✓ it serves the script and greets a new visitor by name flow           0.14s
+  ✓ it runs the intake: name, number, service — then the lead exists an… 0.21s
+  ✓ it accepts an email instead of a number and never asks for the numb… 0.32s
+  ✓ it re-asks for a number that is neither a number nor an email        0.14s
+  ✓ it lets the team reply from the inbox without a gateway and the wid… 0.32s
+  ✓ it starts a fresh thread for an unknown token instead of failing     0.12s
+  ✓ it stores the visitor message even when the intake is already live   0.25s
+  ✓ it bounds a message to two thousand characters                       0.27s
+  ✓ it ships the loader to the static v1 pages as well                   0.07s
+  ✓ it answers the loader with the widget only while the switch is on    0.16s
+  ✓ it counts the visitor message as unread for the inbox                0.20s
+  ✓ it shows web chat threads in the inbox and answers them there witho… 0.59s
+
+   PASS  Tests\Feature\Accounts\PaymentPostingRepairTest
+  ✓ it posts the staff Payments form atomically for both brands without… 1.06s
+  ✓ it posts the staff Payments form atomically for both brands without… 0.49s
+  ✓ it shows a closed-period form error and retains input without commi… 0.74s
+  ✓ it rolls back staff receipt allocation and numbering when the metho… 0.37s
+  ✓ it posts explicit allocation and unallocated credit as separate cre… 0.51s
+  ✓ it rejects every unverified status at the posting boundary with ('p… 0.07s
+  ✓ it rejects every unverified status at the posting boundary with ('r… 0.06s
+  ✓ it rejects every unverified status at the posting boundary with ('r… 0.25s
+  ✓ it reloads stale payment state and rejects a stale verified instanc… 0.06s
+  ✓ it reloads current amount and state rather than posting stale value… 0.06s
+  ✓ it returns the same posted journal on retry even after its period c… 0.36s
+  ✓ it removes newly frozen invoice PDFs when issue fails or an outer t… 0.41s
+  ✓ it removes newly frozen invoice PDFs when issue fails or an outer t… 0.39s
+  ✓ it does not delete or change an existing valid frozen invoice on ou… 0.54s
+  ✓ it refuses to overwrite or delete an existing unreferenced invoice…  0.32s
+  ✓ it removes a new staff receipt and all financial writes on an outer… 0.35s
+  ✓ it reports missing verified payment journals without changing or po… 0.42s
+  ✓ it includes archived verified payments in the read-only completenes… 0.05s
+  ✓ it preserves the existing record-only staff permission without requ… 0.38s
+  ✓ it returns an empty completeness summary without creating financial… 0.08s
+
+  Tests:    157 passed (547 assertions)
+  Duration: 38.63s

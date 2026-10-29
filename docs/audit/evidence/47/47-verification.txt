@@ -1,0 +1,91 @@
+47 — Approved native CRM/communications redesign — 2026-10-29
+Base4f5e14b, branch arena/8be318a2-woodexinterior. Owner selected “Approve — start”.
+Scope: Leads, Alerts dropdown/centre, Inbox, contextual Activity, staff/visitor live chat.
+Existing native modules reused; no second CRM/chat engine, schema or provider-send policy change.
+
+RECOVERY / RUNTIME
+Sandbox checkout metadata had returned to the initial branch base; present source files persisted.
+Fetched existing session branch and hashed every present tracked blob against remote4f5e14b:
+zero differences. Restored13 absent committed build assets; realigned Git metadata with mixed reset
+without discarding user source edits. No branch switch. Rebuilt PHP-WASM/vendor/demo/browser runtime
+outside Git using tools/sandbox/setup.sh; private setup log not published.
+Main app: /tmp/woodex-run/app, local demo, port33143. No owner/private database imported.
+Native dependencies and PHP/browser runtime, not static mock screens.
+
+TESTS
+/tmp/woodex-run/php vendor/bin/pest --colors=never
+Final full gate exit0:1699 passed,1 skipped,9109 assertions,440.69s.
+Raw normalized output:47-full-suite.txt. Trailing whitespace only normalized.
+MySQL-socket installer skip is genuine PHP-WASM limitation, not a passed production/MySQL test.
+First full run:1698 passed,1 skipped,1 failed,9109 assertions,422.67s:
+P10SidebarHubsTest expected the old lead-description text. Updated expected copy, retaining its
+single-heading/no-duplicate-hub-description contract; final full rerun passed above.
+
+Dedicated CommunicationsRedesignTest:24 passed,82 assertions,5.92s, exit0.
+Includes own-user archive/restore/search, six unsafe-URL cases, foreign mutation denials,
+Unread/filter counts, inactive/nonexistent assignees, recent/earlier message history, forged
+non-website selection, read-only reply denial, lead-owner stats/drawer access and activity filters.
+Initial security tests expected404. The native global CMS not-found handler turns these into301;
+added explicit403 denial instead of weakening the privacy assertions or modifying global routing.
+New cases fake mail/notifications and prohibit stray Laravel HTTP.
+
+Earlier affected selection:89 passed,369 assertions,21.02s, exit0.
+After final UI-only composer/toast adjustments:
+  vendor/bin/pest tests/Feature/CommunicationsRedesignTest.php
+    tests/Feature/P10LiveChatTest.php tests/Feature/P10SidebarHubsTest.php
+    tests/Feature/LeadsIndexTest.php tests/Feature/LeadShowTest.php
+    tests/Feature/ConversationsTest.php tests/Feature/Conversations
+    tests/Feature/Accounts/PaymentPostingRepairTest.php --colors=never
+Final targeted gate:157 passed,547 assertions,38.63s, exit0.
+All20 revision46 financial-repair cases included; financial/domain PHP unchanged.
+Full gate preceded the final composer/toast view/CSS-only adjustment; final targeted/browser gates
+verify those last UI changes. No blanket claim of whole-OS action/role coverage.
+
+STATIC / BUILD
+vendor/bin/phpstan analyse --no-progress --memory-limit=1G: exit0,[OK] No errors.
+Initial2 diagnostics were a Collection PHPDoc displaced onto a new void filter method;
+corrected annotation placement, then reran successfully. No behaviour changed for that correction.
+Pint --test:PASS10 files (7 application PHP,2 tests,guarded QA PHP fixture), exit0.
+Fixture formatting issue fixed by Pint; php -l fixture:no syntax errors.
+node --check communications-check.mjs:exit0.
+Vite build:exit0. Existing large ApexCharts chunk advisory remains.
+Public build site.css/site.js restored byte-for-byte from approved base after each build;
+only admin CSS hash and manifest change. Nine tested/formatted PHP files match runtime exactly.
+git diff --check passed, including staged final evidence. No package/dependency change.
+
+REAL CHROMIUM — CLEAN END-TO-END PASS
+node tools/sandbox/communications-check.mjs — exit0,20 checks passed,0 page JS errors.
+1440x1000 desktop and390x844 phone. Raw checks,JSON and13 screenshots persisted here.
+Independent mobile diagnostic also passed10 checks before clean final run.
+Native database actions:lead search/drawer/activity filter; own notification archive/restore/search;
+Inbox website reply followed by live drawer reply; mobile back/list; visitor failed send and retry.
+DB message counts on the same QA staff thread:2 before,3 after Inbox reply,4 after drawer reply.
+Visitor send is deliberately aborted once in Chromium; the text remains, retry succeeds natively.
+
+Actual repaired browser defect:Sent toast at lower-right intercepted the drawer Send button.
+Element hit testing identified the toast above the button. Repositioned/bounded toasts away from
+right-hand composers; keyed drawer composer and explicit native wire:click send retained. Final
+clean pass clicks the actual buttons and checks DB counts, not a direct JavaScript method call.
+Harness corrections (not app bug fixes):wait for responsive sidebar transition before overflow
+checks; select visible controls rather than hidden duplicate header/thread buttons; use icon
+Close aria-label; avoid a network-idle wait defeated by active polling; compare transformed headings
+case-insensitively. Early failed browser attempts are not claimed as completed passes.
+
+ISOLATION / PRESERVATION
+QA app:/tmp/woodex47/qa/app, port33144, its own vendor/autoload base, storage,cache and SQLite.
+SQLite backup API copied the local demo consistently; fixture requires exact QA base/DB path,
+local environment,array mailer,sync queue. Telegram token blank. Browser origin fixed to QA port.
+QA can be recopied between attempts; main demo DB never restored or overwritten by browser driver.
+After tests, read-only main DB inspection:0 contacts with QA email,0 conversations.
+No synthetic communications or financial records added to main. No production/provider writes.
+No .env,credentials,tokens,private customer/bank data or SQLite/vendor directories committed.
+No diff in domain financial code,routes,database/schema,public v1 assets/index,admin/site JS.
+Frozen quotation/invoice history and revision46 financial repairs preserved.
+
+LIMITATIONS
+Native staff polling10s / visitor5s, not websockets or verified online presence. Existing recent-
+message indicator is not an online-status certificate. Inbox shortlist60 and drawer shortlist30
+remain; message/activity earlier-history bound600. No invented voice/video/visitor-media transport.
+Live providers,MySQL locks/scale,owner-host parity,whole-OS every-action/all-role acceptance,
+F05 report definitions and historical financial reconciliation remain open.
+No deployment or merge. Main preview remains on33143; isolated QA server stopped after evidence.
