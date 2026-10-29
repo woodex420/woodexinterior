@@ -2,7 +2,15 @@
 
 **Updated:** 29 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (local demo)
 
-> **Current phase — revision47: approved CRM and communications redesign delivered.**
+> **Current planning — revision48: theme, website capture and omnichannel audit complete; implementation awaits approval.**
+> Existing SQL chat, popup logic, CRM capture, provider capability gaps and Telegram private/channel boundaries
+> have been audited. Recommended first slice: Light/Night/System, accurate environment-label relocation,
+> reliable website alerts, early capture and a native Web Chat Leads tab; no new schema or live provider sends.
+> Targeted baseline: **98 passed /513 assertions** using an isolated test DB and provider fakes.
+> Production Telegram state/mobile receipt remain unverified; social source labels are not live transports.
+> [Phased TODO/master plan48](docs/audit/48_THEME_OMNICHANNEL_MASTER_PLAN_2026-10-29.md).
+>
+> **Latest delivered implementation — revision47: approved CRM and communications redesign delivered.**
 > Advanced Leads workspace/detail/activity, Alerts dropdown/centre, Inbox and staff/visitor Live Chat
 > reuse the native Laravel/Livewire modules. Real archive/search/filter/assignment/history controls;
 > fresh access/channel guards; retained visitor drafts/retry; toasts no longer block the composer.
@@ -31,7 +39,7 @@
 > Previous Slice W remains delivered: native Estimates / Rates / Estimator Enquiries and all eight audited
 > workflow fixes; [report39](docs/audit/39_ESTIMATIONS_HUB_AUDIT_PLAN_2026-10-27.md).
 
-**One line:** approved native CRM/communications redesign and earlier payment/ledger repairs delivered; F05 definitions, production reconciliation and whole-OS every-action certification remain open.
+**One line:** revision48 theme/web-chat/omnichannel plan awaits approval; revision47 CRM/communications and earlier financial repairs are delivered. F05, production reconciliation and whole-OS certification remain open.
 
 > The detailed findings, evidence and ordered plan are in **[`docs/audit/31_DEEP_QA_2026-10-21.md`](docs/audit/31_DEEP_QA_2026-10-21.md)**. It remains the historical baseline; reports44–47 above govern the current increment and outstanding financial findings.
 
@@ -46,8 +54,9 @@
 ## Earlier delivery plan: 26 October master plan
 
 `docs/audit/32_MASTER_PLAN_2026-10-26.md` sets the forward order. **Slices I–M are shipped** (below); the last
-planned slice, Search Console over MCP (N), is blocked on the Google key. Telegram is built end to end — it waits
-only on the real bot token in the server `.env`. Plan 34 followed (Classic BOQ, builder live
+planned slice, Search Console over MCP (N), is blocked on the Google key. Telegram has native configuration,
+pairing, webhook, command and test paths; current production configuration, destination and mobile receipt
+remain unverified (see revision48). The earlier token-only blocker is not a current diagnosis. Plan 34 followed (Classic BOQ, builder live
 preview), and Step 44 imported the real v2.1 Pro template source and verified the document
 design against it. The current queue — with the v2.1-vs-OS gap report and the new
 integrations slice — is **[`docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md`](docs/audit/35_PENDING_TASKS_REFRESH_2026-10-26.md)**;
