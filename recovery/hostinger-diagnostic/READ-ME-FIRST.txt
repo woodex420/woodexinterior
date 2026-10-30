@@ -1,0 +1,19 @@
+WOODEX DIAGNOSTIC - QUICK START
+
+1. Download and extract this ZIP on your computer.
+2. Upload ONLY woodex-diagnostic.php to Hostinger File Manager:
+   public_html/platform/public/ (beside index.php).
+   DO NOT replace index.php. If the folder is missing, send a folder screenshot.
+3. In File Manager select woodex-diagnostic.php > Edit.
+   Near the top, replace CHANGE_THIS_TO_YOUR_OWN_LONG_CODE
+   with your own unique private code of 16 or more letters/numbers.
+   Keep the single quotes. Save. Do not send your code to anyone.
+4. Open https://woodex.com.pk/woodex-diagnostic.php
+   Enter your code and click Download safe report.
+   Database connectivity check is optional; SELECT 1 only, no customer records.
+5. Attach woodex-diagnostic-report.json in the Arena chat.
+6. Delete ONLY woodex-diagnostic.php from Hostinger afterwards.
+
+If PHP source text appears instead of a form, delete the uploaded file immediately
+and tell us PHP is not executing there. This file expires 24 hours after its last
+edit. It grants no remote access and does not edit project or database data.
