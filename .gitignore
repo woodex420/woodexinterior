@@ -17,7 +17,7 @@ graphify-out/
 Thumbs.db
 
 # Hostinger deploy manifest (composer.json in the root installs into platform/vendor)
-/composer.lock
+# Both genuine Composer locks must be tracked after compatible native resolution.
 /vendor/
 # Installer setup code copy (written on the server, deleted after installation)
 /WOODEX-SETUP-CODE.txt

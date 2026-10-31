@@ -1,0 +1,100 @@
+name: Source-only native QA (explicit opt-in)
+run-name: Source-only QA — ${{ github.sha }}
+
+# workflow_dispatch needs default-branch registration. The exact commit-message
+# opt-in provides a deliberate manual start on the existing session branch only.
+# Ordinary pushes create a skipped workflow: no job, dependency install or app run.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Source-only operation (never a deployment)
+        type: choice
+        options: [resolve-lock-candidates, locked-tests]
+        default: resolve-lock-candidates
+        required: true
+      confirm_source_only:
+        description: Disposable QA only; no production data, credentials or deployment
+        type: boolean
+        default: false
+        required: true
+  push:
+    branches: [arena/8be318a2-woodexinterior]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: source-only-native-qa-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve-lock-candidates:
+    if: >-
+      github.ref == 'refs/heads/arena/8be318a2-woodexinterior' &&
+      ((github.event_name == 'workflow_dispatch' && inputs.confirm_source_only == true && inputs.mode == 'resolve-lock-candidates') ||
+       (github.event_name == 'push' && github.event.head_commit.message == '[woodex-qa:resolve-locks] source-only manual QA'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4; API-verified 2026-11-01
+        with:
+          persist-credentials: false
+          submodules: false
+          lfs: false
+      - name: Guard contract tests (not native application acceptance)
+        run: node --test tools/release/preflight.test.mjs tools/release/ci-native.test.mjs
+      - name: Native PHP 8.5 and genuine Composer lock candidates (no install/app/DB)
+        run: bash tools/release/ci-native.sh resolve-lock-candidates
+      - name: Review-only candidates and exact runner evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4; API-verified 2026-11-01
+        with:
+          name: lock-candidates-${{ github.sha }}
+          path: |
+            .cache/qa82/locks/
+            .cache/qa82/evidence/
+          if-no-files-found: warn
+          retention-days: 7
+          include-hidden-files: false
+      - name: Scope (never release approval)
+        if: always()
+        run: |
+          printf '%s\n' '## Source-only lock candidate attempt' \
+            'Genuine solver output is for review only; never automatically committed or deployed.' \
+            'No Laravel/Pest/MySQL/production backup acceptance in this job.' \
+            'Any failed native/solver/alignment step is a HOLD, not a pass.' >> "$GITHUB_STEP_SUMMARY"
+
+  locked-tests:
+    if: >-
+      github.ref == 'refs/heads/arena/8be318a2-woodexinterior' &&
+      ((github.event_name == 'workflow_dispatch' && inputs.confirm_source_only == true && inputs.mode == 'locked-tests') ||
+       (github.event_name == 'push' && github.event.head_commit.message == '[woodex-qa:locked-tests] source-only manual QA'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          submodules: false
+          lfs: false
+      - name: Guard contract tests (not native application acceptance)
+        run: node --test tools/release/preflight.test.mjs tools/release/ci-native.test.mjs
+      - name: Locked native suite against disposable internal-network MySQL
+        run: bash tools/release/ci-native.sh locked-tests
+      - name: Synthetic QA evidence only (no env, storage, DB, vendor or backups)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: locked-native-qa-${{ github.sha }}
+          path: .cache/qa82/evidence/
+          if-no-files-found: warn
+          retention-days: 7
+          include-hidden-files: false
+      - name: Scope (never release approval)
+        if: always()
+        run: |
+          printf '%s\n' '## Source-only locked native QA attempt' \
+            'Tests use disposable synthetic MySQL only, with provider egress blocked.' \
+            'Not production acceptance, concurrency certification, PDF/browser acceptance or private backup/restore.' \
+            'No merge/deployment follows automatically.' >> "$GITHUB_STEP_SUMMARY"

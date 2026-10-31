@@ -1,13 +1,18 @@
 name: woodex-qa
+x-php-build: &php-build
+  context: .
+  dockerfile: Dockerfile
+x-source: &source ../..:/workspace:ro
 services:
   mysql-test:
     image: mysql:8.4
+    networks: [qa-internal]
     environment:
       MYSQL_DATABASE: woodex_test
       MYSQL_USER: woodex_test
       MYSQL_PASSWORD: ${WOODEX_QA_PASSWORD:?Run tools/docker/setup-env.sh first}
       MYSQL_ROOT_PASSWORD: ${WOODEX_QA_ROOT_PASSWORD:?Run tools/docker/setup-env.sh first}
-    # No host port, production database, or production data volume.
+    # Disposable database, no host port and no production/external data volume.
     tmpfs:
       - /var/lib/mysql
     healthcheck:
@@ -15,35 +20,66 @@ services:
       interval: 5s
       timeout: 5s
       retries: 30
+  php-deps:
+    build: *php-build
+    image: woodex-qa-php:local
+    entrypoint: ["sh", "/workspace/tools/docker/dependencies.sh"]
+    networks: [dependency-downloads]
+    read_only: true
+    tmpfs: [/tmp]
+    environment:
+      WOODEX_QA_RUN: "1"
+      APP_ENV: testing
+      HOME: /tmp/woodex-qa-home
+      COMPOSER_HOME: /tmp/woodex-qa-composer
+      COMPOSER_CACHE_DIR: /tmp/woodex-qa-cache
+      COMPOSER_ALLOW_SUPERUSER: "1"
+    volumes:
+      - *source
+      - php-test-vendor:/workspace/platform/vendor
   php-test:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: *php-build
+    image: woodex-qa-php:local
+    networks: [qa-internal]
+    read_only: true
+    tmpfs: [/tmp, /workspace/platform/bootstrap/cache]
     depends_on:
       mysql-test:
         condition: service_healthy
+      php-deps:
+        condition: service_completed_successfully
     environment:
+      WOODEX_QA_RUN: "1"
       APP_ENV: testing
       APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
       APP_URL: http://woodex.test
+      HOME: /tmp/woodex-qa-home
+      COMPOSER_HOME: /tmp/woodex-qa-composer
+      COMPOSER_CACHE_DIR: /tmp/woodex-qa-cache
+      COMPOSER_ALLOW_SUPERUSER: "1"
       DB_CONNECTION: mysql
       DB_HOST: mysql-test
-      DB_PORT: 3306
+      DB_PORT: "3306"
       DB_DATABASE: woodex_test
       DB_USERNAME: woodex_test
       DB_PASSWORD: ${WOODEX_QA_PASSWORD:?Run tools/docker/setup-env.sh first}
       DB_URL: ""
+      DB_SOCKET: ""
       MAIL_MAILER: array
       QUEUE_CONNECTION: sync
+      CACHE_STORE: array
+      SESSION_DRIVER: array
       TELEGRAM_BOT_TOKEN: ""
       TURNSTILE_SECRET_KEY: ""
       PUBLIC_LEADS_BRIDGE_KEY: ""
     volumes:
-      - ../..:/workspace:ro
+      - *source
       - php-test-vendor:/workspace/platform/vendor
       - php-test-storage:/workspace/platform/storage
-      - php-test-cache:/workspace/platform/bootstrap/cache
+networks:
+  dependency-downloads: {}
+  qa-internal:
+    internal: true
 volumes:
   php-test-vendor:
   php-test-storage:
-  php-test-cache:
