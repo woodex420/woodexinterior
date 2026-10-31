@@ -1,0 +1,10 @@
+{
+  "platform/app/Support/AdminNavigation.php": "6614320bbb8496cf0eddcfa95a42bf701912e16f6822a87fd55975dfb97b2131",
+  "platform/resources/css/admin.css": "50fa6e48d9c6e472410e4376e092f64524f27d60d61c67e12d3d58dd4c8c0534",
+  "platform/resources/js/admin/theme.js": "abd9e24c40c61cc9b11cdd91bd4e9d4e51fcb3cf346db78aabef4438d93905ec",
+  "platform/resources/views/layouts/admin.blade.php": "a8f1ac819ead6a730669be2463feaeae7f2792eab79d8856795077bf0056c0ae",
+  "platform/resources/views/components/admin/sidebar.blade.php": "e080cf3d03ee085d1cee327fc69d66df68c318531c6e714c8079a4e412ab603c",
+  "platform/resources/views/livewire/admin/system/settings-page.blade.php": "d4017f73a2eb8ccbf072db0155551e2120d6abf384c4df2c983878ab1fcf9ef1",
+  "tools/sandbox/theme-unit-check.mjs": "fe4ef328d42540085ea536dca84357bf7d780c40394e919489778c557e20fd31",
+  ".gitignore": "e75d19ca406b3ffc7be9a0df2a9c0beafca3bec6b824ad3d4cda238f30551acf"
+}

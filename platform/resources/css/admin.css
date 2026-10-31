@@ -1,6 +1,6 @@
 /*
  * Woodex OS admin: Tailwind v4 + TailAdmin layout utilities + Preline v5 plugin variants.
- * TailAdmin Laravel (MIT) tokens are kept for UI legibility; its brand scale is mapped to Woodex navy.
+ * TailAdmin Laravel (MIT) tokens are kept for UI legibility; its admin brand scale is neutral charcoal; public/PDF brand tokens stay separate.
  */
 @import "tailwindcss";
 @import "./tokens.css";
@@ -31,8 +31,21 @@
   --text-title-md: 36px;
   --text-title-md--line-height: 44px;
 
-  /* TailAdmin "brand" → Woodex navy */
-  --color-brand-25: #f7f9fc;
+  /* Admin-only charcoal aliases. tokens.css stays unchanged for the website/PDFs. */
+  --color-navy-50: #fafafa;
+  --color-navy-100: #f5f5f5;
+  --color-navy-200: #e5e5e5;
+  --color-navy-300: #d4d4d4;
+  --color-navy-400: #a3a3a3;
+  --color-navy-500: #737373;
+  --color-navy-600: #595959;
+  --color-navy-700: #404040;
+  --color-navy-800: #303030;
+  --color-navy-900: #242424;
+  --color-navy-950: #171717;
+
+  /* Legacy brand utility names remain valid in the admin bundle. */
+  --color-brand-25: #fafafa;
   --color-brand-50: var(--color-navy-50);
   --color-brand-100: var(--color-navy-100);
   --color-brand-200: var(--color-navy-200);
@@ -46,18 +59,18 @@
   --color-brand-950: var(--color-navy-950);
 
   /* TailAdmin neutrals and status colours */
-  --color-gray-25: #fcfcfd;
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f2f4f7;
-  --color-gray-200: #e4e7ec;
-  --color-gray-300: #d0d5dd;
-  --color-gray-400: #98a2b3;
-  --color-gray-500: #667085;
-  --color-gray-600: #475467;
-  --color-gray-700: #344054;
-  --color-gray-800: #1d2939;
-  --color-gray-900: #101828;
-  --color-gray-950: #0c111d;
+  --color-gray-25: #fdfdfd;
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f5f5f5;
+  --color-gray-200: #e5e5e5;
+  --color-gray-300: #d4d4d4;
+  --color-gray-400: #737373;
+  --color-gray-500: #737373;
+  --color-gray-600: #595959;
+  --color-gray-700: #404040;
+  --color-gray-800: #303030;
+  --color-gray-900: #242424;
+  --color-gray-950: #171717;
 
   --color-success-50: #ecfdf3;
   --color-success-100: #d1fadf;
@@ -87,7 +100,7 @@
   --shadow-theme-sm: 0px 1px 3px 0px rgba(16, 24, 40, 0.1), 0px 1px 2px 0px rgba(16, 24, 40, 0.06);
   --shadow-theme-md: 0px 4px 8px -2px rgba(16, 24, 40, 0.1), 0px 2px 4px -2px rgba(16, 24, 40, 0.06);
   --shadow-theme-lg: 0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03);
-  --shadow-focus-ring: 0px 0px 0px 4px rgba(52, 77, 117, 0.14);
+  --shadow-focus-ring: 0px 0px 0px 4px rgba(64, 64, 64, 0.18);
 }
 
 @layer base {
@@ -195,7 +208,7 @@
 /* Quotation workbench: preview occupies its own column, never covers editable controls. */
 .quotation-workbench { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
 .quotation-editor { min-width: 0; }
-.quotation-preview { position: sticky; top: 88px; height: calc(100dvh - 108px); min-height: 480px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e4e7ec; border-radius: 12px; background: #e9e7e2; }
+.quotation-preview { position: sticky; top: 88px; height: calc(100dvh - 108px); min-height: 480px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #e5e5e5; border-radius: 12px; background: #e9e7e2; }
 .quotation-editor .sticky { z-index: 10; }
 @media (max-width: 1023px) {
   .quotation-workbench { grid-template-columns: minmax(0, 1fr); }
@@ -248,42 +261,44 @@ button.wx-summary-card:hover { border-color:var(--color-navy-300); background:va
 .wx-toast-stack { left:1rem; top:5rem; width:calc(100vw - 2rem); max-width:24rem; }
 @media(min-width:640px) { .wx-toast-stack { top:auto; bottom:1rem; } }
 
-/* Revision48: native Woodex Light / Night semantic surfaces. Admin bundle only;
+/* Current79: neutral charcoal Light / Dark / System surfaces. Admin bundle only;
    public v1, document iframe styles and frozen PDF renderers retain their own paper palette. */
 :root {
-  --wx-page: #f5f7fb;
+  --wx-page: #f6f6f6;
   --wx-surface: #ffffff;
-  --wx-elevated: #edf2f8;
-  --wx-text: #152238;
-  --wx-muted: #526176;
-  --wx-border: #dce3ed;
-  --wx-control-border: #7a879b;
-  --wx-primary: #233d63;
-  --wx-primary-hover: #192f50;
+  --wx-elevated: #eeeeee;
+  --wx-text: #242424;
+  --wx-muted: #595959;
+  --wx-border: #d1d1d1;
+  --wx-control-border: #737373;
+  --wx-primary: #303030;
+  --wx-primary-hover: #171717;
   --wx-on-primary: #ffffff;
   --wx-focus: #8e5f35;
-  --wx-chat-canvas: #edf2f8;
+  --wx-chat-canvas: #eeeeee;
 }
 :root.dark {
-  --wx-page: #0d1626;
-  --wx-surface: #152238;
-  --wx-elevated: #20324c;
-  --wx-text: #e7edf6;
-  --wx-muted: #a7b5c9;
-  --wx-border: #35455e;
-  --wx-control-border: #60748f;
-  --wx-primary: #82b3f4;
-  --wx-primary-hover: #a6caff;
-  --wx-on-primary: #0d1626;
-  --wx-focus: #e7b687;
-  --wx-chat-canvas: #101c30;
-  --color-gray-900: #152238;
-  --color-gray-950: #0d1626;
+  --wx-page: #171717;
+  --wx-surface: #212121;
+  --wx-elevated: #2b2b2b;
+  --wx-text: #f3f3f3;
+  --wx-muted: #b8b8b8;
+  --wx-border: #454545;
+  --wx-control-border: #858585;
+  --wx-primary: #e5e5e5;
+  --wx-primary-hover: #ffffff;
+  --wx-on-primary: #171717;
+  --wx-focus: #e6b98b;
+  --wx-chat-canvas: #1b1b1b;
+  --color-gray-400: #b8b8b8;
+  --color-gray-500: #a3a3a3;
+  --color-gray-900: #212121;
+  --color-gray-950: #171717;
 }
 body.wx-admin { background:var(--wx-page); color:var(--wx-text); }
 .wx-admin :is(.text-gray-400,.text-gray-500):not([class*="dark:text-"]) { color:var(--wx-muted); }
 .wx-admin :focus-visible { outline:2px solid var(--wx-focus); outline-offset:3px; }
-.wx-admin-header,.wx-surface,.wx-web-lead,.wx-theme-picker { background:var(--wx-surface); border-color:var(--wx-border); color:var(--wx-text); }
+.wx-admin-header,.wx-admin-sidebar,.wx-surface,.wx-web-lead,.wx-theme-picker { background:var(--wx-surface); border-color:var(--wx-border); color:var(--wx-text); }
 .wx-theme-picker select { color:var(--wx-text); }
 .wx-theme-picker option { background:var(--wx-surface); color:var(--wx-text); }
 .wx-admin .wx-input { background:var(--wx-surface); border-color:var(--wx-control-border); color:var(--wx-text); }

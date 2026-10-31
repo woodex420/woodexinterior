@@ -1,0 +1,415 @@
+{
+  "scope": "Synthetic shared CSS/layout contracts, not Laravel/live backend or complete app acceptance",
+  "cases": [
+    {
+      "width": 360,
+      "systemDark": false,
+      "mode": "light",
+      "passed": true,
+      "checks": {
+        "page": "rgb(246, 246, 246)",
+        "surface": "rgb(255, 255, 255)",
+        "sidebar": "rgb(255, 255, 255)",
+        "primary": "rgb(48, 48, 48)",
+        "onPrimary": "rgb(255, 255, 255)",
+        "input": "rgb(255, 255, 255)",
+        "meta": "#f6f6f6",
+        "overflow": false,
+        "tabRows": 3
+      }
+    },
+    {
+      "width": 360,
+      "systemDark": false,
+      "mode": "dark",
+      "passed": true,
+      "checks": {
+        "page": "rgb(23, 23, 23)",
+        "surface": "rgb(33, 33, 33)",
+        "sidebar": "rgb(33, 33, 33)",
+        "primary": "rgb(229, 229, 229)",
+        "onPrimary": "rgb(23, 23, 23)",
+        "input": "rgb(33, 33, 33)",
+        "meta": "#171717",
+        "overflow": false,
+        "tabRows": 3
+      }
+    },
+    {
+      "width": 360,
+      "systemDark": false,
+      "mode": "system",
+      "passed": true,
+      "checks": {
+        "page": "rgb(246, 246, 246)",
+        "surface": "rgb(255, 255, 255)",
+        "sidebar": "rgb(255, 255, 255)",
+        "primary": "rgb(48, 48, 48)",
+        "onPrimary": "rgb(255, 255, 255)",
+        "input": "rgb(255, 255, 255)",
+        "meta": "#f6f6f6",
+        "overflow": false,
+        "tabRows": 3
+      }
+    },
+    {
+      "width": 360,
+      "systemDark": true,
+      "mode": "light",
+      "passed": true,
+      "checks": {
+        "page": "rgb(246, 246, 246)",
+        "surface": "rgb(255, 255, 255)",
+        "sidebar": "rgb(255, 255, 255)",
+        "primary": "rgb(48, 48, 48)",
+        "onPrimary": "rgb(255, 255, 255)",
+        "input": "rgb(255, 255, 255)",
+        "meta": "#f6f6f6",
+        "overflow": false,
+        "tabRows": 3
+      }
+    },
+    {
+      "width": 360,
+      "systemDark": true,
+      "mode": "dark",
+      "passed": true,
+      "checks": {
+        "page": "rgb(23, 23, 23)",
+        "surface": "rgb(33, 33, 33)",
+        "sidebar": "rgb(33, 33, 33)",
+        "primary": "rgb(229, 229, 229)",
+        "onPrimary": "rgb(23, 23, 23)",
+        "input": "rgb(33, 33, 33)",
+        "meta": "#171717",
+        "overflow": false,
+        "tabRows": 3
+      }
+    },
+    {
+      "width": 360,
+      "systemDark": true,
+      "mode": "system",
+      "passed": true,
+      "checks": {
+        "page": "rgb(23, 23, 23)",
+        "surface": "rgb(33, 33, 33)",
+        "sidebar": "rgb(33, 33, 33)",
+        "primary": "rgb(229, 229, 229)",
+        "onPrimary": "rgb(23, 23, 23)",
+        "input": "rgb(33, 33, 33)",
+        "meta": "#171717",
+        "overflow": false,
+        "tabRows": 3
+      }
+    },
+    {
+      "width": 390,
+      "systemDark": false,
+      "mode": "light",
+      "passed": true,
+      "checks": {
+        "page": "rgb(246, 246, 246)",
+        "surface": "rgb(255, 255, 255)",
+        "sidebar": "rgb(255, 255, 255)",
+        "primary": "rgb(48, 48, 48)",
+        "onPrimary": "rgb(255, 255, 255)",
+        "input": "rgb(255, 255, 255)",
+        "meta": "#f6f6f6",
+        "overflow": false,
+        "tabRows": 2
+      }
+    },
+    {
+      "width": 390,
+      "systemDark": false,
+      "mode": "dark",
+      "passed": true,
+      "checks": {
+        "page": "rgb(23, 23, 23)",
+        "surface": "rgb(33, 33, 33)",
+        "sidebar": "rgb(33, 33, 33)",
+        "primary": "rgb(229, 229, 229)",
+        "onPrimary": "rgb(23, 23, 23)",
+        "input": "rgb(33, 33, 33)",
+        "meta": "#171717",
+        "overflow": false,
+        "tabRows": 2
+      }
+    },
+    {
+      "width": 390,
+      "systemDark": false,
+      "mode": "system",
+      "passed": true,
+      "checks": {
+        "page": "rgb(246, 246, 246)",
+        "surface": "rgb(255, 255, 255)",
+        "sidebar": "rgb(255, 255, 255)",
+        "primary": "rgb(48, 48, 48)",
+        "onPrimary": "rgb(255, 255, 255)",
+        "input": "rgb(255, 255, 255)",
+        "meta": "#f6f6f6",
+        "overflow": false,
+        "tabRows": 2
+      }
+    },
+    {
+      "width": 390,
+      "systemDark": true,
+      "mode": "light",
+      "passed": true,
+      "checks": {
+        "page": "rgb(246, 246, 246)",
+        "surface": "rgb(255, 255, 255)",
+        "sidebar": "rgb(255, 255, 255)",
+        "primary": "rgb(48, 48, 48)",
+        "onPrimary": "rgb(255, 255, 255)",
+        "input": "rgb(255, 255, 255)",
+        "meta": "#f6f6f6",
+        "overflow": false,
+        "tabRows": 2
+      }
+    },
+    {
+      "width": 390,
+      "systemDark": true,
+      "mode": "dark",
+      "passed": true,
+      "checks": {
+        "page": "rgb(23, 23, 23)",
+        "surface": "rgb(33, 33, 33)",
+        "sidebar": "rgb(33, 33, 33)",
+        "primary": "rgb(229, 229, 229)",
+        "onPrimary": "rgb(23, 23, 23)",
+        "input": "rgb(33, 33, 33)",
+        "meta": "#171717",
+        "overflow": false,
+        "tabRows": 2
+      }
+    },
+    {
+      "width": 390,
+      "systemDark": true,
+      "mode": "system",
+      "passed": true,
+      "checks": {
+        "page": "rgb(23, 23, 23)",
+        "surface": "rgb(33, 33, 33)",
+        "sidebar": "rgb(33, 33, 33)",
+        "primary": "rgb(229, 229, 229)",
+        "onPrimary": "rgb(23, 23, 23)",
+        "input": "rgb(33, 33, 33)",
+        "meta": "#171717",
+        "overflow": false,
+        "tabRows": 2
+      }
+    },
+    {
+      "width": 768,
+      "systemDark": false,
+      "mode": "light",
+      "passed": true,
+      "checks": {
+        "page": "rgb(246, 246, 246)",
+        "surface": "rgb(255, 255, 255)",
+        "sidebar": "rgb(255, 255, 255)",
+        "primary": "rgb(48, 48, 48)",
+        "onPrimary": "rgb(255, 255, 255)",
+        "input": "rgb(255, 255, 255)",
+        "meta": "#f6f6f6",
+        "overflow": false,
+        "tabRows": 1
+      }
+    },
+    {
+      "width": 768,
+      "systemDark": false,
+      "mode": "dark",
+      "passed": true,
+      "checks": {
+        "page": "rgb(23, 23, 23)",
+        "surface": "rgb(33, 33, 33)",
+        "sidebar": "rgb(33, 33, 33)",
+        "primary": "rgb(229, 229, 229)",
+        "onPrimary": "rgb(23, 23, 23)",
+        "input": "rgb(33, 33, 33)",
+        "meta": "#171717",
+        "overflow": false,
+        "tabRows": 1
+      }
+    },
+    {
+      "width": 768,
+      "systemDark": false,
+      "mode": "system",
+      "passed": true,
+      "checks": {
+        "page": "rgb(246, 246, 246)",
+        "surface": "rgb(255, 255, 255)",
+        "sidebar": "rgb(255, 255, 255)",
+        "primary": "rgb(48, 48, 48)",
+        "onPrimary": "rgb(255, 255, 255)",
+        "input": "rgb(255, 255, 255)",
+        "meta": "#f6f6f6",
+        "overflow": false,
+        "tabRows": 1
+      }
+    },
+    {
+      "width": 768,
+      "systemDark": true,
+      "mode": "light",
+      "passed": true,
+      "checks": {
+        "page": "rgb(246, 246, 246)",
+        "surface": "rgb(255, 255, 255)",
+        "sidebar": "rgb(255, 255, 255)",
+        "primary": "rgb(48, 48, 48)",
+        "onPrimary": "rgb(255, 255, 255)",
+        "input": "rgb(255, 255, 255)",
+        "meta": "#f6f6f6",
+        "overflow": false,
+        "tabRows": 1
+      }
+    },
+    {
+      "width": 768,
+      "systemDark": true,
+      "mode": "dark",
+      "passed": true,
+      "checks": {
+        "page": "rgb(23, 23, 23)",
+        "surface": "rgb(33, 33, 33)",
+        "sidebar": "rgb(33, 33, 33)",
+        "primary": "rgb(229, 229, 229)",
+        "onPrimary": "rgb(23, 23, 23)",
+        "input": "rgb(33, 33, 33)",
+        "meta": "#171717",
+        "overflow": false,
+        "tabRows": 1
+      }
+    },
+    {
+      "width": 768,
+      "systemDark": true,
+      "mode": "system",
+      "passed": true,
+      "checks": {
+        "page": "rgb(23, 23, 23)",
+        "surface": "rgb(33, 33, 33)",
+        "sidebar": "rgb(33, 33, 33)",
+        "primary": "rgb(229, 229, 229)",
+        "onPrimary": "rgb(23, 23, 23)",
+        "input": "rgb(33, 33, 33)",
+        "meta": "#171717",
+        "overflow": false,
+        "tabRows": 1
+      }
+    },
+    {
+      "width": 1440,
+      "systemDark": false,
+      "mode": "light",
+      "passed": true,
+      "checks": {
+        "page": "rgb(246, 246, 246)",
+        "surface": "rgb(255, 255, 255)",
+        "sidebar": "rgb(255, 255, 255)",
+        "primary": "rgb(48, 48, 48)",
+        "onPrimary": "rgb(255, 255, 255)",
+        "input": "rgb(255, 255, 255)",
+        "meta": "#f6f6f6",
+        "overflow": false,
+        "tabRows": 1
+      }
+    },
+    {
+      "width": 1440,
+      "systemDark": false,
+      "mode": "dark",
+      "passed": true,
+      "checks": {
+        "page": "rgb(23, 23, 23)",
+        "surface": "rgb(33, 33, 33)",
+        "sidebar": "rgb(33, 33, 33)",
+        "primary": "rgb(229, 229, 229)",
+        "onPrimary": "rgb(23, 23, 23)",
+        "input": "rgb(33, 33, 33)",
+        "meta": "#171717",
+        "overflow": false,
+        "tabRows": 1
+      }
+    },
+    {
+      "width": 1440,
+      "systemDark": false,
+      "mode": "system",
+      "passed": true,
+      "checks": {
+        "page": "rgb(246, 246, 246)",
+        "surface": "rgb(255, 255, 255)",
+        "sidebar": "rgb(255, 255, 255)",
+        "primary": "rgb(48, 48, 48)",
+        "onPrimary": "rgb(255, 255, 255)",
+        "input": "rgb(255, 255, 255)",
+        "meta": "#f6f6f6",
+        "overflow": false,
+        "tabRows": 1
+      }
+    },
+    {
+      "width": 1440,
+      "systemDark": true,
+      "mode": "light",
+      "passed": true,
+      "checks": {
+        "page": "rgb(246, 246, 246)",
+        "surface": "rgb(255, 255, 255)",
+        "sidebar": "rgb(255, 255, 255)",
+        "primary": "rgb(48, 48, 48)",
+        "onPrimary": "rgb(255, 255, 255)",
+        "input": "rgb(255, 255, 255)",
+        "meta": "#f6f6f6",
+        "overflow": false,
+        "tabRows": 1
+      }
+    },
+    {
+      "width": 1440,
+      "systemDark": true,
+      "mode": "dark",
+      "passed": true,
+      "checks": {
+        "page": "rgb(23, 23, 23)",
+        "surface": "rgb(33, 33, 33)",
+        "sidebar": "rgb(33, 33, 33)",
+        "primary": "rgb(229, 229, 229)",
+        "onPrimary": "rgb(23, 23, 23)",
+        "input": "rgb(33, 33, 33)",
+        "meta": "#171717",
+        "overflow": false,
+        "tabRows": 1
+      }
+    },
+    {
+      "width": 1440,
+      "systemDark": true,
+      "mode": "system",
+      "passed": true,
+      "checks": {
+        "page": "rgb(23, 23, 23)",
+        "surface": "rgb(33, 33, 33)",
+        "sidebar": "rgb(33, 33, 33)",
+        "primary": "rgb(229, 229, 229)",
+        "onPrimary": "rgb(23, 23, 23)",
+        "input": "rgb(33, 33, 33)",
+        "meta": "#171717",
+        "overflow": false,
+        "tabRows": 1
+      }
+    }
+  ],
+  "requestFailures": [],
+  "errors": []
+}

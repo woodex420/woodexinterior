@@ -1,0 +1,1 @@
+PASS 24 browser cases across360/390/768/1440, Light/Dark/System and both system preferences; no overflow or missing asset requests. NOT backend acceptance.

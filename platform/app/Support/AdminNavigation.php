@@ -25,7 +25,7 @@ final class AdminNavigation
     public const array FULL_DOCUMENT = ['admin.website.builder', 'admin.website.blog', 'admin.website.portfolio', 'admin.website.forms'];
 
     /**
-     * @return list<array{title: string, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}>
+     * @return list<array{title: string|null, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}>
      */
     public static function groups(): array
     {
@@ -96,8 +96,8 @@ final class AdminNavigation
                 // until their actions are switched on in WebsiteStudioController::SCREENS.
                 self::item('Forms', 'file', 'admin.website.forms', 'website.edit'),
             ]),
-            // Tools for the whole site, not for one page: no heading, the way the owner asked for them.
-            self::group(null, [
+            // The seven existing tools share one Website heading; routes and permissions stay unchanged.
+            self::group('Website', [
                 self::item('Media', 'folder', 'admin.website.media', 'website.edit'),
                 self::item('SEO', 'target', 'admin.website.seo.overview', 'website.edit'),
                 self::item('SEO agent', 'search', 'admin.website.seo', 'website.edit'),
@@ -120,7 +120,7 @@ final class AdminNavigation
     /**
      * Groups filtered for a user: live items need their permission; planned items are always listed.
      *
-     * @return list<array{title: string, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}>
+     * @return list<array{title: string|null, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}>
      */
     public static function for(?User $user): array
     {
@@ -153,10 +153,10 @@ final class AdminNavigation
 
     /**
      * @param  list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>  $items
-     * @return array{title: string, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}
+     * @return array{title: string|null, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}
      */
     /**
-     * A titled group collapses; a group with no title is a flat run of items (the Website tools).
+     * A titled group collapses; a group with no title is a flat run of items.
      *
      * @param  list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>  $items
      * @return array{title: string|null, items: list<array{label: string, icon: string, route: string|null, permission: string|null, phase: string|null}>}

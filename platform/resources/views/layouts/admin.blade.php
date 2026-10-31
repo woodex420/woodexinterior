@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#0f1e36">
+    <meta name="theme-color" content="#f6f6f6">
     <title>{{ isset($title) ? $title.' · ' : '' }}Woodex OS</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <script>
@@ -17,6 +17,7 @@
             document.documentElement.classList.toggle('dark', dark);
             document.documentElement.dataset.themeMode = mode;
             document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#171717' : '#f6f6f6');
             try { if (localStorage.getItem('wx.sidebar') === 'collapsed') document.documentElement.dataset.sidebar = 'collapsed'; } catch (e) {}
         })();
     </script>

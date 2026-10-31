@@ -1,0 +1,12 @@
+{
+  "owner_response": "Auto deploy OFF",
+  "previous_owner_response": "Automatic deployment was ON; publication was held then",
+  "automatic_deploy_on_push": "OFF confirmed by owner",
+  "approved_scope": "Publish reviewed admin UI repair to existing Arena branch/PR only",
+  "not_authorized_in_this_step": [
+    "Hostinger deployment",
+    "master merge",
+    "database migrations/imports"
+  ],
+  "publication": "Prepared for publication; verify actual remote commit separately"
+}

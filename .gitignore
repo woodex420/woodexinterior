@@ -24,3 +24,6 @@ Thumbs.db
 
 # Website audit output (tools/website/audit.php)
 tools/website/audit.json
+
+# Disposable development/test dependencies; never publish.
+/.cache/

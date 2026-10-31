@@ -2,7 +2,7 @@
     <x-admin.page-header title="Settings" description="Business details appear on quotations, invoices and the website. Sales rules drive SLAs, discounts and reports."
                          :breadcrumbs="['System' => null, 'Settings' => null]" />
 
-    <div class="mb-6 inline-flex rounded-lg border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-white/[0.03]" role="tablist">
+    <div class="wx-settings-tabs mb-6 flex max-w-full flex-wrap gap-1 rounded-lg border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-white/[0.03]" role="tablist" aria-label="Settings sections">
         @foreach (['business' => 'Business', 'sales' => 'Sales rules', 'leads' => 'Lead rules', 'notifications' => 'Notifications', 'whatsapp' => 'WhatsApp', 'bot' => 'Bot'] as $key => $label)
             <button type="button" wire:click="$set('tab', '{{ $key }}')" role="tab" aria-selected="{{ $tab === $key ? 'true' : 'false' }}"
                     @class(['rounded-md px-4 py-1.5 text-theme-sm font-medium transition', 'bg-navy-900 text-white dark:bg-white dark:text-navy-900' => $tab === $key, 'text-gray-600 hover:text-gray-900 dark:text-gray-400' => $tab !== $key])>{{ $label }}</button>

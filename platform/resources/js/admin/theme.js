@@ -11,6 +11,7 @@ export function themeMode(value) {
 export function resolvedDark(mode, systemDark) {
     return mode === 'dark' || (mode === 'system' && systemDark);
 }
+export function themeColor(dark) { return dark ? '#171717' : '#f6f6f6'; }
 export function createThemeStore() {
     const media = window.matchMedia('(prefers-color-scheme: dark)');
     return {
@@ -37,7 +38,7 @@ export function createThemeStore() {
             document.documentElement.classList.toggle('dark', this.dark);
             document.documentElement.dataset.themeMode = this.mode;
             document.documentElement.style.colorScheme = this.dark ? 'dark' : 'light';
-            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', this.dark ? '#0d1626' : '#f5f7fb');
+            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor(this.dark));
             window.dispatchEvent(new CustomEvent('wx-theme-changed', { detail: { dark: this.dark, mode: this.mode } }));
         },
     };

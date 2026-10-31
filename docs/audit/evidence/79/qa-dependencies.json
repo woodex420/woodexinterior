@@ -1,0 +1,12 @@
+{
+  "node_runtime": "24.18.0",
+  "installed_qa_packages": {
+    "@php-wasm/node": "3.1.58",
+    "@php-wasm/universal": "3.1.58",
+    "@sparticuz/chromium": "153.0.0",
+    "puppeteer-core": "25.16.0",
+    "node-linux-x64": "24.18.0"
+  },
+  "application_dependencies": "Existing npm lock; no Composer locks/vendor build created",
+  "scope": "Disposable excluded QA only"
+}
