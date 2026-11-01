@@ -4,8 +4,11 @@
 is deployable to Hostinger by hPanel → **Advanced → Git** (docs/06 §2). Nothing in the application was changed
 by this test; it only measures the tree.
 
-**Branch tested:** `arena/d2f81b57-woodexinterior` (= `arena/8be318a2-woodexinterior` @ `6ec9867`, 1 Nov 2026,
-merged with `master` @ `e22b5c1`, which contributed only `docs/audit/61_BRANCH_SECURITY_SETTINGS_AUDIT_2026-10-30.md`).
+**Tree tested:** the complete OS from `arena/8be318a2-woodexinterior` @ `6ec9867` (1 Nov 2026), merged into
+`master` as PR #6 (`942a447`). The owner then deleted two things on `master` deliberately — the earlier static
+studio site `woodex/` (40 files, commit "Delete woodex directory") and `docs/audit/61_BRANCH_SECURITY_SETTINGS_AUDIT_2026-10-30.md`
+— and this report is measured against that final tree: **2408 tracked files**. Neither deletion touches
+`platform/`, the deploy contract, or anything the website serves.
 
 **Sandbox limits:** no PHP binary, no Composer, no MySQL and no browser binary are available here (only the npm
 registry is reachable), so the Laravel **runtime** could not be booted. Everything below is what *can* be proven
@@ -20,10 +23,9 @@ hPanel steps that prove them on the real host.
 |---|---|---|---|
 | `.htaccess`, `composer.json`, `composer.lock` | 3 | site folder root | no (routing only) |
 | `platform/` | 2014 | site folder `platform/` | only `platform/public/` |
-| `docs/` | 306 | site folder `docs/` | no |
+| `docs/` | 307 | site folder `docs/` | no |
 | `tools/` | 80 | site folder `tools/` | no |
-| `woodex/` | 40 | site folder `woodex/` | no |
-| **Total tracked** | **2448** | | **635 files under `platform/public/` are the live site** |
+| **Total tracked** | **2408** | | **635 files under `platform/public/` are the live site** |
 
 The root `.htaccess` rewrites every request to `platform/public/$1` (and keeps `/.well-known/` for Let's
 Encrypt, `Require all denied` when `mod_rewrite` is absent, and denies `WOODEX-SETUP-CODE*` by name). Source,
@@ -80,16 +82,18 @@ This proves the tree contains no truncated/corrupt file from the branch transfer
 | Data lives outside every `public_html` | `bootstrap/app.php` → `SiteState::detect()` + `useEnvironmentPath()` / `useStoragePath()` to `~/woodex-os/<site>/storage` (D-57) |
 | Installer exists before install and 404s after | `platform/routes/install.php` registered via `bootstrap/app.php` (no `web` middleware, setup-code POST) |
 | One cron entry drives everything | `platform/routes/console.php`: queue worker, webhooks, heartbeat, SLA, reminders, digests, automation + `woodex:site-backup` daily 02:45 |
-| Nothing secret in Git | no `.env` tracked (only `platform/.env.example`, 70 keys); secret-pattern scan over `app/`, `config/`, `routes/`, `database/`, `tools/`, `woodex/` → **0 hits** (Telegram/WhatsApp/Meta/Google/AWS/OpenAI shapes) |
+| Nothing secret in Git | no `.env` tracked (only `platform/.env.example`, 70 keys); secret-pattern scan over `app/`, `config/`, `routes/`, `database/`, `tools/` → **0 hits** (Telegram/WhatsApp/Meta/Google/AWS/OpenAI shapes) |
 | Deploy hook survives the first run | `after-composer.php` needs no `.env`/DB, deletes stale `bootstrap/cache/*.php`, creates `storage/` folders, and removes the old `theme.css` stub Hostinger would otherwise keep |
 
 ## 5. What is organized now
 
-- One branch, one truth: the complete OS (`platform/` + `docs/` + `tools/` + `woodex/` design reference) with
-  `master`'s single audit document kept. Nothing was deleted.
+- One branch, one truth: the complete OS (`platform/` + `docs/` + `tools/`) is on `master`. The earlier static
+  studio site `woodex/` and the superseded audit document 61 were removed by the owner on `master` after the
+  merge; nothing under `platform/`, `docs/06` or the deploy contract depended on them, and both removals are
+  reflected in `README.md` and `docs/06` §2.1.
 - Deploy manifest, routing, build, installer, cron and data-folder separation are all consistent with
   `docs/06-DEPLOYMENT-HOSTINGER.md` §2 — no code change was required to make the tree deployable.
-- The 2447-file / 302k-line branch content is intact; the only merge conflict in the whole transfer was the
+- The transferred branch content is intact (302k lines); the only merge conflict in the whole transfer was the
   `.gitignore` (master's shorter version vs. the branch's superset) and the branch's version was kept.
 
 ## 6. Not tested here — prove these on the host

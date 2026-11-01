@@ -10,8 +10,10 @@ and the website, built with Laravel 13, Livewire 4, Tailwind 4 and Preline for H
 |---|---|
 | `platform/` | The Laravel application ([platform/README.md](platform/README.md), progress in [platform/STATE.md](platform/STATE.md)) |
 | `docs/` | Analysis, master plan, PRD, system prompt, schema, design system, deployment, decisions, import runbook |
-| `woodex/` | The earlier static studio site (design reference) |
 | `tools/` | `deploy/` (Hostinger Composer hook) and `sandbox/` (AI development sandbox) |
+
+The earlier static studio site (`woodex/`) was removed from `master` on 1 Nov 2026; `platform/public/` is the
+website now.
 
 ## Deploy on Hostinger (no SSH)
 
