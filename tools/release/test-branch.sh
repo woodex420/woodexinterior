@@ -46,6 +46,12 @@ PY_REPORT
   exit "$status"
 }
 trap finish EXIT
+# Docker cannot create nested volume mountpoints under a read-only source bind.
+# Create empty ignored mount directories in this disposable checkout before mounting it.
+for dir in platform/vendor platform/storage platform/bootstrap/cache; do
+  [[ ! -L $dir ]] || hold 'mountpoint symlink'
+  mkdir -p "$dir"
+done
 node tools/release/redact-disposable-qa.mjs --mask
 "${compose[@]}" config --quiet
 docker build --pull -t woodex-qa-php:local -f tools/docker/Dockerfile tools/docker 2>&1 | tee "$out/build.log"

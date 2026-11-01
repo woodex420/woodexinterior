@@ -36,3 +36,9 @@ test('both genuine public locks are present and production package graphs agree'
   const graph=lock=>lock.packages.map(p=>[p.name,p.version,p.source?.reference,p.dist?.reference]).sort();
   assert.deepEqual(graph(a),graph(b));assert(a.packages.length>50);
 });
+
+test('ignored nested mountpoints are prepared before binding source read-only',()=>{
+  const script=read('tools/release/test-branch.sh');
+  assert(script.indexOf('for dir in platform/vendor platform/storage platform/bootstrap/cache; do') < script.indexOf('run --rm --no-deps --entrypoint sh php-deps'));
+  assert(script.includes('mountpoint symlink'));
+});
