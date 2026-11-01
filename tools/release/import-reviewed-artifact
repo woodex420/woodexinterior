@@ -18,6 +18,16 @@ RUN_ID = '41258289481'
 ARTIFACT_ID = '13063243998'
 BRANCH = 'refs/heads/arena/8be318a2-woodexinterior'
 
+# Repackaged resolver attempt2: independently compared against original full-run import proof.
+# Allowed ONLY for the explicit diagnostic path; original full-suite archive remains pinned above.
+DIAGNOSTIC_DIGEST = 'b15d36505e85c45c05a462b369e298319439b3afb4b312717ddfb7e8935d7149'
+REVIEWED_FILES = {
+    'composer.json': '049506c8bc5cf5771864e29dbd794758c4b86c8b85ad48f2685a28ced91b8046',
+    'composer.lock': '1f3c7b5f058153a0345a7743a73edd80ceb3a8809b2c83cc404dada2b1886f68',
+    'platform/composer.json': 'beeeca8a6f022999160ed1fa15e3b567eb393365f0075ffd3e4c95956162f003',
+    'platform/composer.lock': '37c785a18211002ff3ba4c35ae75c2e23e997ab252a54bffd24dc32bd9c2ff0d',
+}
+
 
 class Rejected(ValueError):
     """Messages are fixed source constants, never rejected values/paths/content."""
@@ -28,7 +38,7 @@ def require(ok, message):
         raise Rejected(message)
 
 
-def import_candidate(archive, root, digest=DIGEST, source=SOURCE, run_id=RUN_ID):
+def import_candidate(archive, root, digest=DIGEST, source=SOURCE, run_id=RUN_ID, expected_hashes=None):
     """Pure candidate contract seam: tests supply synthetic archives/digests explicitly."""
     archive, root = Path(archive), Path(root)
     require(archive.is_file() and not archive.is_symlink(), 'regular archive required')
@@ -80,6 +90,9 @@ def import_candidate(archive, root, digest=DIGEST, source=SOURCE, run_id=RUN_ID)
             if local.endswith('.json'):
                 require(data == (root / local).read_bytes(), 'candidate manifest differs from source')
             files[local] = data
+        if expected_hashes is not None:
+            require({n: hashlib.sha256(b).hexdigest() for n, b in files.items()} == expected_hashes,
+                    'diagnostic dependency bytes differ from original reviewed candidate')
         # The archive hash binds the actual solver outputs; metadata is not used to fabricate a lock.
         for name in ['composer.lock', 'platform/composer.lock']:
             lock = json.loads(files[name])
@@ -102,14 +115,20 @@ def import_candidate(archive, root, digest=DIGEST, source=SOURCE, run_id=RUN_ID)
 
 
 def main():
-    require(len(sys.argv) == 2, 'exact archive argument required')
+    diagnostic = len(sys.argv) == 3 and sys.argv[1] == '--diagnostic-equivalent'
+    require(len(sys.argv) == 2 or diagnostic, 'exact archive argument required')
     require(os.getenv('GITHUB_ACTIONS') == 'true' and os.getenv('GITHUB_REPOSITORY') == 'woodex420/woodexinterior', 'authorized CI repository required')
     require(os.getenv('GITHUB_REF') == BRANCH and os.getenv('RUNNER_ENVIRONMENT') == 'github-hosted', 'fixed branch and hosted runner required')
     root = Path(__file__).resolve().parents[2]
     head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
     require(head == os.getenv('GITHUB_SHA'), 'checkout/run SHA mismatch')
     subprocess.run(['git', 'diff', '--quiet', SOURCE, head, '--', 'platform', 'composer.json', '.htaccess'], cwd=root, check=True)
-    result = import_candidate(sys.argv[1], root)
+    result = import_candidate(sys.argv[2] if diagnostic else sys.argv[1], root,
+                              digest=DIAGNOSTIC_DIGEST if diagnostic else DIGEST,
+                              expected_hashes=REVIEWED_FILES if diagnostic else None)
+    if diagnostic:
+        result['scope'] = 'DIAGNOSTIC ONLY; byte-identical reviewed dependencies in a separately verified archive'
+        result['originalReviewedArchiveSha256'] = DIGEST
     print(json.dumps(result, indent=2))
 
 

@@ -60,6 +60,21 @@ class Contracts(unittest.TestCase):
         self.assertEqual(set(r['fileSha256']), {'composer.json','composer.lock','platform/composer.json','platform/composer.lock'})
         self.assertEqual((self.root/'composer.json').read_bytes(), self.manifest)
 
+    def test_equivalent_archive_requires_exact_all_four_original_hashes(self):
+        p, digest = self.archive()
+        expected = {local: hashlib.sha256(self.manifest if local.endswith('.json') else self.data['locks/root/composer.lock']).hexdigest()
+                    for local in ['composer.json', 'composer.lock', 'platform/composer.json', 'platform/composer.lock']}
+        r = module.import_candidate(p, self.root, digest=digest, source='synthetic', run_id='fixture', expected_hashes=expected)
+        self.assertEqual(r['fileSha256'], expected)
+        self.assertFalse(r['readyForProductionDeployment'])
+
+    def test_changed_equivalent_dependency_rejected_before_writing_either_lock(self):
+        p, digest = self.archive()
+        with self.assertRaises(module.Rejected):
+            module.import_candidate(p, self.root, digest=digest, source='synthetic', run_id='fixture', expected_hashes={'composer.lock': '0'*64})
+        self.assertFalse((self.root/'composer.lock').exists())
+        self.assertFalse((self.root/'platform/composer.lock').exists())
+
     def test_wrong_digest(self): self.reject(digest='0'*64)
     def test_wrong_source(self): self.reject(source='other')
     def test_wrong_run(self): self.reject(run_id='other')

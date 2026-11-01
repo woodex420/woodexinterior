@@ -171,28 +171,28 @@ jobs:
         run: |
           node --test tools/release/preflight.test.mjs tools/release/ci-native.test.mjs tools/release/ci-diagnostics.test.mjs tools/release/candidate-validation.test.mjs
           python3 tools/release/reviewed-artifact-contracts
-      - name: Retrieve exact reviewed artifact on hosted runner (read-only token)
+      - name: Retrieve pinned equivalent archive — original dependency hashes additionally enforced
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           mkdir -p .cache/qa85
-          gh api repos/woodex420/woodexinterior/actions/artifacts/13063243998 > .cache/qa85/artifact-metadata.json
+          gh api repos/woodex420/woodexinterior/actions/artifacts/13066020494 > .cache/qa85/artifact-metadata.json
           python3 - <<'PY'
           import json
           m=json.load(open('.cache/qa85/artifact-metadata.json'))
-          assert m['id']==13063243998 and m['expired'] is False
-          assert m['digest']=='sha256:d3ca74419dd0b10053e11386462b19e5fd6fd0f1d6b9b0656bcb3ccdbb06bf91'
+          assert m['id']==13066020494 and m['expired'] is False
+          assert m['digest']=='sha256:b15d36505e85c45c05a462b369e298319439b3afb4b312717ddfb7e8935d7149'
           assert m['workflow_run']['id']==41258289481
           assert m['workflow_run']['head_sha']=='176e65e0c7f689af9be8494a8e5d17971ea8671b'
           assert m['workflow_run']['head_branch']=='arena/8be318a2-woodexinterior'
           PY
-          if ! gh api repos/woodex420/woodexinterior/actions/artifacts/13063243998/zip > .cache/qa85/reviewed.zip 2> .cache/qa85/download-error.txt; then
+          if ! gh api repos/woodex420/woodexinterior/actions/artifacts/13066020494/zip > .cache/qa85/reviewed.zip 2> .cache/qa85/download-error.txt; then
             echo '::error::HOLD: reviewed artifact transfer failed; no signed storage URLs or credentials published.'
             exit 2
           fi
-      - name: Verify archive bytes, provenance, native evidence and exact source; import only two candidate locks
-        run: python3 tools/release/import-reviewed-artifact .cache/qa85/reviewed.zip > .cache/qa85/import-proof.json
+      - name: Verify archive, provenance, source and original four dependency hashes — diagnostic only
+        run: python3 tools/release/import-reviewed-artifact --diagnostic-equivalent .cache/qa85/reviewed.zip > .cache/qa85/import-proof.json
       - name: First failure only on isolated MySQL — NOT a full validation pass
         run: bash tools/release/validate-reviewed-candidate.sh --diagnose-first-failure
       - name: Curated synthetic QA evidence (no env/database/storage/vendor/archive)

@@ -80,3 +80,12 @@ test('first-failure diagnostic cannot silently replace the full-suite branch', (
   assert.match(workflow, /\[woodex-qa:diagnose-artifact\]/);
   assert.match(workflow, /cancel-in-progress: false/);
 });
+
+test('repackaged archive is allowed only in separate byte-pinned diagnostic job', () => {
+  const fullJob = workflow.split('  reviewed-candidate-validation:')[1].split('  inspect-candidate-failure:')[0];
+  const diagnosticJob = workflow.split('  first-failure-diagnostic:')[1];
+  assert.match(fullJob, /13063243998/);
+  assert(!fullJob.includes('--diagnostic-equivalent'));
+  assert.match(diagnosticJob, /13066020494/);
+  assert.match(diagnosticJob, /import-reviewed-artifact --diagnostic-equivalent/);
+});
