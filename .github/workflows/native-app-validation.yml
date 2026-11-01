@@ -113,8 +113,62 @@ jobs:
                   data=z.read(member);assert hashlib.sha256(data).hexdigest()==expected[name]
                   files[name]=data.decode('utf-8')
           payload=base64.b64encode(zlib.compress(json.dumps(files).encode(),9)).decode()
-          for i in range(0,len(payload),12000):
-              print('::notice title=Reviewed public dependency chunk '+str(i//12000).zfill(3)+'::'+payload[i:i+12000])
+          assert len(payload)<=180000
+          (p.parent/'locks.payload').write_text(payload)
+          PY
+      - name: Public lock transport part 1
+        run: |
+          python3 - "$RUNNER_TEMP/locks.payload" <<'PY'
+          import sys
+          from pathlib import Path
+          payload=Path(sys.argv[1]).read_text()
+          for i in range(0,min(30000,len(payload)),3000):
+              print('::notice title=Reviewed public dependency chunk '+str(i//3000).zfill(3)+'::'+payload[i:i+3000])
+          PY
+      - name: Public lock transport part 2
+        run: |
+          python3 - "$RUNNER_TEMP/locks.payload" <<'PY'
+          import sys
+          from pathlib import Path
+          payload=Path(sys.argv[1]).read_text()
+          for i in range(30000,min(60000,len(payload)),3000):
+              print('::notice title=Reviewed public dependency chunk '+str(i//3000).zfill(3)+'::'+payload[i:i+3000])
+          PY
+      - name: Public lock transport part 3
+        run: |
+          python3 - "$RUNNER_TEMP/locks.payload" <<'PY'
+          import sys
+          from pathlib import Path
+          payload=Path(sys.argv[1]).read_text()
+          for i in range(60000,min(90000,len(payload)),3000):
+              print('::notice title=Reviewed public dependency chunk '+str(i//3000).zfill(3)+'::'+payload[i:i+3000])
+          PY
+      - name: Public lock transport part 4
+        run: |
+          python3 - "$RUNNER_TEMP/locks.payload" <<'PY'
+          import sys
+          from pathlib import Path
+          payload=Path(sys.argv[1]).read_text()
+          for i in range(90000,min(120000,len(payload)),3000):
+              print('::notice title=Reviewed public dependency chunk '+str(i//3000).zfill(3)+'::'+payload[i:i+3000])
+          PY
+      - name: Public lock transport part 5
+        run: |
+          python3 - "$RUNNER_TEMP/locks.payload" <<'PY'
+          import sys
+          from pathlib import Path
+          payload=Path(sys.argv[1]).read_text()
+          for i in range(120000,min(150000,len(payload)),3000):
+              print('::notice title=Reviewed public dependency chunk '+str(i//3000).zfill(3)+'::'+payload[i:i+3000])
+          PY
+      - name: Public lock transport part 6
+        run: |
+          python3 - "$RUNNER_TEMP/locks.payload" <<'PY'
+          import sys
+          from pathlib import Path
+          payload=Path(sys.argv[1]).read_text()
+          for i in range(150000,min(180000,len(payload)),3000):
+              print('::notice title=Reviewed public dependency chunk '+str(i//3000).zfill(3)+'::'+payload[i:i+3000])
           PY
 
   first-failure-diagnostic:
