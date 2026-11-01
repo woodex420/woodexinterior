@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // Never discard or silently consolidate financial history to make this index fit.
-        if (DB::table('invoices')->whereNotNull('project_milestone_id')
+        if (DB::table('invoices')->select('project_milestone_id')->whereNotNull('project_milestone_id')
             ->groupBy('project_milestone_id')->havingRaw('COUNT(*) > 1')->exists()) {
             throw new RuntimeException('Duplicate milestone invoices need an Accounts review before this migration can run. No financial records have been changed.');
         }

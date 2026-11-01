@@ -211,7 +211,7 @@ jobs:
         if: always()
         run: |
           printf '%s\n' '## FIRST-FAILURE DIAGNOSTIC ONLY — NOT application acceptance' \
-            'Application source:176e65e0c7f689af9be8494a8e5d17971ea8671b; reviewed archive digest pinned and checked.' \
+            'Application baseline:176e65e0c7f689af9be8494a8e5d17971ea8671b plus exact two-file strict-MySQL fix hashes enforced by importer; reviewed dependency bytes unchanged.' \
             'Candidate locks are uncommitted and used ONLY in this disposable checkout; no automatic repository adoption.' \
             'No backup/restore, production data, provider egress, merge, deployment or auto-deploy change.' \
             'Any skipped/failed/warning test or missing acceptance evidence remains HOLD.' >> "$GITHUB_STEP_SUMMARY"

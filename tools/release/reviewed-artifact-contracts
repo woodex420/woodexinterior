@@ -8,6 +8,7 @@ from pathlib import Path
 import stat
 import tempfile
 import unittest
+from unittest.mock import patch
 import zipfile
 
 loader = importlib.machinery.SourceFileLoader('reviewed_import', str(Path(__file__).with_name('import-reviewed-artifact')))
@@ -74,6 +75,28 @@ class Contracts(unittest.TestCase):
             module.import_candidate(p, self.root, digest=digest, source='synthetic', run_id='fixture', expected_hashes={'composer.lock': '0'*64})
         self.assertFalse((self.root/'composer.lock').exists())
         self.assertFalse((self.root/'platform/composer.lock').exists())
+
+    def test_original_app_revision_is_still_accepted_without_overrides(self):
+        with patch.object(module.subprocess, 'check_output', return_value=''):
+            self.assertEqual(module.validate_application_revision(self.root, 'synthetic'), {})
+
+    def test_only_exact_reviewed_app_fix_set_is_accepted(self):
+        data = b'SYNTHETIC PUBLIC SOURCE ONLY'
+        fixes = {'platform/fixture.php': hashlib.sha256(data).hexdigest()}
+        with patch.object(module.subprocess, 'check_output', side_effect=['platform/fixture.php\n', data]):
+            self.assertEqual(module.validate_application_revision(self.root, 'synthetic', reviewed_fixes=fixes), fixes)
+
+    def test_extra_app_path_is_rejected_before_any_source_or_lock_read(self):
+        with patch.object(module.subprocess, 'check_output', return_value='platform/unreviewed.php\n') as git:
+            with self.assertRaises(module.Rejected):
+                module.validate_application_revision(self.root, 'synthetic', reviewed_fixes={'platform/fixture.php': '0'*64})
+            self.assertEqual(git.call_count, 1)
+        self.assertFalse((self.root/'composer.lock').exists())
+
+    def test_reviewed_path_with_wrong_bytes_is_rejected(self):
+        with patch.object(module.subprocess, 'check_output', side_effect=['platform/fixture.php\n', b'CHANGED SYNTHETIC']):
+            with self.assertRaises(module.Rejected):
+                module.validate_application_revision(self.root, 'synthetic', reviewed_fixes={'platform/fixture.php': '0'*64})
 
     def test_wrong_digest(self): self.reject(digest='0'*64)
     def test_wrong_source(self): self.reject(source='other')

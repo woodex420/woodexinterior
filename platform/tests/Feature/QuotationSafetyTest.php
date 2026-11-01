@@ -379,3 +379,18 @@ it('refuses to silently deduplicate financial history when adding the milestone 
     $duplicate->forceDelete();
     $migration->up();
 });
+
+
+it('uses a grouped milestone projection compatible with strict MySQL for the migration guard', function () {
+    $migration = require database_path('migrations/2026_10_17_030000_unique_invoice_project_milestone.php');
+    // Compile/log only: do not rerun DDL or alter financial fixtures in this regression check.
+    $queries = DB::pretend(fn () => $migration->up());
+    $guards = array_values(array_filter($queries, fn (array $query): bool =>
+        str_contains(strtolower($query['query']), 'having count(*) > 1')
+    ));
+
+    expect($guards)->toHaveCount(1);
+    expect(strtolower($guards[0]['query']))
+        ->toMatch('/select [`"]project_milestone_id[`"] from [`"]invoices[`"] /')
+        ->not->toContain('select *');
+});

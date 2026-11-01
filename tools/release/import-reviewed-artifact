@@ -29,6 +29,10 @@ REVIEWED_FILES = {
 }
 
 
+# Explicitly reviewed strict-MySQL guard correction plus regression, not arbitrary app overrides.
+REVIEWED_APP_FIXES = {'platform/database/migrations/2026_10_17_030000_unique_invoice_project_milestone.php': 'accd3a778d06151385692a79871f04e9167395aae6a6eb91b3e81e6f491b82ff', 'platform/tests/Feature/QuotationSafetyTest.php': 'c4edf9913251715aefdbab8fd1320d1d9662a8dda1dcfb46159bf25cb0ebe1e1'}
+
+
 class Rejected(ValueError):
     """Messages are fixed source constants, never rejected values/paths/content."""
 
@@ -114,6 +118,20 @@ def import_candidate(archive, root, digest=DIGEST, source=SOURCE, run_id=RUN_ID,
             'fileSha256': {n: hashlib.sha256(b).hexdigest() for n, b in files.items()}}
 
 
+
+def validate_application_revision(root, head, source=SOURCE, reviewed_fixes=REVIEWED_APP_FIXES):
+    """Accept baseline source or exactly the reviewed, byte-pinned fix set; no other app drift."""
+    paths = subprocess.check_output(['git', 'diff', '--name-only', source, head, '--',
+                                     'platform', 'composer.json', '.htaccess'], cwd=root, text=True).splitlines()
+    if not paths:
+        return {}
+    require(set(paths) == set(reviewed_fixes), 'unreviewed application revision')
+    for name, digest in reviewed_fixes.items():
+        data = subprocess.check_output(['git', 'show', head + ':' + name], cwd=root)
+        require(hashlib.sha256(data).hexdigest() == digest, 'reviewed application fix bytes mismatch')
+    return reviewed_fixes
+
+
 def main():
     diagnostic = len(sys.argv) == 3 and sys.argv[1] == '--diagnostic-equivalent'
     require(len(sys.argv) == 2 or diagnostic, 'exact archive argument required')
@@ -122,13 +140,15 @@ def main():
     root = Path(__file__).resolve().parents[2]
     head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
     require(head == os.getenv('GITHUB_SHA'), 'checkout/run SHA mismatch')
-    subprocess.run(['git', 'diff', '--quiet', SOURCE, head, '--', 'platform', 'composer.json', '.htaccess'], cwd=root, check=True)
+    reviewed_fixes = validate_application_revision(root, head)
     result = import_candidate(sys.argv[2] if diagnostic else sys.argv[1], root,
                               digest=DIAGNOSTIC_DIGEST if diagnostic else DIGEST,
                               expected_hashes=REVIEWED_FILES if diagnostic else None)
     if diagnostic:
         result['scope'] = 'DIAGNOSTIC ONLY; byte-identical reviewed dependencies in a separately verified archive'
         result['originalReviewedArchiveSha256'] = DIGEST
+    result['validatedAppSourceSha'] = head
+    result['reviewedAppFixSha256'] = reviewed_fixes
     print(json.dumps(result, indent=2))
 
 
