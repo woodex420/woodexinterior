@@ -2,7 +2,12 @@
 # Candidate-only native Composer/MySQL validation. NEVER production/backup acceptance.
 set -euo pipefail
 hold() { echo "HOLD: candidate validation boundary rejected ($1)." >&2; exit 64; }
-[[ $# == 0 ]] || hold 'no overrides allowed'
+mode=full-suite
+case "${1:-}" in
+  '') [[ $# == 0 ]] || hold 'no overrides allowed' ;;
+  --diagnose-first-failure) [[ $# == 1 ]] || hold 'no overrides allowed'; mode=first-failure-diagnostic ;;
+  *) hold 'no overrides allowed' ;;
+esac
 [[ ${GITHUB_ACTIONS:-} == true && ${GITHUB_REPOSITORY:-} == woodex420/woodexinterior ]] || hold 'authorized CI only'
 [[ ${GITHUB_REF:-} == refs/heads/arena/8be318a2-woodexinterior && ${RUNNER_ENVIRONMENT:-} == github-hosted ]] || hold 'fixed ref/hosted runner only'
 [[ ${GITHUB_RUN_ID:-} =~ ^[0-9]+$ && ${GITHUB_RUN_ATTEMPT:-} =~ ^[0-9]+$ ]] || hold 'run identity'
@@ -28,11 +33,12 @@ finish() {
     "${compose[@]}" down --volumes --remove-orphans 2>&1 | node tools/release/redact-disposable-qa.mjs > "$out/cleanup.log" || true
     rm -f -- tools/docker/.env
   fi
-  python3 - "$out" "$stage" "$completed" "$rc" <<'PY'
+  python3 - "$out" "$stage" "$completed" "$rc" "$mode" <<'PY'
 from pathlib import Path
 import json,re,sys
-out=Path(sys.argv[1]);stage=sys.argv[2];completed=sys.argv[3].split();rc=int(sys.argv[4])
-summary={'scope':'Reviewed-artifact candidate validation ONLY; not committed-source/release/backup/live acceptance',
+out=Path(sys.argv[1]);stage=sys.argv[2];completed=sys.argv[3].split();rc=int(sys.argv[4]);mode=sys.argv[5]
+summary={'scope':'FIRST-FAILURE DIAGNOSTIC ONLY; not a full suite pass' if mode=='first-failure-diagnostic' else 'Reviewed-artifact candidate validation ONLY; not committed-source/release/backup/live acceptance',
+ 'mode':mode,
  'readyForProductionDeployment':False,'exitCode':rc,'lastStage':stage,'completedStages':completed,
  'backupRestore':'NOT RUN','deployment':'NOT RUN','providerEgress':'internal-only app/test network',
  'applicationTestSummary':None}
@@ -47,6 +53,10 @@ if p.exists():
 (out/'result.json').write_text(json.dumps(summary,indent=2)+'\n')
 message=json.dumps(summary,separators=(',',':')).replace('%','%25').replace('\n','%0A').replace('\r','%0D')
 print('::'+('notice' if rc==0 else 'error')+' title=Reviewed artifact validation result::'+message)
+if mode=='first-failure-diagnostic' and p.exists():
+ tail='\n'.join(text.splitlines()[-65:])[-3000:]
+ message=('DIAGNOSTIC ONLY — not full acceptance.\n'+tail).replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+ print('::notice title=First native failure — NOT acceptance::'+message)
 PY
   exit "$rc"
 }
@@ -69,6 +79,13 @@ completed+=' install'
 stage=mysql
 "${compose[@]}" up --detach --wait mysql-test 2>&1 | node tools/release/redact-disposable-qa.mjs | tee "$out/mysql.log"
 completed+=' mysql'
+if [[ $mode == first-failure-diagnostic ]]; then
+  stage=application-diagnostic
+  # A separate investigation only; this can NEVER replace the unchanged full gate below.
+  "${compose[@]}" run --rm --no-deps php-test --compact --stop-on-failure 2>&1 | node tools/release/redact-disposable-qa.mjs | tee "$out/tests.log"
+  completed+=' application-diagnostic'
+else
+# FULL_SUITE_BRANCH
 stage=application-tests
 # Run every configured Unit/Feature/Arch test, not stop-on-failure or a selected file.
 # Skipped/warning outcomes cannot be represented as full acceptance.
@@ -79,4 +96,5 @@ text=re.sub(r'\x1b\[[0-9;]*m','',open(sys.argv[1]).read())
 assert re.search(r'Tests:\s*(?:.*?\b)?[1-9][0-9]* passed',text), 'HOLD: no nonempty passing suite count found'
 PY
 completed+=' application-tests'
+fi
 stage=complete

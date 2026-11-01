@@ -15,7 +15,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: candidate-application-validation-${{ github.ref }}
+  group: candidate-application-validation-${{ github.ref }}-${{ github.event.head_commit.message == '[woodex-qa:diagnose-artifact] source-only manual QA' && 'diagnostic' || 'full' }}
   cancel-in-progress: false
 jobs:
   reviewed-candidate-validation:
@@ -126,3 +126,69 @@ jobs:
           message=message.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
           print('::notice title=Candidate failure diagnostic — NOT acceptance::'+message)
           PY
+
+  first-failure-diagnostic:
+    if: >-
+      github.ref == 'refs/heads/arena/8be318a2-woodexinterior' &&
+      github.event_name == 'push' &&
+      github.event.head_commit.message == '[woodex-qa:diagnose-artifact] source-only manual QA'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          submodules: false
+          lfs: false
+      - name: Source-only guard and synthetic archive contracts (not application acceptance)
+        run: |
+          node --test tools/release/preflight.test.mjs tools/release/ci-native.test.mjs tools/release/ci-diagnostics.test.mjs tools/release/candidate-validation.test.mjs
+          python3 tools/release/reviewed-artifact-contracts
+      - name: Retrieve exact reviewed artifact on hosted runner (read-only token)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/qa85
+          gh api repos/woodex420/woodexinterior/actions/artifacts/13063243998 > .cache/qa85/artifact-metadata.json
+          python3 - <<'PY'
+          import json
+          m=json.load(open('.cache/qa85/artifact-metadata.json'))
+          assert m['id']==13063243998 and m['expired'] is False
+          assert m['digest']=='sha256:d3ca74419dd0b10053e11386462b19e5fd6fd0f1d6b9b0656bcb3ccdbb06bf91'
+          assert m['workflow_run']['id']==41258289481
+          assert m['workflow_run']['head_sha']=='176e65e0c7f689af9be8494a8e5d17971ea8671b'
+          assert m['workflow_run']['head_branch']=='arena/8be318a2-woodexinterior'
+          PY
+          if ! gh api repos/woodex420/woodexinterior/actions/artifacts/13063243998/zip > .cache/qa85/reviewed.zip 2> .cache/qa85/download-error.txt; then
+            echo '::error::HOLD: reviewed artifact transfer failed; no signed storage URLs or credentials published.'
+            exit 2
+          fi
+      - name: Verify archive bytes, provenance, native evidence and exact source; import only two candidate locks
+        run: python3 tools/release/import-reviewed-artifact .cache/qa85/reviewed.zip > .cache/qa85/import-proof.json
+      - name: First failure only on isolated MySQL — NOT a full validation pass
+        run: bash tools/release/validate-reviewed-candidate.sh --diagnose-first-failure
+      - name: Curated synthetic QA evidence (no env/database/storage/vendor/archive)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: first-failure-diagnostic-${{ github.sha }}
+          path: |
+            .cache/qa85/results/
+            .cache/qa85/import-proof.json
+            .cache/qa85/artifact-metadata.json
+          if-no-files-found: warn
+          retention-days: 7
+          include-hidden-files: false
+      - name: Scope — no release or backup approval
+        if: always()
+        run: |
+          printf '%s\n' '## FIRST-FAILURE DIAGNOSTIC ONLY — NOT application acceptance' \
+            'Application source:176e65e0c7f689af9be8494a8e5d17971ea8671b; reviewed archive digest pinned and checked.' \
+            'Candidate locks are uncommitted and used ONLY in this disposable checkout; no automatic repository adoption.' \
+            'No backup/restore, production data, provider egress, merge, deployment or auto-deploy change.' \
+            'Any skipped/failed/warning test or missing acceptance evidence remains HOLD.' >> "$GITHUB_STEP_SUMMARY"

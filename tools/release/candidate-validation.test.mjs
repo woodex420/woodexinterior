@@ -40,7 +40,9 @@ test('no committed-lock guard is bypassed: distinct candidate-only path, no stag
   assert.match(source, /readyForProductionDeployment':False/);
   assert.match(source, /--no-deps php-deps/);
   assert.match(source, /--no-deps php-test --compact --fail-on-skipped --fail-on-warning/);
-  assert(!/--stop-on-failure|tests\/.*\.php/.test(source));
+  const fullBranch = source.split('# FULL_SUITE_BRANCH')[1].split('\nfi')[0];
+  assert(!/--stop-on-failure|tests\/.*\.php/.test(fullBranch));
+  assert.match(source, /mode=first-failure-diagnostic/);
   assert.match(source, /backupRestore':'NOT RUN'/);
 });
 test('artifact ID, digest and resolver source are pinned, not free inputs', () => {
@@ -70,4 +72,11 @@ test('native suite has bounded QA-only memory and narrowly scoped ephemeral Git 
   assert.equal((compose.match(/GIT_CONFIG_VALUE_0: \/workspace/g)||[]).length,2);
   assert(!compose.includes('safe.directory=*'));
   assert.match(compose, /internal: true/);
+});
+
+test('first-failure diagnostic cannot silently replace the full-suite branch', () => {
+  assert.match(source, /FIRST-FAILURE DIAGNOSTIC ONLY; not a full suite pass/);
+  assert.match(source, /php-test --compact --stop-on-failure/);
+  assert.match(workflow, /\[woodex-qa:diagnose-artifact\]/);
+  assert.match(workflow, /cancel-in-progress: false/);
 });
