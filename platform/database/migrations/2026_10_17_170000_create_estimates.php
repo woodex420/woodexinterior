@@ -26,8 +26,8 @@ return new class extends Migration
                 $table->string('number', 30)->unique();
                 $table->string('service_key', 60);
                 $table->string('title');
-                $table->unsignedInteger('contact_id')->nullable();
-                $table->unsignedInteger('lead_id')->nullable();
+                $table->unsignedBigInteger('contact_id')->nullable();
+                $table->unsignedBigInteger('lead_id')->nullable();
                 $table->json('inputs');
                 $table->text('assumptions')->nullable();
                 $table->text('exclusions')->nullable();
@@ -35,9 +35,9 @@ return new class extends Migration
                 $table->json('catalog_lines')->nullable();
                 $table->json('computed');
                 $table->string('status', 20)->default('draft');
-                $table->unsignedInteger('quote_id')->nullable();
-                $table->unsignedInteger('created_by');
-                $table->unsignedInteger('reviewed_by')->nullable();
+                $table->unsignedBigInteger('quote_id')->nullable();
+                $table->unsignedBigInteger('created_by');
+                $table->unsignedBigInteger('reviewed_by')->nullable();
                 $table->timestamp('reviewed_at')->nullable();
                 $table->timestamps();
                 $table->softDeletes();
@@ -53,7 +53,7 @@ return new class extends Migration
 
         if (! Schema::hasColumn('quotes', 'estimate_id')) {
             Schema::table('quotes', function (Blueprint $table): void {
-                $table->unsignedInteger('estimate_id')->nullable()->after('template_id');
+                $table->unsignedBigInteger('estimate_id')->nullable()->after('template_id');
                 $table->foreign('estimate_id')->references('id')->on('estimates')->nullOnDelete();
             });
         }

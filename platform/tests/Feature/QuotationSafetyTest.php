@@ -409,3 +409,24 @@ it('keeps the payment method account reference type identical to the chart prima
         ->and($references[0]['foreign_table'])->toBe('chart_of_accounts')
         ->and($references[0]['foreign_columns'])->toBe(['id']);
 });
+
+
+it('keeps estimate relationship key types and foreign keys compatible with their parent', function (string $table, string $column, string $parent) {
+    $schema = DB::connection()->getSchemaBuilder();
+    expect($schema->getColumnType($table, $column, fullDefinition: true))
+        ->toBe($schema->getColumnType($parent, 'id', fullDefinition: true));
+
+    $references = array_values(array_filter($schema->getForeignKeys($table),
+        fn (array $key): bool => $key['columns'] === [$column]
+    ));
+    expect($references)->toHaveCount(1)
+        ->and($references[0]['foreign_table'])->toBe($parent)
+        ->and($references[0]['foreign_columns'])->toBe(['id']);
+})->with([
+    ['estimates', 'contact_id', 'contacts'],
+    ['estimates', 'lead_id', 'leads'],
+    ['estimates', 'quote_id', 'quotes'],
+    ['estimates', 'created_by', 'users'],
+    ['estimates', 'reviewed_by', 'users'],
+    ['quotes', 'estimate_id', 'estimates'],
+]);

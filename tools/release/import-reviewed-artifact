@@ -29,8 +29,8 @@ REVIEWED_FILES = {
 }
 
 
-# Explicitly reviewed strict-MySQL guard correction plus regression, not arbitrary app overrides.
-REVIEWED_APP_FIXES = {'platform/database/migrations/2026_10_17_030000_unique_invoice_project_milestone.php': 'accd3a778d06151385692a79871f04e9167395aae6a6eb91b3e81e6f491b82ff', 'platform/database/migrations/2026_10_17_160000_create_payment_method_accounts.php': 'e1c1cc7751887ec48b204384adf90b0347c00fb44fb09afe000ea92ba6874c4b', 'platform/tests/Feature/QuotationSafetyTest.php': '2040027081429d150ef837cd2708d0bd99d79508129cea8d51f5d2df3d165287'}
+# Explicitly reviewed MySQL compatibility corrections plus regression, not arbitrary app overrides.
+REVIEWED_APP_FIXES = {'platform/database/migrations/2026_10_17_030000_unique_invoice_project_milestone.php': 'accd3a778d06151385692a79871f04e9167395aae6a6eb91b3e81e6f491b82ff', 'platform/database/migrations/2026_10_17_160000_create_payment_method_accounts.php': 'e1c1cc7751887ec48b204384adf90b0347c00fb44fb09afe000ea92ba6874c4b', 'platform/database/migrations/2026_10_17_170000_create_estimates.php': 'b4bd47ff7ab22c257ebb9de69de89b475233a68a95c75bb3369c6757a4ca8ad9', 'platform/tests/Feature/QuotationSafetyTest.php': 'd0caabafa80a205a85b64caee1efcd1ac589c97849c22e14f752db539a533cf3'}
 
 
 class Rejected(ValueError):
