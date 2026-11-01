@@ -9,6 +9,7 @@ use App\Http\Middleware\RedirectToInstaller;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\VerifyTelegramWebhook;
 use App\Support\Install\SiteState;
+use App\Support\Website\ContactFormResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -59,6 +60,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->is('webhooks/*') || $request->expectsJson(),
         );
+
+        // Only the explicitly marked, URL-encoded native Contact POST receives private HTML errors.
+        $exceptions->render(fn (Throwable $exception, Request $request) => ContactFormResponse::fromException($request, $exception));
 
         // A failed sign-in (wrong password, lockout, empty field) always goes back to its own form. Laravel's
         // default is the Referer or the session's previous URL and, when both are missing (a proxy that drops

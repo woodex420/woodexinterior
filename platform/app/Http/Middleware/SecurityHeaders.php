@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Support\Website\ContactFormResponse;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -80,6 +81,11 @@ final class SecurityHeaders
 
         if ($this->isAdminRequest($request)) {
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
+        }
+
+        // The normal header policy must not overwrite the stricter native Contact response policy.
+        if (ContactFormResponse::wantsHtml($request)) {
+            ContactFormResponse::protect($response);
         }
 
         return $response;

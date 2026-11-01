@@ -215,7 +215,8 @@ html:not(.js) .hm-slider-dots{display:none}
 
     <section class="fitout-section is-inview" id="fitout-quote"><div class="wrap fitout-quote-grid">
       <div class="fitout-contact" data-anim=""><p class="eyebrow kicker-line">Tell us about the space</p><h2>Request an Office Fit-Out Quote</h2><p class="lead">Share the essentials. We will review the scope and arrange the next step.</p><div class="fitout-contact-options"><h3>Talk to Woodex</h3><p><a href="tel:+923224000768">+92 322 4000768</a><br><a href="tel:+923224000768">+92 322 4000768</a></p><p><a href="mailto:info@woodex.com.pk">info@woodex.com.pk</a></p><p>M-71, Zainab Tower<br>Model Town Link Road, Lahore</p><p><strong>Mon–Sat 9:30–6:30</strong></p><p><a href="https://wa.me/923224000768">WhatsApp Woodex →</a></p></div></div>
-      <form class="fitout-quote-form" id="fitout-quote-form" data-anim=""><h3>Request a Fit-Out Quote</h3><div class="field-grid">
+      <form class="fitout-quote-form" id="fitout-quote-form" data-anim="" method="post" action="/api/forms.php" enctype="application/x-www-form-urlencoded">
+        <input type="hidden" name="form" value="office-fitout" /><input type="hidden" name="page" value="/office-fit-out/" /><input type="hidden" name="_response" value="html" /><input type="text" name="_hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px" /><h3>Request a Fit-Out Quote</h3><div class="field-grid">
         <div class="field"><label for="fit-name">Full Name *</label><input id="fit-name" name="name" required="" autocomplete="name"></div><div class="field"><label for="fit-phone">Phone Number *</label><input id="fit-phone" name="phone" type="tel" required="" autocomplete="tel"></div>
         <div class="field full"><label for="fit-email">Email Address *</label><input id="fit-email" name="email" type="email" required="" autocomplete="email"></div>
         <div class="field"><label for="fit-location">Office Location *</label><input id="fit-location" name="location" required="" placeholder="Area, building or city"></div><div class="field"><label for="fit-size">Approximate Size *</label><input id="fit-size" name="size" required="" placeholder="Square feet"></div>
@@ -251,7 +252,7 @@ html:not(.js) .hm-slider-dots{display:none}
     <div class="footer-word" aria-hidden="true" data-word="INTERIORS"></div>
     <div class="footer-bottom"><span>© 2026 Woodex Interior</span><div><a href="/privacy/">Privacy</a><a href="https://woodexfurniture.pk" target="_blank" rel="noopener">Woodex Furniture™ ↗</a></div></div>
   </div></footer>
-<script src="/assets/site.js?v=p21" defer></script>
+<script src="/assets/site.js?v=enquiry-20261101" defer></script>
 <script src="/site/tags.js" defer></script>
 </body>
 </html>

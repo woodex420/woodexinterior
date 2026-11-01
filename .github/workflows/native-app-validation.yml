@@ -20,7 +20,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Source CI and safety contracts
-        run: node --test tools/release/preflight.test.mjs tools/release/source-ci.test.mjs
+        run: node --test tools/release/preflight.test.mjs tools/release/source-ci.test.mjs tools/website/enquiry-forms.test.mjs
       - name: All native groups — locked source, synthetic internal MySQL, no deployment
         run: bash tools/release/test-branch.sh
       - name: Synthetic test results only

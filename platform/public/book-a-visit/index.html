@@ -96,10 +96,10 @@ html:not(.js) .hm-slider-dots{display:none}
       </div>
       <a href="/projects/" data-page-route="projects">Projects</a><a href="/about/" data-page-route="about">About</a><a href="/insights/" data-page-route="insights">Insights</a><a id="nav-contact" href="/contact/" data-page-route="contact">Contact</a>
     </nav>
-    <a class="header-cta" id="header-cta" href="#contact-cards"><span class="header-cta-label">Get a quote</span></a>
+    <a class="header-cta" id="header-cta" href="/contact/#visit-form"><span class="header-cta-label">Get a quote</span></a>
     <label class="menu-toggle" role="button" tabindex="0" for="menu-cb" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu"><span></span></label>
   </header>
-<nav class="mobile-panel" id="mobile-menu" aria-label="Mobile navigation"><a href="/">Home</a><a href="/interior-design/">Interior Design</a><a href="/fit-out/">Fit Out</a><a href="/renovation/">Renovation</a><a href="/architecture/">Architecture</a><a href="/3d-visualization/">3D Studio</a><a href="/projects/">Projects</a><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/insights/">Insights</a><a class="mobile-primary" href="#contact-cards">Get a quote</a></nav>
+<nav class="mobile-panel" id="mobile-menu" aria-label="Mobile navigation"><a href="/">Home</a><a href="/interior-design/">Interior Design</a><a href="/fit-out/">Fit Out</a><a href="/renovation/">Renovation</a><a href="/architecture/">Architecture</a><a href="/3d-visualization/">3D Studio</a><a href="/projects/">Projects</a><a href="/about/">About</a><a href="/contact/">Contact</a><a href="/insights/">Insights</a><a class="mobile-primary" href="/contact/#visit-form">Get a quote</a></nav>
 <main id="main-content">
   <section class="bk-hero" aria-labelledby="bk-title">
     <div class="bk-wrapx">
@@ -120,7 +120,8 @@ html:not(.js) .hm-slider-dots{display:none}
             <div class="bkw-dates-w"><button type="button" class="bkw-arr" id="bkw-dl" aria-label="Earlier dates">‹</button><div class="bkw-dates" id="bkw-dates" role="listbox" aria-label="Dates"></div><button type="button" class="bkw-arr" id="bkw-dr" aria-label="Later dates">›</button></div>
             <div class="bkw-slots" id="bkw-slots" role="listbox" aria-label="Times"></div>
             <div class="bkw-nav"><button type="button" class="bkw-back" data-go="1">← Back</button><button type="button" class="btn bkw-next" id="bkw-n2" disabled>Continue</button></div></div>
-          <form class="bkw-pane" data-p="3" id="bkw-form" hidden novalidate><h2>Your details</h2>
+          <form class="bkw-pane" data-p="3" id="bkw-form" hidden novalidate method="post" action="/api/forms.php" enctype="application/x-www-form-urlencoded">
+        <input type="hidden" name="form" value="book-a-visit" /><input type="hidden" name="page" value="/book-a-visit/" /><input type="hidden" name="_response" value="html" /><input type="hidden" name="action" value="book_create" /><h2>Your details</h2>
             <div class="bkw-g2"><label>Full name *<input name="name" autocomplete="name" required></label><label>Phone / WhatsApp *<input name="phone" type="tel" autocomplete="tel" placeholder="03xx xxxxxxx" required></label>
             <label>Email <small>(optional)</small><input name="email" type="email" autocomplete="email"></label><label>City / area<select name="city" id="bkw-city"></select></label></div>
             <label class="bkw-addr">Site address *<input name="address" autocomplete="street-address" placeholder="House / plot, block, society"></label>
@@ -151,7 +152,7 @@ html:not(.js) .hm-slider-dots{display:none}
     <div class="footer-word" aria-hidden="true" data-word="INTERIORS"></div>
     <div class="footer-bottom"><span>© 2026 Woodex Interior</span><div><a href="/privacy/">Privacy</a><a href="https://woodexfurniture.pk" target="_blank" rel="noopener">Woodex Furniture™ ↗</a></div></div>
   </div></footer>
-<script src="/assets/site.js?v=p21" defer></script>
+<script src="/assets/site.js?v=enquiry-20261101" defer></script>
 <script src="/site/tags.js" defer></script>
 <script src="/assets/book.js" defer></script>
 </body>

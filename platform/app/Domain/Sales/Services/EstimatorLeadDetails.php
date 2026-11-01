@@ -32,13 +32,17 @@ final class EstimatorLeadDetails
             (array) ($lead->meta['estimate'] ?? []),
         );
 
-        // Older estimator enquiries (imported before the bridge wrote meta) keep the service and size on
-        // the lead columns; those are the fallback. Anything else — a form enquiry, or an estimator form
-        // that left the area blank — is unpriced rather than "guess from whatever the column holds".
+        // Legacy estimator enquiries without extras may use the area column. Partial metadata must
+        // supply its own valid area: never fill a missing size from a potentially stale column.
+        // The service column has a separate bridge fallback below.
         $useColumns = $fields === [] && $lead->source === LeadSource::Estimator;
 
+        // The live bridge keeps service on the lead, while area/finish/range are extras. A missing
+        // metadata service may use that column for estimator leads only. Explicit values (including
+        // blank/null/unknown services) stay authoritative; never substitute a different billable rate.
+        $useServiceColumn = ! array_key_exists('service', $fields) && $lead->source === LeadSource::Estimator;
         $service = trim((string) Arr::get($fields, 'service', ''))
-            ?: ($useColumns ? trim((string) $lead->service) : '');
+            ?: ($useServiceColumn ? trim((string) $lead->service) : '');
         $finish = trim((string) Arr::get($fields, 'finish', '')) ?: 'standard';
         $areaRaw = trim((string) Arr::get($fields, 'area', ''));
         try {
