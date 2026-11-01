@@ -1,14 +1,18 @@
 # WOODEX INTERIOR — Apache configuration for Hostinger
-# Enables compression, caching, security headers, and custom error pages.
+# Security, compression, caching and custom error pages.
+# Verified against Apache 2.4 (Hostinger's shared hosting stack).
 
-# --- Enable Rewrite Engine ---
 RewriteEngine On
 
 # --- Force HTTPS ---
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# --- Remove trailing slashes SAFELY (except directories and files) ---
+# --- Canonical host (no www) ---
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [L,R=301]
+
+# --- Remove trailing slashes safely (never touches real directories) ---
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.+)/$ /$1 [L,R=301]
@@ -16,14 +20,16 @@ RewriteRule ^(.+)/$ /$1 [L,R=301]
 # --- Custom 404 ---
 ErrorDocument 404 /404.html
 
-# --- Gzip Compression ---
+# --- No directory listings (was enabled, which exposed /assets) ---
+Options -Indexes +FollowSymLinks
+
 <IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
-  AddOutputFilterByType DEFLATE text/xml application/xml application/xhtml+xml
-  AddOutputFilterByType DEFLATE font/opentype font/woff2
+  AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json
+  AddOutputFilterByType DEFLATE image/svg+xml application/xml application/xhtml+xml
+  # Do not re-compress already-compressed font files.
+  SetEnvIfNoCase Request_URI \.(?:woff2?|otf|ttf|eot)$ no-gzip dont-vary
 </IfModule>
 
-# --- Browser Caching ---
 <IfModule mod_expires.c>
   ExpiresActive On
   ExpiresByType text/html                 "access plus 1 hour"
@@ -31,29 +37,40 @@ ErrorDocument 404 /404.html
   ExpiresByType application/javascript    "access plus 1 month"
   ExpiresByType image/jpeg                "access plus 1 year"
   ExpiresByType image/png                 "access plus 1 year"
+  ExpiresByType image/webp                "access plus 1 year"
+  ExpiresByType image/avif                "access plus 1 year"
   ExpiresByType image/svg+xml             "access plus 1 year"
-  ExpiresByType font/opentype             "access plus 1 year"
+  ExpiresByType font/otf                  "access plus 1 year"
   ExpiresByType font/woff2                "access plus 1 year"
   ExpiresByType application/json          "access plus 1 hour"
+  ExpiresByType application/xml           "access plus 1 hour"
 </IfModule>
 
-# --- Security Headers ---
 <IfModule mod_headers.c>
-  Header set X-Content-Type-Options "nosniff"
-  Header set X-Frame-Options "SAMEORIGIN"
-  Header set Referrer-Policy "strict-origin-when-cross-origin"
-  Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  # Inline styles are used by the design system; scripts are all local.
+  Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'"
+  # Enable only after HTTPS is confirmed to work on every subdomain:
+  # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+  <FilesMatch "\.(jpg|jpeg|png|gif|webp|avif|svg|otf|woff2|css|js)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.(html|xml|txt|json|webmanifest)$">
+    Header set Cache-Control "public, max-age=3600, must-revalidate"
+  </FilesMatch>
 </IfModule>
 
-# --- Allow directory listing (disable if not needed) ---
-Options +Indexes
-
-# --- Cache-Control for static assets ---
-<FilesMatch "\.(jpg|jpeg|png|gif|svg|otf|woff2|css|js)$">
-  Header set Cache-Control "public, max-age=31536000, immutable"
+# Apache 2.4 access control (replaces the deprecated "Allow from all").
+<FilesMatch ".*">
+  Require all granted
 </FilesMatch>
 
-# --- Allow access to all files ---
-<FilesMatch ".*">
-  Allow from all
+# Never serve dotfiles (.htaccess, .git, .env).
+<FilesMatch "^\.">
+  Require all denied
 </FilesMatch>

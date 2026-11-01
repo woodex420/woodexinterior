@@ -1,0 +1,19 @@
+<%- include('../partials/block-loop') %>
+<section class="section">
+  <div class="container">
+    <div class="journal-grid journal-grid--wide">
+      <% insights.forEach(function (post) { %>
+      <article class="journal-card">
+        <a href="/insights/<%= post.slug %>">
+          <div class="image-wrap"><img src="<%= asset(post.cover_image || '/assets/detail.jpg') %>" alt="<%= post.title %>" loading="lazy" decoding="async" width="800" height="500"></div>
+          <div class="journal-meta"><span><%= post.category %></span><span><%= post.reading_time %></span></div>
+          <h2 class="journal-title"><%= post.title %></h2>
+        </a>
+        <p><%= post.excerpt %></p>
+        <a class="text-link" href="/insights/<%= post.slug %>">Read the story<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></a>
+      </article>
+      <% }); %>
+    </div>
+    <% if (!insights.length) { %><p class="sample-note">No insights published yet.</p><% } %>
+  </div>
+</section>

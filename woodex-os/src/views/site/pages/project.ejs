@@ -1,0 +1,48 @@
+<section class="page-hero">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="/portfolio">Portfolio</a><span aria-hidden="true">/</span><span><%= project.title %></span></nav>
+    <div class="eyebrow"><%= project.category.charAt(0).toUpperCase() + project.category.slice(1) %><%= project.location ? ' · ' + project.location : '' %></div>
+    <div class="page-hero-bottom">
+      <h1><%= project.title %></h1>
+      <% if (project.summary) { %><p><%= project.summary %></p><% } %>
+    </div>
+  </div>
+</section>
+<% if (project.cover_image) { %>
+<div class="container page-image"><img src="<%= asset(project.cover_image) %>" alt="<%= project.title %>" loading="eager" decoding="async" fetchpriority="high" width="1600" height="900"></div>
+<% } %>
+<section class="section">
+  <div class="container">
+    <div class="story-grid">
+      <div>
+        <h2>About this project</h2>
+        <dl class="project-facts">
+          <% if (project.location) { %><div><dt>Location</dt><dd><%= project.location %></dd></div><% } %>
+          <% if (project.year) { %><div><dt>Year</dt><dd><%= project.year %></dd></div><% } %>
+          <% if (project.area) { %><div><dt>Area</dt><dd><%= project.area %></dd></div><% } %>
+          <div><dt>Scope</dt><dd><%= project.category.charAt(0).toUpperCase() + project.category.slice(1) %></dd></div>
+          <% project.facts.forEach(function (fact) { %><div><dt><%= fact.label %></dt><dd><%= fact.value %></dd></div><% }); %>
+        </dl>
+      </div>
+      <div class="prose"><%- project.body || '<p>' + (project.summary || '') + '</p>' %></div>
+    </div>
+  </div>
+</section>
+<% if (project.gallery.length) { %>
+<section class="section">
+  <div class="container">
+    <div class="project-gallery">
+      <% project.gallery.forEach(function (image) { %>
+      <div class="image-wrap"><img src="<%= asset(image.src) %>" alt="<%= image.alt || project.title %>" loading="lazy" decoding="async" width="1200" height="800"></div>
+      <% }); %>
+    </div>
+  </div>
+</section>
+<% } %>
+<section class="cta">
+  <img src="<%= asset('/assets/living.jpg') %>" alt="" loading="lazy" decoding="async" width="900" height="700">
+  <div class="container cta-inner">
+    <div><div class="eyebrow">Start your own project</div><h2>Let’s make room<br>for something beautiful.</h2></div>
+    <a class="btn" href="/contact">Start your project<span class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a>
+  </div>
+</section>

@@ -1,0 +1,33 @@
+<%- include('../partials/head') %>
+<div class="card">
+  <div class="card-head">
+    <div class="tabs">
+      <a href="/admin/projects" class="<%= !filter.status ? 'active' : '' %>">All</a>
+      <a href="/admin/projects?status=published" class="<%= filter.status === 'published' ? 'active' : '' %>">Published</a>
+      <a href="/admin/projects?status=draft" class="<%= filter.status === 'draft' ? 'active' : '' %>">Drafts</a>
+    </div>
+    <% if (can('content:write')) { %><a class="btn" href="/admin/projects/new">New project</a><% } %>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Project</th><th>Category</th><th>Featured</th><th>Status</th><th>Updated</th><th class="actions">Actions</th></tr></thead>
+      <tbody>
+        <% projects.forEach(function (project) { %>
+        <tr>
+          <td><a href="/admin/projects/<%= project.id %>"><strong><%= project.title %></strong></a><div class="small muted">/portfolio/<%= project.slug %></div></td>
+          <td class="small"><%= project.category %></td>
+          <td class="small"><%= project.featured ? 'Yes' : '—' %></td>
+          <td><span class="badge <%= project.status %>"><%= project.status %></span></td>
+          <td class="small nowrap"><%= formatDate(project.updated_at) %></td>
+          <td class="actions">
+            <a class="btn secondary small" href="/admin/projects/<%= project.id %>">Edit</a>
+            <a class="btn secondary small" href="/portfolio/<%= project.slug %>" target="_blank" rel="noopener">View</a>
+          </td>
+        </tr>
+        <% }); %>
+        <% if (!projects.length) { %><tr><td colspan="6" class="muted">No projects yet.</td></tr><% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('../partials/foot') %>

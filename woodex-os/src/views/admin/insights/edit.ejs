@@ -1,0 +1,69 @@
+<%- include('../partials/head') %>
+<% var isNew = !insight; var v = values || {}; %>
+<form method="post" action="<%= isNew ? '/admin/insights' : '/admin/insights/' + insight.id %>" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="split">
+    <div>
+      <div class="card">
+        <div class="card-head"><h2>Article</h2><a class="btn secondary small" href="/admin/insights">Back to list</a></div>
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" name="title" required maxlength="200" value="<%= v.title || '' %>"<%- errors.title ? ' aria-invalid="true"' : '' %>>
+          <% if (errors.title) { %><span class="field-error"><%= errors.title %></span><% } %>
+        </div>
+        <div class="form-row">
+          <div class="field"><label for="slug">URL slug</label><input id="slug" name="slug" maxlength="120" value="<%= v.slug || '' %>"><% if (errors.slug) { %><span class="field-error"><%= errors.slug %></span><% } %></div>
+          <div class="field"><label for="category">Category</label><input id="category" name="category" maxlength="80" value="<%= v.category || 'Design notes' %>"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label for="reading_time">Reading time</label><input id="reading_time" name="reading_time" maxlength="40" value="<%= v.reading_time || '4 min read' %>"></div>
+          <div class="field"><label for="author">Author</label><input id="author" name="author" maxlength="120" value="<%= v.author || 'Woodex Studio' %>"></div>
+        </div>
+        <div class="field">
+          <label for="excerpt">Excerpt</label>
+          <textarea id="excerpt" name="excerpt" maxlength="400" rows="3"><%= v.excerpt || '' %></textarea>
+          <span class="hint">Shown on the insights index and used as the meta description fallback.</span>
+        </div>
+        <div class="field">
+          <label for="cover_image">Cover image</label>
+          <input id="cover_image" name="cover_image" maxlength="500" value="<%= v.cover_image || '' %>" placeholder="/assets/detail.jpg" list="media-options">
+        </div>
+        <div class="field">
+          <label for="body">Article body (HTML)</label>
+          <textarea id="body" name="body" class="mono tall"><%= v.body || '' %></textarea>
+        </div>
+        <div class="form-row">
+          <div class="field"><label for="seo_title">SEO title</label><input id="seo_title" name="seo_title" maxlength="70" value="<%= v.seo_title || '' %>"></div>
+          <div class="field"><label for="seo_description">Meta description</label><textarea id="seo_description" name="seo_description" maxlength="320" rows="3"><%= v.seo_description || '' %></textarea></div>
+        </div>
+      </div>
+    </div>
+    <aside>
+      <div class="card">
+        <div class="card-head"><h2>Publish</h2></div>
+        <div class="field">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="draft"<%- (v.status || 'draft') === 'draft' ? ' selected' : '' %>>Draft</option>
+            <option value="published"<%- v.status === 'published' ? ' selected' : '' %>>Published</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="published_at">Publish date</label>
+          <input id="published_at" name="published_at" maxlength="40" placeholder="2026-10-26T09:00:00Z" value="<%= v.published_at || '' %>">
+          <span class="hint">Leave blank to use today when published.</span>
+        </div>
+        <label class="check"><input type="checkbox" name="featured" value="1"<%- v.featured ? ' checked' : '' %>> Feature on the home page</label>
+        <button class="btn" type="submit" style="width:100%;margin-top:14px">Save article</button>
+        <% if (!isNew) { %>
+        <form method="post" action="/admin/insights/<%= insight.id %>/delete" data-confirm="Delete this article?" style="margin-top:10px">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <button class="btn danger" type="submit" style="width:100%">Delete article</button>
+        </form>
+        <% } %>
+      </div>
+    </aside>
+  </div>
+</form>
+<datalist id="media-options"><% mediaFiles.forEach(function (file) { %><option value="/uploads/<%= file.filename %>"></option><% }); %></datalist>
+<%- include('../partials/foot') %>

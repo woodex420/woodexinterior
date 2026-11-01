@@ -1,0 +1,58 @@
+<%- include('partials/head') %>
+<% if (issued) { %>
+<div class="alert info">
+  <strong>Copy your new token now — it is not shown again.</strong>
+  <div class="token-box" style="margin-top:10px"><span style="flex:1"><%= issued %></span><button class="btn secondary small" type="button" data-copy="<%= issued %>">Copy</button></div>
+</div>
+<% } %>
+
+<div class="card">
+  <div class="card-head"><h2>API tokens</h2><span class="small muted">For scripts and external integrations</span></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Label</th><th>Scopes</th><th>Last used</th><th>Created</th><th>State</th><th class="actions">Actions</th></tr></thead>
+      <tbody>
+        <% tokens.forEach(function (token) { %>
+        <tr>
+          <td><strong><%= token.label %></strong></td>
+          <td class="small"><%= token.scopes %></td>
+          <td class="small"><%= token.last_used_at ? formatDate(token.last_used_at, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Never' %></td>
+          <td class="small"><%= formatDate(token.created_at) %></td>
+          <td><span class="badge <%= token.revoked_at ? 'fail' : 'ok' %>"><%= token.revoked_at ? 'revoked' : 'active' %></span></td>
+          <td class="actions">
+            <% if (!token.revoked_at) { %>
+            <form method="post" action="/admin/tokens/<%= token.id %>/revoke" data-confirm="Revoke this token?">
+              <input type="hidden" name="_csrf" value="<%= csrf %>">
+              <button class="btn danger small" type="submit">Revoke</button>
+            </form>
+            <% } %>
+          </td>
+        </tr>
+        <% }); %>
+        <% if (!tokens.length) { %><tr><td colspan="6" class="muted">No tokens yet.</td></tr><% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2>Create a token</h2></div>
+  <form method="post" action="/admin/tokens">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="form-row">
+      <div class="field"><label for="label">Label</label><input id="label" name="label" required maxlength="100" placeholder="Build script"></div>
+      <div class="field">
+        <span class="label-text">Scopes</span>
+        <label class="check"><input type="checkbox" name="scopes" value="content:read" checked> Read content</label>
+        <label class="check"><input type="checkbox" name="scopes" value="content:write"> Write content</label>
+        <label class="check"><input type="checkbox" name="scopes" value="enquiries:read"> Read enquiries</label>
+      </div>
+    </div>
+    <button class="btn" type="submit">Create token</button>
+  </form>
+  <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+  <h3>Example</h3>
+  <pre class="mono" style="background:#f6f7f9;padding:12px;border-radius:8px;overflow:auto">curl -H "Authorization: Bearer wox_…" \
+  <%= config['site.url'] %>/api/v1/admin/pages</pre>
+</div>
+<%- include('partials/foot') %>

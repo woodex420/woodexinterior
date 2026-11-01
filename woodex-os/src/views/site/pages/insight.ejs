@@ -1,0 +1,19 @@
+<article>
+  <header class="article-header">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="/insights">Insights</a><span aria-hidden="true">/</span><span><%= insight.title %></span></nav>
+    <div class="journal-meta"><span><%= insight.category %></span><span><%= insight.reading_time %></span><% if (insight.published_at) { %><span><time datetime="<%= insight.published_at %>"><%= formatDate(insight.published_at) %></time></span><% } %></div>
+    <h1><%= insight.title %></h1>
+    <% if (insight.excerpt) { %><p class="lead"><%= insight.excerpt %></p><% } %>
+  </header>
+  <% if (insight.cover_image) { %>
+  <div class="container page-image"><img src="<%= asset(insight.cover_image) %>" alt="<%= insight.title %>" loading="eager" decoding="async" fetchpriority="high" width="1600" height="900"></div>
+  <% } %>
+  <div class="article-layout prose"><%- insight.body || '' %></div>
+  <section class="cta">
+    <img src="<%= asset('/assets/living.jpg') %>" alt="" loading="lazy" decoding="async" width="900" height="700">
+    <div class="container cta-inner">
+      <div><div class="eyebrow">A space that starts with you</div><h2>Let’s make room<br>for something beautiful.</h2></div>
+      <a class="btn" href="/contact">Start your project<span class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a>
+    </div>
+  </section>
+</article>

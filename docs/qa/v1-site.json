@@ -1,0 +1,270 @@
+{
+  "label": "v1 static site",
+  "base": "http://127.0.0.1:44811",
+  "generatedAt": "2026-10-26T19:38:39.171Z",
+  "pages": [
+    {
+      "url": "/",
+      "status": 200,
+      "bytes": 19113,
+      "title": "Thoughtful spaces. Timeless interiors. | Woodex Interior",
+      "description": "Woodex Interior is a design-led interior studio in Lahore creating calm, material-led homes and workplaces shaped around the people who use them.",
+      "h1": "Spaces shaped by purpose and personality",
+      "headings": 27,
+      "images": 14,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "intro",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/about.html",
+      "status": 200,
+      "bytes": 10071,
+      "title": "About our studio | Woodex Interior",
+      "description": "Meet the Woodex Interior studio: a Lahore-based team designing personal, material-led interiors with a considered, detail-first approach.",
+      "h1": "Designing spaces. Understanding people.",
+      "headings": 16,
+      "images": 3,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/services.html",
+      "status": 200,
+      "bytes": 13945,
+      "title": "Interior design services | Woodex Interior",
+      "description": "Residential interiors, commercial spaces, bespoke woodwork, styling and renovation — the design services Woodex Interior offers from concept to completion.",
+      "h1": "A complete vision. Considered in every detail.",
+      "headings": 17,
+      "images": 7,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/portfolio.html",
+      "status": 200,
+      "bytes": 10582,
+      "title": "Our concept portfolio | Woodex Interior",
+      "description": "Explore the Woodex Interior concept portfolio: residential, commercial and bespoke interior studies showing how material, light and layout come together.",
+      "h1": "Spaces with purpose. Interiors with personality.",
+      "headings": 12,
+      "images": 7,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/project-the-arched-residence.html",
+      "status": 200,
+      "bytes": 8719,
+      "title": "The Arched Residence | Woodex Interior",
+      "description": "A calm, light-filled residence concept built around arched openings, exposed timber and woven textures.",
+      "h1": "The Arched Residence",
+      "headings": 9,
+      "images": 5,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/project-the-open-house.html",
+      "status": 200,
+      "bytes": 8646,
+      "title": "The Open House | Woodex Interior",
+      "description": "An open-plan residential concept where circulation, timber screens and a sculptural stair shape the everyday flow.",
+      "h1": "The Open House",
+      "headings": 9,
+      "images": 5,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/project-the-collective-workspace.html",
+      "status": 200,
+      "bytes": 8792,
+      "title": "The Collective Workspace | Woodex Interior",
+      "description": "A workplace concept balancing focus and collaboration with glass partitions, warm timber and quiet lighting.",
+      "h1": "The Collective Workspace",
+      "headings": 9,
+      "images": 5,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/project-the-oak-edit.html",
+      "status": 200,
+      "bytes": 8623,
+      "title": "The Oak Edit | Woodex Interior",
+      "description": "A bespoke furniture and material study exploring oak joinery, soft plaster and restrained contemporary detailing.",
+      "h1": "The Oak Edit",
+      "headings": 9,
+      "images": 5,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/project-the-soft-retreat.html",
+      "status": 200,
+      "bytes": 8626,
+      "title": "The Soft Retreat | Woodex Interior",
+      "description": "A residential concept layering calm neutrals, tactile fabrics and gentle lighting for a restful interior.",
+      "h1": "The Soft Retreat",
+      "headings": 9,
+      "images": 5,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/project-the-gathering-room.html",
+      "status": 200,
+      "bytes": 8663,
+      "title": "The Gathering Room | Woodex Interior",
+      "description": "A hospitality-led concept designed for conversation, with generous seating, warm materials and layered light.",
+      "h1": "The Gathering Room",
+      "headings": 9,
+      "images": 5,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/insights.html",
+      "status": 200,
+      "bytes": 7873,
+      "title": "Interior design insights | Woodex Interior",
+      "description": "Design notes from the Woodex studio on natural materials, space planning and lighting — practical ideas for a more considered interior.",
+      "h1": "A little inspiration. A more considered home.",
+      "headings": 9,
+      "images": 4,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/insight-the-warmth-of-natural-materials.html",
+      "status": 200,
+      "bytes": 9663,
+      "title": "The quiet beauty of natural materials | Woodex Interior",
+      "description": "Why timber, stone and woven textures age so well, and how to layer natural materials without making a room feel heavy.",
+      "h1": "The quiet beauty of natural materials",
+      "headings": 13,
+      "images": 4,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/insight-a-home-that-flows.html",
+      "status": 200,
+      "bytes": 9465,
+      "title": "How to create a home that flows | Woodex Interior",
+      "description": "Practical space-planning ideas for clearer circulation, better rooms and a home that works with your daily routine.",
+      "h1": "How to create a home that flows",
+      "headings": 13,
+      "images": 4,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/insight-layering-light.html",
+      "status": 200,
+      "bytes": 9688,
+      "title": "A softer approach to lighting your home | Woodex Interior",
+      "description": "How to layer ambient, task and accent light so a room feels calm in the evening rather than flat or over-lit.",
+      "h1": "A softer approach to lighting your home",
+      "headings": 13,
+      "images": 4,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/contact.html",
+      "status": 200,
+      "bytes": 11344,
+      "title": "Start your interior project | Woodex Interior",
+      "description": "Tell Woodex Interior about your space. Share your rooms, timeline and ideas, and the Lahore studio will reply within two working days.",
+      "h1": "Every beautiful space starts with a conversation.",
+      "headings": 11,
+      "images": 1,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    },
+    {
+      "url": "/privacy.html",
+      "status": 200,
+      "bytes": 6965,
+      "title": "Privacy information | Woodex Interior",
+      "description": "How Woodex Interior collects, uses and protects the details you share through this website, and how to ask for your information to be removed.",
+      "h1": "Privacy, simply put.",
+      "headings": 9,
+      "images": 0,
+      "internalLinks": [],
+      "anchors": [
+        "main",
+        "top"
+      ],
+      "issues": []
+    }
+  ],
+  "broken": [],
+  "counts": {
+    "error": 0,
+    "warn": 0,
+    "info": 0
+  }
+}

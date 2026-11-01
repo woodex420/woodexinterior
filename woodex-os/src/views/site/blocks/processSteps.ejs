@@ -1,0 +1,22 @@
+<section class="section soft">
+  <div class="container">
+    <div class="section-heading">
+      <div>
+        <% if (block.eyebrow) { %><div class="eyebrow"><%= block.eyebrow %></div><% } %>
+        <% if (block.title) { %><h2><%- block.title %></h2><% } %>
+      </div>
+    </div>
+    <div class="process-grid">
+      <% block.steps.forEach(function (step, i) { %>
+      <article class="process-card">
+        <span class="step"><%= String(i + 1).padStart(2, '0') %></span>
+        <h3><%= step.title %></h3>
+        <p><%= step.text %></p>
+      </article>
+      <% }); %>
+    </div>
+    <% if (block.image) { %>
+    <div class="wide-image"><img src="<%= asset(block.image) %>" alt="<%= block.alt %>" loading="lazy" decoding="async" width="1600" height="900"></div>
+    <% } %>
+  </div>
+</section>

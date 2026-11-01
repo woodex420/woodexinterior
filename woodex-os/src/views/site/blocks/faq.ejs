@@ -1,0 +1,15 @@
+<section class="section">
+  <div class="container">
+    <div class="faq-layout">
+      <div>
+        <% if (block.eyebrow) { %><div class="eyebrow"><%= block.eyebrow %></div><% } %>
+        <% if (block.title) { %><h2><%- block.title %></h2><% } %>
+      </div>
+      <div class="faq-list">
+        <% block.items.forEach(function (item) { %>
+        <details><summary><%= item.q %></summary><p><%= item.a %></p></details>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+</section>

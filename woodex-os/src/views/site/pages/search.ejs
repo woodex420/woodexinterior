@@ -1,0 +1,26 @@
+<section class="page-hero">
+  <div class="container">
+    <div class="eyebrow">Search</div>
+    <div class="page-hero-bottom"><h1><%= q ? 'Results for “' + q + '”' : 'Search the studio' %></h1></div>
+    <form class="search-form" method="get" action="/search" role="search">
+      <label class="sr-only" for="q">Search</label>
+      <input id="q" name="q" value="<%= q %>" placeholder="Search projects, insights and pages" maxlength="80">
+      <button class="btn dark" type="submit">Search</button>
+    </form>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <% if (q) { %>
+      <h2>Projects (<%= results.projects.length %>)</h2>
+      <ul class="result-list"><% results.projects.forEach(function (p) { %><li><a href="/portfolio/<%= p.slug %>"><%= p.title %></a> <span class="muted"><%= p.category %></span></li><% }); %></ul>
+      <h2>Insights (<%= results.insights.length %>)</h2>
+      <ul class="result-list"><% results.insights.forEach(function (i) { %><li><a href="/insights/<%= i.slug %>"><%= i.title %></a> <span class="muted"><%= i.category %></span></li><% }); %></ul>
+      <h2>Pages (<%= results.pages.length %>)</h2>
+      <ul class="result-list"><% results.pages.forEach(function (p) { %><li><a href="/<%= p.slug %>"><%= p.title %></a></li><% }); %></ul>
+      <% if (!results.projects.length && !results.insights.length && !results.pages.length) { %><p>Nothing matched that search. Try a broader term.</p><% } %>
+    <% } else { %>
+      <p>Search Woodex projects, insights and pages.</p>
+    <% } %>
+  </div>
+</section>

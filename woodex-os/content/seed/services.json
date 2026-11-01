@@ -1,0 +1,74 @@
+[
+  {
+    "slug": "residential-interiors",
+    "title": "Residential interiors",
+    "number": "01",
+    "summary": "From a single room to a complete home, we create interiors that balance personal expression with the practical rhythm of everyday life. Thoughtful layouts, natural materials, and layered lighting bring comfort and character together.",
+    "body": "<p>We begin with how you live: the mornings, the guests, the quiet corners. The design then works outward — layout, joinery, materials, lighting — until every room has a reason to be the way it is.</p>",
+    "deliverables": ["Space planning & layouts", "Material and finish palettes", "Furniture and lighting selection", "Joinery drawings", "Site coordination"],
+    "sort_order": 1,
+    "status": "published",
+    "seo_title": "Residential interior design in Lahore",
+    "seo_description": "Residential interior design in Lahore: space planning, material palettes, joinery and styling for homes that feel personal and calm."
+  },
+  {
+    "slug": "commercial-spaces",
+    "title": "Commercial spaces",
+    "number": "02",
+    "summary": "Welcoming workspaces, considered retail environments, and places where people connect. We shape commercial interiors around your brand, your team, and the people you want to welcome.",
+    "body": "<p>Commercial interiors have to work harder: they carry a brand, support a team, and still feel human at the end of a long day. We design for all three.</p>",
+    "deliverables": ["Workplace strategy", "Customer journey & zoning", "Brand-led material direction", "Acoustic planning", "FF&E schedules"],
+    "sort_order": 2,
+    "status": "published",
+    "seo_title": "Commercial interior design",
+    "seo_description": "Workplace, retail and hospitality interiors designed around brand, team and customer experience."
+  },
+  {
+    "slug": "bespoke-woodwork",
+    "title": "Bespoke woodwork",
+    "number": "03",
+    "summary": "Thoughtful joinery gives a space its quiet structure. From built-in storage to statement furniture, we develop timber-led designs that bring useful details and warm, natural character into your interior.",
+    "body": "<p>Bespoke joinery is where an interior becomes specific to its owner. We design pieces around exact measurements, daily habits, and the grain of the timber itself.</p>",
+    "deliverables": ["Custom cabinetry & wardrobes", "Kitchen and utility joinery", "Furniture design", "Timber specification", "Workshop liaison"],
+    "sort_order": 3,
+    "status": "published",
+    "seo_title": "Bespoke woodwork & joinery",
+    "seo_description": "Bespoke timber joinery, cabinetry and furniture designed for the exact room, routine and material."
+  },
+  {
+    "slug": "furniture-styling",
+    "title": "Furniture & styling",
+    "number": "04",
+    "summary": "The right pieces make a room feel complete. We curate furniture, lighting, textiles, and objects into a coherent whole, mixing beautiful proportions with the comfort of a space that feels lived in.",
+    "body": "<p>Styling is the last 10% that makes a project feel finished. It is also the part most people find hardest to do on their own.</p>",
+    "deliverables": ["Furniture sourcing", "Lighting & textiles", "Art and object curation", "Install-day styling", "Supplier coordination"],
+    "sort_order": 4,
+    "status": "published",
+    "seo_title": "Furniture and styling",
+    "seo_description": "Furniture, lighting, textile and art curation that finishes a room properly."
+  },
+  {
+    "slug": "interior-renovation",
+    "title": "Interior renovation",
+    "number": "05",
+    "summary": "Reimagine what your existing space can be. We revisit layouts, refresh finishes, and develop a clear interior direction while respecting the features that make your property distinctive.",
+    "body": "<p>Renovation work is as much about restraint as addition. We keep what gives a property its character and change what no longer serves the way you live.</p>",
+    "deliverables": ["Existing-condition survey", "Layout revisions", "Finish and lighting upgrades", "Phasing plan", "Contractor coordination"],
+    "sort_order": 5,
+    "status": "published",
+    "seo_title": "Interior renovation",
+    "seo_description": "Interior renovation that reworks layouts and finishes while keeping the character of the original space."
+  },
+  {
+    "slug": "design-consultation",
+    "title": "Design consultation",
+    "number": "06",
+    "summary": "Sometimes a thoughtful conversation is the best first step. Bring your floor plans, material ideas, or the room you cannot quite resolve. We help you identify priorities and outline a considered path forward.",
+    "body": "<p>A consultation is a working session, not a sales call. You leave with clear priorities, honest constraints, and next steps you can act on.</p>",
+    "deliverables": ["Two-hour studio or site session", "Written summary and priorities", "Material and layout direction", "Budget guidance", "Recommended next steps"],
+    "sort_order": 6,
+    "status": "published",
+    "seo_title": "Interior design consultation",
+    "seo_description": "A focused design consultation to resolve a room, set priorities and agree the next steps for your project."
+  }
+]

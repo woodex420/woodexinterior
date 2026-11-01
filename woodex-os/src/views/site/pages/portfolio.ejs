@@ -1,0 +1,31 @@
+<%- include('../partials/block-loop') %>
+<section class="section">
+  <div class="container">
+    <div class="filter-bar">
+      <div class="filters" role="group" aria-label="Filter projects by category">
+        <% categories.forEach(function (category) { %>
+        <a class="filter-btn" href="/portfolio<%= category === 'all' ? '' : '?category=' + category %>"<%- activeCategory === category ? ' aria-current="true"' : '' %>><%= category === 'all' ? 'All projects' : category.charAt(0).toUpperCase() + category.slice(1) %></a>
+        <% }); %>
+      </div>
+      <span class="filter-count"><%= String(projects.length).padStart(2, '0') %> <%= projects.length === 1 ? 'project' : 'projects' %></span>
+    </div>
+    <h2 class="sr-only">All projects</h2>
+    <div class="project-grid portfolio-main">
+      <% projects.forEach(function (project) { %>
+      <article class="project-card" data-category="<%= project.category %>">
+        <a href="/portfolio/<%= project.slug %>" aria-label="Explore <%= project.title %>">
+          <div class="image-wrap">
+            <img src="<%= asset(project.cover_image || '/assets/detail.jpg') %>" alt="<%= project.summary || project.title %>" loading="lazy" decoding="async" width="900" height="700">
+            <span class="project-arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span>
+          </div>
+          <div class="project-caption">
+            <div><h3><%= project.title %></h3><p><%= project.summary ? String(project.summary).slice(0, 70) : 'Woodex concept project' %></p></div>
+            <span><%= project.category.charAt(0).toUpperCase() + project.category.slice(1) %></span>
+          </div>
+        </a>
+      </article>
+      <% }); %>
+    </div>
+    <% if (!projects.length) { %><p class="sample-note">No projects in this category yet.</p><% } %>
+  </div>
+</section>

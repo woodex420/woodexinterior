@@ -1,0 +1,38 @@
+<%- include('partials/head') %>
+<%
+  const groups = [
+    ['site', 'Site identity', 'Brand name, tagline and canonical URL used across the website and SEO tags.'],
+    ['contact', 'Contact details', 'Shown in the footer, contact page and JSON-LD structured data.'],
+    ['social', 'Social profiles', 'Added to the footer and to the organization schema when filled in.'],
+    ['seo', 'Search & sharing', 'Default meta description, share image and robots policy.'],
+    ['theme', 'Colour tokens', 'Hex values used by the shared design system.'],
+    ['enquiry', 'Enquiries', 'Where notifications go and how the contact form behaves.'],
+    ['system', 'System', 'Deployment paths and locale.'],
+  ];
+  const keys = editable;
+  const labelFor = (key) => key.split('.').slice(1).join(' ').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+%>
+<form method="post" action="/admin/settings">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <% groups.forEach(function (group) { %>
+    <% const groupKeys = keys.filter((key) => key.startsWith(group[0] + '.')); if (!groupKeys.length) return; %>
+    <div class="card">
+      <div class="card-head"><div><h2><%= group[1] %></h2><p class="small muted" style="margin:4px 0 0"><%= group[2] %></p></div></div>
+      <div class="form-row">
+        <% groupKeys.forEach(function (key) { %>
+          <div class="field<%= key === 'contact.address' || key === 'site.description' || key === 'seo.default_description' ? ' full' : '' %>"<%= key === 'contact.address' ? ' style="grid-column:1/-1"' : '' %>>
+            <label for="<%= key %>"><%= labelFor(key) %></label>
+            <% if (key === 'contact.address' || key === 'site.description' || key === 'seo.default_description') { %>
+            <textarea id="<%= key %>" name="<%= key %>" rows="3" maxlength="2000"><%= values[key] %></textarea>
+            <% } else { %>
+            <input id="<%= key %>" name="<%= key %>" value="<%= values[key] %>" maxlength="500"<%= key === 'theme.ink' || key === 'theme.navy' || key === 'theme.accent' || key === 'theme.paper' || key === 'theme.soft' || key === 'theme.beige' ? ' type="text" placeholder="#0f1e36"' : '' %>>
+            <% } %>
+            <span class="hint"><code><%= key %></code></span>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  <% }); %>
+  <div class="card"><div class="form-actions" style="border:0;margin:0;padding:0"><span class="small muted">Settings apply to the live site immediately.</span><button class="btn" type="submit">Save all settings</button></div></div>
+</form>
+<%- include('partials/foot') %>

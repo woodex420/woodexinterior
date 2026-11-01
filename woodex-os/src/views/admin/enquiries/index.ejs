@@ -1,0 +1,38 @@
+<%- include('../partials/head') %>
+<div class="card">
+  <div class="card-head">
+    <div class="tabs">
+      <% [['all','All'],['new','New'],['in_review','In review'],['quoted','Quoted'],['won','Won'],['lost','Lost'],['spam','Spam']].forEach(function (pair) { %>
+      <a href="/admin/enquiries?status=<%= pair[0] %>" class="<%= filter.status === pair[0] ? 'active' : '' %>"><%= pair[1] %></a>
+      <% }); %>
+    </div>
+    <div class="btn-row">
+      <form method="get" action="/admin/enquiries" class="btn-row">
+        <input type="hidden" name="status" value="<%= filter.status %>">
+        <input type="search" name="q" value="<%= filter.q %>" placeholder="Search enquiries" aria-label="Search enquiries" style="width:200px">
+        <button class="btn secondary small" type="submit">Search</button>
+      </form>
+      <a class="btn secondary" href="/admin/enquiries/export.csv?status=<%= filter.status %>">Export CSV</a>
+    </div>
+  </div>
+  <p class="small muted"><%= total %> enquir<%= total === 1 ? 'y' : 'ies' %> in this view.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Received</th><th>Name</th><th>Contact</th><th>Service</th><th>Status</th><th class="actions">Actions</th></tr></thead>
+      <tbody>
+        <% enquiries.forEach(function (enquiry) { %>
+        <tr>
+          <td class="small nowrap"><%= formatDate(enquiry.created_at, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) %></td>
+          <td><a href="/admin/enquiries/<%= enquiry.id %>"><strong><%= enquiry.name %></strong></a><div class="small muted"><%= String(enquiry.message).slice(0, 70) %>…</div></td>
+          <td class="small"><a href="mailto:<%= enquiry.email %>"><%= enquiry.email %></a><div class="muted"><%= enquiry.phone || '' %></div></td>
+          <td class="small"><%= enquiry.service || '—' %><div class="muted"><%= enquiry.location || '' %></div></td>
+          <td><span class="badge <%= enquiry.status %>"><%= enquiry.status.replace('_', ' ') %></span></td>
+          <td class="actions"><a class="btn secondary small" href="/admin/enquiries/<%= enquiry.id %>">Open</a></td>
+        </tr>
+        <% }); %>
+        <% if (!enquiries.length) { %><tr><td colspan="6" class="muted">No enquiries in this view.</td></tr><% } %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('../partials/foot') %>

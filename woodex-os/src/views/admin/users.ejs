@@ -1,0 +1,82 @@
+<%- include('partials/head') %>
+<div class="card">
+  <div class="card-head"><h2>Team accounts</h2><span class="small muted"><%= users.length %> account<%= users.length === 1 ? '' : 's' %></span></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Last sign-in</th><th class="actions">Manage</th></tr></thead>
+      <tbody>
+        <% users.forEach(function (account) { %>
+        <tr>
+          <td><strong><%= account.name %></strong><% if (account.id === user.id) { %> <span class="badge info">you</span><% } %></td>
+          <td class="small"><%= account.email %></td>
+          <td><span class="badge neutral"><%= roleLabels[account.role] %></span></td>
+          <td><span class="badge <%= account.status === 'active' ? 'ok' : 'draft' %>"><%= account.status %></span></td>
+          <td class="small"><%= account.last_login_at ? formatDate(account.last_login_at, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Never' %></td>
+          <td class="actions">
+            <details class="dropdown" style="text-align:left">
+              <summary class="btn secondary small">Edit</summary>
+              <div class="menu" style="min-width:280px">
+                <form method="post" action="/admin/users/<%= account.id %>">
+                  <input type="hidden" name="_csrf" value="<%= csrf %>">
+                  <div class="field"><label for="name-<%= account.id %>">Name</label><input id="name-<%= account.id %>" name="name" value="<%= account.name %>" maxlength="120"></div>
+                  <div class="field"><label for="role-<%= account.id %>">Role</label>
+                    <select id="role-<%= account.id %>" name="role">
+                      <% ['owner','editor','viewer'].forEach(function (role) { %><option value="<%= role %>"<%- account.role === role ? ' selected' : '' %>><%= roleLabels[role] %></option><% }); %>
+                    </select>
+                  </div>
+                  <div class="field"><label for="status-<%= account.id %>">Status</label>
+                    <select id="status-<%= account.id %>" name="status">
+                      <option value="active"<%- account.status === 'active' ? ' selected' : '' %>>Active</option>
+                      <option value="disabled"<%- account.status === 'disabled' ? ' selected' : '' %>>Disabled</option>
+                    </select>
+                  </div>
+                  <div class="field"><label for="pw-<%= account.id %>">New password</label><input id="pw-<%= account.id %>" name="password" type="password" autocomplete="new-password" placeholder="Leave blank to keep"></div>
+                  <button class="btn small" type="submit">Save</button>
+                </form>
+                <form method="post" action="/admin/users/<%= account.id %>/delete" data-confirm="Delete this account?">
+                  <input type="hidden" name="_csrf" value="<%= csrf %>">
+                  <button class="btn danger small" type="submit" style="width:100%">Delete account</button>
+                </form>
+              </div>
+            </details>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2>Invite a teammate</h2></div>
+  <form method="post" action="/admin/users" class="form-row three">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required maxlength="200"></div>
+    <div class="field"><label for="name">Name</label><input id="name" name="name" required maxlength="120"></div>
+    <div class="field"><label for="role">Role</label>
+      <select id="role" name="role"><option value="editor">Editor</option><option value="viewer">Viewer</option><option value="owner">Owner</option></select>
+    </div>
+    <div class="field"><label for="password">Temporary password</label><input id="password" name="password" type="password" required minlength="10" autocomplete="new-password"><span class="hint">At least 10 characters with a letter and a number.</span></div>
+    <div class="field" style="align-self:end"><button class="btn" type="submit">Create account</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2>Role permissions</h2></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Capability</th><th>Owner</th><th>Editor</th><th>Viewer</th></tr></thead>
+      <tbody>
+        <% ['content:read','content:write','media:write','enquiries:read','enquiries:write','settings:write','users:manage','tokens:manage','audit:read','system:export'].forEach(function (cap) { %>
+        <tr>
+          <td class="small"><code><%= cap %></code></td>
+          <% ['owner','editor','viewer'].forEach(function (role) { %>
+          <td class="small"><%= (capabilitiesByRole[role] || []).includes(cap) ? '✓' : '—' %></td>
+          <% }); %>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<%- include('partials/foot') %>

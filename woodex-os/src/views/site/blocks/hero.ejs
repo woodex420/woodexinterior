@@ -1,0 +1,24 @@
+<% var slides = block.slides && block.slides.length ? block.slides : [{ tag: 'Inspired interiors', title: 'Spaces shaped by<br>purpose and personality', word: 'DESIGN', copy: '', image: '/assets/detail.jpg', alt: '' }]; %>
+<section class="hero" aria-roledescription="carousel" aria-label="<%= config['site.name'] %> introduction">
+  <% slides.forEach(function (slide, i) { %>
+  <img class="hero-photo<%= i === 0 ? ' active' : '' %>" src="<%= asset(slide.image) %>" alt="<%= slide.alt %>"<%- i === 0 ? ' fetchpriority="high"' : ' loading="lazy"' %> decoding="async" width="1600" height="1000" data-tag="<%= slide.tag %>" data-word="<%= slide.word %>" data-copy="<%= slide.copy %>" data-title="<%= slide.title %>">
+  <% }); %>
+  <div class="hero-shade"></div>
+  <div class="grid-lines" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="container hero-content">
+    <div class="eyebrow"><%= slides[0].tag %></div>
+    <h1><%- slides[0].title %></h1>
+    <div class="hero-bottom">
+      <a class="btn" href="<%= block.ctaHref || '/contact' %>"><%= block.ctaLabel || 'Start your project' %><span class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a>
+      <p><%= slides[0].copy %></p>
+    </div>
+  </div>
+  <div class="hero-controls">
+    <div class="slide-number">01 <span>/ <%= String(slides.length).padStart(2, '0') %></span></div>
+    <button class="circle-btn" type="button" data-prev aria-label="Previous slide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H4m6-6-6 6 6 6"/></svg></button>
+    <button class="circle-btn" type="button" data-next aria-label="Next slide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button>
+  </div>
+  <div class="hero-word" aria-hidden="true"><%= slides[0].word %></div>
+  <span class="slide-announcement" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)"></span>
+  <a href="#intro" class="scroll-cue">Scroll to discover <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18m-6-6 6 6 6-6"/></svg></a>
+</section>

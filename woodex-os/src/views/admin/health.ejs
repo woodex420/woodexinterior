@@ -1,0 +1,43 @@
+<%- include('partials/head') %>
+<div class="card">
+  <div class="card-head"><h2>System checks</h2><span class="small muted">Woodex OS v2.1</span></div>
+  <div class="health-list">
+    <% checks.forEach(function (check) { %>
+    <div class="health-row">
+      <div><strong><%= check.label %></strong><div class="detail"><%= check.detail %></div></div>
+      <span class="badge <%= check.status === 'ok' ? 'ok' : check.status === 'warn' ? 'warn' : 'fail' %>"><%= check.status %></span>
+    </div>
+    <% }); %>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2>Content issues</h2><span class="small muted"><%= health.length %> finding<%= health.length === 1 ? '' : 's' %></span></div>
+  <% if (!health.length) { %><p class="badge ok">Content looks healthy</p><% } else { %>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Severity</th><th>Area</th><th>Finding</th><th>Item</th></tr></thead>
+      <tbody>
+        <% health.forEach(function (issue) { %>
+        <tr>
+          <td><span class="badge <%= issue.severity === 'warning' ? 'warn' : 'info' %>"><%= issue.severity %></span></td>
+          <td class="small"><%= issue.area %></td>
+          <td class="small"><%= issue.message %></td>
+          <td class="small muted"><%= issue.entity || '' %><%= issue.slug ? ' /' + issue.slug : '' %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2>Static export</h2></div>
+  <p class="small muted">Render every published page to plain HTML for a shared host such as Hostinger. The export lands in <code>woodex-os/dist/</code> and includes sitemap.xml, robots.txt, an RSS feed and a hardened .htaccess.</p>
+  <form method="post" action="/admin/export">
+    <input type="hidden" name="_csrf" value="<%= csrf %>">
+    <button class="btn" type="submit">Export static site</button>
+  </form>
+</div>
+<%- include('partials/foot') %>

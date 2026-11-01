@@ -1,0 +1,57 @@
+<form class="enquiry-form" method="post" action="/contact" novalidate>
+  <input type="hidden" name="_csrf" value="<%= formToken %>">
+  <input type="hidden" name="company_website" value="" tabindex="-1" autocomplete="off" aria-hidden="true">
+  <h2><%= block && block.formTitle ? block.formTitle : 'Tell us about your project.' %></h2>
+  <p class="form-note"><%= block && block.note ? block.note : 'Tell us a little about your space and we will reply within two working days. Required fields are marked *.' %></p>
+  <% if (errors && errors._form) { %><div class="form-message" role="alert"><%= errors._form %></div><% } %>
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="name">Your name *</label>
+      <input id="name" name="name" autocomplete="name" placeholder="Full name" required maxlength="100" value="<%= values && values.name ? values.name : '' %>"<%- errors && errors.name ? ' aria-invalid="true" aria-describedby="err-name"' : '' %>>
+      <% if (errors && errors.name) { %><span class="field-error" id="err-name"><%= errors.name %></span><% } %>
+    </div>
+    <div class="form-field">
+      <label for="email">Email address *</label>
+      <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required maxlength="200" value="<%= values && values.email ? values.email : '' %>"<%- errors && errors.email ? ' aria-invalid="true" aria-describedby="err-email"' : '' %>>
+      <% if (errors && errors.email) { %><span class="field-error" id="err-email"><%= errors.email %></span><% } %>
+    </div>
+    <div class="form-field">
+      <label for="phone">Phone number</label>
+      <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="Include country code" maxlength="40" value="<%= values && values.phone ? values.phone : '' %>">
+    </div>
+    <div class="form-field">
+      <label for="location">Project location</label>
+      <input id="location" name="location" placeholder="City or area" maxlength="150" value="<%= values && values.location ? values.location : '' %>">
+    </div>
+    <div class="form-field">
+      <label for="service">I’m interested in *</label>
+      <select id="service" name="service" required>
+        <option value="">Select a service</option>
+        <% [['residential','Residential interiors'],['commercial','Commercial spaces'],['bespoke','Bespoke woodwork'],['styling','Furniture & styling'],['renovation','Interior renovation'],['consultation','Design consultation']].forEach(function (pair) { %>
+        <option value="<%= pair[0] %>"<%- values && values.service === pair[0] ? ' selected' : '' %>><%= pair[1] %></option>
+        <% }); %>
+      </select>
+      <% if (errors && errors.service) { %><span class="field-error"><%= errors.service %></span><% } %>
+    </div>
+    <div class="form-field">
+      <label for="timeline">Your ideal timeline</label>
+      <select id="timeline" name="timeline">
+        <% ['Not yet decided','Within 3 months','3–6 months','6–12 months','Just exploring'].forEach(function (option) { %>
+        <option<%- values && values.timeline === option ? ' selected' : '' %>><%= option %></option>
+        <% }); %>
+      </select>
+    </div>
+    <div class="form-field full">
+      <label for="message">A little about your space *</label>
+      <textarea id="message" name="message" placeholder="Your ideas, priorities, approximate size, or anything you’d like us to know…" required minlength="10" maxlength="5000"<%- errors && errors.message ? ' aria-invalid="true" aria-describedby="err-message"' : '' %>><%= values && values.message ? values.message : '' %></textarea>
+      <% if (errors && errors.message) { %><span class="field-error" id="err-message"><%= errors.message %></span><% } %>
+    </div>
+  </div>
+  <label class="consent">
+    <input type="checkbox" name="consent" value="1" required<%- values && values.consent ? ' checked' : '' %>>
+    <span>I agree that <%= config['site.name'] %> may use these details to reply to my enquiry. <a href="/privacy">Privacy information</a>.</span>
+  </label>
+  <% if (errors && errors.consent) { %><span class="field-error"><%= errors.consent %></span><% } %>
+  <button type="submit" class="btn dark"><span class="button-label">Send enquiry</span><span class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span></button>
+  <div class="form-message" role="status" hidden></div>
+</form>

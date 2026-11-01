@@ -1,0 +1,15 @@
+<section class="section">
+  <div class="container contact-layout">
+    <div class="contact-info">
+      <div class="image-wrap"><img src="<%= asset(page.hero_image || '/assets/hero.jpg') %>" alt="Woodex studio interior" loading="lazy" decoding="async" width="900" height="1100"></div>
+      <h2 class="sr-only">Studio contact details</h2>
+      <div class="contact-details">
+        <div><h3>Visit the studio</h3><p><%- config['contact.address'] %><br><%= config['contact.hours'] %></p></div>
+        <div><h3>Email us</h3><p><a href="mailto:<%= config['contact.email'] %>"><%= config['contact.email'] %></a></p></div>
+        <div><h3>Call the studio</h3><p><a href="tel:<%= String(config['contact.phone']).replace(/[^\d+]/g, '') %>"><%= config['contact.phone'] %></a> <span class="muted">(Phone / WhatsApp)</span></p></div>
+        <div><h3>Studio hours</h3><p><%= config['contact.hours'] %></p></div>
+      </div>
+    </div>
+    <%- include('../partials/contact-form.ejs', { block: block }) %>
+  </div>
+</section>

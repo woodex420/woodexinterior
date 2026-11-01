@@ -1,0 +1,16 @@
+<header class="site-header<%= typeof path !== 'undefined' && path === '/' ? '' : ' inner-header' %>" id="top">
+  <div class="container header-row">
+    <a class="brand" href="/" aria-label="<%= config['site.name'] %> home">
+      <svg class="brand-symbol" viewBox="0 0 40 40" aria-hidden="true"><path d="m3 6 8 28 9-20 9 20 8-28M11 6l9 28L29 6"/></svg>
+      <span class="brand-type"><%= config['site.logo_text'] %><small><%= config['site.logo_sub'] %></small></span>
+    </a>
+    <nav class="main-nav" id="main-nav" aria-label="Main navigation">
+      <% config.nav.main.forEach(function (item) { %>
+      <a href="<%= item.href %>"<%- (item.href === path || (item.href !== '/' && path.indexOf(item.href) === 0)) ? ' aria-current="page"' : '' %>><%= item.label %></a>
+      <% }); %>
+      <a href="/contact" class="mobile-cta">Start your project <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></a>
+    </nav>
+    <a class="btn header-cta" href="/contact">Get in touch<span class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a>
+    <button class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Open menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18M3 12h18M3 17h18"/></svg></button>
+  </div>
+</header>

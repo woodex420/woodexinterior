@@ -13,3 +13,14 @@ graphify-out/
 # OS
 .DS_Store
 Thumbs.db
+
+# Woodex OS runtime data
+woodex-os/node_modules/
+woodex-os/data/*.sqlite
+woodex-os/data/*.sqlite-*
+woodex-os/data/uploads/*
+!woodex-os/data/uploads/.gitkeep
+woodex-os/dist/
+woodex-os/.env
+woodex-os/.logs/
+*.log

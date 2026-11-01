@@ -1,0 +1,49 @@
+<%- include('../partials/head') %>
+<% var isNew = !service; var v = values || {}; %>
+<form method="post" action="<%= isNew ? '/admin/services' : '/admin/services/' + service.id %>" novalidate>
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <div class="split">
+    <div>
+      <div class="card">
+        <div class="card-head"><h2>Service</h2><a class="btn secondary small" href="/admin/services">Back to list</a></div>
+        <div class="field"><label for="title">Title</label><input id="title" name="title" required maxlength="200" value="<%= v.title || '' %>"<%- errors.title ? ' aria-invalid="true"' : '' %>><% if (errors.title) { %><span class="field-error"><%= errors.title %></span><% } %></div>
+        <div class="form-row">
+          <div class="field"><label for="slug">Slug (anchor)</label><input id="slug" name="slug" maxlength="120" value="<%= v.slug || '' %>"><% if (errors.slug) { %><span class="field-error"><%= errors.slug %></span><% } %></div>
+          <div class="field"><label for="number">Number</label><input id="number" name="number" maxlength="6" value="<%= v.number || '' %>" placeholder="01"></div>
+        </div>
+        <div class="field"><label for="summary">Summary</label><textarea id="summary" name="summary" maxlength="600" rows="3"><%= v.summary || '' %></textarea></div>
+        <div class="field"><label for="body">Body (HTML)</label><textarea id="body" name="body" class="mono" rows="6"><%= v.body || '' %></textarea></div>
+        <div class="field">
+          <label for="deliverables">Deliverables (JSON list)</label>
+          <textarea id="deliverables" name="deliverables" class="mono" rows="6" data-json><%= JSON.stringify(v.deliverables || [], null, 2) %></textarea>
+          <% if (errors.deliverables) { %><span class="field-error"><%= errors.deliverables %></span><% } %>
+        </div>
+        <div class="form-row">
+          <div class="field"><label for="seo_title">SEO title</label><input id="seo_title" name="seo_title" maxlength="70" value="<%= v.seo_title || '' %>"></div>
+          <div class="field"><label for="seo_description">Meta description</label><textarea id="seo_description" name="seo_description" maxlength="320" rows="3"><%= v.seo_description || '' %></textarea></div>
+        </div>
+      </div>
+    </div>
+    <aside>
+      <div class="card">
+        <div class="card-head"><h2>Publish</h2></div>
+        <div class="field">
+          <label for="status">Status</label>
+          <select id="status" name="status">
+            <option value="draft"<%- (v.status || 'draft') === 'draft' ? ' selected' : '' %>>Draft</option>
+            <option value="published"<%- v.status === 'published' ? ' selected' : '' %>>Published</option>
+          </select>
+        </div>
+        <div class="field"><label for="sort_order">Order</label><input id="sort_order" name="sort_order" type="number" value="<%= v.sort_order || 0 %>"></div>
+        <button class="btn" type="submit" style="width:100%">Save service</button>
+        <% if (!isNew) { %>
+        <form method="post" action="/admin/services/<%= service.id %>/delete" data-confirm="Delete this service?" style="margin-top:10px">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <button class="btn danger" type="submit" style="width:100%">Delete service</button>
+        </form>
+        <% } %>
+      </div>
+    </aside>
+  </div>
+</form>
+<%- include('../partials/foot') %>

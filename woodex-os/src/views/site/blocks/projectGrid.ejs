@@ -1,0 +1,29 @@
+<% var list = projects.filter(function (p) { return block.category === 'all' || p.category === block.category; }).slice(0, block.limit || 4); %>
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <div>
+        <% if (block.eyebrow) { %><div class="eyebrow"><%= block.eyebrow %></div><% } %>
+        <% if (block.title) { %><h2><%- block.title %></h2><% } %>
+      </div>
+      <% if (block.ctaLabel) { %><a class="btn outline" href="<%= block.ctaHref || '/portfolio' %>"><%= block.ctaLabel %><span class="arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a><% } %>
+    </div>
+    <div class="project-grid">
+      <% list.forEach(function (project) { %>
+      <article class="project-card">
+        <a href="/portfolio/<%= project.slug %>" aria-label="Explore <%= project.title %>">
+          <div class="image-wrap">
+            <img src="<%= asset(project.cover_image || '/assets/detail.jpg') %>" alt="<%= project.summary || project.title %>" loading="lazy" decoding="async" width="900" height="700">
+            <span class="project-arrow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></span>
+          </div>
+          <div class="project-caption">
+            <div><h3><%= project.title %></h3><p><%= project.summary ? String(project.summary).slice(0, 60) : (project.location || 'Concept project') %></p></div>
+            <span><%= project.category.charAt(0).toUpperCase() + project.category.slice(1) %></span>
+          </div>
+        </a>
+      </article>
+      <% }); %>
+    </div>
+    <% if (block.note) { %><p class="sample-note"><%= block.note %></p><% } %>
+  </div>
+</section>

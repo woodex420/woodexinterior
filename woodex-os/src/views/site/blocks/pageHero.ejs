@@ -1,0 +1,10 @@
+<section class="page-hero">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><span><%= page.title %></span></nav>
+    <% if (block.eyebrow) { %><div class="eyebrow"><%= block.eyebrow %></div><% } %>
+    <div class="page-hero-bottom">
+      <h1<%- String(block.title || '').indexOf('<br') > -1 ? '' : ' style="max-width:1000px"' %>><%- block.title || page.title %></h1>
+      <% if (block.intro) { %><p><%= block.intro %></p><% } %>
+    </div>
+  </div>
+</section>
