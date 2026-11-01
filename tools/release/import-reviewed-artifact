@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""Import ONLY the owner-reviewed public dependency locks into disposable CI source.
+Not a release acceptance check. No env contents, Laravel, network or SQL are read/run.
+"""
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import re
+import stat
+import subprocess
+import sys
+import zipfile
+
+SOURCE = '176e65e0c7f689af9be8494a8e5d17971ea8671b'
+DIGEST = 'd3ca74419dd0b10053e11386462b19e5fd6fd0f1d6b9b0656bcb3ccdbb06bf91'
+RUN_ID = '41258289481'
+ARTIFACT_ID = '13063243998'
+BRANCH = 'refs/heads/arena/8be318a2-woodexinterior'
+
+
+class Rejected(ValueError):
+    """Messages are fixed source constants, never rejected values/paths/content."""
+
+
+def require(ok, message):
+    if not ok:
+        raise Rejected(message)
+
+
+def import_candidate(archive, root, digest=DIGEST, source=SOURCE, run_id=RUN_ID):
+    """Pure candidate contract seam: tests supply synthetic archives/digests explicitly."""
+    archive, root = Path(archive), Path(root)
+    require(archive.is_file() and not archive.is_symlink(), 'regular archive required')
+    require(archive.stat().st_size <= 2_000_000, 'archive too large')
+    require(hashlib.sha256(archive.read_bytes()).hexdigest() == digest, 'reviewed archive digest mismatch')
+    require(root.is_dir() and not root.is_symlink(), 'regular source directory required')
+    require((root / 'platform').is_dir() and not (root / 'platform').is_symlink(), 'regular platform directory required')
+    for directory in [root, root / 'platform']:
+        for env in directory.glob('.env*'):
+            require(env.name == '.env.example', 'original runtime env present')
+    for name in ['composer.json', 'platform/composer.json']:
+        p = root / name
+        require(p.is_file() and not p.is_symlink(), 'regular source manifest required')
+    for name in ['composer.lock', 'platform/composer.lock']:
+        p = root / name
+        require(not p.exists() and not p.is_symlink(), 'refuse to overwrite a lock')
+    with zipfile.ZipFile(archive) as z:
+        entries = z.infolist()
+        require(len(entries) <= 128, 'too many archive entries')
+        require(sum(i.file_size for i in entries) <= 16_000_000, 'archive expansion too large')
+        names = set()
+        for i in entries:
+            p = PurePosixPath(i.filename)
+            require(i.filename not in names, 'duplicate archive entry')
+            names.add(i.filename)
+            require(not p.is_absolute() and '..' not in p.parts and '\\' not in i.filename and ':' not in i.filename, 'unsafe archive path')
+            require(stat.S_IFMT(i.external_attr >> 16) in (0, stat.S_IFREG, stat.S_IFDIR), 'special archive entry refused')
+            require(i.file_size <= 4_000_000, 'archive entry too large')
+        def read(name):
+            require(name in names, 'required candidate evidence absent')
+            return z.read(name)  # CRC checked by zipfile; no extractall/path traversal.
+        proof = json.loads(read('evidence/run.json'))
+        native = json.loads(read('evidence/native-runtime.json'))
+        alignment = json.loads(read('evidence/lock-alignment.json'))
+        require(proof.get('sourceSha') == source and str(proof.get('runId')) == run_id, 'candidate provenance mismatch')
+        require(proof.get('mode') == 'resolve-lock-candidates' and proof.get('readyForProductionDeployment') is False, 'candidate scope mismatch')
+        require(native.get('status') == 'NATIVE_PREREQUISITES_ONLY' and native.get('native_elf_binary') is True and native.get('missing_extensions') == [], 'native prerequisite proof absent')
+        require(re.match(r'^8\.5\.', str(native.get('php', ''))) is not None, 'native PHP8.5 proof absent')
+        require(alignment.get('status') == 'METADATA_ONLY' and alignment.get('errors') == [], 'candidate alignment failed')
+        files = {}
+        for local, original, paired in [
+            ('composer.json', 'locks/root/composer.json', 'locks/paired/composer.json'),
+            ('composer.lock', 'locks/root/composer.lock', 'locks/paired/composer.lock'),
+            ('platform/composer.json', 'locks/platform/composer.json', 'locks/paired/platform/composer.json'),
+            ('platform/composer.lock', 'locks/platform/composer.lock', 'locks/paired/platform/composer.lock'),
+        ]:
+            data = read(original)
+            require(data == read(paired), 'paired candidate bytes differ')
+            if local.endswith('.json'):
+                require(data == (root / local).read_bytes(), 'candidate manifest differs from source')
+            files[local] = data
+        # The archive hash binds the actual solver outputs; metadata is not used to fabricate a lock.
+        for name in ['composer.lock', 'platform/composer.lock']:
+            lock = json.loads(files[name])
+            require(isinstance(lock.get('packages'), list) and len(lock['packages']) > 0, 'invalid candidate lock')
+        # Do not overwrite/stage/commit/adopt any lock in the repository: CI checkout only.
+        created = []
+        try:
+            for name in ['composer.lock', 'platform/composer.lock']:
+                with (root / name).open('xb') as f:
+                    f.write(files[name])
+                created.append(root / name)
+        except Exception:
+            for p in created:
+                p.unlink()
+            raise
+    return {'scope': 'Reviewed-artifact candidate validation ONLY; not committed-lock/release/backup acceptance',
+            'candidateValidationOnly': True, 'readyForProductionDeployment': False,
+            'sourceSha': source, 'resolverRunId': run_id, 'archiveSha256': digest,
+            'fileSha256': {n: hashlib.sha256(b).hexdigest() for n, b in files.items()}}
+
+
+def main():
+    require(len(sys.argv) == 2, 'exact archive argument required')
+    require(os.getenv('GITHUB_ACTIONS') == 'true' and os.getenv('GITHUB_REPOSITORY') == 'woodex420/woodexinterior', 'authorized CI repository required')
+    require(os.getenv('GITHUB_REF') == BRANCH and os.getenv('RUNNER_ENVIRONMENT') == 'github-hosted', 'fixed branch and hosted runner required')
+    root = Path(__file__).resolve().parents[2]
+    head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=root, text=True).strip()
+    require(head == os.getenv('GITHUB_SHA'), 'checkout/run SHA mismatch')
+    subprocess.run(['git', 'diff', '--quiet', SOURCE, head, '--', 'platform', 'composer.json', '.htaccess'], cwd=root, check=True)
+    result = import_candidate(sys.argv[1], root)
+    print(json.dumps(result, indent=2))
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except Rejected as error:
+        print('::error title=Reviewed artifact import::HOLD: ' + str(error) + '.', file=sys.stderr)
+        sys.exit(64)
+    except Exception as error:
+        # No rejected values, archive contents, private paths or traceback in output.
+        print('HOLD: reviewed artifact import rejected (' + type(error).__name__ + ').', file=sys.stderr)
+        sys.exit(64)
