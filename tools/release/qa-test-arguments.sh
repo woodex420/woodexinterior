@@ -4,6 +4,7 @@ set -eu
 for argument in "$@"; do
     case "$argument" in
         --compact|--stop-on-failure|--stop-on-error|--fail-on-skipped|--fail-on-warning|--display-warnings|--display-all-issues) ;;
+        --log-events-text=/workspace/platform/storage/framework/testing/native-events.log) ;;
         tests/*.php)
             case "$argument" in
                 *..*|*[!a-zA-Z0-9_./-]*) echo 'HOLD: unsafe QA test path.' >&2; exit 64 ;;

@@ -31,6 +31,8 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
   let details=Object.entries(records).flatMap(([k,v])=>{
     if(v.failures.length) return v.failures.map(f=>k+'\n'+f);
     if(v.exitCode) {
+      const issues=path.join(dir,k+'-runner-issues.log');
+      if(fs.existsSync(issues) && fs.statSync(issues).size) return [k+' exit='+v.exitCode+'\n'+fs.readFileSync(issues,'utf8').slice(0,3000)];
       const raw=fs.readFileSync(path.join(dir,k+'.log'),'utf8').replace(/(?:\x1b\[|\^\[\[)[0-9;]*m/g,'');
       const issue=raw.match(/^.*(?:warn|deprecat|risky|exception|error|multiple test|no tests).*$/im);
       return [k+' exit='+v.exitCode+'\n'+(issue?raw.slice(Math.max(0,issue.index-100),issue.index+1800):raw.slice(-2200))];

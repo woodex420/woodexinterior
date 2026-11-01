@@ -53,3 +53,9 @@ test('each group must prove a nonempty passing test count, not just CLI exit zer
   assert(read('tools/release/test-branch.sh').includes('JS_CHECK'));
   assert.equal(parseLog('No tests found.').summary,null);
 });
+
+test('event logging permits one fixed synthetic path, not arbitrary output paths',()=>{
+  const script=path.join(root,'tools/release/qa-test-arguments.sh');
+  assert.equal(spawnSync('sh',[script,'--log-events-text=/workspace/platform/storage/framework/testing/native-events.log']).status,0);
+  assert.equal(spawnSync('sh',[script,'--log-events-text=/private/owner.log']).status,64);
+});
