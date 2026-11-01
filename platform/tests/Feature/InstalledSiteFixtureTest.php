@@ -9,6 +9,7 @@ it('models configured feature state outside the source without an installer bypa
     expect($site->basePath)->toStartWith(sys_get_temp_dir().'/woodex-feature-state-')
         ->and($site->isConfigured())->toBeTrue()
         ->and($site->usesExternalState())->toBeTrue()
+        ->and(app()->environmentPath())->toBe($site->environmentDirectory())
         ->and($site->environmentDirectory())->toStartWith(sys_get_temp_dir().'/woodex-feature-state-')
         ->and(app(Installer::class)->hasCode())->toBeFalse();
 
