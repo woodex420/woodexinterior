@@ -84,3 +84,12 @@ test('artifact paths are narrowly curated, no workspace/env/storage/database arc
   assert.equal((workflow.match(/retention-days: 7/g) || []).length, 2);
   assert.match(source, /fresh evidence directory required/);
 });
+
+test('native image and probe require actual GD WebP support used by project media', () => {
+  const docker = fs.readFileSync(path.join(root, 'tools/docker/Dockerfile'), 'utf8');
+  const probe = fs.readFileSync(path.join(root, 'tools/release/native-runtime.php'), 'utf8');
+  assert.match(docker, /libwebp-dev/);
+  assert.match(docker, /--with-webp/);
+  assert.match(probe, /function_exists\('imagewebp'\)/);
+  assert.match(probe, /\$ok = \$webp &&/);
+});
