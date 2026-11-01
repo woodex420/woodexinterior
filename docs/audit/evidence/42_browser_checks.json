@@ -1,0 +1,13 @@
+{
+  "interior_live_preview": true,
+  "interior_rate_and_summary": true,
+  "typing_focus": true,
+  "furniture_cards": true,
+  "footer_above_terms": true,
+  "default_signer_inputs": true,
+  "terms_and_signatures_hide_show": true,
+  "controls_remain_available": true,
+  "advance_term_matches_input": true,
+  "mobile_390_no_overflow": true,
+  "javascript_errors": []
+}

@@ -1,0 +1,88 @@
+<div>
+    <x-admin.page-header title="SEO" description="Every page's search listing, read from the file Google reads: the <title> as the blue link, the meta description as the grey text under it, their lengths against the cut-offs (title ~65, description ~165). Change one in the page builder."
+                         :breadcrumbs="['Website' => null, 'SEO' => null]">
+        <x-slot:actions>
+            <x-admin.button variant="secondary" icon="sparkles" href="{{ route('admin.website.seo') }}">SEO agent</x-admin.button>
+        </x-slot:actions>
+    </x-admin.page-header>
+
+    <div class="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <x-admin.stat label="Pages" :value="$counts['files']" icon="layout" />
+        <x-admin.stat label="With findings" :value="$counts['flagged']" icon="alert" />
+        <x-admin.stat label="No description" :value="$counts['missing_description']" icon="alert" color="warning" />
+        <x-admin.stat label="No title" :value="$counts['missing_title']" icon="alert" color="warning" />
+    </div>
+
+    <div class="mb-4 flex flex-wrap items-center gap-2">
+        <x-admin.button variant="{{ $filter === 'issues' ? 'primary' : 'secondary' }}" wire:click="setFilter('issues')">Needs work ({{ $counts['flagged'] }})</x-admin.button>
+        <x-admin.button variant="{{ $filter === 'all' ? 'primary' : 'secondary' }}" wire:click="setFilter('all')">All {{ $counts['files'] }}</x-admin.button>
+
+        <div class="relative ml-auto w-full md:w-72">
+            <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400" />
+            <input type="search" wire:model.live.debounce.300ms="search" placeholder="Search an address or a title" class="wx-input pl-9" aria-label="Search listings">
+        </div>
+    </div>
+
+    <x-admin.card :padding="false">
+        <div class="overflow-x-auto">
+            <table class="w-full text-theme-sm">
+                <thead>
+                    <tr class="border-b border-gray-200 text-left text-theme-xs uppercase tracking-wider text-gray-400 dark:border-gray-800">
+                        <th class="px-5 py-3">Page</th>
+                        <th class="px-5 py-3">Search title</th>
+                        <th class="hidden px-5 py-3 md:table-cell">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    @forelse ($rows as $row)
+                        <tr wire:key="seo-{{ $row['path'] }}">
+                            <td class="px-5 py-3">
+                                <a href="{{ route('admin.website.builder', ['path' => $row['path']]) }}" class="font-medium whitespace-nowrap text-gray-900 hover:underline dark:text-white">{{ $row['url'] }}</a>
+                                <p class="text-theme-xs text-gray-400">
+                                    @forelse ($row['issues'] as $issue)
+                                        <span class="mr-1 rounded bg-warning-50 px-1.5 py-0.5 text-warning-700 dark:bg-warning-500/10 dark:text-warning-400">{{ \App\Domain\Website\Seo\FileAudit::LABELS[$issue['code']] ?? $issue['code'] }}</span>
+                                    @empty
+                                        clear
+                                    @endforelse
+                                </p>
+                                <a href="{{ route('admin.website.builder', ['path' => $row['path']]) }}" class="mt-1 inline-block whitespace-nowrap text-theme-xs font-medium text-brand-600 hover:underline">Open in builder</a>
+                            </td>
+                            <td class="px-5 py-3">
+                                @php $titleLength = mb_strlen($row['title']); @endphp
+                                @if ($titleLength === 0)
+                                    <x-admin.badge color="error">missing</x-admin.badge>
+                                @elseif ($titleLength > 65)
+                                    <x-admin.badge color="warning">{{ $titleLength }} — cut off</x-admin.badge>
+                                @elseif ($titleLength < 20)
+                                    <x-admin.badge color="warning">{{ $titleLength }} — thin</x-admin.badge>
+                                @else
+                                    <x-admin.badge color="success">{{ $titleLength }}</x-admin.badge>
+                                @endif
+                                <p class="mt-1 max-w-[22rem] truncate text-theme-xs text-gray-500" title="{{ $row['title'] }}">{{ $row['title'] ?: '—' }}</p>
+                            </td>
+                            <td class="hidden px-5 py-3 md:table-cell">
+                                @php $descriptionLength = mb_strlen($row['description']); @endphp
+                                @if ($descriptionLength === 0)
+                                    <x-admin.badge color="error">missing</x-admin.badge>
+                                @elseif ($descriptionLength > 165)
+                                    <x-admin.badge color="warning">{{ $descriptionLength }} — cut off</x-admin.badge>
+                                @elseif ($descriptionLength < 50)
+                                    <x-admin.badge color="warning">{{ $descriptionLength }} — thin</x-admin.badge>
+                                @else
+                                    <x-admin.badge color="success">{{ $descriptionLength }}</x-admin.badge>
+                                @endif
+                                <p class="mt-1 max-w-xs truncate text-theme-xs text-gray-500" title="{{ $row['description'] }}">{{ $row['description'] ?: '—' }}</p>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3">
+                                <x-admin.empty title="Nothing to show" description="No page matches this filter — try All." />
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </x-admin.card>
+</div>

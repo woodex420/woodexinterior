@@ -1,0 +1,3 @@
+
+Note: Using configuration file [isolated-test-runtime]/phpstan.neon.
+ [OK] No errors

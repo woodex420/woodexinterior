@@ -1,0 +1,20 @@
+{
+  "light": {
+    "text/surface": 15.94,
+    "muted/surface": 6.31,
+    "text/page": 14.86,
+    "muted/page": 5.88,
+    "primary label": 10.94,
+    "control border": 3.64,
+    "focus": 5.47
+  },
+  "night": {
+    "text/surface": 13.54,
+    "muted/surface": 7.66,
+    "text/page": 15.38,
+    "muted/page": 8.7,
+    "primary label": 8.37,
+    "control border": 3.33,
+    "focus": 8.68
+  }
+}

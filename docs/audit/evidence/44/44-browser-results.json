@@ -1,0 +1,350 @@
+{
+  "checks": [
+    "Authenticated native Control Centre loads",
+    "Date and business-line filters rerender real period metrics",
+    "Dashboard drill-down preserves report period and business line",
+    "Report filter changes receipt attribution wording truthfully",
+    "Operations tab shows native modules and review queues",
+    "Approval search has a genuine empty state",
+    "Reports expose permitted original ledger sources",
+    "System tab renders native health checks",
+    "Theme choice survives reload",
+    "Desktop sidebar toggle persists",
+    "Control Centre fits390px viewport",
+    "Mobile navigation opens",
+    "Escape closes mobile navigation"
+  ],
+  "routes": [
+    {
+      "path": "/admin",
+      "status": 200,
+      "final_path": "/admin",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/approvals",
+      "status": 200,
+      "final_path": "/admin/approvals",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/reports",
+      "status": 200,
+      "final_path": "/admin/reports",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/leads",
+      "status": 200,
+      "final_path": "/admin/leads",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/contacts",
+      "status": 200,
+      "final_path": "/admin/contacts",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/tasks",
+      "status": 200,
+      "final_path": "/admin/tasks",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/estimations",
+      "status": 200,
+      "final_path": "/admin/estimations",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/quotes",
+      "status": 200,
+      "final_path": "/admin/quotes",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/invoices",
+      "status": 200,
+      "final_path": "/admin/invoices",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/payments",
+      "status": 200,
+      "final_path": "/admin/payments",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/sales/documents",
+      "status": 200,
+      "final_path": "/admin/sales/documents",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/accounts/chart",
+      "status": 200,
+      "final_path": "/admin/accounts/chart",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/accounts/journals",
+      "status": 200,
+      "final_path": "/admin/accounts/journals",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/accounts/trial-balance",
+      "status": 200,
+      "final_path": "/admin/accounts/trial-balance",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/accounts/profit-loss",
+      "status": 200,
+      "final_path": "/admin/accounts/profit-loss",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/accounts/payables",
+      "status": 200,
+      "final_path": "/admin/accounts/payables",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/accounts/expenses",
+      "status": 200,
+      "final_path": "/admin/accounts/expenses",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/accounts/periods",
+      "status": 200,
+      "final_path": "/admin/accounts/periods",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/accounts/methods",
+      "status": 200,
+      "final_path": "/admin/accounts/methods",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/projects",
+      "status": 200,
+      "final_path": "/admin/projects",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/projects/board",
+      "status": 200,
+      "final_path": "/admin/projects/board",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/projects/portal",
+      "status": 200,
+      "final_path": "/admin/projects/portal",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/projects/handovers",
+      "status": 200,
+      "final_path": "/admin/projects/handovers",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/inbox",
+      "status": 200,
+      "final_path": "/admin/inbox",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/chat-bot",
+      "status": 200,
+      "final_path": "/admin/settings",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/automation",
+      "status": 200,
+      "final_path": "/admin/automation",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/automation/sequences",
+      "status": 200,
+      "final_path": "/admin/automation/sequences",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/integrations/whatsapp-templates",
+      "status": 200,
+      "final_path": "/admin/integrations/whatsapp-templates",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/marketing",
+      "status": 200,
+      "final_path": "/admin/marketing",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/pages",
+      "status": 200,
+      "final_path": "/admin/website/pages",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/builder",
+      "status": 200,
+      "final_path": "/admin/website/builder",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/find-replace",
+      "status": 200,
+      "final_path": "/admin/website/find-replace",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/redirects",
+      "status": 200,
+      "final_path": "/admin/website/redirects",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/blog",
+      "status": 200,
+      "final_path": "/admin/website/blog",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/portfolio",
+      "status": 200,
+      "final_path": "/admin/website/portfolio",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/forms",
+      "status": 200,
+      "final_path": "/admin/website/forms",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/media",
+      "status": 200,
+      "final_path": "/admin/website/media",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/seo-overview",
+      "status": 200,
+      "final_path": "/admin/website/seo-overview",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/seo",
+      "status": 200,
+      "final_path": "/admin/website/seo",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/speed",
+      "status": 200,
+      "final_path": "/admin/website/speed",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/health",
+      "status": 200,
+      "final_path": "/admin/website/health",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/theme",
+      "status": 200,
+      "final_path": "/admin/website/theme",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/website/settings",
+      "status": 200,
+      "final_path": "/admin/website/settings",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/settings",
+      "status": 200,
+      "final_path": "/admin/settings",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/system/access",
+      "status": 200,
+      "final_path": "/admin/system/access",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/system/connections",
+      "status": 200,
+      "final_path": "/admin/system/connections",
+      "coverage": "landing_only",
+      "js_errors": []
+    },
+    {
+      "path": "/admin/system/platform",
+      "status": 200,
+      "final_path": "/admin/system/platform",
+      "coverage": "landing_only",
+      "js_errors": []
+    }
+  ],
+  "errors": [],
+  "coverage_warning": "All navigation landings loaded; this is not exhaustive CRUD, provider delivery or every-action proof."
+}

@@ -1,0 +1,5 @@
+home-desktop {"width":1440,"overflow":false,"h1":"Spaces shaped by purpose and identity","h1Font":"\"Plus Jakarta Sans\"","h1Size":"86.4px","h2Size":"86.4px","heroLoaded":1440,"images":45,"sections":["hm-hero","home-services","home-projects","home-about","home-process","home-journey","home-insights","faq","home-reviews","home-clients","home-contact"]}
+home-phone {"width":390,"overflow":false,"h1":"Spaces shaped by purpose and identity","h1Font":"\"Plus Jakarta Sans\"","h1Size":"49.14px","h2Size":"49.14px","heroLoaded":389,"images":45,"sections":["hm-hero","home-services","home-projects","home-about","home-process","home-journey","home-insights","faq","home-reviews","home-clients","home-contact"]}
+home-nojs {"width":1280,"overflow":false,"h1":"Spaces shaped by purpose and identity","h1Font":"\"Plus Jakarta Sans\"","h1Size":"76.8px","h2Size":"76.8px","heroLoaded":1280,"images":39,"sections":["hm-hero","home-services","home-projects","home-about","home-process","home-journey","home-insights","faq","home-reviews","home-clients","home-contact"]}
+  no-JS visible: {"cta":true,"menu":true,"hero":true}
+HOME CHECK OK

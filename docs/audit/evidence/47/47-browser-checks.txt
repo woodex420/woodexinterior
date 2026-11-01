@@ -1,0 +1,20 @@
+PASS Advanced lead workspace shows permission-scoped summary and search
+PASS Lead quick drawer displays real recorded activity
+PASS Activity filter reads real notes without changing history
+PASS Redesigned notification dropdown opens
+PASS Actual notification archive action works
+PASS Actual notification restore works
+PASS Notification centre searches native records
+PASS Website thread has no false WhatsApp window warning
+PASS Inbox reply persisted through native send action
+PASS Live drawer reply persists on the same website thread
+PASS Live drawer fits a phone viewport
+PASS Mobile Inbox shows one focused pane without overflow
+PASS Mobile back control restores conversation list
+PASS Advanced Leads fits mobile with table-scoped scrolling
+PASS Alert dropdown stays within phone viewport
+PASS Failed widget send retains the actual typed draft
+PASS Retried widget send succeeds through native endpoint
+PASS Visitor widget fits phone viewport
+PASS Visitor Escape closes panel and restores launcher
+PASS No JavaScript page errors in redesigned workflows

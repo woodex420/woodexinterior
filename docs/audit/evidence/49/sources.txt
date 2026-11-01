@@ -1,0 +1,22 @@
+Revision49 read-only audit source hashes. Committed v2.1 modules are the comparison source, not a freshly extracted archive.
+Drive archive metadata confirmed: Woodex-Live-v2.1-Pro-Production.zip; 28625635 bytes; modified 2026-10-19T19:28:33.053Z. No credentials copied.
+
+55f0b76a9e43c80b81105e8ef1029d573b893d30b75ffb2e46235e82cb8688d1  platform/app/Support/AdminNavigation.php
+d517319cb739ebf7b45c6488f042226485d3628078ad246c0fd251137cd60693  platform/app/Livewire/Admin/Website/MediaLibrary.php
+ff2846b23b1de24d90d9f4650bcb71eb73eab79f2f64f8b67eb192d4334c18cf  platform/app/Livewire/Admin/Website/SeoOverviewIndex.php
+1ec23006ac4e4fafa9c474b277f7d7621dc0c586417ac10e3ae2b4e47ed678fd  platform/app/Livewire/Admin/Website/SeoAgentIndex.php
+135cbab02efa45498d76dcee72c92db17ac925b465ccb33f624d52a0a30eb548  platform/app/Livewire/Admin/Website/SpeedIndex.php
+6df5ab99f018f2bcd0781e4c62d3a896fce9f35fab8cb3d0bb2226855fb226e8  platform/app/Domain/Website/Speed/InternalSpeedAudit.php
+73e77567d589d622058bce3c0d1e838fa75a4245f19b42edc38fb1e44d30250a  platform/app/Domain/Website/Speed/PageSpeed.php
+04d42b4a35bdb921e635a7c97c07c03cd642dde334feb8305fe2e70119354b05  platform/app/Livewire/Admin/Website/SiteHealthIndex.php
+32cb48156428e31b0a50498c66c8f9a3c0ba396404811a1420ad4c514d8c80b3  platform/app/Domain/Website/Seo/FileAudit.php
+b615a1b54c2eec45da4a288a622996dc0b5bc7eb1b25305eb2ee5c18ce1cf5f0  platform/app/Livewire/Admin/Website/ThemeBuilder.php
+8016506ef25f2918a7a5b30799e7f21538a2528c22949859a7d0440743bfc001  platform/app/Domain/Website/Support/ThemeCss.php
+b1ad3175651dae8bb3c9febe57f79a6546138ab81f058996b008af53383af192  platform/app/Livewire/Admin/Website/WebsiteSettings.php
+7ae34afc44fe66c3051e2c0f784fffc6a76ce95f5b8eed6106fc34b7584dc281  platform/app/Domain/Assistant/Assistant.php
+d7377827f12fc79aaae4283eed85142b142920ef6526c50ccaf806f0a04ceb7d  platform/app/Livewire/Admin/Conversations/LiveChatBell.php
+35a14b253600ad367db18e7b7503306dfc0c31b278f904d506745b49f276723a  platform/resources/views/livewire/admin/conversations/live-chat-bell.blade.php
+6a0ca431413af85103ca37b1c3820f430a8919ffb359222d7c2023d29253633e  platform/public/assets/admin-v21/admin-media.js
+40aec64f24d52137b565f307a32cefc93216ce8dafa232b99f53d9fbfc5e9125  platform/public/assets/admin-v21/admin-speed.js
+cc3989e68124a012642ed0e54689463297599bb4d1bb734b823295b1863ea9c5  platform/public/assets/admin-v21/admin-theme.js
+47d88284769d7369eac21dd6442c6bf4b88f99bc849d9f5ff715f80d71b8eb7f  platform/public/assets/admin-v21/admin-seoagent.js

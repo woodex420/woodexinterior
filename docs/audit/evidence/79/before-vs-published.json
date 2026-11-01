@@ -1,0 +1,11 @@
+{
+  "published_sha": "c437cad30676da1dfb347edbb815e5e1444d13ab",
+  "source_files_match_before_edits": {
+    "platform/app/Support/AdminNavigation.php": true,
+    "platform/resources/css/admin.css": true,
+    "platform/resources/js/admin/theme.js": true,
+    "platform/resources/views/layouts/admin.blade.php": true,
+    "platform/resources/views/components/admin/sidebar.blade.php": true,
+    "platform/resources/views/livewire/admin/system/settings-page.blade.php": true
+  }
+}

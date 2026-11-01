@@ -1,0 +1,15 @@
+{
+  "checks": [
+    "Circled website chat opens its real drawer",
+    "Chat close returns to the dashboard",
+    "Notification menu opens and links to the real inbox",
+    "Escape closes notification menu",
+    "Ctrl K opens and focuses global search",
+    "Search renders a real empty state",
+    "Search escape restores the page",
+    "Preview badge remains an honest environment marker",
+    "No header JavaScript errors"
+  ],
+  "errors": [],
+  "fixture": "copied isolated demo; opening chat may mark its messages read; no sends"
+}

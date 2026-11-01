@@ -1,0 +1,23 @@
+{
+  "checks": [
+    "Furniture native preview uses75% and six terms",
+    "Actual PDF page has rendered ink, not a blank plugin",
+    "furniture_5 BOQ Hide changes live document",
+    "furniture_5 Hide persists after reload",
+    "interior BOQ Hide changes live document",
+    "interior Hide persists after reload",
+    "All multipage PDF pages render",
+    "Failed PDF has visible error and retry",
+    "Retry renders actual multipage PDF",
+    "Mobile modal stays inside viewport",
+    "Unchanged native invoice renders in the same real PDF viewer",
+    "Copied client page and PDF links are absolute and distinct",
+    "Fresh client has no staff authentication",
+    "Copied client page opens in anonymous context",
+    "Shared PDF is an anonymous downloadable PDF with exact frozen checksum",
+    "Client download click saves the exact frozen PDF file",
+    "Tampered public PDF remains forbidden",
+    "No browser JavaScript errors"
+  ],
+  "errors": []
+}

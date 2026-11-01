@@ -1,0 +1,33 @@
+
+[3pc-blocked] app in a cross-site iframe via http://127.0.0.1:9091, third-party cookies blocked
+  cookie probe {"serverXsrfCookieKept":true,"jsPlainCookie":false,"jsPartitionedCookie":true,"cookieEnabled":true}
+  ok   sign-in form shown  {"path":"/admin/login","loginForm":true,"alert":null,"heading":"Sign in","sidebar":false}
+  ok   preview demo-login box shown  {"found":true}
+  ok   wrong password -> back on the form with the error  {"path":"/admin/login","loginForm":true,"alert":"These credentials do not match our records.","heading":"Sign in","sidebar":false}
+  ok   demo login (double click) -> admin dashboard  {"path":"/admin","loginForm":false,"alert":null,"heading":"Good afternoon, Preview","sidebar":true}
+  ok   double click sends one sign-in request  {"signInPosts":1}
+  ok   wire:navigate to Leads stays signed in  {"path":"/admin/leads","loginForm":false,"alert":null,"heading":"Leads","sidebar":true}
+  ok   sign-in page while signed in -> admin dashboard  {"path":"/admin","loginForm":false,"alert":null,"heading":"Good afternoon, Preview","sidebar":true}
+  ok   full reload of /admin/pipeline stays signed in  {"path":"/admin/leads","loginForm":false,"alert":null,"heading":"Pipeline","sidebar":true}
+  ok   native integration search works inside frame  {"path":"/admin/integrations","loginForm":false,"alert":null,"heading":"Integrations","sidebar":true}
+  ok   MCP setup works inside frame  {"path":"/admin/integrations","loginForm":false,"alert":null,"heading":"Integrations","sidebar":true}
+  ok   Google connection dialog works inside frame  {"path":"/admin/integrations","loginForm":false,"alert":null,"heading":"Integrations","sidebar":true}
+  server cookie memory: browser sent no cookies on 0 requests, older values on 0
+
+[no-cookies] app in a cross-site iframe via http://127.0.0.1:9092 (proxy drops all cookies), third-party cookies blocked
+  cookie probe {"serverXsrfCookieKept":false,"jsPlainCookie":false,"jsPartitionedCookie":true,"cookieEnabled":true}
+  ok   sign-in form shown  {"path":"/admin/login","loginForm":true,"alert":null,"heading":"Sign in","sidebar":false}
+  ok   preview demo-login box shown  {"found":true}
+  ok   wrong password -> back on the form with the error  {"path":"/admin/login","loginForm":true,"alert":"These credentials do not match our records.","heading":"Sign in","sidebar":false}
+  ok   demo login (double click) -> admin dashboard  {"path":"/admin","loginForm":false,"alert":null,"heading":"Good afternoon, Preview","sidebar":true}
+  ok   double click sends one sign-in request  {"signInPosts":1}
+  ok   wire:navigate to Leads stays signed in  {"path":"/admin/leads","loginForm":false,"alert":null,"heading":"Leads","sidebar":true}
+  ok   sign-in page while signed in -> admin dashboard  {"path":"/admin","loginForm":false,"alert":null,"heading":"Good afternoon, Preview","sidebar":true}
+  ok   full reload of /admin/pipeline stays signed in  {"path":"/admin/leads","loginForm":false,"alert":null,"heading":"Pipeline","sidebar":true}
+  ok   native integration search works inside frame  {"path":"/admin/integrations","loginForm":false,"alert":null,"heading":"Integrations","sidebar":true}
+  ok   MCP setup works inside frame  {"path":"/admin/integrations","loginForm":false,"alert":null,"heading":"Integrations","sidebar":true}
+  ok   Google connection dialog works inside frame  {"path":"/admin/integrations","loginForm":false,"alert":null,"heading":"Integrations","sidebar":true}
+  server cookie memory: browser sent no cookies on 18 requests (first: POST /admin/login memory+XSRF-TOKEN,woodex-os-session), older values on 0
+
+3pc-blocked: OK, no-cookies: OK
+IFRAME CHECK OK

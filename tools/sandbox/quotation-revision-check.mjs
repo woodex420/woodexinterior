@@ -1,0 +1,114 @@
+// Actual browser/PDF bytes proof. Requires isolated QA33144 and quotation-revision-proof.php fixtures.
+import fs from 'node:fs';
+import {createRequire} from 'node:module';
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+process.env.AWS_LAMBDA_JS_RUNTIME ??= 'nodejs22.x';
+const require = createRequire('/tmp/browser/');
+const chromium = (await import(require.resolve('@sparticuz/chromium'))).default;
+const puppeteer = (await import(require.resolve('puppeteer-core'))).default;
+if (!fs.existsSync('/tmp/al2023/lib')) fs.rmSync('/tmp/chromium', {force:true});
+const base = 'http://127.0.0.1:33144';
+const out = '/tmp/woodex-run/shots/43/';
+const proof = JSON.parse(fs.readFileSync(out+'43-proof.json'));
+const browser = await puppeteer.launch({executablePath:await chromium.executablePath(), args:[...chromium.args,'--no-sandbox'], headless:true, defaultViewport:{width:1600,height:1000}});
+const page = await browser.newPage();
+let clientBrowser;
+const errors=[];
+const checks=[];
+const check=(label,value)=>{assert(value,label); checks.push(label); console.log('PASS '+label)};
+page.on('pageerror',e=>errors.push(e.stack || e.message));
+page.on('dialog',d=>d.accept());
+await page.setUserAgent('Mozilla/5.0 HeadlessChrome/153.0 quotation-revision-owner/'+Date.now());
+const waitPreview=(text)=>page.waitForFunction(t=>document.querySelector('iframe[title="Quotation live preview"]')?.contentDocument?.body?.innerText.includes(t),{timeout:30000},text);
+const openPdf=async()=>{
+ await page.evaluate(()=>{const link=[...document.querySelectorAll('a')].find(a=>a.getAttribute('href')?.includes('/pdf')&&a.hasAttribute('x-on:click.prevent'));if(!link)throw Error('PDF action absent');link.click()});
+ await page.waitForSelector('[aria-label="PDF pages"] canvas',{timeout:30000});
+ await page.waitForFunction(()=>[...document.querySelectorAll('[role="dialog"] [role="status"]')].some(e=>e.textContent.includes('ready')),{timeout:30000});
+};
+const closePdf=async()=>{await page.click('[aria-label="Close document preview"]');await page.waitForSelector('[aria-label="PDF pages"]',{hidden:true})};
+try {
+ await page.goto(base+'/admin/login',{waitUntil:'networkidle0'});
+ await Promise.all([page.waitForNavigation({waitUntil:'networkidle0'}),page.click('#wx-preview-login button')]);
+ await page.goto(base+'/admin/quotes/'+proof.furniture_5.id,{waitUntil:'networkidle0'});
+ await waitPreview('75% advance payment with work order.');
+ check('Furniture native preview uses75% and six terms',await page.$eval('iframe[title="Quotation live preview"]',e=>e.contentDocument.querySelectorAll('.term-row').length===6));
+ await page.screenshot({path:out+'43-furniture-editor.png',fullPage:false});
+ await openPdf();
+ const pixels=await page.$eval('[aria-label="PDF pages"] canvas',c=>{const data=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let ink=0;for(let i=0;i<data.length;i+=4)if(data[i]<220||data[i+1]<220||data[i+2]<220)ink++;return {width:c.width,height:c.height,ink}});
+ check('Actual PDF page has rendered ink, not a blank plugin',pixels.ink>10000&&pixels.width>500);
+ await page.screenshot({path:out+'43-pdf-modal.png'});
+ await closePdf();
+ for(const brand of ['furniture_5','interior']) {
+  await page.goto(base+'/admin/quotes/'+proof[brand].id,{waitUntil:'networkidle0'});
+  const selector='button[aria-label="Toggle Items / BOQ (detailed)"]';
+  if(await page.$eval(selector,e=>e.getAttribute('aria-pressed')==='false')) {await page.click(selector);await page.waitForFunction(s=>document.querySelector(s)?.getAttribute('aria-pressed')==='true',{timeout:15000},selector)}
+  await page.click(selector);
+  await page.waitForFunction(s=>document.querySelector(s)?.getAttribute('aria-pressed')==='false',{timeout:15000},selector);
+  await page.waitForFunction(()=>!document.querySelector('iframe[title="Quotation live preview"]')?.contentDocument.querySelector('table.items, table.lines.boq'),{timeout:15000}).catch(()=>{});
+  const unique=brand==='interior'?'Interior native block demonstration':'QA product 001';
+  await page.waitForFunction(t=>!document.querySelector('iframe[title="Quotation live preview"]')?.contentDocument?.body?.innerText.includes(t),{timeout:20000},unique);
+  check(brand+' BOQ Hide changes live document',true);
+  await page.reload({waitUntil:'networkidle0'});
+  check(brand+' Hide persists after reload',await page.$eval(selector,e=>e.getAttribute('aria-pressed')==='false'));
+  await page.click(selector);await waitPreview(unique);
+ }
+ await page.goto(base+'/admin/quotes/'+proof.furniture_45.id,{waitUntil:'networkidle0'});
+ await openPdf();
+ check('All multipage PDF pages render',await page.$$eval('[aria-label="PDF pages"] canvas',cs=>cs.length===4));
+ await closePdf();
+ // A real failed request must produce an actionable error; retry then succeeds without reopening.
+ let fail=true;
+ await page.setRequestInterception(true);
+ const intercept=request=>request.url().includes('/admin/quotes/')&&new URL(request.url()).pathname.endsWith('/pdf')&&fail?request.respond({status:404,contentType:'text/plain',body:'Missing saved PDF'}):request.continue();
+ page.on('request',intercept);
+ await page.evaluate(()=>document.querySelector('a[x-on\\:click\\.prevent][href*="/pdf"]').click());
+ await page.waitForFunction(()=>[...document.querySelectorAll('[role="dialog"] [role="alert"]')].some(e=>e.innerText.includes('could not be displayed')),{timeout:20000});
+ check('Failed PDF has visible error and retry',true);
+ fail=false;
+ await page.evaluate(()=>[...document.querySelectorAll('[role="dialog"] button')].find(e=>e.innerText==='Retry preview').click());
+ await page.waitForFunction(()=>document.querySelector('[role="dialog"] [role="status"]')?.textContent.includes('ready'),{timeout:30000});
+ check('Retry renders actual multipage PDF',await page.$$eval('[aria-label="PDF pages"] canvas',cs=>cs.length===4));
+ await closePdf();page.off('request',intercept);await page.setRequestInterception(false);
+ await page.setViewport({width:390,height:844});
+ await openPdf();
+ check('Mobile modal stays inside viewport',await page.$eval('[role="dialog"]',e=>e.getBoundingClientRect().width<=innerWidth&&document.documentElement.scrollWidth<=innerWidth));
+ await page.screenshot({path:out+'43-pdf-modal-mobile.png'});await closePdf();
+ await page.setViewport({width:1600,height:1000});
+ if(proof.invoice) {await page.goto(base+'/admin/invoices/'+proof.invoice.id,{waitUntil:'networkidle0'});await page.evaluate(id=>window.dispatchEvent(new CustomEvent('document-preview',{detail:{url:'/admin/invoices/'+id+'/pdf'}})),proof.invoice.id);await page.waitForFunction(()=>document.querySelector('[role="dialog"] [role="status"]')?.textContent.includes('ready'),{timeout:30000});check('Unchanged native invoice renders in the same real PDF viewer',await page.$$eval('[aria-label="PDF pages"] canvas',cs=>cs.length===1));await closePdf()}
+ await page.goto(base+'/admin/quotes/'+proof.sent.id,{waitUntil:'networkidle0'});
+ await page.bringToFront();
+ await browser.defaultBrowserContext().overridePermissions(base,['clipboard-read','clipboard-write','clipboard-sanitized-write']);
+ await page.click('[aria-label="Copy Client page link"]');
+ await page.waitForFunction(()=>document.querySelector('[aria-label="Copy Client page link"]')?.textContent==='Copied');
+ const portal=await page.evaluate(()=>navigator.clipboard.readText());
+ await page.click('[aria-label="Copy Client PDF link"]');
+ await page.waitForFunction(()=>document.querySelector('[aria-label="Copy Client PDF link"]')?.textContent==='Copied');
+ const pdfLink=await page.evaluate(()=>navigator.clipboard.readText());
+ check('Copied client page and PDF links are absolute and distinct',portal.startsWith(base+'/q/')&&pdfLink.startsWith(base+'/q/')&&new URL(pdfLink).pathname.endsWith('/pdf')&&pdfLink!==portal);
+ const wa=await page.$eval('a[href*="wa.me"]',a=>a.href).catch(()=>null);
+ if(wa)check('WhatsApp message uses absolute current-origin link',new URL(wa).searchParams.get('text').includes(portal));
+ // Lambda Chromium uses single-process mode; a genuinely separate browser avoids incognito-context crashes.
+ clientBrowser=await puppeteer.launch({executablePath:await chromium.executablePath(),args:[...chromium.args,'--no-sandbox'],headless:true});
+ const clientPage=await clientBrowser.newPage();
+ clientPage.on('pageerror',error=>errors.push(error.message));
+ await clientPage.setUserAgent('Mozilla/5.0 HeadlessChrome/153.0 quotation-revision-anonymous/'+Date.now());
+ await clientPage.goto(base+'/admin/quotes/'+proof.sent.id,{waitUntil:'networkidle0'});
+ check('Fresh client has no staff authentication',clientPage.url().endsWith('/admin/login'));
+ const portalResponse=await clientPage.goto(portal,{waitUntil:'networkidle0'});
+ check('Copied client page opens in anonymous context',portalResponse.status()===200&&await clientPage.$eval('body',e=>e.innerText.includes('Quotation Revision QA Client')));
+ const downloaded=await clientPage.evaluate(async url=>{const r=await fetch(url);const b=new Uint8Array(await r.arrayBuffer());return {status:r.status,contentType:r.headers.get('content-type'),disposition:r.headers.get('content-disposition'),bytes:Array.from(b)}},pdfLink);
+ check('Shared PDF is an anonymous downloadable PDF with exact frozen checksum',downloaded.status===200&&downloaded.contentType.includes('application/pdf')&&downloaded.disposition.includes('attachment')&&crypto.createHash('sha256').update(Buffer.from(downloaded.bytes)).digest('hex')===proof.sent.sha256);
+ const downloadPath=out+'client-downloads';fs.mkdirSync(downloadPath,{recursive:true});
+ const cdp=await clientBrowser.target().createCDPSession();
+ await cdp.send('Browser.setDownloadBehavior',{behavior:'allowAndName',downloadPath,eventsEnabled:true});
+ const completed=new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Client download timed out')),30000);cdp.on('Browser.downloadProgress',event=>{if(event.state==='completed'){clearTimeout(timer);resolve(event.guid)}})});
+ await clientPage.click('a[href*="/pdf?"]');
+ const guid=await completed;
+ check('Client download click saves the exact frozen PDF file',crypto.createHash('sha256').update(fs.readFileSync(downloadPath+'/'+guid)).digest('hex')===proof.sent.sha256);
+ const forbidden=await clientPage.evaluate(async url=>(await fetch(url)).status,pdfLink+'&tampered=1');
+ check('Tampered public PDF remains forbidden',forbidden===403);
+ check('No browser JavaScript errors',errors.length===0);
+ fs.writeFileSync(out+'43-browser-result.json',JSON.stringify({checks,errors},null,2));
+ console.log('All quotation revision browser checks passed.');
+} catch (error) {console.error('QA FAILURE',error.stack); console.error('BROWSER ERRORS',errors);throw error} finally {await clientBrowser?.close();await browser.close()}

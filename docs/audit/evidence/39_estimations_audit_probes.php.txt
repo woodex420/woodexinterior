@@ -1,0 +1,75 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Domain\Crm\Models\Contact;
+use App\Domain\Sales\Actions\ComputeEstimate;
+use App\Domain\Sales\Actions\ConvertEstimateToQuote;
+use App\Domain\Sales\Actions\ReviewEstimate;
+use App\Domain\Sales\Actions\SaveEstimate;
+use App\Domain\Sales\Enums\EstimateStatus;
+use App\Domain\Sales\Models\CatalogItem;
+use App\Domain\Sales\Models\EstimatorRate;
+use App\Livewire\Admin\Sales\EstimateBuilder;
+use Illuminate\Validation\ValidationException;
+use Livewire\Livewire;
+
+beforeEach(function () {
+    $this->owner = $this->userWithRole('owner');
+    $this->actingAs($this->owner);
+    $this->rate = EstimatorRate::where('key', 'interior-design')->firstOrFail();
+    $this->input = ['title' => 'W audit fixture', 'service_key' => 'interior-design', 'contact_id' => Contact::factory()->create()->id, 'quantity' => '10', 'finish' => 'standard', 'contingency_bp' => 0, 'catalog_lines' => []];
+});
+
+it('audit expects an edited reviewed estimate to require review again', function () {
+    $e = app(SaveEstimate::class)->handle($this->input, $this->owner);
+    app(ReviewEstimate::class)->handle($e, $this->owner);
+    $e = app(SaveEstimate::class)->handle([...$this->input, 'quantity' => '20'], $this->owner, $e);
+    expect($e->status)->toBe(EstimateStatus::Draft);
+});
+
+it('audit expects conversion to retain saved prices unless explicitly repriced', function () {
+    $e = app(SaveEstimate::class)->handle($this->input, $this->owner);
+    $before = $e->computed['rate_minor'];
+    $this->rate->update(['standard_minor' => $before * 2]);
+    Livewire::test(EstimateBuilder::class, ['estimate' => $e->id])->call('convert')->assertHasNoErrors();
+    expect($e->refresh()->computed['rate_minor'])->toBe($before);
+});
+
+it('audit expects converted estimates to display their saved total', function () {
+    $e = app(SaveEstimate::class)->handle($this->input, $this->owner);
+    app(ConvertEstimateToQuote::class)->handle($e, $this->owner);
+    $before = $e->computed['total_minor'];
+    $this->rate->update(['standard_minor' => $this->rate->standard_minor * 2]);
+    $view = Livewire::test(EstimateBuilder::class, ['estimate' => $e->id]);
+    expect($view->instance()->summary()['total'])->toBe(App\Support\Money::ofMinor($before)->format());
+});
+
+it('audit expects catalogue choices to display their descriptions', function () {
+    $item = CatalogItem::where('is_active', true)->firstOrFail();
+    Livewire::test(EstimateBuilder::class)->call('addLine')->assertSee($item->description);
+});
+
+it('audit expects negative quantities to be rejected not silently made positive', function () {
+    expect(fn () => app(ComputeEstimate::class)->handle($this->rate, '-20', 'standard', [], 0))->toThrow(ValidationException::class);
+});
+
+it('audit expects Furniture enquiries to create Furniture quotations', function () {
+    $lead = App\Domain\Crm\Models\Lead::factory()->create(['contact_id' => $this->input['contact_id'], 'business_line' => 'furniture', 'source' => App\Domain\Crm\Enums\LeadSource::Estimator, 'service' => 'furniture', 'area_sqft' => 10, 'meta' => ['fields' => ['service' => 'furniture', 'area' => '10', 'finish' => 'standard']]]);
+    $quote = app(App\Domain\Sales\Actions\CreateQuoteFromEstimate::class)->handle($lead, $this->owner);
+    expect($quote->business_line->value)->toBe('furniture');
+});
+
+it('audit expects repeated estimator enquiry conversion to reuse its quotation', function () {
+    $lead = App\Domain\Crm\Models\Lead::factory()->create(['contact_id' => $this->input['contact_id'], 'source' => App\Domain\Crm\Enums\LeadSource::Estimator, 'service' => 'interior-design', 'area_sqft' => 10, 'meta' => ['fields' => ['service' => 'interior-design', 'area' => '10', 'finish' => 'standard']]]);
+    $first = app(App\Domain\Sales\Actions\CreateQuoteFromEstimate::class)->handle($lead, $this->owner);
+    $again = app(App\Domain\Sales\Actions\CreateQuoteFromEstimate::class)->handle($lead->refresh(), $this->owner);
+    expect($again->id)->toBe($first->id);
+});
+
+it('audit expects the estimate lead entry point to enforce lead visibility', function () {
+    $sales = $this->userWithRole('sales');
+    $lead = App\Domain\Crm\Models\Lead::factory()->create(['owner_id' => $this->owner->id, 'service' => 'interior-design', 'area_sqft' => 10]);
+    expect($sales->can('view', $lead))->toBeFalse();
+    Livewire::actingAs($sales)->test(EstimateBuilder::class, ['lead' => $lead->id])->assertForbidden();
+});

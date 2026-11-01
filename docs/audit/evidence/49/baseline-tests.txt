@@ -1,0 +1,149 @@
+
+   PASS  Tests\Feature\Website\WebsiteAdminTest
+  ✓ it lists the pages of the site as the files they are                 2.47s
+  ✓ it takes a page offline by moving its file out of the site, and kee… 0.13s
+  ✓ it lets an editor take a page offline only with the publish permiss… 0.26s
+  ✓ it keeps the website screens away from users who do not edit the we… 0.10s
+  ✓ it uploads an image, requires alt text and serves it from the media… 0.32s
+  ✓ it writes edited alt text into the pages that show the image         0.13s
+  ✓ it refuses to delete an image a page still shows, and deletes one n… 0.14s
+  ✓ it imports the redirect map from a CSV and answers each old URL wit… 0.17s
+  ✓ it refuses a redirect from an address that is still a page, because… 0.17s
+  ✓ it skips imported rows whose old URL is still a page, and reads a s… 0.12s
+  ✓ it marks redirects that cannot fire, so the screen never counts a d… 0.10s
+  ✓ it exports the redirect map as a CSV                                 0.21s
+
+   PASS  Tests\Feature\Website\WebsiteAdminParityTest
+  ✓ it groups the Website section the way it is worked on                0.11s
+  ✓ it retires the Content library completely                            0.10s
+  ✓ it shows every page's search listing on the SEO screen, read from t… 0.11s
+  ✓ it reports the whole site's health from the files, and catches a re… 0.10s
+  ✓ it keeps the standalone screens behind the website permission        1.37s
+  ✓ it retires the screens that only wrote rows the files never read wi… 0.09s
+  ✓ it retires the screens that only wrote rows the files never read wi… 0.08s
+  ✓ it retires the screens that only wrote rows the files never read wi… 0.08s
+  ✓ it retires the screens that only wrote rows the files never read wi… 0.08s
+  ✓ it retires the four database-only screens instead of leaving a dest… 0.08s
+  ✓ it retires the four database-only screens instead of leaving a dest… 0.08s
+  ✓ it retires the four database-only screens instead of leaving a dest… 0.07s
+  ✓ it retires the four database-only screens instead of leaving a dest… 0.08s
+  ✓ it keeps the screens that still have work to do with ('/admin/websi… 0.07s
+  ✓ it keeps the screens that still have work to do with ('/admin/websi… 0.07s
+  ✓ it retires the home screens now that / is a file with ('/admin/webs… 0.08s
+  ✓ it retires the home screens now that / is a file with ('/admin/webs… 0.08s
+
+   PASS  Tests\Feature\Website\BuilderMediaTest
+  ✓ it lists the media library, newest first                             0.08s
+  ✓ it stores a builder upload as a normal media row with its size       0.11s
+  ✓ it refuses a file that is not an image                               0.07s
+  ✓ it refuses an image over five megabytes                              0.08s
+  ✓ it keeps uploads to website editors                                  0.07s
+
+   PASS  Tests\Feature\Website\SiteMediaImportTest
+  ✓ it adds the theme images the pages show to the library, once         0.05s
+  ✓ it does not add an image the library already holds under that name   0.06s
+
+   PASS  Tests\Feature\Website\SeoAgentTest
+  ✓ it lists every finding against the file that has it, and points at…  0.13s
+  ✓ it counts a content image without alt text, but not the decorative…  0.08s
+  ✓ it checks every internal link, orphan page and redirect against the… 0.08s
+  ✓ it catches a listing a search engine cuts off, and a page that asks… 0.07s
+  ✓ it keeps the SEO screens behind the website permission               0.07s
+
+   PASS  Tests\Feature\Website\SpeedDashboardTest
+  ✓ it weighs every published page keylessly — images, heavy ones, old…  0.10s
+  ✓ it keeps the key off the browser: saved encrypted, never shown back  0.11s
+  ✓ it runs PageSpeed against the page's live URL and keeps the score a… 0.12s
+  ✓ it refuses to run Google against drafts, and says so plainly         0.09s
+
+   PASS  Tests\Feature\Website\ThemeBridgeTest
+  ✓ it serves the live theme at the URL every v1 page links              0.09s
+  ✓ it serves the hashed theme immutable, and an old hash with revalida… 0.07s
+  ✓ it gives the builder every control of the v2.1 theme panel           0.08s
+  ✓ it saves the builder theme into the one token store                  0.09s
+  ✓ it lets only a theme manager change the site theme                   0.07s
+  ✓ it refuses a value that is not a colour or a size                    0.09s
+  ✓ it gives the panel the v2.1 font codes it understands, not a css st… 0.08s
+  ✓ it stores a v2.1 font code as a complete css stack                   0.10s
+  ✓ it keeps a pasted stack verbatim and refuses css injection in a fon… 0.11s
+  ✓ it adds newly seeded tokens to an installation that predates them    0.11s
+
+   PASS  Tests\Feature\Website\ThemePresetsTest
+  ✓ it keeps every preset honest: its keys exist, its values fit the to… 0.05s
+  ✓ it applies a preset and re-skins every page, then back to v1 undoes… 0.17s
+  ✓ it refuses preset names that are not on the shelf                    0.11s
+
+   PASS  Tests\Feature\Website\SiteTagsTest
+  ✓ it links the tags script from every page file, exactly once          0.10s
+  ✓ it answers with nothing until an ID is set                           0.04s
+  ✓ it loads the Tag Manager container and leaves GA4 to it              0.04s
+  ✓ it loads GA4 directly when there is no container                     0.04s
+  ✓ it loads Clarity alongside either one                                0.04s
+  ✓ it loads nothing while the switch is off                             0.05s
+  ✓ it loads nothing for signed-in staff                                 0.05s
+  ✓ it never caches the answer, so a saved ID is live on the next page…  0.05s
+
+   PASS  Tests\Feature\ThemeTokensTest
+  ✓ it expresses the live v1 design as tokens                            0.07s
+  ✓ it serves the tokens as CSS, with the v1 vocabulary, its aliases an… 0.07s
+  ✓ it re-skins every page when a token is saved: the hash changes and…  0.07s
+  ✓ it re-skins the site when a token is saved, and returns to the v1 p… 0.24s
+  ✓ it keeps the theme builder to those who may manage the theme         0.21s
+  ✓ it caches the rendered CSS until a save flushes it                   0.05s
+  ✓ it serves an empty theme until the database update runs, not an err… 0.05s
+
+   PASS  Tests\Feature\Assistant\AssistantTest
+  ✓ it answers "what is overdue?" with exactly the tracking board rows…  0.13s
+  ✓ it says plainly when a question is outside the whitelist             0.08s
+  ✓ it never shows a record the asker could not open                     0.09s
+  ✓ it counts collected money from verified payments in the month only   0.09s
+  ✓ it sums open bills as what we owe suppliers                          0.08s
+  ✓ it uses the one follow-up rule for leads and cites only visible one… 0.09s
+  ✓ it reports quotes waiting with the client, soonest to lapse first    0.12s
+  ✓ it is mounted on every admin page                                    0.28s
+
+   PASS  Tests\Feature\ThemeWebChatUpgradeTest
+  ✓ it captures a phone before service and never assumes messaging cons… 0.11s
+  ✓ it qualifies the existing lead without recapture or duplicate enrol… 0.09s
+  ✓ it keeps a repeated number from becoming service or a second captur… 0.09s
+  ✓ it captures email immediately with the followup anchor and no autom… 0.10s
+  ✓ it does not create a CRM lead from invalid contact details           0.05s
+  ✓ it resumes legacy partial intake and preserves an existing open lea… 0.07s
+  ✓ it reloads intake state under lock rather than recapturing from a s… 0.07s
+  ✓ it hands intake to a real staff reply without a competing bot quest… 0.08s
+  ✓ it does not treat internal notes as staff takeover                   0.05s
+  ✓ it reopens a closed website thread when the visitor returns          0.10s
+  ✓ it records the first real staff reply on the linked lead             0.12s
+  ✓ it shows anonymous and incomplete SQL conversations in the Web Chat… 0.29s
+  ✓ it never includes other channels in website tracking                 0.10s
+  ✓ it scopes linked lead tracking to lead visibility while keeping ano… 0.16s
+  ✓ it requires both CRM and inbox permissions for the tab and its comp… 0.10s
+  ✓ it filters unread assignment status date and overdue lead targets    0.23s
+  ✓ it keeps an in-progress draft when a different website thread arriv… 0.23s
+  ✓ it keeps a closed drawer draft safe when a different thread trigger… 0.20s
+  ✓ it marks a matching open thread read without replacing the composer… 0.26s
+  ✓ it rejects cross-channel direct thread opening even with an existin… 0.13s
+  ✓ it offers a three-mode native theme without the misleading header p… 0.22s
+  ✓ it stores long valid email in the contact rather than overflowing t… 0.11s
+  ✓ it shows legacy captured contact details read-only without a histor… 0.13s
+  ✓ it does not discard a draft when reopening the already selected thr… 0.23s
+  ✓ it never turns visitor service text into privileged staff mention n… 0.09s
+  ✓ it uses PKT calendar boundaries for tracking dates rather than the…  0.15s
+
+   PASS  Tests\Feature\Conversations\WebChatWidgetTest
+  ✓ it keeps the widget invisible while it is switched off               0.10s
+  ✓ it serves the script and greets a new visitor by name flow           0.09s
+  ✓ it runs the intake: name, number, service — then the lead exists an… 0.17s
+  ✓ it accepts an email instead of a number and never asks for the numb… 0.15s
+  ✓ it re-asks for a number that is neither a number nor an email        0.08s
+  ✓ it lets the team reply from the inbox without a gateway and the wid… 0.29s
+  ✓ it starts a fresh thread for an unknown token instead of failing     0.07s
+  ✓ it stores the visitor message even when the intake is already live   0.19s
+  ✓ it bounds a message to two thousand characters                       0.20s
+  ✓ it ships the loader to the static v1 pages as well                   0.05s
+  ✓ it answers the loader with the widget only while the switch is on    0.11s
+  ✓ it counts the visitor message as unread for the inbox                0.12s
+  ✓ it shows web chat threads in the inbox and answers them there witho… 0.31s
+
+  Tests:    120 passed (845 assertions)
+  Duration: 17.69s

@@ -1,0 +1,56 @@
+{
+  "furniture-reference": {
+    "pages": 1,
+    "font_names": [
+      "SUBAAB+Inter-Regular",
+      "SUBAAC+Inter-Bold",
+      "SUBAAD+Inter-Medium",
+      "SUBAAE+DejaVuSans"
+    ],
+    "bounds": "pass",
+    "page_numbers": "pass"
+  },
+  "furniture-quotation": {
+    "pages": 1,
+    "font_names": [
+      "SUBAAB+Inter-Regular",
+      "SUBAAC+Inter-Bold",
+      "SUBAAD+Inter-Medium",
+      "SUBAAE+DejaVuSans"
+    ],
+    "bounds": "pass",
+    "page_numbers": "pass"
+  },
+  "furniture-47500": {
+    "pages": 1,
+    "font_names": [
+      "SUBAAB+Inter-Regular",
+      "SUBAAC+Inter-Bold",
+      "SUBAAD+Inter-Medium",
+      "SUBAAE+DejaVuSans"
+    ],
+    "bounds": "pass",
+    "page_numbers": "pass"
+  },
+  "furniture-long": {
+    "pages": 9,
+    "font_names": [
+      "SUBAAB+Inter-Regular",
+      "SUBAAC+Inter-Bold",
+      "SUBAAD+Inter-Medium",
+      "SUBAAE+DejaVuSans"
+    ],
+    "bounds": "pass",
+    "page_numbers": "pass"
+  },
+  "furniture-invoice": {
+    "pages": 1,
+    "font_names": [
+      "SUBAAB+DMSans9pt-Regular",
+      "SUBAAC+DMSans9pt-Bold",
+      "SUBAAD+DejaVuSans"
+    ],
+    "bounds": "pass",
+    "page_numbers": "pass"
+  }
+}

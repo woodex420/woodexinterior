@@ -1,0 +1,40 @@
+44-A/44-B first increment — 2026-10-28
+Environment: local native Laravel/Livewire, PHP-WASM/SQLite; separate copied QA DB for chat/iframe.
+No production/deployment/schema/provider-send proof claimed.
+
+Final full Pest: 1649 passed, 1 skipped, 8873 assertions, 364.48s, exit 0.
+Skip: InstallerTest "explains a database it cannot use" — PHP-WASM has no MySQL network sockets.
+Focused regression: 134 passed, 455 assertions, 32.20s, exit 0.
+New ControlCentreTest: 11 tests, included in focused and final full runs.
+PHPStan full: [OK] No errors. Initial nullsafe-expression warning fixed before rerun.
+Pint changed PHP: PASS 18 files, exit 0.
+Pint whole tree: FAIL 1010 files, 2 existing style issues:
+  app/Livewire/Admin/Projects/ProjectShow.php
+  tests/Feature/Overview/ControlViewTest.php
+Both files byte-identical to Git HEAD and runtime; no unrelated formatting applied.
+Vite production build: passed; admin CSS/manifest updated. Locked site.css/site.js: zero diff.
+HTTP smoke: SMOKE OK, 87 pages. Landing evidence, not every action.
+Chromium native: 47/47 navigation destinations, 13 UI checks plus final landing/error gates; no JS errors.
+Chromium isolated header: 9 checks; no JS errors. Opening chat may mark read only in copied QA DB.
+Iframe: 3pc-blocked OK, no-cookies OK, 22 assertions, exit 0. No MCP key issued / Google form submitted.
+JS syntax checks and git diff --check passed.
+
+Corrected test/harness failures (not hidden):
+- Initial financial fixture returned 0/300000: date/datetime boundary bug fixed with half-open date bounds.
+- Legacy draft query separately reproduced 100000/0 inflation; positive invoice status set fixed it.
+- Focused fixture used undefined tomorrow(); changed to today()->addDay().
+- Initial complete Pest: 1647 passed, 1 skipped, 1 failed (old Lead Ads placeholder expectation).
+  Intentional navigation removal verified; updated expectation; final complete Pest green above.
+- Mobile transition and chat-backdrop races: wait for actual geometry / pointer readiness, then assert behavior.
+- Legacy iframe harness expected removed #app-search catalog. Updated native search selector / empty-state assertion;
+  focused input/select before clearing restored native grid; both cookie scenarios then passed.
+
+Coverage limits:
+48 planned destinations = 47 browser landings + 1 unimplemented Lead Ads removed from navigation.
+188 native routes (134 admin, 54 other) / 110 components / 826 declared public methods / 105 schema tables: discovery only.
+All native route definitions inventoried, including non-admin/API paths; actions and legacy website PHP still need deeper mapping.
+SQLite query-only structural checks: integrity_check ok, zero FK violations, no row IDs/business records exported.
+Audit helper Pint: 2 files PASS.
+Final shortcut guard suppresses Operations for actors without dashboard.view; dedicated 11 tests / 50 assertions PASS.
+Final full suite above includes this last guard; no pending regression process.
+MySQL, full role/action/ledger/scale/recovery/provider-delivery and owner's separate arena.site host not certified.

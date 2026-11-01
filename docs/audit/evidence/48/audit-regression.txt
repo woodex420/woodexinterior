@@ -1,0 +1,115 @@
+
+   PASS  Tests\Feature\P10LiveChatTest
+  ✓ it stays out of the header for staff who cannot use the inbox        2.49s
+  ✓ it shows the unread count and the live-visitor dot                   0.14s
+  ✓ it marks the visitor quiet after two minutes                         0.10s
+  ✓ it lists website chats only — WhatsApp never enters the live drawer  0.27s
+  ✓ it never replays history as a toast                                  0.11s
+  ✓ it toasts a new visitor message once and opens the drawer on it      0.14s
+  ✓ it stops toasting once a teammate has read the thread                0.11s
+  ✓ it opens the drawer on request, picks the newest thread and marks i… 0.12s
+  ✓ it answers the visitor from the drawer on the same thread            0.15s
+  ✓ it keeps the sound off by default and out of non-managers hands      0.09s
+  ✓ it switches the sound on for the whole studio from the drawer        0.15s
+  ✓ it rides along on every admin page through the header                0.21s
+
+   PASS  Tests\Feature\Conversations\WebChatWidgetTest
+  ✓ it keeps the widget invisible while it is switched off               0.09s
+  ✓ it serves the script and greets a new visitor by name flow           0.08s
+  ✓ it runs the intake: name, number, service — then the lead exists an… 0.17s
+  ✓ it accepts an email instead of a number and never asks for the numb… 0.13s
+  ✓ it re-asks for a number that is neither a number nor an email        0.08s
+  ✓ it lets the team reply from the inbox without a gateway and the wid… 0.28s
+  ✓ it starts a fresh thread for an unknown token instead of failing     0.07s
+  ✓ it stores the visitor message even when the intake is already live   0.18s
+  ✓ it bounds a message to two thousand characters                       0.22s
+  ✓ it ships the loader to the static v1 pages as well                   0.06s
+  ✓ it answers the loader with the widget only while the switch is on    0.13s
+  ✓ it counts the visitor message as unread for the inbox                0.09s
+  ✓ it shows web chat threads in the inbox and answers them there witho… 0.34s
+
+   PASS  Tests\Feature\TelegramDiagnosticsTest
+  ✓ it checks bot identity and webhook delivery without exposing secret… 0.09s
+  ✓ it reports failed bot API authentication and empty webhook registra… 0.04s
+  ✓ it registers a webhook without discarding pending user messages      0.05s
+  ✓ it shows runtime diagnostics to administrators with no false connec… 0.25s
+  ✓ it refuses diagnostics for staff without integration management per… 0.08s
+
+   PASS  Tests\Feature\TelegramSecurityTest
+  ✓ it requires the official secret header on the stable endpoint with…  0.05s
+  ✓ it requires the official secret header on the stable endpoint with…  0.04s
+  ✓ it allows the stable endpoint only with a configured matching heade… 0.06s
+  ✓ it requires a header even on the legacy path by default              0.05s
+  ✓ it restricts explicit temporary legacy mode to the correct path and… 0.05s
+  ✓ it registers and diagnoses the stable URL without putting secrets i… 0.20s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.06s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.06s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.06s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.06s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.05s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.05s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.06s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.05s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.05s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.05s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.04s
+  ✓ it rejects group channel forged bot forwarded and inline identities… 0.05s
+  ✓ it never grants group members the authority of a previously linked…  0.04s
+  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.05s
+  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.05s
+  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.05s
+  ✓ it rejects inactive unlinked group and deleted staff authority with… 0.05s
+  ✓ it refuses inactive expired rotated and used codes with ('inactive'… 0.05s
+  ✓ it refuses inactive expired rotated and used codes with ('expired')  0.06s
+  ✓ it refuses inactive expired rotated and used codes with ('rotated')  0.06s
+  ✓ it refuses inactive expired rotated and used codes with ('used')     0.06s
+  ✓ it consumes one code once and never steals a chat already linked to… 0.10s
+  ✓ it executes business commands only through the permission-gated com… 0.15s
+  ✓ it commits a change request with its replay marker and recovers a f… 0.10s
+  ✓ it keeps committed command effects when a reply transport fails and… 0.09s
+  ✓ it limits link guesses by authenticated sender without blocking a d… 0.09s
+  ✓ it limits ordinary commands independently from link attempts         0.26s
+  ✓ it ignores malformed update identifiers before admission with (null… 0.06s
+  ✓ it ignores malformed update identifiers before admission with ([])   0.04s
+  ✓ it ignores malformed update identifiers before admission with (true… 0.04s
+  ✓ it ignores malformed update identifiers before admission with (-1)   0.04s
+  ✓ it ignores malformed update identifiers before admission with ('abc… 0.05s
+  ✓ it ignores malformed update identifiers before admission with (1.25… 0.04s
+  ✓ it does not treat callback or edited-message updates as approval au… 0.05s
+  ✓ it does not treat callback or edited-message updates as approval au… 0.05s
+  ✓ it does not treat callback or edited-message updates as approval au… 0.06s
+  ✓ it rereads staff and notification routing rather than trusting a ca… 0.05s
+  ✓ it rereads staff and notification routing rather than trusting a ca… 0.04s
+  ✓ it rereads staff and notification routing rather than trusting a ca… 0.04s
+  ✓ it rereads staff and notification routing rather than trusting a ca… 0.04s
+  ✓ it does not let unauthenticated requests exhaust a real sender rate… 0.13s
+  ✓ it uses the stable secret-free URL from the console registration pa… 0.04s
+
+   PASS  Tests\Feature\Telegram\TelegramPairingTest
+  ✓ it renders the QR and the copyable deep link for a pending code      0.20s
+  ✓ it flips to linked when the webhook receives the start code          0.08s
+  ✓ it refuses a code that cannot pair and names the missing key         0.09s
+  ✓ it names the missing token and secret instead of saying not connect… 0.06s
+  ✓ it names a webhook that Telegram does not have, with its delivery e… 0.04s
+  ✓ it flags silence when no update has arrived in 24 hours              0.05s
+  ✓ it names a blocked bot for this chat and clears once a send lands    0.05s
+  ✓ it all steps pass on a healthy linked setup                          0.05s
+
+   PASS  Tests\Feature\AutomationsDashboardTest
+  ✓ it treats every automation as enabled until somebody pauses it       0.04s
+  ✓ it pauses and resumes an automation from the dashboard with attribu… 0.19s
+  ✓ it keeps the control behind the automation permission                0.10s
+  ✓ it does not offer the platform jobs for toggling                     0.13s
+  ✓ it shows the scheduler\u{2019}s own run history per automation       0.10s
+  ✓ it actually skips a paused automation in the schedule                0.05s
+  ✓ it keeps the catalog in step with the gated schedule entries         0.04s
+
+   PASS  Tests\Feature\SocialPlannerTest
+  ✓ it composes a draft with photographs from the shared media library,… 0.25s
+  ✓ it walks the review flow: an editor cannot approve their own post    0.18s
+  ✓ it schedules an approved post, and the scheduler waits while no acc… 0.12s
+  ✓ it keeps the planner to social managers                              0.09s
+  ✓ it drafts captions with the studio key, and stays silent without on… 0.14s
+
+  Tests:    98 passed (513 assertions)
+  Duration: 12.12s

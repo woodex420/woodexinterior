@@ -1,0 +1,13 @@
+  signed in: http://127.0.0.1:8080/admin
+  the template picker holds 50 layouts with type chips
+  started "About the studio" from a template at http://127.0.0.1:8080/admin/website/pages/287
+  preview frame is live (1731 chars of page)
+  preview followed the typing and reloaded itself
+  drag reordered Hero / Intro + key facts -> Intro + key facts / Hero
+  undo and redo restored the section order
+  layers listed 7 sections and the search narrowed them to 1
+  click-to-edit jumped to section b4a4g2whc
+  the page check is in the editor (3 item(s))
+  the section background reached the preview
+  new page "Builder check 93208" saved itself and previewed at http://127.0.0.1:8080/admin/website/pages/288
+BUILDER CHECK OK
