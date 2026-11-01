@@ -204,7 +204,7 @@ final class RevenueCollectionsReport
             ->groupBy('payments.method', 'payments.bank_account_id')
             ->orderByDesc('value')->get();
 
-        $banks = BankAccount::query()->pluck('name', 'id');
+        $banks = BankAccount::query()->pluck('bank_name', 'id');
 
         return $rows
             ->map(function ($row) use ($banks): array {

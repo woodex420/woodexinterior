@@ -9,6 +9,7 @@ use App\Domain\Sales\Enums\InvoiceStatus;
 use App\Domain\Sales\Enums\PaymentMethod;
 use App\Domain\Sales\Enums\PaymentStatus;
 use App\Domain\Sales\Enums\QuoteStatus;
+use App\Domain\Sales\Models\BankAccount;
 use App\Domain\Sales\Models\Invoice;
 use App\Domain\Sales\Models\Payment;
 use App\Domain\Sales\Models\PaymentAllocation;
@@ -226,4 +227,21 @@ it('writes a CSV an accountant can open: UTF-8, plain rupees, the same numbers a
         ->and($csv)->toContain('Late Client')
         ->and($csv)->toContain('5000')
         ->and($csv)->toContain('Prompt Client');
+});
+
+
+it('labels collection methods using the actual bank column without exposing account details', function () {
+    $contact = Contact::factory()->create();
+    $bank = BankAccount::create(['title' => 'Synthetic clearing account', 'bank_name' => 'Test Clearing Bank',
+        'account_number' => 'DO-NOT-EXPOSE-TEST-ACCOUNT', 'iban' => 'DO-NOT-EXPOSE-TEST-IBAN']);
+    Payment::create(['contact_id' => $contact->id, 'amount_minor' => 12000,
+        'received_on' => today()->toDateString(), 'method' => PaymentMethod::BankTransfer,
+        'bank_account_id' => $bank->id, 'status' => PaymentStatus::Verified, 'submitted_by' => 'staff']);
+
+    $rows = app(RevenueCollectionsReport::class)->byMethod(ReportRange::fromPreset('today'));
+    expect($rows)->toHaveCount(1)
+        ->and($rows[0]['label'])->toBe('Bank Transfer · Test Clearing Bank')
+        ->and($rows[0]['amount_minor'])->toBe(12000)
+        ->and($rows[0]['count'])->toBe(1)
+        ->and(json_encode($rows))->not->toContain('DO-NOT-EXPOSE-TEST-ACCOUNT', 'DO-NOT-EXPOSE-TEST-IBAN');
 });
