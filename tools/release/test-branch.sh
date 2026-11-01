@@ -32,16 +32,7 @@ sh tools/docker/setup-env.sh
 finish() {
   status=$?
   trap - EXIT
-  if [[ $status != 0 ]]; then
-    python3 - "$out" <<'PY_REPORT'
-import pathlib,sys
-for p in sorted(pathlib.Path(sys.argv[1]).glob('*.log')):
-    text=p.read_text(errors='replace')[-2600:]
-    if text:
-        message=(p.name+'\n'+text).replace('%','%25').replace('\r','%0D').replace('\n','%0A')
-        print('::error title=Native branch failure context::'+message)
-PY_REPORT
-  fi
+  node tools/release/summarize-native.mjs "$out" "$status" || true
   cleanup
   exit "$status"
 }
@@ -70,7 +61,12 @@ for group in unit feature-a-f feature-g-p feature-q-z arch; do
   if timeout --signal=TERM --kill-after=20s 8m "${compose[@]}" run --rm --no-deps php-test \
       --compact --fail-on-warning --fail-on-skipped --display-all-issues "${files[@]}" \
       2>&1 | node tools/release/redact-disposable-qa.mjs | tee "$out/$group.log"; then
-    code=0
+    if node --input-type=module - "$out/$group.log" <<'JS_CHECK'
+import fs from 'node:fs';
+import {parseLog} from './tools/release/summarize-native.mjs';
+if (!/\b[1-9][0-9]* passed\b/.test(parseLog(fs.readFileSync(process.argv[2],'utf8')).summary??'')) process.exit(1);
+JS_CHECK
+    then code=0; else code=1; result=1; fi
   else
     code=$?; result=1
   fi
