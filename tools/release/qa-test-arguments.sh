@@ -3,7 +3,7 @@
 set -eu
 for argument in "$@"; do
     case "$argument" in
-        --compact|--stop-on-failure|--stop-on-error|--fail-on-skipped|--fail-on-warning) ;;
+        --compact|--stop-on-failure|--stop-on-error|--fail-on-skipped|--fail-on-warning|--display-warnings) ;;
         tests/*.php)
             case "$argument" in
                 *..*|*[!a-zA-Z0-9_./-]*) echo 'HOLD: unsafe QA test path.' >&2; exit 64 ;;

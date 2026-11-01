@@ -92,7 +92,7 @@ if [[ $mode == first-failure-diagnostic ]]; then
   stage=application-diagnostic
   progress first-failure-diagnostic-started
   # A separate investigation only; this can NEVER replace the unchanged full gate below.
-  "${compose[@]}" run --rm --no-deps php-test --compact --stop-on-failure --stop-on-error 2>&1 | node tools/release/redact-disposable-qa.mjs | tee "$out/tests.log"
+  "${compose[@]}" run --rm --no-deps php-test --compact --stop-on-failure --stop-on-error --display-warnings 2>&1 | node tools/release/redact-disposable-qa.mjs | tee "$out/tests.log"
   completed+=' application-diagnostic'
 else
 # FULL_SUITE_BRANCH
