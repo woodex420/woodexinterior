@@ -77,3 +77,12 @@ test('published rate book still supplies finite explicit rates, not inferred pri
   assert(rates.services.length > 0 && rates.finishes.length > 0);
   for (const service of rates.services) for (const finish of rates.finishes) assert(Number.isFinite(service.rates[finish.key]));
 });
+
+test('live theme endpoint reaches the app even when an old physical CSS file survives deployment',()=>{
+  const rewrite=read('platform/public/.htaccess');
+  const themeRule='RewriteRule ^assets/theme\\.css$ index.php [L]';
+  assert(rewrite.includes(themeRule));
+  assert(rewrite.indexOf(themeRule)<rewrite.lastIndexOf('RewriteCond %{REQUEST_FILENAME} !-f'));
+  assert.match(read('platform/routes/web.php'), /Route::get\('\/assets\/theme\.css'/);
+  for(const file of pages) assert(fs.readFileSync(file,'utf8').includes('/assets/theme.css?v=enquiry-20261101'),file);
+});

@@ -23,7 +23,7 @@
       Array.isArray(R.finishes) && R.finishes.length > 0 &&
       R.finishes.every(function (f) { return f && typeof f.key === 'string' && typeof f.label === 'string'; }) &&
       R.services.every(function (s) {
-        return s && typeof s.key === 'string' && typeof s.label === 'string' && s.rates &&
+        return s && typeof s.key === 'string' && typeof s.label === 'string' && typeof s.unitLabel === 'string' && ['sqft', 'views'].includes(s.unit) && s.rates &&
           ['essential', 'premium'].concat(R.finishes.map(function (f) { return f.key; })).every(function (key) {
             return typeof s.rates[key] === 'number' && Number.isFinite(s.rates[key]) && s.rates[key] >= 0;
           });
@@ -85,7 +85,8 @@
     q.max = slider.max = s.unit === 'views' ? 50 : 20000;
     q.step = s.unit === 'views' ? '1' : '0.001';
     slider.step = s.unit === 'views' ? 1 : 100;
-    state.qty = Math.min(Math.max(state.qty || (s.unit === 'views' ? 4 : 1000), Number(q.min)), Number(q.max));
+    if (s.unit === 'views' && (!state.qty || state.qty > 50 || !Number.isInteger(state.qty))) state.qty = 4;
+    if (s.unit !== 'views' && (!state.qty || state.qty < 100 || state.qty > 20000)) state.qty = 1000;
     q.value = slider.value = state.qty;
   }
   function renderServices() {
@@ -132,14 +133,14 @@
       if (!response || response.ok !== true || !Number.isInteger(response.id) || response.id < 1) {
         throw new Error('We could not confirm that your request was saved.');
       }
-      form.hidden = true;
       var success = doc.getElementById('est-success'); success.classList.add('show');
-      if (!success.querySelector('.wx-wa-btn')) {
+      if (!success.querySelector('.wx-wa-btn')) try {
         var p = doc.createElement('p'), link = doc.createElement('a'); p.style.marginTop = '16px';
         link.className = 'wx-wa-btn'; link.target = '_blank'; link.rel = 'noopener'; link.textContent = 'Continue on WhatsApp';
         link.href = forms.waLink(data, response.id, ['Estimate: ' + data.service + ', ' + data.area + ', ' + data.finish, data.estimate]);
         p.appendChild(link); success.appendChild(p);
-      }
+      } catch (_) { /* An optional WhatsApp enhancement must not negate a confirmed saved enquiry. */ }
+      form.hidden = true;
     }).catch(function (error) {
       msg.textContent = (error && error.message ? error.message : 'Could not send your request.') + ' Your details are still here. You can retry or contact us.';
       msg.className = 'est-msg err';

@@ -4,7 +4,7 @@ set -euo pipefail
 hold() { echo "HOLD: branch QA boundary rejected ($1)." >&2; exit 64; }
 [[ $# == 0 ]] || hold 'no overrides'
 [[ ${GITHUB_ACTIONS:-} == true && ${GITHUB_REPOSITORY:-} == woodex420/woodexinterior && ${RUNNER_ENVIRONMENT:-} == github-hosted ]] || hold 'hosted repository only'
-[[ ${GITHUB_REF:-} == refs/heads/arena/8be318a2-woodexinterior ]] || hold 'fixed branch only'
+[[ ${GITHUB_REF:-} == refs/heads/arena/8be318a2-woodexinterior || ${GITHUB_REF:-} == refs/heads/master ]] || hold 'approved source refs only'
 [[ ${GITHUB_RUN_ID:-} =~ ^[0-9]+$ && ${GITHUB_RUN_ATTEMPT:-} =~ ^[0-9]+$ ]] || hold 'run identity'
 cd "$(dirname "$0")/../.."
 [[ $(git rev-parse HEAD) == "${GITHUB_SHA:-}" ]] || hold 'checkout identity'

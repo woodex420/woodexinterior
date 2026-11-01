@@ -2,7 +2,7 @@ name: Native branch tests
 run-name: Locked branch tests — ${{ github.sha }}
 on:
   push:
-    branches: [arena/8be318a2-woodexinterior]
+    branches: [arena/8be318a2-woodexinterior, master]
   workflow_dispatch:
 permissions:
   contents: read
@@ -12,7 +12,7 @@ concurrency:
 jobs:
   # Keep the existing check name, but test committed source, not a recovery archive.
   first-failure-diagnostic:
-    if: github.ref == 'refs/heads/arena/8be318a2-woodexinterior'
+    if: github.ref == 'refs/heads/arena/8be318a2-woodexinterior' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:

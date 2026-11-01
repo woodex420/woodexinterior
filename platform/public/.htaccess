@@ -70,6 +70,10 @@ DirectoryIndex index.html index.php
     # file behind on the server, and a stale "Disallow: /" is a whole website kept out of Google in silence.
     RewriteRule ^robots\.txt$ index.php [L]
 
+    # Like robots.txt, theme.css belongs to the app even if Git deployment left the old static stub behind.
+    # Never reset saved theme tokens to work around a stale physical CSS file.
+    RewriteRule ^assets/theme\.css$ index.php [L]
+
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
