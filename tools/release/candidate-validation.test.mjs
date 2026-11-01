@@ -41,7 +41,7 @@ test('no committed-lock guard is bypassed: distinct candidate-only path, no stag
   assert.match(source, /--no-deps php-deps/);
   assert.match(source, /--no-deps php-test --compact --fail-on-skipped --fail-on-warning/);
   const fullBranch = source.split('# FULL_SUITE_BRANCH')[1].split('\nfi')[0];
-  assert(!/--stop-on-failure|tests\/.*\.php/.test(fullBranch));
+  assert(!/--stop-on-failure|--stop-on-error|tests\/.*\.php/.test(fullBranch));
   assert.match(source, /mode=first-failure-diagnostic/);
   assert.match(source, /backupRestore':'NOT RUN'/);
 });
@@ -88,4 +88,20 @@ test('repackaged archive is allowed only in separate byte-pinned diagnostic job'
   assert(!fullJob.includes('--diagnostic-equivalent'));
   assert.match(diagnosticJob, /13066020494/);
   assert.match(diagnosticJob, /import-reviewed-artifact --diagnostic-equivalent/);
+});
+
+test('diagnostic stops at the first error as well as an assertion failure', () => {
+  const diagnostic = source.split('if [[ $mode == first-failure-diagnostic ]]; then')[1].split('else\n# FULL_SUITE_BRANCH')[0];
+  assert.match(diagnostic, /php-test --compact --stop-on-failure --stop-on-error/);
+  const allowlist = fs.readFileSync(path.join(root, 'tools/release/qa-test-arguments.sh'), 'utf8');
+  assert.match(allowlist, /--stop-on-error/);
+});
+
+test('progress annotations contain fixed stage labels, not private runtime values', () => {
+  assert.match(source, /progress build-started/);
+  for (const stage of ['build', 'native-runtime', 'install', 'mysql']) assert(source.includes(`progress ${stage}-completed`));
+  assert.match(source, /progress first-failure-diagnostic-started/);
+  assert.match(source, /progress full-suite-started/);
+  const progress = source.split('progress() {')[1].split('\n}')[0];
+  assert(!/DB_|PASSWORD|TOKEN|cat |env /.test(progress));
 });

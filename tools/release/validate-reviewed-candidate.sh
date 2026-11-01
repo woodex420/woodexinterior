@@ -23,6 +23,10 @@ mkdir -p .cache/qa85/results platform/vendor platform/storage platform/bootstrap
 out="$PWD/.cache/qa85/results"
 project="woodex-qa85-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 compose=(docker compose --ansi never --project-name "$project" --env-file tools/docker/.env -f tools/docker/compose.yaml)
+progress() {
+  # Fixed mode/stage labels only: no credentials, SQL, test data or hosting state.
+  printf '::notice title=Disposable candidate QA progress::mode=%s; stage=%s; production=NOT RUN\n' "$mode" "$1"
+}
 stage=build
 completed=''
 qa_env=0
@@ -61,13 +65,16 @@ PY
   exit "$rc"
 }
 trap finish EXIT
+progress build-started
 docker build --pull --progress=plain -t woodex-qa-php:local -f tools/docker/Dockerfile tools/docker 2>&1 | tee "$out/build.log"
 completed+=' build'
+progress build-completed
 stage=native-runtime
 docker run --rm --network none --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges \
   --entrypoint php --mount "type=bind,src=$PWD/tools/release,dst=/qa-tools,readonly" \
   woodex-qa-php:local /qa-tools/native-runtime.php | tee "$out/native-runtime.json"
 completed+=' native-runtime'
+progress native-runtime-completed
 sh tools/docker/setup-env.sh
 qa_env=1
 node tools/release/redact-disposable-qa.mjs --mask
@@ -76,17 +83,21 @@ stage=install
 # Only the downloader has egress; it has no DB env and runs no project scripts/plugins.
 "${compose[@]}" run --rm --entrypoint sh --no-deps php-deps /workspace/tools/release/install-reviewed-dependencies.sh 2>&1 | node tools/release/redact-disposable-qa.mjs | tee "$out/install.log"
 completed+=' install'
+progress install-completed
 stage=mysql
 "${compose[@]}" up --detach --wait mysql-test 2>&1 | node tools/release/redact-disposable-qa.mjs | tee "$out/mysql.log"
 completed+=' mysql'
+progress mysql-completed
 if [[ $mode == first-failure-diagnostic ]]; then
   stage=application-diagnostic
+  progress first-failure-diagnostic-started
   # A separate investigation only; this can NEVER replace the unchanged full gate below.
-  "${compose[@]}" run --rm --no-deps php-test --compact --stop-on-failure 2>&1 | node tools/release/redact-disposable-qa.mjs | tee "$out/tests.log"
+  "${compose[@]}" run --rm --no-deps php-test --compact --stop-on-failure --stop-on-error 2>&1 | node tools/release/redact-disposable-qa.mjs | tee "$out/tests.log"
   completed+=' application-diagnostic'
 else
 # FULL_SUITE_BRANCH
 stage=application-tests
+progress full-suite-started
 # Run every configured Unit/Feature/Arch test, not stop-on-failure or a selected file.
 # Skipped/warning outcomes cannot be represented as full acceptance.
 "${compose[@]}" run --rm --no-deps php-test --compact --fail-on-skipped --fail-on-warning 2>&1 | node tools/release/redact-disposable-qa.mjs | tee "$out/tests.log"
