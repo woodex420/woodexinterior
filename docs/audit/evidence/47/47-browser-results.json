@@ -1,0 +1,34 @@
+{
+  "checks": [
+    "Advanced lead workspace shows permission-scoped summary and search",
+    "Lead quick drawer displays real recorded activity",
+    "Activity filter reads real notes without changing history",
+    "Redesigned notification dropdown opens",
+    "Actual notification archive action works",
+    "Actual notification restore works",
+    "Notification centre searches native records",
+    "Website thread has no false WhatsApp window warning",
+    "Inbox reply persisted through native send action",
+    "Live drawer reply persists on the same website thread",
+    "Live drawer fits a phone viewport",
+    "Mobile Inbox shows one focused pane without overflow",
+    "Mobile back control restores conversation list",
+    "Advanced Leads fits mobile with table-scoped scrolling",
+    "Alert dropdown stays within phone viewport",
+    "Failed widget send retains the actual typed draft",
+    "Retried widget send succeeds through native endpoint",
+    "Visitor widget fits phone viewport",
+    "Visitor Escape closes panel and restores launcher",
+    "No JavaScript page errors in redesigned workflows"
+  ],
+  "errors": [],
+  "fixture": {
+    "contact_id": 27,
+    "lead_id": 27,
+    "conversation_id": 1,
+    "message_count": 4,
+    "last_body": "QA47 drawer reply saved.",
+    "unread_count": 0
+  },
+  "scope": "isolated QA copy only; no production/provider writes; widget failure intentionally intercepted"
+}

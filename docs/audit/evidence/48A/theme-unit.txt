@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: normalizes mode and resolves explicit preferences
+ok 1 - normalizes mode and resolves explicit preferences
+  ---
+  duration_ms: 0.773424
+  type: 'test'
+  ...
+# Subtest: retains legacy wx.theme values
+ok 2 - retains legacy wx.theme values
+  ---
+  duration_ms: 0.526484
+  type: 'test'
+  ...
+# Subtest: System follows device changes
+ok 3 - System follows device changes
+  ---
+  duration_ms: 0.231628
+  type: 'test'
+  ...
+# Subtest: manual mode ignores device changes and persists
+ok 4 - manual mode ignores device changes and persists
+  ---
+  duration_ms: 0.517902
+  type: 'test'
+  ...
+# Subtest: blocked localStorage remains usable in memory
+ok 5 - blocked localStorage remains usable in memory
+  ---
+  duration_ms: 0.259967
+  type: 'test'
+  ...
+# Subtest: cross-tab mode updates and storage clearing resolve consistently
+ok 6 - cross-tab mode updates and storage clearing resolve consistently
+  ---
+  duration_ms: 0.341802
+  type: 'test'
+  ...
+# Subtest: invalid stored preferences use System and toggle still works
+ok 7 - invalid stored preferences use System and toggle still works
+  ---
+  duration_ms: 0.256111
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 58.469983

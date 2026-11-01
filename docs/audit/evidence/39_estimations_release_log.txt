@@ -1,0 +1,37 @@
+# Final full suite
+   PASS  Tests\ArchTest
+  ✓ no debugging statements                                              8.76s
+  ✓ application code uses strict types                                   8.73s
+  ✓ domain code does not depend on Livewire or HTTP controllers          8.88s
+
+  Tests:    1 skipped, 1601 passed (8565 assertions)
+  Duration: 438.16s
+
+
+# Static analysis
+
+Note: Using configuration file /tmp/woodex-run/app/phpstan.neon.
+ [OK] No errors
+
+
+# Formatting
+  ..............................
+
+  ──────────────────────────────────────────────────────────────────── Laravel
+    PASS   .......................................................... 30 files
+
+
+# Mutating isolated browser proof
+NATIVE RATES NAMED BACKUP AND REAL PUBLISH PASS
+AUTHENTIC PUBLIC V1 JS VS NATIVE PHP: 18 SERVICE/FINISH CASES PASS
+ADDON LIVE PRICING AND PHONE WIDTH PASS
+INTERIOR SAVED SNAPSHOT CONVERSION AFTER RATE CHANGE PASS
+FURNITURE ENQUIRY CONVERSION AND A4 PREVIEW PASS
+CONVERTED HISTORICAL SNAPSHOT READONLY PASS
+JS_ERRORS []
+
+# Active preview iframe proof
+  server cookie memory: browser sent no cookies on 18 requests (first: POST /admin/login memory+XSRF-TOKEN,woodex-os-session), older values on 0
+
+3pc-blocked: OK, no-cookies: OK
+IFRAME CHECK OK

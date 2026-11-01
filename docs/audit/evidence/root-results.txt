@@ -1,0 +1,5 @@
+BATCH rt_aa EXIT=0   Tests:    125 passed (617 assertions)
+BATCH rt_ab EXIT=0   Tests:    1 skipped, 211 passed (1015 assertions)
+BATCH rt_ac EXIT=0   Tests:    195 passed (843 assertions)
+BATCH rt_ad EXIT=0   Tests:    99 passed (592 assertions)
+BATCH rt_ae EXIT=0   Tests:    178 passed (951 assertions)

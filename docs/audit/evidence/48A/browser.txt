@@ -1,0 +1,32 @@
+PASS Dedicated Web Chat tab displays anonymous and saved SQL intake
+PASS Header no longer implies record provenance with Demo data
+PASS Accurate local preview label is available in user menu
+PASS Night uses semantic page and surface palette
+PASS Night preference survives reload
+PASS Theme synchronizes to another open staff tab
+PASS System follows device theme changes
+PASS Manual Night is not overwritten by device preference
+PASS Blocked browser storage does not break theme or sidebar
+PASS Existing charts update text colors when theme changes
+PASS Inbox loads in Night without overflow
+PASS Notifications loads in Night without overflow
+PASS Lead activity loads in Night without overflow
+PASS Native read-only Assistant answers in Night
+PASS New invoice HTML preview remains paper-light in Night
+PASS interior live document remains paper-light in Night mode
+PASS interior actual PDF renders white paper and real ink in Night mode
+PASS furniture live document remains paper-light in Night mode
+PASS furniture actual PDF renders white paper and real ink in Night mode
+PASS invoice actual PDF renders white paper and real ink in Night mode
+PASS Real inbound visitor message automatically opens the correct staff thread
+PASS Valid phone is persisted in CRM before any service answer
+PASS Service answer enriches the same lead without duplicates
+PASS Native staff reply persists in the original SQL conversation
+PASS Visitor receives the native staff reply
+PASS Tracking search reads the newly captured real enquiry
+PASS Other-thread inbound alert preserves current composer draft
+PASS Declining thread switch keeps the draft
+PASS Confirmed switch opens the actual incoming thread
+PASS Night chat drawer fits mobile without page overflow
+PASS Web Chat Leads fits mobile without page overflow
+PASS No page JavaScript errors in tested theme chat and PDF workflows

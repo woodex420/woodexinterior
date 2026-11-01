@@ -1,0 +1,66 @@
+{
+  "date": "2026-11-01",
+  "status": "LOCAL UI SLICE VERIFIED; NOT FULL-SYSTEM/LIVE ACCEPTANCE",
+  "branch": "arena/8be318a2-woodexinterior",
+  "published_head_at_start": "c437cad30676da1dfb347edbb815e5e1444d13ab",
+  "six_before_ui_files_equal_published": true,
+  "node_tests": {
+    "passed": 49,
+    "failed": 0,
+    "new_source_contrast_prepaint_store": 42,
+    "existing_theme_store": 7
+  },
+  "pure_php_navigation": {
+    "assertions": 32,
+    "runtime": "PHP8.4.25WASM",
+    "scope": "Pure source shape; no Laravel/DB/permission-filter proof"
+  },
+  "browser": {
+    "passed_cases": 24,
+    "widths": [
+      360,
+      390,
+      768,
+      1440
+    ],
+    "scope": "Synthetic compiled-CSS/layout contract fixture, NOT live Laravel/backend",
+    "initial_failure": "Chromium missing libnspr4; bundled npm runtime libraries extracted to excluded scratch; final24 cases pass"
+  },
+  "pest_tests": "Two native Pest cases added, NOT executed",
+  "build": "Standard npm lock install and Vite PASS; engine/large-chunk warnings disclosed",
+  "protected_source_hashes_unchanged": 965,
+  "unchanged_protected_counts": {
+    "Accounts": 28,
+    "Projects": 26,
+    "database": 240,
+    "public_source_excluding_build": 619,
+    "PDF_views": 50,
+    "shared_site_CSS": 2
+  },
+  "baseline_changed": [
+    "platform/app/Support/AdminNavigation.php",
+    "platform/resources/css/admin.css",
+    "platform/resources/js/admin/theme.js",
+    "platform/resources/views/layouts/admin.blade.php",
+    "platform/resources/views/components/admin/sidebar.blade.php",
+    "platform/resources/views/livewire/admin/system/settings-page.blade.php",
+    ".gitignore"
+  ],
+  "baseline_unchanged": [
+    "tools/sandbox/theme-unit-check.mjs"
+  ],
+  "new_source": [
+    "platform/tests/Unit/AdminWebsiteNavigationTest.php",
+    "tools/sandbox/admin-refresh-unit-check.mjs",
+    "tools/sandbox/admin-navigation-proof.php",
+    "tools/sandbox/admin-refresh-browser-check.mjs"
+  ],
+  "publication": "Not performed at local-QA capture time; verify final branch/push evidence separately",
+  "production_actions": {
+    "hosting_connection_change": false,
+    "DB_migration_seed_import": false,
+    "provider_send": false,
+    "deployment": false
+  },
+  "next_gate": "Automatic-on-push OFF/controlled confirmation before publishing to connected branch; native/live acceptance remains open."
+}

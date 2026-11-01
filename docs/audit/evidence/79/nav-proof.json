@@ -1,0 +1,6 @@
+{
+    "passed": true,
+    "assertions": 32,
+    "runtime": "8.4.25",
+    "scope": "Pure navigation shape only; not Laravel permission-filter\/runtime acceptance"
+}

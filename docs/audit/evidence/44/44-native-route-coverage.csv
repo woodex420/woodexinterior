@@ -1,0 +1,189 @@
+name,uri,methods,middleware,browser_landing,actions
+login,admin/login,"GET,HEAD",web; guest:web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+login.store,admin/login,POST,web; guest:web; throttle:login,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+logout,admin/logout,POST,web; auth:web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+password.request,admin/forgot-password,"GET,HEAD",web; guest:web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+password.reset,admin/reset-password/{token},"GET,HEAD",web; guest:web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+password.email,admin/forgot-password,POST,web; guest:web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+password.update,admin/reset-password,POST,web; guest:web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+password.confirm,admin/user/confirm-password,"GET,HEAD",web; auth:web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+password.confirmation,admin/user/confirmed-password-status,"GET,HEAD",web; auth:web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+password.confirm.store,admin/user/confirm-password,POST,web; auth:web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+two-factor.login,admin/two-factor-challenge,"GET,HEAD",web; guest:web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+two-factor.login.store,admin/two-factor-challenge,POST,web; guest:web; throttle:two-factor,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+two-factor.enable,admin/user/two-factor-authentication,POST,web; auth:web; password.confirm,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+two-factor.confirm,admin/user/confirmed-two-factor-authentication,POST,web; auth:web; password.confirm,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+two-factor.disable,admin/user/two-factor-authentication,DELETE,web; auth:web; password.confirm,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+two-factor.qr-code,admin/user/two-factor-qr-code,"GET,HEAD",web; auth:web; password.confirm,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+two-factor.secret-key,admin/user/two-factor-secret-key,"GET,HEAD",web; auth:web; password.confirm,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+two-factor.recovery-codes,admin/user/two-factor-recovery-codes,"GET,HEAD",web; auth:web; password.confirm,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+two-factor.regenerate-recovery-codes,admin/user/two-factor-recovery-codes,POST,web; auth:web; password.confirm,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+default-livewire.update,livewire-8026531e/update,POST,web; Livewire\Mechanisms\HandleRequests\RequireLivewireHeaders,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+,livewire-8026531e/livewire.js,"GET,HEAD",,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+,livewire-8026531e/livewire.min.js.map,"GET,HEAD",,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+,livewire-8026531e/livewire.csp.min.js.map,"GET,HEAD",,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+livewire.upload-file,livewire-8026531e/upload-file,POST,"web; throttle:60,1",NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+livewire.preview-file,livewire-8026531e/preview-file/{filename},"GET,HEAD",web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+,livewire-8026531e/js/{component}.js,"GET,HEAD",,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+,livewire-8026531e/css/{component}.css,"GET,HEAD",,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+,livewire-8026531e/css/{component}.global.css,"GET,HEAD",,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+api.public.leads.store,api/public/leads,POST,api; throttle:public-leads,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+api.public.chat.start,api/public/chat/start,POST,api; throttle:chat-write,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+api.public.chat.send,api/public/chat/send,POST,api; throttle:chat-write,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+api.public.chat.messages,api/public/chat/messages,"GET,HEAD",api; throttle:chat-poll,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+legacy.forms.config,api/forms.php,"GET,HEAD",api; throttle:public-site,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+legacy.forms.store,api/forms.php,POST,api; throttle:public-site,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+legacy.chat,api/chat.php,"GET,POST,HEAD",api; throttle:public-site,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+api.mcp,api/mcp,POST,"api; throttle:120,1; App\Http\Middleware\AuthenticateMcpBridge",NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+,api/mcp,"GET,HEAD",api,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+api.bridge.status,api/bridge/v1/status,"GET,HEAD","api; throttle:120,1; App\Http\Middleware\AuthenticateMcpBridge",NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+api.bridge.leads,api/bridge/v1/leads,"GET,HEAD","api; throttle:120,1; App\Http\Middleware\AuthenticateMcpBridge",NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+api.bridge.quotes,api/bridge/v1/quotes,"GET,HEAD","api; throttle:120,1; App\Http\Middleware\AuthenticateMcpBridge",NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+,up,"GET,HEAD",,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+theme.live,assets/theme.css,"GET,HEAD",web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+theme.css,theme/{hash}.css,"GET,HEAD",web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.dashboard,admin,"GET,HEAD",web; auth; active; db-current; two-factor; can:dashboard.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.notifications,admin/notifications,"GET,HEAD",web; auth; active; db-current; two-factor; can:dashboard.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.my-day,admin/my-day,"GET,HEAD",web; auth; active; db-current; two-factor; can:dashboard.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.leads.index,admin/leads,"GET,HEAD",web; auth; active; db-current; two-factor; can:leads.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.leads.import,admin/leads/import,"GET,HEAD",web; auth; active; db-current; two-factor; can:system.import,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.leads.show,admin/leads/{lead},"GET,HEAD",web; auth; active; db-current; two-factor; can:leads.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.pipeline,admin/pipeline,"GET,HEAD",web; auth; active; db-current; two-factor; can:leads.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.contacts.index,admin/contacts,"GET,HEAD",web; auth; active; db-current; two-factor; can:contacts.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.crm.clients,admin/clients,"GET,HEAD",web; auth; active; db-current; two-factor; can:contacts.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.crm.customers,admin/customers,"GET,HEAD",web; auth; active; db-current; two-factor; can:contacts.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.crm.visitors,admin/visitors,"GET,HEAD",web; auth; active; db-current; two-factor; can:contacts.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.contacts.show,admin/contacts/{contact},"GET,HEAD",web; auth; active; db-current; two-factor; can:contacts.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.companies.show,admin/companies/{company},"GET,HEAD",web; auth; active; db-current; two-factor; can:contacts.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.companies.index,admin/companies,"GET,HEAD",web; auth; active; db-current; two-factor; can:contacts.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.tasks.index,admin/tasks,"GET,HEAD",web; auth; active; db-current; two-factor; can:leads.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.visits.index,admin/site-visits,"GET,HEAD",web; auth; active; db-current; two-factor; can:leads.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.quotes.index,admin/quotes,"GET,HEAD",web; auth; active; db-current; two-factor; can:quotes.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.sales.proposals,admin/proposals,"GET,HEAD",web; auth; active; db-current; two-factor; can:quotes.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.sales.pipeline,admin/sales-pipeline,"GET,HEAD",web; auth; active; db-current; two-factor; can:quotes.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.quotes.create,admin/quotes/new,"GET,HEAD",web; auth; active; db-current; two-factor; can:quotes.manage,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.quotes.show,admin/quotes/{quote},"GET,HEAD",web; auth; active; db-current; two-factor; can:quotes.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.quotes.preview,admin/quotes/{quote}/preview,POST,"web; auth; active; db-current; two-factor; can:quotes.view; throttle:120,1",NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.quotes.pdf,admin/quotes/{quote}/pdf,"GET,HEAD",web; auth; active; db-current; two-factor; can:quotes.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.invoices.index,admin/invoices,"GET,HEAD",web; auth; active; db-current; two-factor; can:invoices.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.invoices.create,admin/invoices/new,"GET,HEAD",web; auth; active; db-current; two-factor; can:invoices.manage,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.invoices.show,admin/invoices/{invoice},"GET,HEAD",web; auth; active; db-current; two-factor; can:invoices.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.invoices.pdf,admin/invoices/{invoice}/pdf,"GET,HEAD",web; auth; active; db-current; two-factor; can:invoices.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.payments.index,admin/payments,"GET,HEAD",web; auth; active; db-current; two-factor; can:invoices.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.estimations.index,admin/estimations,"GET,HEAD",web; auth; active; db-current; two-factor; can:estimations.access,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.estimations.create,admin/estimations/new,"GET,HEAD",web; auth; active; db-current; two-factor; can:estimates.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.estimations.show,admin/estimations/{estimate},"GET,HEAD",web; auth; active; db-current; two-factor; can:estimates.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.sales.dues,admin/sales/dues,"GET,HEAD",web; auth; active; db-current; two-factor; can:invoices.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.sales.tracking.quotes,admin/sales/tracking/quotes,"GET,HEAD",web; auth; active; db-current; two-factor; can:quotes.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.sales.tracking.invoices,admin/sales/tracking/invoices,"GET,HEAD",web; auth; active; db-current; two-factor; can:invoices.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.contacts.statement,admin/clients/{contact}/statement.pdf,"GET,HEAD",web; auth; active; db-current; two-factor; can:invoices.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.contacts.data,admin/contacts/{contact}/data.json,"GET,HEAD",web; auth; active; db-current; two-factor; can:leads.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.accounts.chart,admin/accounts/chart,"GET,HEAD",web; auth; active; db-current; two-factor; can:accounts.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.accounts.journals,admin/accounts/journals,"GET,HEAD",web; auth; active; db-current; two-factor; can:accounts.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.accounts.periods,admin/accounts/periods,"GET,HEAD",web; auth; active; db-current; two-factor; can:accounts.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.accounts.trial,admin/accounts/trial-balance,"GET,HEAD",web; auth; active; db-current; two-factor; can:accounts.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.accounts.methods,admin/accounts/methods,"GET,HEAD",web; auth; active; db-current; two-factor; can:accounts.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.accounts.payables,admin/accounts/payables,"GET,HEAD",web; auth; active; db-current; two-factor; can:accounts.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.accounts.expenses,admin/accounts/expenses,"GET,HEAD",web; auth; active; db-current; two-factor; can:accounts.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.accounts.profit,admin/accounts/profit-loss,"GET,HEAD",web; auth; active; db-current; two-factor; can:accounts.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.approvals,admin/approvals,"GET,HEAD","web; auth; active; db-current; two-factor; can-any:quotes.approve,payments.verify,social.manage,system.change_requests",PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.sales.documents,admin/sales/documents,"GET,HEAD",web; auth; active; db-current; two-factor; can:quotes.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.quote-templates,admin/quote-templates,"GET,HEAD",web; auth; active; db-current; two-factor; can:quotes.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.rate-book,admin/rate-book,"GET,HEAD",web; auth; active; db-current; two-factor; can:quotes.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.description-library,admin/description-library,"GET,HEAD",web; auth; active; db-current; two-factor; can:quotes.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.document-design,admin/document-design,"GET,HEAD",web; auth; active; db-current; two-factor; can:quotes.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.projects.index,admin/projects,"GET,HEAD",web; auth; active; db-current; two-factor; can:projects.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.projects.board,admin/projects/board,"GET,HEAD",web; auth; active; db-current; two-factor; can:projects.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.projects.portal,admin/projects/portal,"GET,HEAD",web; auth; active; db-current; two-factor; can:projects.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.projects.handovers,admin/projects/handovers,"GET,HEAD",web; auth; active; db-current; two-factor; can:projects.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.projects.show,admin/projects/{project},"GET,HEAD",web; auth; active; db-current; two-factor; can:projects.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.inbox,admin/inbox,"GET,HEAD",web; auth; active; db-current; two-factor; can:inbox.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.conversations.media,admin/conversations/media/{message},"GET,HEAD",web; auth; active; db-current; two-factor; can:inbox.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.media.show,admin/media/{media}/{conversion?},"GET,HEAD",web; auth; active; db-current; two-factor,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.marketing.index,admin/marketing,"GET,HEAD",web; auth; active; db-current; two-factor; can:social.manage,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.marketing.social,admin/marketing/social,"GET,HEAD",web; auth; active; db-current; two-factor; can:social.manage,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.website.pages,admin/website/pages,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.website.find-replace,admin/website/find-replace,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.website.studio,admin/website/studio/{screen},"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.website.studio.api,admin/website/studio/api,POST,web; auth; active; db-current; two-factor; can:website.edit,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.website.studio.builder-api,admin/website/studio/builder-api,POST,web; auth; active; db-current; two-factor; can:website.edit,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.website.estimator,admin/website/estimator,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.website.blog,admin/website/blog,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.website.portfolio,admin/website/portfolio,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.website.forms,admin/website/forms,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.website.pages.create,admin/website/pages/new,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.website.pages.edit,admin/website/pages/{page},"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.website.builder,admin/website/builder,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.website.builder.api,admin/website/builder/api,POST,web; auth; active; db-current; two-factor; can:website.edit,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.website.seo.overview,admin/website/seo-overview,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.website.health,admin/website/health,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.website.media,admin/website/media,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.website.redirects,admin/website/redirects,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.website.seo,admin/website/seo,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.website.speed,admin/website/speed,"GET,HEAD",web; auth; active; db-current; two-factor; can:website.edit,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.website.settings,admin/website/settings,"GET,HEAD",web; auth; active; db-current; two-factor; can:settings.manage,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.website.theme,admin/website/theme,"GET,HEAD",web; auth; active; db-current; two-factor; can:theme.manage,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.profile.security,admin/profile/security,"GET,HEAD",web; auth; active; db-current; two-factor,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.reports.index,admin/reports,"GET,HEAD",web; auth; active; db-current; two-factor; can:reports.view,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.reports.funnel,admin/reports/sales-funnel,"GET,HEAD",web; auth; active; db-current; two-factor; can:reports.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.reports.revenue,admin/reports/revenue-collections,"GET,HEAD",web; auth; active; db-current; two-factor; can:reports.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.reports.receivables,admin/receivables,"GET,HEAD",web; auth; active; db-current; two-factor; can:invoices.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.system.access,admin/system/access,"GET,HEAD","web; auth; active; db-current; two-factor; can-any:users.manage,settings.manage",PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.system.connections,admin/system/connections,"GET,HEAD","web; auth; active; db-current; two-factor; can-any:integrations.manage,system.import",PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.system.platform,admin/system/platform,"GET,HEAD","web; auth; active; db-current; two-factor; can-any:system.health,audit.view,system.change_requests,settings.manage,leads.delete",PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.chat-bot,admin/chat-bot,"GET,HEAD",web; auth; active; db-current; two-factor; can:settings.manage,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.settings,admin/settings,"GET,HEAD",web; auth; active; db-current; two-factor; can:settings.manage,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.canned-replies,admin/settings/canned-replies,"GET,HEAD",web; auth; active; db-current; two-factor; can:settings.manage,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.assignment-rules,admin/settings/lead-assignment,"GET,HEAD",web; auth; active; db-current; two-factor; can:settings.manage,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.users.index,admin/users,"GET,HEAD",web; auth; active; db-current; two-factor; can:users.manage,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.system.health,admin/system/health,"GET,HEAD",web; auth; active; db-current; two-factor; can:system.health,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.automation.index,admin/automation,"GET,HEAD",web; auth; active; db-current; two-factor; can:automation.manage,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.automation.sequences,admin/automation/sequences,"GET,HEAD",web; auth; active; db-current; two-factor; can:automation.manage,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.system.change-requests,admin/system/change-requests,"GET,HEAD",web; auth; active; db-current; two-factor; can:system.change_requests,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.system.alert-rules,admin/system/alert-rules,"GET,HEAD",web; auth; active; db-current; two-factor; can:settings.manage,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.system.audit,admin/system/audit,"GET,HEAD",web; auth; active; db-current; two-factor; can:audit.view,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.system.updates,admin/system/updates,"GET,HEAD",web; auth; active; db-current; two-factor; can:system.health,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.system.updates.apply,admin/system/updates,POST,web; auth; active; db-current; two-factor; can:system.health,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.recycle-bin,admin/recycle-bin,"GET,HEAD",web; auth; active; db-current; two-factor; can:leads.delete,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.integrations,admin/integrations,"GET,HEAD",web; auth; active; db-current; two-factor; can:integrations.manage,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.integrations.oauth.start,admin/integrations/oauth/{provider}/start,"GET,HEAD",web; auth; active; db-current; two-factor; can:integrations.manage,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.integrations.oauth.callback,admin/integrations/oauth/{provider}/callback,"GET,HEAD",web; auth; active; db-current; two-factor; can:integrations.manage,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+admin.whatsapp.templates,admin/integrations/whatsapp-templates,"GET,HEAD",web; auth; active; db-current; two-factor; can:integrations.manage,PASS: owner demo sidebar landing only,NOT INDIVIDUALLY ATTESTED
+admin.data-import,admin/data-import,"GET,HEAD",web; auth; active; db-current; two-factor; can:system.import,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+google.login,admin/google/login,"GET,HEAD",web; db-current; throttle:google-oauth; guest; throttle:google-start,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+google.callback,admin/google/callback,"GET,HEAD",web; db-current; throttle:google-oauth,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+google.connect,admin/google/connect,POST,web; db-current; throttle:google-oauth; auth; active; two-factor; throttle:google-start,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+google.disconnect,admin/google/disconnect,POST,web; db-current; throttle:google-oauth; auth; active; two-factor; throttle:google-start,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+google.check,admin/google/check,POST,web; db-current; throttle:google-oauth; auth; active; two-factor; throttle:google-start,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+google.link,admin/google/link,POST,web; db-current; throttle:google-oauth; auth; active; two-factor; throttle:google-start,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+google.unlink,admin/google/unlink,POST,web; db-current; throttle:google-oauth; auth; active; two-factor; throttle:google-start,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+webhooks.telegram,webhooks/telegram,POST,web; App\Http\Middleware\VerifyTelegramWebhook; throttle:telegram-webhooks,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+webhooks.telegram.legacy,webhooks/telegram/{secret},POST,web; App\Http\Middleware\VerifyTelegramWebhook; throttle:telegram-webhooks,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+webhooks.whatsapp.verify,webhooks/whatsapp,"GET,HEAD",web; throttle:webhooks,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+webhooks.whatsapp,webhooks/whatsapp,POST,web; throttle:webhooks,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+quotes.portal,q/{quote},"GET,HEAD",web; signed:relative,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+quotes.portal.pdf,q/{quote}/pdf,"GET,HEAD",web; signed:relative,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+quotes.portal.accept,q/{quote}/accept,POST,"web; signed:relative; throttle:10,1",NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+quotes.portal.changes,q/{quote}/changes,POST,"web; signed:relative; throttle:10,1",NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+invoices.portal,i/{invoice},"GET,HEAD",web; signed:relative,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+invoices.portal.pdf,i/{invoice}/pdf,"GET,HEAD",web; signed:relative,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+invoices.portal.proof,i/{invoice}/proof,POST,"web; signed:relative; throttle:10,1",NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+projects.portal,p/{project},"GET,HEAD",web; signed:relative,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+projects.portal.document,p/{project}/documents/{media},"GET,HEAD",web; signed:relative,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+projects.portal.receipt,p/{project}/receipts/{payment},"GET,HEAD",web; signed:relative,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+projects.portal.handover,p/{project}/handover,POST,"web; signed:relative; throttle:10,1",NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+portal,portal,"GET,HEAD",web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+portal.code,portal/code,POST,"web; throttle:5,1",NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+portal.enter,portal/enter,POST,"web; throttle:10,1",NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+portal.leave,portal/leave,POST,web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+website.media.file,media/{media}/{name},"GET,HEAD",web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+robots,robots.txt,"GET,HEAD",web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+sitemap,sitemap.xml,"GET,HEAD",web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+chat.widget,chat/widget.js,"GET,HEAD",web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+site.tags,site/tags.js,"GET,HEAD",web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+,{fallbackPlaceholder},"GET,HEAD",web,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+install,install,"GET,HEAD",,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+install.store,install,POST,,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+install.finish,install/finish,POST,,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+storage.local,storage/{path},"GET,HEAD",,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED
+storage.local.upload,storage/{path},PUT,,NOT INDIVIDUALLY ATTESTED,NOT INDIVIDUALLY ATTESTED

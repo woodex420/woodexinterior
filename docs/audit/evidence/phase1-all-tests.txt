@@ -1,0 +1,11 @@
+BATCH 15 EXIT=0   Tests:    131 passed (725 assertions)
+BATCH 30 EXIT=0   Tests:    169 passed (795 assertions)
+BATCH 45 EXIT=0   Tests:    1 skipped, 214 passed (921 assertions)
+BATCH 60 EXIT=0   Tests:    138 passed (755 assertions)
+BATCH 75 EXIT=0   Tests:    125 passed (634 assertions)
+BATCH 90 EXIT=0   Tests:    155 passed (767 assertions)
+BATCH 105 EXIT=0   Tests:    89 passed (3195 assertions)
+BATCH 120 EXIT=0   Tests:    131 passed (556 assertions)
+BATCH 125 EXIT=0   Tests:    60 passed (127 assertions)
+FILES=125
+DONE

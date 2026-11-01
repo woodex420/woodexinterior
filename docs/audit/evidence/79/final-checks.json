@@ -1,0 +1,12 @@
+{
+  "branch": "arena/8be318a2-woodexinterior",
+  "source_before_sha": "c437cad30676da1dfb347edbb815e5e1444d13ab",
+  "ui_baseline_identity_vs_published": "6 files match before edits",
+  "protected_files_unchanged": 965,
+  "new_source_hashes_verified": 4,
+  "original_env_config_present": false,
+  "tracked_diff_check": "PASS",
+  "publication": "Not performed at local-QA capture time",
+  "no_live_host_or_database_actions": true,
+  "review_scope": "Admin palette/Website heading/responsive Settings only; not complete system"
+}

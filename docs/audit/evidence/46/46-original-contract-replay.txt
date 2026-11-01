@@ -1,0 +1,26 @@
+
+   FAIL  Tests\Feature\Audit\UnresolvedContractProbeTest
+  ✓ it requires the staff Payments form to book its verified receipt in… 2.43s
+  ✓ it requires the staff Payments form to book its verified receipt in… 0.39s
+  ✓ it requires the staff Payments form to reject a closed-period recei… 0.39s
+  ✓ it requires the payment posting boundary to reject pending unverifi… 0.05s
+  ✓ it requires a rejected invoice issue to leave no orphan frozen PDF   0.29s
+  ⨯ it requires previous sent-period totals not to disappear after a la… 0.83s
+  ────────────────────────────────────────────────────────────────────────────
+   FAILED  Tests\Feature\Audit\UnresolvedContractProbeTest > it requires pre…
+  Failed asserting that 0 is identical to 1000000.
+
+  at tests/Feature/Audit/UnresolvedContractProbeTest.php:138
+    134▕     audit45Observation('historical-sent-period', ['september_before_minor' => $before, 'september_after_minor' => $after,
+    135▕         'september_frozen_version_minor' => $version->refresh()->total_minor, 'october_quoted_minor' => $report->totals(ReportRange::fromPreset('this_month'))['quoted_minor'],
+    136▕         'old_pdf_unchanged' => hash('sha256', Storage::disk('local')->get($version->pdf_path)) === $hash]);
+    137▕     expect($before)->toBe(1000000);
+  ➜ 138▕     expect($after)->toBe($before);
+    139▕ });
+    140▕
+
+  1   tests/Feature/Audit/UnresolvedContractProbeTest.php:138
+
+
+  Tests:    1 failed, 5 passed (12 assertions)
+  Duration: 4.71s

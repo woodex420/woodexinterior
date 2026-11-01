@@ -1,0 +1,42 @@
+name: Native branch tests
+run-name: Locked branch tests — ${{ github.sha }}
+on:
+  push:
+    branches: [arena/8be318a2-woodexinterior]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: native-branch-tests-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  # Keep the existing check name, but test committed source, not a recovery archive.
+  first-failure-diagnostic:
+    if: github.ref == 'refs/heads/arena/8be318a2-woodexinterior'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Source CI and safety contracts
+        run: node --test tools/release/preflight.test.mjs tools/release/source-ci.test.mjs
+      - name: All native groups — locked source, synthetic internal MySQL, no deployment
+        run: bash tools/release/test-branch.sh
+      - name: Synthetic test results only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: native-tests-${{ github.sha }}
+          path: .cache/native-ci/
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Summary and deployment boundary
+        if: always()
+        run: |
+          echo '## Committed-source native tests' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f .cache/native-ci/results.tsv ]; then
+            cat .cache/native-ci/results.tsv >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo 'No Hostinger operation, production data, backup restore, migration or deployment was performed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Passing CI alone is not production deployment approval.' >> "$GITHUB_STEP_SUMMARY"

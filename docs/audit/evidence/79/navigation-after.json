@@ -1,0 +1,391 @@
+[
+    {
+        "title": "Overview",
+        "items": [
+            {
+                "label": "Dashboard",
+                "icon": "dashboard",
+                "route": "admin.dashboard",
+                "permission": "dashboard.view",
+                "phase": null
+            },
+            {
+                "label": "Approvals",
+                "icon": "check-circle",
+                "route": "admin.approvals",
+                "permission": "quotes.approve",
+                "phase": null
+            },
+            {
+                "label": "Reports",
+                "icon": "chart",
+                "route": "admin.reports.index",
+                "permission": "reports.view",
+                "phase": null
+            }
+        ]
+    },
+    {
+        "title": "CRM",
+        "items": [
+            {
+                "label": "Leads",
+                "icon": "users",
+                "route": "admin.leads.index",
+                "permission": "leads.view",
+                "phase": null
+            },
+            {
+                "label": "Contacts",
+                "icon": "contact",
+                "route": "admin.contacts.index",
+                "permission": "contacts.view",
+                "phase": null
+            },
+            {
+                "label": "Tasks & Visits",
+                "icon": "tasks",
+                "route": "admin.tasks.index",
+                "permission": "leads.view",
+                "phase": null
+            }
+        ]
+    },
+    {
+        "title": "Sales",
+        "items": [
+            {
+                "label": "Estimations",
+                "icon": "calculator",
+                "route": "admin.estimations.index",
+                "permission": "estimates.view",
+                "phase": null
+            },
+            {
+                "label": "Quotations",
+                "icon": "quote",
+                "route": "admin.quotes.index",
+                "permission": "quotes.view",
+                "phase": null
+            },
+            {
+                "label": "Invoices",
+                "icon": "invoice",
+                "route": "admin.invoices.index",
+                "permission": "invoices.view",
+                "phase": null
+            },
+            {
+                "label": "Payments",
+                "icon": "wallet",
+                "route": "admin.payments.index",
+                "permission": "invoices.view",
+                "phase": null
+            },
+            {
+                "label": "Documents",
+                "icon": "book",
+                "route": "admin.sales.documents",
+                "permission": "quotes.view",
+                "phase": null
+            }
+        ]
+    },
+    {
+        "title": "Accounts",
+        "items": [
+            {
+                "label": "Chart of Accounts",
+                "icon": "book",
+                "route": "admin.accounts.chart",
+                "permission": "accounts.view",
+                "phase": null
+            },
+            {
+                "label": "Journals",
+                "icon": "layers",
+                "route": "admin.accounts.journals",
+                "permission": "accounts.view",
+                "phase": null
+            },
+            {
+                "label": "Trial balance",
+                "icon": "chart",
+                "route": "admin.accounts.trial",
+                "permission": "accounts.view",
+                "phase": null
+            },
+            {
+                "label": "Profit & loss",
+                "icon": "trending-up",
+                "route": "admin.accounts.profit",
+                "permission": "accounts.view",
+                "phase": null
+            },
+            {
+                "label": "Payables",
+                "icon": "invoice",
+                "route": "admin.accounts.payables",
+                "permission": "accounts.view",
+                "phase": null
+            },
+            {
+                "label": "Income & expenses",
+                "icon": "banknote",
+                "route": "admin.accounts.expenses",
+                "permission": "accounts.view",
+                "phase": null
+            },
+            {
+                "label": "Periods",
+                "icon": "clock",
+                "route": "admin.accounts.periods",
+                "permission": "accounts.view",
+                "phase": null
+            },
+            {
+                "label": "Payment Methods",
+                "icon": "wallet",
+                "route": "admin.accounts.methods",
+                "permission": "accounts.view",
+                "phase": null
+            }
+        ]
+    },
+    {
+        "title": "Projects",
+        "items": [
+            {
+                "label": "Projects",
+                "icon": "hammer",
+                "route": "admin.projects.index",
+                "permission": "projects.view",
+                "phase": null
+            },
+            {
+                "label": "Board",
+                "icon": "kanban",
+                "route": "admin.projects.board",
+                "permission": "projects.view",
+                "phase": null
+            },
+            {
+                "label": "Client portal",
+                "icon": "link",
+                "route": "admin.projects.portal",
+                "permission": "projects.view",
+                "phase": null
+            },
+            {
+                "label": "Handovers",
+                "icon": "check-circle",
+                "route": "admin.projects.handovers",
+                "permission": "projects.view",
+                "phase": null
+            }
+        ]
+    },
+    {
+        "title": "Inbox",
+        "items": [
+            {
+                "label": "Conversations",
+                "icon": "inbox",
+                "route": "admin.inbox",
+                "permission": "inbox.view",
+                "phase": null
+            },
+            {
+                "label": "Chat Bot",
+                "icon": "bot",
+                "route": "admin.chat-bot",
+                "permission": "settings.manage",
+                "phase": null
+            }
+        ]
+    },
+    {
+        "title": "Automation",
+        "items": [
+            {
+                "label": "Automations",
+                "icon": "zap",
+                "route": "admin.automation.index",
+                "permission": "automation.manage",
+                "phase": null
+            },
+            {
+                "label": "Sequences",
+                "icon": "refresh",
+                "route": "admin.automation.sequences",
+                "permission": "automation.manage",
+                "phase": null
+            },
+            {
+                "label": "WhatsApp Templates",
+                "icon": "whatsapp",
+                "route": "admin.whatsapp.templates",
+                "permission": "integrations.manage",
+                "phase": null
+            }
+        ]
+    },
+    {
+        "title": "Marketing",
+        "items": [
+            {
+                "label": "Marketing",
+                "icon": "megaphone",
+                "route": "admin.marketing.index",
+                "permission": "social.manage",
+                "phase": null
+            }
+        ]
+    },
+    {
+        "title": "Pages & builder",
+        "items": [
+            {
+                "label": "All pages",
+                "icon": "layout",
+                "route": "admin.website.pages",
+                "permission": "website.edit",
+                "phase": null
+            },
+            {
+                "label": "Page builder",
+                "icon": "panel",
+                "route": "admin.website.builder",
+                "permission": "website.edit",
+                "phase": null
+            },
+            {
+                "label": "Find & replace",
+                "icon": "search",
+                "route": "admin.website.find-replace",
+                "permission": "website.edit",
+                "phase": null
+            },
+            {
+                "label": "Redirects",
+                "icon": "globe",
+                "route": "admin.website.redirects",
+                "permission": "website.edit",
+                "phase": null
+            }
+        ]
+    },
+    {
+        "title": "Content",
+        "items": [
+            {
+                "label": "Blog",
+                "icon": "book",
+                "route": "admin.website.blog",
+                "permission": "website.edit",
+                "phase": null
+            },
+            {
+                "label": "Portfolio",
+                "icon": "layout",
+                "route": "admin.website.portfolio",
+                "permission": "website.edit",
+                "phase": null
+            },
+            {
+                "label": "Forms",
+                "icon": "file",
+                "route": "admin.website.forms",
+                "permission": "website.edit",
+                "phase": null
+            }
+        ]
+    },
+    {
+        "title": "Website",
+        "items": [
+            {
+                "label": "Media",
+                "icon": "folder",
+                "route": "admin.website.media",
+                "permission": "website.edit",
+                "phase": null
+            },
+            {
+                "label": "SEO",
+                "icon": "target",
+                "route": "admin.website.seo.overview",
+                "permission": "website.edit",
+                "phase": null
+            },
+            {
+                "label": "SEO agent",
+                "icon": "search",
+                "route": "admin.website.seo",
+                "permission": "website.edit",
+                "phase": null
+            },
+            {
+                "label": "Speed",
+                "icon": "gauge",
+                "route": "admin.website.speed",
+                "permission": "website.edit",
+                "phase": null
+            },
+            {
+                "label": "Site health",
+                "icon": "health",
+                "route": "admin.website.health",
+                "permission": "website.edit",
+                "phase": null
+            },
+            {
+                "label": "Theme",
+                "icon": "palette",
+                "route": "admin.website.theme",
+                "permission": "theme.manage",
+                "phase": null
+            },
+            {
+                "label": "Website Settings",
+                "icon": "settings",
+                "route": "admin.website.settings",
+                "permission": "settings.manage",
+                "phase": null
+            }
+        ]
+    },
+    {
+        "title": "System",
+        "items": [
+            {
+                "label": "Settings",
+                "icon": "settings",
+                "route": "admin.settings",
+                "permission": "settings.manage",
+                "phase": null
+            },
+            {
+                "label": "Access & team",
+                "icon": "shield",
+                "route": "admin.system.access",
+                "permission": "users.manage",
+                "phase": null
+            },
+            {
+                "label": "Connections",
+                "icon": "link",
+                "route": "admin.system.connections",
+                "permission": "integrations.manage",
+                "phase": null
+            },
+            {
+                "label": "Platform",
+                "icon": "activity",
+                "route": "admin.system.platform",
+                "permission": "system.health",
+                "phase": null
+            }
+        ]
+    }
+]

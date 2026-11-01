@@ -1,0 +1,53 @@
+{
+  "scope": "Standalone visual approval prototype, not integrated native renderer acceptance",
+  "desktop": {
+    "rows": 12,
+    "sum": 1488750,
+    "paper": {
+      "width": 793.6875,
+      "height": 1122.515625
+    },
+    "content_bottom": 1121.515625,
+    "content_fits_paper": true,
+    "fonts_loaded": true,
+    "summary_sum": 1488750,
+    "net": "Rs 1,488,750"
+  },
+  "mobile": {
+    "viewport": 390,
+    "document_width": 390,
+    "paper_width": 369.8543701171875,
+    "fit_mode": "View at 100%"
+  },
+  "full_size_toggle": {
+    "label": "Fit to width",
+    "paper_width": 793.6875,
+    "scrolls_in_canvas": true,
+    "document_width": 390
+  },
+  "pdf_download_http": 200,
+  "print_button": true,
+  "iframe": true,
+  "external_requests": [],
+  "javascript_errors": [],
+  "printed_pdf": {
+    "renderer": "Chromium standalone design proof, NOT the Laravel/dompdf production renderer",
+    "pages": 1,
+    "page_size_points": [
+      594.9599609375,
+      841.9199829101562
+    ],
+    "a4": true,
+    "total_occurrences": 3,
+    "all_text_spans_inside_page": true,
+    "embedded_font_subsets": [
+      "AAAAAA+SpaceGroteskLight-Bold",
+      "BAAAAA+PlusJakartaSans-Bold",
+      "CAAAAA+PlusJakartaSans-Regular",
+      "DAAAAA+SpaceGroteskLight-Medium",
+      "EAAAAA+PlusJakartaSans-Medium",
+      "FAAAAA+PlusJakartaSans-SemiBold"
+    ],
+    "acceptance_and_footer_present": true
+  }
+}

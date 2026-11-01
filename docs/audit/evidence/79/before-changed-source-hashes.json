@@ -1,0 +1,10 @@
+{
+  "platform/app/Support/AdminNavigation.php": "55f0b76a9e43c80b81105e8ef1029d573b893d30b75ffb2e46235e82cb8688d1",
+  "platform/resources/css/admin.css": "56ef73de509bc353fa32b4c4f815439709921ad5163c4bc7fc2d983459272cec",
+  "platform/resources/js/admin/theme.js": "ac1d3b4e652ed1e91144d0a633fc08cd811f13c33cf6a6d5ed9bfecf0b89479b",
+  "platform/resources/views/layouts/admin.blade.php": "e0f92dc3766ec863ce6271d9d559bc3239b6d94aaada59cdb460f32d1f367bf6",
+  "platform/resources/views/components/admin/sidebar.blade.php": "bdc45d53aae033fe1a0339cc8f534d39d9204e2999706879ace09ff1e1118792",
+  "platform/resources/views/livewire/admin/system/settings-page.blade.php": "aabe09630f03aa24ecb72e582b283efb1b0611f4dd46edc9930f49518a4983ac",
+  "tools/sandbox/theme-unit-check.mjs": "fe4ef328d42540085ea536dca84357bf7d780c40394e919489778c557e20fd31",
+  ".gitignore": "58f5089da5a655d6ae2fd61c50c56942a9e5ef1c27ad79065bc8f4a7b112ca2f"
+}

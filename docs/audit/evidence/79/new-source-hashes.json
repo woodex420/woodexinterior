@@ -1,0 +1,6 @@
+{
+  "platform/tests/Unit/AdminWebsiteNavigationTest.php": "6b6a1b9ae2bd6d11d3adac1c5c5144e68d252162e1f8e9fd095a013fc2ea4ee9",
+  "tools/sandbox/admin-refresh-unit-check.mjs": "4dd9237e05fb51af463677940031a22602135cf4d5a378b40cdde036c2655335",
+  "tools/sandbox/admin-navigation-proof.php": "4d3d25c230d12908791e0e76d759779aed0877afee820ffbd54ef03b0019da79",
+  "tools/sandbox/admin-refresh-browser-check.mjs": "ab37d71dac1921f42f60475f5e06e9bbff88dd11cb82c0f67b2bd5063c8448f3"
+}

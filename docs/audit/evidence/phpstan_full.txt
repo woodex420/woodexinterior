@@ -1,0 +1,49 @@
+ ------ ----------------------------------------------------------------------- 
+Note: Using configuration file /tmp/woodex-run/app/phpstan.neon.
+  Line   Domain/Website/Contracts/LibraryEntry.php                              
+ ------ ----------------------------------------------------------------------- 
+  21     Method App\Domain\Website\Contracts\LibraryEntry::toRow() return type  
+         has no value type specified in iterable type array.                    
+         🪪  missingType.iterableValue                                          
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-i  
+         terable-type                                                           
+ ------ ----------------------------------------------------------------------- 
+
+ ------ ----------------------------------------------------------------------- 
+  Line   Livewire/Admin/Website/SiteHealthIndex.php                             
+ ------ ----------------------------------------------------------------------- 
+  121    Method App\Livewire\Admin\Website\SiteHealthIndex::pagesWithoutAlt()   
+         has parameter $audit with no value type specified in iterable type     
+         array.                                                                 
+         🪪  missingType.iterableValue                                          
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-i  
+         terable-type                                                           
+  123    Unable to resolve the template type TKey in call to function collect   
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  123    Unable to resolve the template type TValue in call to function         
+         collect                                                                
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  124    Unable to resolve the template type TKey in call to function collect   
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+  124    Unable to resolve the template type TValue in call to function         
+         collect                                                                
+         🪪  argument.templateType                                              
+         💡  See:                                                               
+         https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-temp  
+         late-type                                                              
+ ------ ----------------------------------------------------------------------- 
+
+ [ERROR] Found 6 errors                                                         
+
+EXIT=1

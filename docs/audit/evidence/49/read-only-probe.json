@@ -1,0 +1,25 @@
+{
+    "scope": "main local preview, read-only, no credential values",
+    "chat_widget_enabled": false,
+    "conversations": 0,
+    "published_db_pages": 142,
+    "file_audit_counts": {
+        "files": 142,
+        "flagged": 0,
+        "issues": 0,
+        "images_without_alt": 0,
+        "broken_links": 0,
+        "orphans": 0,
+        "redirects_astray": 0
+    },
+    "file_audit_site": [],
+    "internal_speed_totals": {
+        "pages": 142,
+        "images": 535,
+        "bytes": 53791470,
+        "heavy": 1,
+        "legacy": 0
+    },
+    "cache_config_flag": true,
+    "psi_key_configured": false
+}

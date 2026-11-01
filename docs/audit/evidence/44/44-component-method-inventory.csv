@@ -1,0 +1,827 @@
+component,declared_public_method,kind,individual_runtime_status
+App\Livewire\Admin\Accounts\BillsIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,openForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,closeForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,addLine,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,removeLine,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,saveDraft,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,saveReceived,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,post,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,openPay,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,closePay,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,pay,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,openVoid,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,closeVoid,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,voidBill,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\BillsIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ChartOfAccounts,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ChartOfAccounts,create,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ChartOfAccounts,edit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ChartOfAccounts,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ChartOfAccounts,toggleActive,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ChartOfAccounts,resetForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ChartOfAccounts,cancel,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ExpensesIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ExpensesIndex,openForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ExpensesIndex,closeForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ExpensesIndex,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ExpensesIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,startEntry,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,addLine,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,removeLine,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,post,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,askReverse,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,reverse,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\JournalsIndex,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\MethodAccounts,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\MethodAccounts,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\MethodAccounts,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\PayablesAging,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\PayablesAging,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\PeriodsIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\PeriodsIndex,create,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\PeriodsIndex,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\PeriodsIndex,close,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\PeriodsIndex,reopen,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ProfitLoss,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ProfitLoss,preset,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\ProfitLoss,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\RecurringExpenses,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\RecurringExpenses,openForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\RecurringExpenses,closeForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\RecurringExpenses,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\RecurringExpenses,toggle,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\RecurringExpenses,raiseNow,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\RecurringExpenses,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\TrialBalance,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\TrialBalance,preset,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\TrialBalance,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\VendorsIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\VendorsIndex,openForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\VendorsIndex,closeForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\VendorsIndex,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\VendorsIndex,toggle,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Accounts\VendorsIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\AssistantDrawer,askChip,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\AssistantDrawer,askDraft,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\AssistantDrawer,clearThread,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\AssistantDrawer,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Automation\SequencesIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Automation\SequencesIndex,select,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Automation\SequencesIndex,toggleSequence,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Automation\SequencesIndex,pauseEnrolment,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Automation\SequencesIndex,resumeEnrolment,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Automation\SequencesIndex,cancelEnrolment,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Automation\SequencesIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\CannedRepliesIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\CannedRepliesIndex,openEditor,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\CannedRepliesIndex,edit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\CannedRepliesIndex,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\CannedRepliesIndex,toggle,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\CannedRepliesIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,conversations,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,counts,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,select,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,cannedMatches,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,useCanned,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,updatedAttachment,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,removeAttachment,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,send,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,addNote,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,assign,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,close,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,reopen,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,refresh,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,_startUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,_finishUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,_uploadErrored,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\Inbox,_removeUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\LiveChatBell,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\LiveChatBell,poll,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\LiveChatBell,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\LiveChatBell,openDrawer,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\LiveChatBell,closeDrawer,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\LiveChatBell,select,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\LiveChatBell,send,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Conversations\LiveChatBell,toggleSound,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\AssignmentRules,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\AssignmentRules,openCreate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\AssignmentRules,edit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\AssignmentRules,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\AssignmentRules,toggle,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\AssignmentRules,move,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\AssignmentRules,delete,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\AssignmentRules,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ClientsIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompaniesIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompaniesIndex,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompaniesIndex,openCreate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompaniesIndex,create,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompaniesIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompaniesIndex,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompaniesIndex,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompaniesIndex,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompaniesIndex,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompaniesIndex,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompaniesIndex,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompaniesIndex,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompanyShow,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompanyShow,company,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompanyShow,openEdit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompanyShow,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompanyShow,linkContact,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompanyShow,unlinkContact,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompanyShow,delete,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\CompanyShow,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactBook,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactBook,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactBook,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactBook,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactBook,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactBook,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactBook,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactBook,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactBook,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactBook,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,contact,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,deleteContact,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,anonymiseContact,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,openEdit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,addTag,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,removeTag,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,createLead,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,merge,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,updatedUploads,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,deleteAttachment,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,_startUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,_finishUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,_uploadErrored,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactShow,_removeUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,clearFilters,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,openCreate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,create,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,rules,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,attributes,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,phoneRule,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\ContactsIndex,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadImport,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadImport,updatedFile,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadImport,updatedMap,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadImport,updatedYear,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadImport,updatedBatch,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadImport,dryRun,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadImport,apply,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadImport,startOver,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadImport,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadImport,_startUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadImport,_finishUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadImport,_uploadErrored,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadImport,_removeUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,lead,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,startQuoteFromEstimate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,estimate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,logActivity,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,saveNextAction,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,quickNext,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,moveTo,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,confirmLost,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,assignTo,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,confirmReassign,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,deleteLead,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,openVisit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,addTask,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,toggleTask,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,editDetails,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,saveDetails,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,timelines,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,scheduleVisit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,cancelVisit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,updatedUploads,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,deleteAttachment,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,_startUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,_finishUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,_uploadErrored,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadShow,_removeUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadTrackingBoard,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadTrackingBoard,showGroup,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadTrackingBoard,startLog,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadTrackingBoard,logFollowUp,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadTrackingBoard,whatsapp,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,updatedPerPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,clearFilters,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,clearQuickFilters,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,toggleColumn,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,bulkAssign,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,bulkMove,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,openLeadDrawer,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,closeLeadDrawer,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,updateDrawerStage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,updateDrawerOwner,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,drawerLog,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,drawerQuickNext,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,bulkDelete,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,export,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,createLead,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,saveView,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,applyView,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,deleteView,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\LeadsIndex,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\PipelineBoard,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\PipelineBoard,moveLead,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\PipelineBoard,confirmLost,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\PipelineBoard,cancelLost,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\PipelineBoard,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\PipelineBoard,scheduleVisit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\PipelineBoard,cancelVisit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\TasksIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\TasksIndex,openCreate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\TasksIndex,create,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\TasksIndex,toggle,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\TasksIndex,delete,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\TasksIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,confirm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,noShow,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,cancel,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,openReschedule,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,reschedule,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,openComplete,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,addRow,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,removeRow,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,complete,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,closeModals,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,shiftCalendar,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,showWeekOf,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,today,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Crm\VisitsIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Dashboard,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Dashboard,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\GlobalSearch,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Hubs\Hub,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Hubs\Hub,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Marketing\AttributionIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Marketing\AttributionIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Marketing\SocialPlannerIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Marketing\SocialPlannerIndex,compose,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Marketing\SocialPlannerIndex,saveDraft,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Marketing\SocialPlannerIndex,submitForReview,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Marketing\SocialPlannerIndex,approve,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Marketing\SocialPlannerIndex,schedule,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Marketing\SocialPlannerIndex,withdraw,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Marketing\SocialPlannerIndex,remove,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Marketing\SocialPlannerIndex,draftCaptions,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Marketing\SocialPlannerIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\MyDay,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\MyDay,completeTask,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\MyDay,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationBell,open,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationBell,markAllRead,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationBell,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationsPage,updatingFilter,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationsPage,open,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationsPage,markAllRead,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationsPage,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationsPage,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationsPage,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationsPage,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationsPage,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationsPage,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationsPage,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\NotificationsPage,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\OperationsControl,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Profile\Security,enableTwoFactor,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Profile\Security,confirmTwoFactor,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Profile\Security,regenerateRecoveryCodes,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Profile\Security,disableTwoFactor,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Profile\Security,createTelegramCode,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Profile\Security,unlinkTelegram,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Profile\Security,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ClientPortalIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ClientPortalIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\HandoversIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\HandoversIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectBoard,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectBoard,moveProject,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectBoard,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,setStage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,setStatus,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,saveDetails,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,addExpense,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,deleteExpense,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,toggleMilestone,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,raiseInvoice,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,post,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,share,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,deleteUpdate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,updatedUploads,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,deleteFile,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,sendPortalLink,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,startHandover,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,addHandoverItem,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,tickHandoverItem,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,removeHandoverItem,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,toggleFileVisibility,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,toggleConsent,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,draftCaseStudy,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,recordHandoverSignature,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,_startUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,_finishUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,_uploadErrored,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,_removeUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectShow,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectsIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectsIndex,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectsIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectsIndex,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectsIndex,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectsIndex,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectsIndex,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectsIndex,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectsIndex,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Projects\ProjectsIndex,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\Receivables,report,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\Receivables,whatsappFor,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\Receivables,export,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\Receivables,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\ReportSources,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\RevenueCollections,setPreset,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\RevenueCollections,range,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\RevenueCollections,report,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\RevenueCollections,export,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\RevenueCollections,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\SalesFunnel,setPreset,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\SalesFunnel,range,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\SalesFunnel,report,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\SalesFunnel,export,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Reports\SalesFunnel,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\Approvals,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\Approvals,approve,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\Approvals,openReject,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\Approvals,reject,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\Approvals,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\Approvals,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\Approvals,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\Approvals,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\Approvals,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\Approvals,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\Approvals,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\Approvals,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\BankAccounts,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\BankAccounts,openForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\BankAccounts,closeForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\BankAccounts,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\BankAccounts,toggle,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\BankAccounts,makeDefault,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\BankAccounts,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DescriptionLibrary,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DescriptionLibrary,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DescriptionLibrary,openCreate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DescriptionLibrary,openEdit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DescriptionLibrary,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DescriptionLibrary,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DescriptionLibrary,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DescriptionLibrary,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DescriptionLibrary,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DescriptionLibrary,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DescriptionLibrary,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DescriptionLibrary,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DescriptionLibrary,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DocumentDesigner,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DocumentDesigner,updatedLine,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DocumentDesigner,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DocumentDesigner,toggleBlock,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DocumentDesigner,moveBlock,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DocumentDesigner,resetBlocks,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DocumentDesigner,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DocumentDesigner,_startUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DocumentDesigner,_finishUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DocumentDesigner,_uploadErrored,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DocumentDesigner,_removeUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DuePayments,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DuePayments,remind,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\DuePayments,money,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimateBuilder,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimateBuilder,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimateBuilder,summary,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimateBuilder,addLine,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimateBuilder,removeLine,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimateBuilder,savedSummary,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimateBuilder,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimateBuilder,discard,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimateBuilder,review,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimateBuilder,convert,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,updatedTab,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,updatedSearch,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,updatedStatus,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,updatedService,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,reloadRates,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,publishRates,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,addService,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,removeService,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,namedBook,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,openEnquiry,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\EstimationsIndex,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceCreate,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceCreate,updatedLine,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceCreate,updated,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceCreate,selectContact,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceCreate,clearContact,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceCreate,addItem,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceCreate,removeItem,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceCreate,saveDraft,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceCreate,saveAndIssue,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceCreate,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceShow,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceShow,openVoid,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceShow,closeVoid,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceShow,collect,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceShow,void,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceShow,issue,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceShow,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceTrackingBoard,export,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceTrackingBoard,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceTrackingBoard,showGroup,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceTrackingBoard,startCollect,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceTrackingBoard,collect,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoiceTrackingBoard,remind,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoicesIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoicesIndex,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoicesIndex,export,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoicesIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoicesIndex,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoicesIndex,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoicesIndex,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoicesIndex,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoicesIndex,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoicesIndex,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\InvoicesIndex,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,updatedContactSearch,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,pickContact,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,openReject,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,reject,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,verify,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,receipt,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,_startUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,_finishUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,_uploadErrored,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,_removeUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\PaymentsIndex,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\ProposalsIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\ProposalsIndex,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\ProposalsIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\ProposalsIndex,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\ProposalsIndex,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\ProposalsIndex,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\ProposalsIndex,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\ProposalsIndex,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\ProposalsIndex,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\ProposalsIndex,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,quote,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,updated,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,addSection,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,deleteSection,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,moveSection,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,shiftSection,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,addLine,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,deleteLine,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,moveLine,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,shiftLine,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,openCatalog,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,addFromCatalog,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,openDescriptions,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,addDescription,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,applyCurrentDesign,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,toggleQuoteBlock,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,toggleFurnitureOption,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,moveQuoteBlock,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,resetQuoteBlocks,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,addMilestone,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,deleteMilestone,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,createFullInvoice,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,duplicate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,openSaveTemplate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,saveTemplate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,deleteQuote,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,openSend,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,send,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,acceptFromHint,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,dismissAcceptanceHint,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,whatsappReady,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,requestApproval,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,approve,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,openReject,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,reject,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,reopen,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,revise,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteBuilder,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteCreate,chooseBrand,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteCreate,updatedLine,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteCreate,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteCreate,selectContact,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteCreate,clearContact,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteCreate,chooseTemplate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteCreate,create,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteCreate,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuotePipeline,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuotePipeline,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTemplates,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTemplates,openEdit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTemplates,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTemplates,toggleActive,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTemplates,preview,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTemplates,exportTemplate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTemplates,importTemplate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTemplates,importStarters,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTemplates,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTemplates,_startUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTemplates,_finishUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTemplates,_uploadErrored,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTemplates,_removeUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTrackingBoard,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTrackingBoard,showGroup,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTrackingBoard,startChase,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTrackingBoard,logChase,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuoteTrackingBoard,money,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuotesIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuotesIndex,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuotesIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuotesIndex,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuotesIndex,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuotesIndex,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuotesIndex,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuotesIndex,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuotesIndex,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\QuotesIndex,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,openCreate,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,openEdit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,toggleActive,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,_startUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,_finishUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,_uploadErrored,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,_removeUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RateBook,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RecurringInvoices,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RecurringInvoices,openForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RecurringInvoices,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RecurringInvoices,closeForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RecurringInvoices,toggle,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RecurringInvoices,issueNow,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RecurringInvoices,delete,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Sales\RecurringInvoices,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AlertRulesIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AlertRulesIndex,addRule,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AlertRulesIndex,editRule,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AlertRulesIndex,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AlertRulesIndex,toggleRule,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AlertRulesIndex,removeRule,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AlertRulesIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,tabs,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,causers,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,subjectTypes,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,changes,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,webhooks,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,integrations,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,updatedTab,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,updatedSearch,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,updatedCauserId,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,updatedSubjectType,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AuditLog,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AutomationsIndex,toggle,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AutomationsIndex,generateNow,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AutomationsIndex,toggleReport,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\AutomationsIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,filters,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,nextStatuses,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,setStatus,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,saveNote,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,requests,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,updatedSearch,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,updatedFilter,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\ChangeRequests,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\DataImport,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\DataImport,dryRun,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\DataImport,import,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\DataImport,download,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\DataImport,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Health,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Health,sendTestMail,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,checkTelegramConfiguration,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,reloadTelegramConfiguration,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,checkTelegramConnection,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,openGoogleSetup,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,hydrate,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,openConnector,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,connectConnector,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,checkConnector,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,checkAllConnectors,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,disconnectConnector,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,openMcpSetup,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,createBridgeKey,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,revokeBridgeKey,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,openDetails,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,openWebhooks,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,closeWebhooks,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,createWebhook,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,toggleWebhook,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,rotateWebhookSecret,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,deleteWebhook,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,testWebhook,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,updating,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,testTelegram,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,setTelegramWebhook,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,testWhatsApp,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,testMail,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,testLegacy,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\Integrations,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\LeadRulesSettings,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\LeadRulesSettings,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\LeadRulesSettings,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\RecycleBin,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\RecycleBin,updatingTab,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\RecycleBin,restore,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\RecycleBin,erase,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\RecycleBin,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\RecycleBin,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\RecycleBin,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\RecycleBin,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\RecycleBin,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\RecycleBin,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\RecycleBin,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\RecycleBin,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,saveBusiness,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,saveSales,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,saveNotifications,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,addBand,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,removeBand,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,addSignatory,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,removeSignatory,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,saveWhatsApp,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,testWhatsAppConnection,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,forgetWhatsApp,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,parseHolidays,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,saveBot,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,syncBotKnowledge,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,addBotKnowledge,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\SettingsPage,deleteBotKnowledge,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\UsersIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\UsersIndex,openInvite,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\UsersIndex,openEdit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\UsersIndex,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\UsersIndex,toggleActive,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\UsersIndex,resendInvite,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\UsersIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\WhatsAppTemplates,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\WhatsAppTemplates,sync,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\WhatsAppTemplates,submit,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\WhatsAppTemplates,map,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\WhatsAppTemplates,showNewForm,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\WhatsAppTemplates,updatedNewBody,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\System\WhatsAppTemplates,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\FindReplaceIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\FindReplaceIndex,runPreview,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\FindReplaceIndex,apply,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\FindReplaceIndex,undo,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\FindReplaceIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,updateMeta,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,delete,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,_startUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,_finishUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,_uploadErrored,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,_removeUpload,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,queryStringHandlesPagination,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,getPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,previousPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,nextPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,gotoPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,resetPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\MediaLibrary,setPage,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\PagesIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\PagesIndex,retire,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\PagesIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\RedirectsIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\RedirectsIndex,add,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\RedirectsIndex,remove,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\RedirectsIndex,importCsv,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\RedirectsIndex,exportCsv,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\RedirectsIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\SeoAgentIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\SeoAgentIndex,setCode,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\SeoAgentIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\SeoOverviewIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\SeoOverviewIndex,setFilter,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\SeoOverviewIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\SiteHealthIndex,rescan,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\SiteHealthIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\SpeedIndex,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\SpeedIndex,saveKey,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\SpeedIndex,clearKey,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\SpeedIndex,run,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\SpeedIndex,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\ThemeBuilder,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\ThemeBuilder,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\ThemeBuilder,applyPreset,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\ThemeBuilder,resetToV1,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\ThemeBuilder,groups,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\ThemeBuilder,currentUrl,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\ThemeBuilder,render,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\WebsiteSettings,mount,lifecycle,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\WebsiteSettings,save,public method; not necessarily a UI action,NOT INDIVIDUALLY ATTESTED
+App\Livewire\Admin\Website\WebsiteSettings,render,lifecycle,NOT INDIVIDUALLY ATTESTED

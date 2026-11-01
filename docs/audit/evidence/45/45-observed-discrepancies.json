@@ -1,0 +1,51 @@
+{
+  "scope": "isolated in-memory fixtures; deliberately failing desired-contract probes; no production data",
+  "observations": {
+    "closed-period-staff-payment": {
+      "exception": null,
+      "payment_rows": 1,
+      "paid_minor": 5000,
+      "receipt_files": 1,
+      "payment_journals": 0
+    },
+    "failed-issue-orphan": {
+      "status": "draft",
+      "database_pdf_path": null,
+      "files_before": 0,
+      "files_after": 1,
+      "journal_count": 0
+    },
+    "historical-sent-period": {
+      "september_before_minor": 1000000,
+      "september_after_minor": 0,
+      "september_frozen_version_minor": 1000000,
+      "october_quoted_minor": 2000000,
+      "old_pdf_unchanged": true
+    },
+    "pending-posting-boundary": {
+      "status": "pending_verification",
+      "journal_count": 1,
+      "exception": null
+    },
+    "staff-payment-furniture": {
+      "invoice_total_minor": 10000,
+      "receipt_amount_minor": 5000,
+      "status": "verified",
+      "receipt_created": true,
+      "invoice_balance_minor": 5000,
+      "ledger_receivable_minor": 10000,
+      "payment_journal_count": 0,
+      "payment_journals_after_verify_retry": 0
+    },
+    "staff-payment-interior": {
+      "invoice_total_minor": 10000,
+      "receipt_amount_minor": 5000,
+      "status": "verified",
+      "receipt_created": true,
+      "invoice_balance_minor": 5000,
+      "ledger_receivable_minor": 10000,
+      "payment_journal_count": 0,
+      "payment_journals_after_verify_retry": 0
+    }
+  }
+}

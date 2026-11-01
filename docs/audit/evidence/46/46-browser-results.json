@@ -1,0 +1,35 @@
+{
+  "checks": [
+    "Real payment form posts one receipt and one journal",
+    "Invoice balance and GL receivable both equal Rs50",
+    "Closed-period validation remains visible with amount retained",
+    "Rejected form creates no second payment journal or balance change",
+    "No payment form JavaScript errors"
+  ],
+  "errors": [],
+  "initial": {
+    "contact_id": 27,
+    "invoice_id": 1,
+    "balance_minor": 10000,
+    "payment_count": 0,
+    "payment_journals": 0,
+    "receivable_minor": 10000
+  },
+  "after": {
+    "contact_id": 27,
+    "invoice_id": 1,
+    "balance_minor": 5000,
+    "payment_count": 1,
+    "payment_journals": 1,
+    "receivable_minor": 5000
+  },
+  "closed": {
+    "contact_id": 27,
+    "invoice_id": 1,
+    "balance_minor": 5000,
+    "payment_count": 1,
+    "payment_journals": 1,
+    "receivable_minor": 5000
+  },
+  "scope": "copied local QA DB; mail array; no production or provider writes"
+}

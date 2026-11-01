@@ -1,0 +1,13 @@
+case,actor,action,expected_vs_observed,status,evidence
+45-P01,sales / manager / signed client / owner,Interior approval → send → acceptance → project → partial/final Collect,subledger equals GL; frozen bytes unchanged,PASS,TransactionalFlowAuditTest: both brand workflows
+45-P02,sales / manager / signed client / owner,Furniture approval → send → acceptance → explicit full invoice → issue → Collect,no automatic milestone bill; subledger equals GL,PASS,TransactionalFlowAuditTest: both brand workflows
+45-P03,owner,Collect inside closed period,payment/allocation/receipt/journal atomic rollback,PASS,TransactionalFlowAuditTest: closed period
+45-P04,owner,unpaid invoice void / retry,linked reversal once; frozen bytes retained,PASS,TransactionalFlowAuditTest: unpaid void
+45-P05,owner,part-paid invoice void,refuse void; preserve receipts and ledger,PASS,TransactionalFlowAuditTest: void after collection
+45-P06,owner / internal action,archived project duplicate opening,refuse; original archived project remains sole record,PASS,TransactionalFlowAuditTest: archived project
+45-F01-I,accountant / Livewire,Interior Payments form → save → Verify retry,one payment journal; actual 0 before/after retry; AR 10000 vs balance 5000,FAIL,45-red-contract-results.txt
+45-F01-F,accountant / Livewire,Furniture Payments form → save → Verify retry,one payment journal; actual 0 before/after retry; AR 10000 vs balance 5000,FAIL,45-red-contract-results.txt
+45-F02,accountant / Livewire,Payments form in closed period,reject/rollback; actual 1 payment and receipt committed,FAIL,45-red-contract-results.txt
+45-F03,owner / direct internal action,Post pending receipt to GL,refuse; actual 1 journal and no exception,FAIL,45-red-contract-results.txt
+45-F04,owner / domain action,Issue draft with closed period,"rollback storage too; actual 1 orphan PDF, DB remains Draft",FAIL,45-red-contract-results.txt
+45-F05,owner / native actions,September quote → October revise/resend → query September,"stable historical-flow contract; actual 1000000 → 0, frozen bytes unchanged",FAIL: METRIC DECISION,45-red-contract-results.txt

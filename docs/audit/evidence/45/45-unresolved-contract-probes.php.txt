@@ -1,0 +1,139 @@
+<?php
+
+// Deliberately RED audit contracts, not production fixes or normal-suite successes.
+// Copy to runtime tests/Feature/Audit/UnresolvedContractProbeTest.php, run ALONE, then remove runtime copy.
+// RefreshDatabase uses SQLite :memory:, Storage/Mail/Notification are fake, stray HTTP is prohibited.
+use App\Domain\Accounts\Actions\PostInvoiceToLedger;
+use App\Domain\Accounts\Actions\PostPaymentToLedger;
+use App\Domain\Accounts\Exceptions\JournalPostingFailed;
+use App\Domain\Accounts\Models\Account;
+use App\Domain\Accounts\Models\AccountingPeriod;
+use App\Domain\Accounts\Models\JournalEntry;
+use App\Domain\Accounts\Models\JournalLine;
+use App\Domain\Crm\Enums\BusinessLine;
+use App\Domain\Crm\Models\Contact;
+use App\Domain\Crm\Models\Lead;
+use App\Domain\Sales\Actions\CreateQuote;
+use App\Domain\Sales\Actions\IssueInvoice;
+use App\Domain\Sales\Actions\ReviseQuote;
+use App\Domain\Sales\Actions\SendQuote;
+use App\Domain\Sales\Actions\VerifyPayment;
+use App\Domain\Sales\Enums\InvoiceStatus;
+use App\Domain\Sales\Models\Invoice;
+use App\Domain\Sales\Models\Payment;
+use App\Domain\Sales\Services\QuoteEditor;
+use App\Livewire\Admin\Sales\PaymentsIndex;
+use App\Support\Reports\ReportRange;
+use App\Support\Reports\RevenueCollectionsReport;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
+
+beforeEach(function () {
+    $this->travelTo(now()->setDate(2026, 10, 28)->setTime(11, 0));
+    Http::preventStrayRequests();
+    Storage::fake('local');
+    Mail::fake();
+    Notification::fake();
+    $this->owner = $this->userWithRole('owner');
+    $this->accountant = $this->userWithRole('accountant');
+});
+
+function audit45Observation(string $key, array $values): void
+{
+    $out = '/tmp/woodex45-observations';
+    if (! is_dir($out)) { mkdir($out, 0755, true); }
+    file_put_contents($out.'/'.$key.'.json', json_encode($values, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR)."\n");
+}
+
+function audit45ProbeInvoice(BusinessLine $line, InvoiceStatus $status = InvoiceStatus::Issued): Invoice
+{
+    $invoice = Invoice::create(['number' => 'ISOLATED-AUDIT-45', 'contact_id' => Contact::factory()->create(['email' => 'qa@example.test'])->id,
+        'business_line' => $line, 'status' => $status, 'issue_date' => today(), 'due_date' => today()->addDays(10),
+        'subtotal_minor' => 10000, 'total_minor' => 10000, 'paid_minor' => 0, 'balance_minor' => 10000]);
+    $invoice->items()->create(['position' => 0, 'description' => 'QA fixture work', 'unit' => 'job', 'qty' => '1', 'rate_minor' => 10000, 'line_total_minor' => 10000]);
+    return $invoice;
+}
+
+it('requires the staff Payments form to book its verified receipt in the ledger', function (BusinessLine $line) {
+    $invoice = audit45ProbeInvoice($line);
+    app(PostInvoiceToLedger::class)->handle($invoice, $this->owner);
+    Livewire::actingAs($this->accountant)->test(PaymentsIndex::class)
+        ->set('contactId', $invoice->contact_id)->set('invoiceId', $invoice->id)
+        ->set('bankAccountId', null)->set('amount', '50.00')->set('method', 'cash')->call('save')->assertHasNoErrors();
+    $payment = Payment::query()->sole();
+    $arId = Account::query()->where('code', '1100')->sole()->id;
+    $ar = (int) JournalLine::where('account_id', $arId)->sum('debit_minor') - (int) JournalLine::where('account_id', $arId)->sum('credit_minor');
+    $entries = JournalEntry::where('source_type', 'payment')->where('source_id', $payment->id)->count();
+    app(VerifyPayment::class)->handle($payment, $this->accountant);
+    $afterRetry = JournalEntry::where('source_type', 'payment')->where('source_id', $payment->id)->count();
+    audit45Observation('staff-payment-'.$line->value, ['invoice_total_minor' => 10000, 'receipt_amount_minor' => $payment->amount_minor,
+        'status' => $payment->status->value, 'receipt_created' => $payment->receipt_number !== null,
+        'invoice_balance_minor' => $invoice->refresh()->balance_minor, 'ledger_receivable_minor' => $ar, 'payment_journal_count' => $entries, 'payment_journals_after_verify_retry' => $afterRetry]);
+    expect($entries)->toBe(1);
+    expect($ar)->toBe($invoice->balance_minor);
+})->with([BusinessLine::Interior, BusinessLine::Furniture]);
+
+it('requires the staff Payments form to reject a closed-period receipt atomically', function () {
+    $invoice = audit45ProbeInvoice(BusinessLine::Interior);
+    app(PostInvoiceToLedger::class)->handle($invoice, $this->owner);
+    AccountingPeriod::query()->covering(today()->toDateString())->update(['closed_at' => now()]);
+    $caught = null;
+    try {
+        Livewire::actingAs($this->accountant)->test(PaymentsIndex::class)
+            ->set('contactId', $invoice->contact_id)->set('invoiceId', $invoice->id)
+            ->set('bankAccountId', null)->set('amount', '50.00')->set('method', 'cash')->call('save');
+    } catch (Throwable $e) { $caught = $e; }
+    audit45Observation('closed-period-staff-payment', ['exception' => $caught === null ? null : get_class($caught),
+        'payment_rows' => Payment::count(), 'paid_minor' => $invoice->refresh()->paid_minor,
+        'receipt_files' => count(Storage::disk('local')->allFiles()), 'payment_journals' => JournalEntry::where('source_type', 'payment')->count()]);
+    expect(Payment::count())->toBe(0);
+});
+
+it('requires the payment posting boundary to reject pending unverified money', function () {
+    $payment = Payment::create(['contact_id' => Contact::factory()->create()->id, 'amount_minor' => 5000,
+        'received_on' => today(), 'method' => 'cash', 'status' => 'pending_verification', 'submitted_by' => 'staff']);
+    $caught = null;
+    try { app(PostPaymentToLedger::class)->handle($payment, $this->owner); } catch (Throwable $e) { $caught = $e; }
+    audit45Observation('pending-posting-boundary', ['status' => $payment->refresh()->status->value,
+        'journal_count' => JournalEntry::where('source_type', 'payment')->count(), 'exception' => $caught === null ? null : get_class($caught)]);
+    expect($caught)->toBeInstanceOf(JournalPostingFailed::class);
+});
+
+it('requires a rejected invoice issue to leave no orphan frozen PDF', function () {
+    $invoice = audit45ProbeInvoice(BusinessLine::Interior, InvoiceStatus::Draft);
+    $before = Storage::disk('local')->allFiles();
+    AccountingPeriod::query()->covering(today()->toDateString())->update(['closed_at' => now()]);
+    expect(fn () => app(IssueInvoice::class)->handle($invoice, $this->owner))->toThrow(JournalPostingFailed::class);
+    audit45Observation('failed-issue-orphan', ['status' => $invoice->refresh()->status->value,
+        'database_pdf_path' => $invoice->pdf_path, 'files_before' => count($before),
+        'files_after' => count(Storage::disk('local')->allFiles()), 'journal_count' => JournalEntry::count()]);
+    expect(Storage::disk('local')->allFiles())->toBe($before);
+});
+
+it('requires previous sent-period totals not to disappear after a later sent revision', function () {
+    $this->travelTo(now()->setDate(2026, 9, 15));
+    $lead = Lead::factory()->create(['owner_id' => $this->owner->id]);
+    $quote = app(CreateQuote::class)->handle($lead->contact, BusinessLine::Interior, $this->owner, $lead);
+    $editor = app(QuoteEditor::class);
+    $item = $quote->items()->sole();
+    $editor->updateLine($item, ['description' => 'QA revision work', 'qty' => '1', 'rate_minor' => 1000000]);
+    $version = app(SendQuote::class)->handle($quote->refresh(), $this->owner);
+    $range = ReportRange::fromPreset('this_month');
+    $report = app(RevenueCollectionsReport::class);
+    $before = $report->totals($range)['quoted_minor'];
+    $hash = hash('sha256', Storage::disk('local')->get($version->pdf_path));
+    $this->travelTo(now()->setDate(2026, 10, 28));
+    app(ReviseQuote::class)->handle($quote->refresh(), $this->owner);
+    $editor->updateDetails($quote->refresh(), ['valid_until' => today()->addDays(10)]);
+    $editor->updateLine($item->refresh(), ['rate_minor' => 2000000]);
+    app(SendQuote::class)->handle($quote->refresh(), $this->owner);
+    $after = $report->totals($range)['quoted_minor'];
+    audit45Observation('historical-sent-period', ['september_before_minor' => $before, 'september_after_minor' => $after,
+        'september_frozen_version_minor' => $version->refresh()->total_minor, 'october_quoted_minor' => $report->totals(ReportRange::fromPreset('this_month'))['quoted_minor'],
+        'old_pdf_unchanged' => hash('sha256', Storage::disk('local')->get($version->pdf_path)) === $hash]);
+    expect($before)->toBe(1000000);
+    expect($after)->toBe($before);
+});

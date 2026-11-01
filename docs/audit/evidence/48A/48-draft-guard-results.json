@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "Same-thread server response retains the draft",
+    "Clicking the selected thread keeps the actual typed draft",
+    "Reopening the same thread from the tracking row keeps the draft",
+    "Draft-only interactions send no customer messages",
+    "No JavaScript page errors after the final guard"
+  ],
+  "errors": [],
+  "scope": "isolated QA only; no sends"
+}

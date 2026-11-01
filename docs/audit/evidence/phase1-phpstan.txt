@@ -1,0 +1,4 @@
+
+Note: Using configuration file /tmp/woodex-run/app/phpstan.neon.
+ [OK] No errors                                                                 
+

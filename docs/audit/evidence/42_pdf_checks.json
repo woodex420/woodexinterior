@@ -1,0 +1,109 @@
+{
+  "42-interior-reference": {
+    "pages": 1,
+    "a4": true,
+    "all_text_in_bounds": true,
+    "page_numbers": true,
+    "fonts": [
+      "SUBAAB+PlusJakartaSans-Regular",
+      "SUBAAC+SpaceGroteskLight-Bold",
+      "SUBAAD+PlusJakartaSans-Bold",
+      "SUBAAE+DejaVuSans"
+    ]
+  },
+  "42-interior-full": {
+    "pages": 2,
+    "a4": true,
+    "all_text_in_bounds": true,
+    "page_numbers": true,
+    "fonts": [
+      "SUBAAB+PlusJakartaSans-Regular",
+      "SUBAAC+SpaceGroteskLight-Bold",
+      "SUBAAD+PlusJakartaSans-Bold",
+      "SUBAAE+DejaVuSans"
+    ]
+  },
+  "42-interior-long": {
+    "pages": 5,
+    "a4": true,
+    "all_text_in_bounds": true,
+    "page_numbers": true,
+    "fonts": [
+      "SUBAAB+PlusJakartaSans-Regular",
+      "SUBAAC+SpaceGroteskLight-Bold",
+      "SUBAAD+PlusJakartaSans-Bold",
+      "SUBAAE+DejaVuSans"
+    ]
+  },
+  "42-furniture-reference": {
+    "pages": 1,
+    "a4": true,
+    "all_text_in_bounds": true,
+    "page_numbers": true,
+    "fonts": [
+      "SUBAAB+Inter-Regular",
+      "SUBAAC+Inter-Bold",
+      "SUBAAD+Inter-Medium",
+      "SUBAAE+DejaVuSans"
+    ]
+  },
+  "furniture-reference": {
+    "pages": 1,
+    "a4": true,
+    "all_text_in_bounds": true,
+    "page_numbers": true,
+    "fonts": [
+      "SUBAAB+Inter-Regular",
+      "SUBAAC+Inter-Bold",
+      "SUBAAD+Inter-Medium",
+      "SUBAAE+DejaVuSans"
+    ]
+  },
+  "furniture-quotation": {
+    "pages": 1,
+    "a4": true,
+    "all_text_in_bounds": true,
+    "page_numbers": true,
+    "fonts": [
+      "SUBAAB+Inter-Regular",
+      "SUBAAC+Inter-Bold",
+      "SUBAAD+Inter-Medium",
+      "SUBAAE+DejaVuSans"
+    ]
+  },
+  "furniture-47500": {
+    "pages": 1,
+    "a4": true,
+    "all_text_in_bounds": true,
+    "page_numbers": true,
+    "fonts": [
+      "SUBAAB+Inter-Regular",
+      "SUBAAC+Inter-Bold",
+      "SUBAAD+Inter-Medium",
+      "SUBAAE+DejaVuSans"
+    ]
+  },
+  "furniture-invoice": {
+    "pages": 1,
+    "a4": true,
+    "all_text_in_bounds": true,
+    "page_numbers": true,
+    "fonts": [
+      "SUBAAB+DMSans9pt-Regular",
+      "SUBAAC+DMSans9pt-Bold",
+      "SUBAAD+DejaVuSans"
+    ]
+  },
+  "furniture-long": {
+    "pages": 8,
+    "a4": true,
+    "all_text_in_bounds": true,
+    "page_numbers": true,
+    "fonts": [
+      "SUBAAB+Inter-Regular",
+      "SUBAAC+Inter-Bold",
+      "SUBAAD+Inter-Medium",
+      "SUBAAE+DejaVuSans"
+    ]
+  }
+}

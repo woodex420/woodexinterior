@@ -1,0 +1,80 @@
+[
+  {
+    "rows": 1,
+    "pages": 1,
+    "terms_y_pt": 630.2,
+    "remaining_y_pt": 601.13,
+    "signatures_bottom_pt": 788.79,
+    "a4_all_words_in_bounds": true
+  },
+  {
+    "rows": 5,
+    "pages": 1,
+    "terms_y_pt": 630.21,
+    "remaining_y_pt": 601.13,
+    "signatures_bottom_pt": 788.8,
+    "a4_all_words_in_bounds": true
+  },
+  {
+    "rows": 10,
+    "pages": 2,
+    "terms_y_pt": 630.2,
+    "remaining_y_pt": 601.13,
+    "signatures_bottom_pt": 788.8,
+    "a4_all_words_in_bounds": true
+  },
+  {
+    "rows": 14,
+    "pages": 2,
+    "terms_y_pt": 630.21,
+    "remaining_y_pt": 601.13,
+    "signatures_bottom_pt": 788.8,
+    "a4_all_words_in_bounds": true
+  },
+  {
+    "rows": 16,
+    "pages": 2,
+    "terms_y_pt": 630.21,
+    "remaining_y_pt": 601.13,
+    "signatures_bottom_pt": 788.8,
+    "a4_all_words_in_bounds": true
+  },
+  {
+    "rows": 18,
+    "pages": 2,
+    "terms_y_pt": 630.21,
+    "remaining_y_pt": 601.14,
+    "signatures_bottom_pt": 788.8,
+    "a4_all_words_in_bounds": true
+  },
+  {
+    "rows": 22,
+    "pages": 3,
+    "terms_y_pt": 630.2,
+    "remaining_y_pt": 601.13,
+    "signatures_bottom_pt": 788.8,
+    "a4_all_words_in_bounds": true
+  },
+  {
+    "rows": 45,
+    "pages": 4,
+    "terms_y_pt": 630.21,
+    "remaining_y_pt": 601.13,
+    "signatures_bottom_pt": 788.8,
+    "a4_all_words_in_bounds": true
+  },
+  {
+    "case": "43-oversized-closing",
+    "pages": 3,
+    "all_custom_text_and_final_signatures_retained": true
+  },
+  {
+    "case": "43-long-single-term",
+    "pages": 4,
+    "all_custom_text_and_final_signatures_retained": true
+  },
+  {
+    "invoice_legacy_percentage_unchanged": true,
+    "interior_native_boq_retained": true
+  }
+]

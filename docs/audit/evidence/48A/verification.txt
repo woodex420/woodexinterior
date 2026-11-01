@@ -1,0 +1,26 @@
+Revision48-A verification — 29 October 2026
+Full Pest:1722 passed,1 skipped,9199 assertions,463.21s,exit0.
+Final affected after same-thread/public-mention/PKT-date safety guards:218 passed,884 assertions,30.54s,exit0.
+26 new dedicated cases included in the affected gate.
+PHPStan0 errors; Pint8 files pass; Vite build pass (existing large-chunk advisory).
+Actual theme-store unit tests7 pass. Native browser32 checks + final draft5 checks pass,0 page JS errors.
+Semantic palette14 text/control/focus contrast pairs pass; not whole-OS WCAG certification.
+Full gate precedes the three narrow final guards; final affected/static gates cover the final application source.
+Separate local QA copy only; synthetic document/invoice fixture; array mail and blank provider tokens.
+No new schema, public-v1/document-renderer/financial-domain code, production credentials/sends/webhooks/deploy/merge.
+Local Telegram token/secret missing; production unverified. See sanitized flags.
+QA server33144 stopped; native main33143 remains running.
+Runtime/repository application and test byte equality:PASS.
+Asset manifest references all exist:PASS.
+{"main_preview_conversations": 0, "main_qa48_contacts": 0}
+
+Source SHA256:
+724ab24f0d21c34de12b2911f5c4565c8683d4ac955bc2d24f4535ad42333413  platform/app/Domain/Conversations/Actions/ReceiveWebChatMessage.php
+7a2485e355dcb63738a1e3606db52854db535c32e0e634c4446c0675db657430  platform/app/Domain/Conversations/Actions/SendConversationMessage.php
+37a396775eee81ddd3573d399a1c9aa7faf17a4048c2c9f6105d21632b8c8e11  platform/app/Domain/Conversations/Models/Conversation.php
+d7377827f12fc79aaae4283eed85142b142920ef6526c50ccaf806f0a04ceb7d  platform/app/Livewire/Admin/Conversations/LiveChatBell.php
+e1add510920c6e13bd0b0f43b19f7ce7b0b7016261270e219c269ef463b09010  platform/app/Livewire/Admin/Hubs/LeadsHub.php
+84fd97802441e22e7879786f5f5c3573a81c14c65e1595a8bfda942ed35a8b39  platform/app/Livewire/Admin/Crm/WebChatLeads.php
+e2d7bbf4eab8e5e5c26c55675147c5abc70f07586d01656fb986d5cb44617e59  platform/tests/Feature/ThemeWebChatUpgradeTest.php
+6f350944355ba1aed005fadce40c43996ea1d51b9ef0994c2c5e3e1f85172a22  platform/tests/Feature/Conversations/WebChatWidgetTest.php
+64d9d90a172efb11aae128e61029acbbb96f322039aabaf155c241175e1a19b9  platform/resources/views/livewire/admin/crm/web-chat-leads.blade.php

@@ -1,0 +1,10 @@
+{
+    "file_status": "readable",
+    "cached": false,
+    "token_loaded": false,
+    "secret_loaded": false,
+    "token_in_file": false,
+    "secret_in_file": false,
+    "file_matches_runtime": true,
+    "scope": "local preview only; no provider API request"
+}

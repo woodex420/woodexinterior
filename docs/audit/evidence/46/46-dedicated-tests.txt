@@ -1,0 +1,25 @@
+
+   PASS  Tests\Feature\Accounts\PaymentPostingRepairTest
+  ✓ it posts the staff Payments form atomically for both brands without… 2.59s
+  ✓ it posts the staff Payments form atomically for both brands without… 0.41s
+  ✓ it shows a closed-period form error and retains input without commi… 0.41s
+  ✓ it rolls back staff receipt allocation and numbering when the metho… 0.35s
+  ✓ it posts explicit allocation and unallocated credit as separate cre… 0.30s
+  ✓ it rejects every unverified status at the posting boundary with ('p… 0.05s
+  ✓ it rejects every unverified status at the posting boundary with ('r… 0.05s
+  ✓ it rejects every unverified status at the posting boundary with ('r… 0.05s
+  ✓ it reloads stale payment state and rejects a stale verified instanc… 0.04s
+  ✓ it reloads current amount and state rather than posting stale value… 0.05s
+  ✓ it returns the same posted journal on retry even after its period c… 0.31s
+  ✓ it removes newly frozen invoice PDFs when issue fails or an outer t… 0.32s
+  ✓ it removes newly frozen invoice PDFs when issue fails or an outer t… 0.33s
+  ✓ it does not delete or change an existing valid frozen invoice on ou… 0.29s
+  ✓ it refuses to overwrite or delete an existing unreferenced invoice…  0.28s
+  ✓ it removes a new staff receipt and all financial writes on an outer… 0.29s
+  ✓ it reports missing verified payment journals without changing or po… 0.30s
+  ✓ it includes archived verified payments in the read-only completenes… 0.05s
+  ✓ it preserves the existing record-only staff permission without requ… 0.28s
+  ✓ it returns an empty completeness summary without creating financial… 0.04s
+
+  Tests:    20 passed (83 assertions)
+  Duration: 7.15s
