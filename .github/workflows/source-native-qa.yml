@@ -43,9 +43,12 @@ jobs:
           submodules: false
           lfs: false
       - name: Guard contract tests (not native application acceptance)
-        run: node --test tools/release/preflight.test.mjs tools/release/ci-native.test.mjs
+        run: node --test tools/release/preflight.test.mjs tools/release/ci-native.test.mjs tools/release/ci-diagnostics.test.mjs
       - name: Native PHP 8.5 and genuine Composer lock candidates (no install/app/DB)
         run: bash tools/release/ci-native.sh resolve-lock-candidates
+      - name: Bounded source-only failure diagnostic (no application logs)
+        if: failure()
+        run: node tools/release/ci-diagnostics.mjs
       - name: Review-only candidates and exact runner evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4; API-verified 2026-11-01
