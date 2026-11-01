@@ -48,7 +48,7 @@ it('groups the Website section the way it is worked on', function () {
         'All pages', 'Page builder', 'Find & replace', 'Redirects',
     ])->and($labels('Content'))->toBe([
         'Blog', 'Portfolio', 'Forms',
-    ])->and($labels(null))->toBe([
+    ])->and($labels('Website'))->toBe([
         'Media', 'SEO', 'SEO agent', 'Speed', 'Site health', 'Theme', 'Website Settings',
     ]);
 

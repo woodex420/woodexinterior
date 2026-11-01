@@ -61,7 +61,7 @@ it('saves response targets per source and scoring rules', function () {
         ->and($sales->sla_escalation_minutes)->toBe(45)
         ->and($sales->hot_score)->toBe(75)
         ->and($sales->scoring_rules['cities'])->toBe(['dha' => 5, 'gulberg' => 3])
-        ->and($sales->scoring_rules['services'])->toBe(['turnkey' => 12, 'kitchen' => 4])
+        ->and(\App\Support\JsonObjects::canonical($sales->scoring_rules['services']))->toBe(\App\Support\JsonObjects::canonical(['turnkey' => 12, 'kitchen' => 4]))
         ->and($sales->scoring_rules['budget']['15m-plus'])->toBe(30);
 });
 

@@ -57,7 +57,7 @@ it('turns /idea from a linked user into a change request', function () {
     expect($request->title)->toBe('Add a kitchen filter to the portfolio')
         ->and($request->requested_by)->toBe($owner->id)
         ->and($request->source)->toBe('telegram')
-        ->and($this->telegram->textsFor(900)[0])->toContain('CR-0001');
+        ->and($this->telegram->textsFor(900)[0])->toContain($request->reference());
 });
 
 it('replies to plain start without requiring a link code', function () {

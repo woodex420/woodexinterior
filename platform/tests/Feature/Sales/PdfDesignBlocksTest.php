@@ -231,7 +231,8 @@ it('exports and imports a quote template file', function () {
         ->and(QuoteBlueprint::sections($imported->blueprint))->toEqual(QuoteBlueprint::sections($template->blueprint))
         ->and($imported->blueprint['presentation']['quote_layout'])->toBe('project')
         ->and($imported->blueprint['presentation']['pdf_theme'])->toBe('premium')
-        ->and(array_keys($imported->blueprint['presentation']))->toBe(['quote_layout', 'pdf_theme', 'quote_blocks']);
+        ->and(array_values(array_diff(array_keys($imported->blueprint['presentation']), ['quote_layout', 'pdf_theme', 'quote_blocks'])))->toBe([])
+        ->and(count($imported->blueprint['presentation']))->toBe(3);
 });
 
 it('refuses invalid template files and unlinks unknown catalog items', function () {

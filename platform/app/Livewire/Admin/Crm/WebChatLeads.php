@@ -69,10 +69,10 @@ class WebChatLeads extends Component
         }
         foreach (['from', 'to'] as $field) {
             if ($this->validDate($this->$field)) {
-                // Date controls and displayed timestamps use PKT; persisted timestamps use UTC.
+                // Date controls use PKT; compare against the timezone used by Eloquent timestamp storage.
                 $boundary = CarbonImmutable::parse($this->$field, 'Asia/Karachi')->startOfDay();
                 $query->where('created_at', $field === 'from' ? '>=' : '<',
-                    ($field === 'from' ? $boundary : $boundary->addDay())->utc());
+                    ($field === 'from' ? $boundary : $boundary->addDay())->setTimezone((string) config('app.timezone')));
             }
         }
         match ($this->focus) {

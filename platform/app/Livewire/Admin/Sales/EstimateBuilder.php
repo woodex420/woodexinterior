@@ -164,7 +164,7 @@ class EstimateBuilder extends Component
         return view('livewire.admin.sales.estimate-builder', [
             'services' => EstimatorRate::query()->where('is_active', true)->orderBy('position')->get(['id', 'key', 'label', 'unit', 'unit_label', 'essential_minor', 'standard_minor', 'premium_minor']),
             'contacts' => EstimateAccess::contacts($this->user())->orderBy('name')->limit(300)->get(['id', 'name']),
-            'catalogItems' => CatalogItem::query()->where('is_active', true)->orderBy('title')->get(['id', 'title', 'category', 'description', 'unit', 'rate_minor', 'business_line']),
+            'catalogItems' => CatalogItem::query()->where('is_active', true)->orderBy('category')->orderBy('description')->get(['id', 'category', 'description', 'unit', 'rate_minor', 'business_line']),
             'summary' => $this->summary(),
             'estimate' => $this->estimateId !== null ? Estimate::query()->with('quote:id,number,status')->find($this->estimateId) : null,
             'lead' => $this->leadId !== null ? Lead::query()->find($this->leadId, ['id', 'ref', 'contact_id', 'service', 'area_sqft']) : null,

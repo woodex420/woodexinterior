@@ -12,6 +12,7 @@ use App\Domain\Sales\Models\EstimatorRate;
 use App\Domain\Sales\Services\EstimateAccess;
 use App\Models\User;
 use App\Support\Numbering;
+use App\Support\JsonObjects;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -105,7 +106,11 @@ final class SaveEstimate
                 $before = $estimate->getOriginal('computed') ?? [];
                 $now = $computed;
                 unset($before['effective_on'], $now['effective_on']);
-                if ($estimate->isDirty(['title', 'service_key', 'contact_id', 'lead_id', 'inputs', 'assumptions', 'exclusions', 'contingency_bp', 'catalog_lines']) || $before != $now) {
+                $jsonChanged = false;
+                foreach (['inputs', 'catalog_lines'] as $field) {
+                    $jsonChanged = $jsonChanged || JsonObjects::canonical($estimate->getOriginal($field)) !== JsonObjects::canonical($estimate->getAttribute($field));
+                }
+                if ($estimate->isDirty(['title', 'service_key', 'contact_id', 'lead_id', 'assumptions', 'exclusions', 'contingency_bp']) || $jsonChanged || JsonObjects::canonical($before) !== JsonObjects::canonical($now)) {
                     $estimate->forceFill(['status' => EstimateStatus::Draft, 'reviewed_by' => null, 'reviewed_at' => null]);
                 }
                 $estimate->save();

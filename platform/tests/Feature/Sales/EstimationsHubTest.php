@@ -115,7 +115,7 @@ it('publishes through the native Rates screen without changing historical estima
     $catalogue = RateBook::read()['catalog'];
     Livewire::test(EstimationsIndex::class, ['tab' => 'rates'])->set('book.services.0.rates.standard', 275)->call('publishRates')->assertHasNoErrors()->assertSee('Published.');
     expect(EstimatorRate::where('key', 'interior-design')->value('standard_minor'))->toBe(27500)
-        ->and(RateBook::read()['catalog'])->toBe($catalogue)->and($e->refresh()->computed)->toBe($snapshot);
+        ->and(RateBook::read()['catalog'])->toBe($catalogue)->and(\App\Support\JsonObjects::canonical($e->refresh()->computed))->toBe(\App\Support\JsonObjects::canonical($snapshot));
 });
 
 it('rejects stale rate editors and compensates exact public bytes when database writing fails', function () {

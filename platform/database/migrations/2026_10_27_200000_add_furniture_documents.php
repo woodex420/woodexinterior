@@ -35,9 +35,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('document_designs', fn (Blueprint $table) => $table->dropColumn('furniture_style'));
-        Schema::table('invoices', fn (Blueprint $table) => $table->dropUnique(['source_quote_id']));
+        // Drop the FK first: InnoDB may rely on the unique index as its only supporting key.
+        Schema::table('invoices', fn (Blueprint $table) => $table->dropForeign(['source_quote_id']));
         Schema::table('invoices', function (Blueprint $table): void {
-            $table->dropConstrainedForeignId('source_quote_id');
+            $table->dropUnique(['source_quote_id']);
+            $table->dropColumn('source_quote_id');
             $table->dropColumn(['rent_minor', 'shipping_minor', 'tax_bp', 'advance_bp', 'commercial']);
         });
         Schema::table('quotes', fn (Blueprint $table) => $table->dropColumn(['shipping_minor', 'advance_bp']));

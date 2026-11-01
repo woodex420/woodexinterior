@@ -94,7 +94,7 @@ it('keeps sent preview content frozen and ignores attempted overlays', function 
     $this->quote->contact->update(['name' => 'Changed contact later']);
     $this->postJson(route('admin.quotes.preview', $this->quote), ['client' => ['name' => 'Injected name'], 'quoteLayout' => 'project'])
         ->assertOk()->assertDontSee('Injected name')->assertDontSee('Changed contact later')->assertSee($frozen['client']['name']);
-    expect($version->fresh()->snapshot)->toBe($frozen);
+    expect(\App\Support\JsonObjects::canonical($version->fresh()->snapshot))->toBe(\App\Support\JsonObjects::canonical($frozen));
 });
 
 it('persists all three layouts separately from colour design and preserves custom blocks', function () {

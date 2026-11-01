@@ -249,3 +249,13 @@ it('uses PKT calendar boundaries for tracking dates rather than the stored UTC d
         ->assertSee('PKT midnight visitor')->set('from', '2026-10-28')->set('to', '2026-10-28')
         ->assertDontSee('PKT midnight visitor');
 });
+
+
+it('compares PKT chat date controls in the configured timestamp storage timezone', function (string $timezone) {
+    config(['app.timezone' => $timezone]);
+    $thread = intake48();
+    $at = \Carbon\CarbonImmutable::parse('2026-11-01 23:30:00', 'Asia/Karachi')->setTimezone($timezone);
+    $thread->forceFill(['created_at' => $at])->save();
+    Livewire::test(WebChatLeads::class)->set('from', '2026-11-02')->assertDontSee('Website QA Visitor')
+        ->set('from', '2026-11-01')->set('to', '2026-11-01')->assertSee('Website QA Visitor');
+})->with(['UTC', 'Asia/Karachi']);

@@ -6,7 +6,7 @@ export function parseLog(raw) {
   const summary=[...text.matchAll(/^\s*Tests:\s*(.+)$/gm)].at(-1)?.[1]??null;
   const starts=[...text.matchAll(/^\s*FAILED\s+.+$/gm)];
   const failures=starts.map((m,i)=>{
-    const block=text.slice(m.index, starts[i+1]?.index??text.length).trim();
+    const block=text.slice(m.index, starts[i+1]?.index??text.length).replace(/^\s*─+\s*$/gm,'').trim();
     return block.length<=1100?block:block.slice(0,730)+'\n…\n'+block.slice(-350);
   });
   return {summary,failures};
@@ -28,6 +28,11 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
   }
   // GitHub limits annotation messages to 4096 characters and errors to ten per step.
   // Keep full per-group logs as artifacts; expose a bounded batch inventory, not ANSI noise.
-  for(let i=0;i<Math.min(details.length,31500);i+=3500)
-    console.log('::error title=Native failure batch '+String(i/3500).padStart(2,'0')+'::'+escape(details.slice(i,i+3500)));
+  let offset=0;
+  for(let part=0;part<9 && offset<details.length;part++) {
+    let end=Math.min(offset+3500,details.length);
+    while(Buffer.byteLength(details.slice(offset,end),'utf8')>3500) end--;
+    console.log('::error title=Native failure batch '+String(part).padStart(2,'0')+'::'+escape(details.slice(offset,end)));
+    offset=end;
+  }
 }

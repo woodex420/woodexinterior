@@ -160,6 +160,7 @@ it('runs as the scheduled command on the 1st at 09:00, behind the automation swi
 });
 
 it('archives and shows the report on the automations screen, and builds it on demand', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-10-15 12:00:00'));
     Notification::fake();
 
     $september = CarbonImmutable::parse('2026-09-01');

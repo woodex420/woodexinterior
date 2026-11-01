@@ -99,7 +99,7 @@ it('keeps a booking request as a lead, since we cannot promise the slot it asked
 
     expect($lead->source->value)->toBe('booking')
         ->and($lead->source_detail)->toBe('book-a-visit')
-        ->and($lead->meta['slot'])->toBe(['type' => 'visit', 'date' => '2026-10-22', 'time' => '11:00'])
+        ->and(\App\Support\JsonObjects::canonical($lead->meta['slot']))->toBe(\App\Support\JsonObjects::canonical(['type' => 'visit', 'date' => '2026-10-22', 'time' => '11:00']))
         ->and($lead->message)->toContain('Booking request')
         ->and($lead->message)->toContain('DHA Phase 6')
         ->and($lead->message)->toContain('kitchen samples');
