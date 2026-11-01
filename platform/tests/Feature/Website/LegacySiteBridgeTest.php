@@ -2,6 +2,9 @@
 
 use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
+use App\Domain\Sales\Enums\EstimateStatus;
+use App\Domain\Sales\Models\Estimate;
+use App\Domain\Sales\Models\EstimatorRate;
 use App\Settings\BusinessSettings;
 
 // The original pages are served exactly as the old site made them, so they keep calling `/api/forms.php` and
@@ -172,4 +175,123 @@ it('stops a flood of enquiries from one address without stopping the pages', fun
     // The pages keep asking this address on every page view, and the widget taps it: those are not enquiries.
     $this->getJson('/api/forms.php')->assertOk();
     $this->postJson('/api/forms.php', ['action' => 'wa_click'])->assertOk();
+});
+
+// 51A: this is the actual v1 estimator payload, not a hand-built LeadInput with meta.fields.service.
+function browserEstimatorEnquiry(array $overrides = []): array
+{
+    return array_merge([
+        'form' => 'estimator',
+        'page' => '/estimator/',
+        'name' => 'QA51A Estimator Visitor',
+        'phone' => '+12025550161',
+        'email' => 'qa51a-estimator@example.test',
+        'service' => 'renovation',
+        'area' => '1000',
+        'finish' => 'standard',
+        'estimate' => 'PKR 1,200,000 to 3,200,000',
+        '_hp' => '',
+    ], $overrides);
+}
+
+it('creates a linked draft from the real browser estimator bridge payload', function () {
+    $owner = $this->userWithRole('owner');
+    $rate = EstimatorRate::query()->where('key', 'renovation')->sole();
+
+    $this->postJson('/api/forms.php', browserEstimatorEnquiry())->assertCreated()->assertJsonPath('ok', true);
+
+    $lead = Lead::query()->sole();
+    expect($lead->service)->toBe('renovation')
+        ->and($lead->source->value)->toBe('estimator')
+        ->and(\App\Support\JsonObjects::canonical($lead->meta['fields']))->toBe(\App\Support\JsonObjects::canonical([
+            'area' => '1000', 'finish' => 'standard', 'estimate' => 'PKR 1,200,000 to 3,200,000',
+        ]));
+
+    $estimate = Estimate::query()->sole();
+    expect($estimate->lead_id)->toBe($lead->id)
+        ->and($estimate->contact_id)->toBe($lead->contact_id)
+        ->and($estimate->status)->toBe(EstimateStatus::Draft)
+        ->and($estimate->service_key)->toBe('renovation')
+        ->and($estimate->inputs['quantity'])->toBe('1000')
+        ->and($estimate->inputs['finish'])->toBe('standard')
+        ->and($estimate->computed['headline_minor'])->toBe($rate->standard_minor * 1000)
+        ->and($estimate->created_by)->toBe($owner->id)
+        ->and($estimate->assumptions)->toContain('PKR 1,200,000 to 3,200,000')
+        ->and(Contact::query()->sole()->consent_marketing)->toBeFalse()
+        ->and(Contact::query()->sole()->consent_whatsapp)->toBeFalse();
+});
+
+it('reuses the linked draft for a repeated browser estimator submission', function () {
+    $this->userWithRole('owner');
+    $this->postJson('/api/forms.php', browserEstimatorEnquiry())->assertCreated();
+    $first = Estimate::query()->sole();
+
+    $this->postJson('/api/forms.php', browserEstimatorEnquiry())->assertOk();
+
+    expect(Lead::query()->count())->toBe(1)
+        ->and(Estimate::query()->sole()->id)->toBe($first->id);
+});
+
+it('does not guess an estimate for unpriceable browser estimator inputs', function (array $overrides, bool $inactive) {
+    $this->userWithRole('owner');
+    if ($inactive) {
+        EstimatorRate::query()->where('key', 'renovation')->update(['is_active' => false]);
+    }
+    $this->postJson('/api/forms.php', browserEstimatorEnquiry($overrides))->assertCreated();
+
+    expect(Lead::query()->count())->toBe(1)
+        ->and(Estimate::query()->count())->toBe(0);
+})->with([
+    'missing service' => [['service' => null], false],
+    'unknown service' => [['service' => 'roof-thatching'], false],
+    'inactive rate' => [[], true],
+    'missing area' => [['area' => null], false],
+    'empty area' => [['area' => ''], false],
+    'zero area' => [['area' => '0'], false],
+    'negative area' => [['area' => '-1'], false],
+    'exponent area' => [['area' => '1e3'], false],
+    'non-numeric area' => [['area' => 'NaN'], false],
+    'over-limit area' => [['area' => '10000001'], false],
+]);
+
+it('keeps existing unsupported finish normalization on the browser estimator path', function () {
+    $this->userWithRole('owner');
+    $this->postJson('/api/forms.php', browserEstimatorEnquiry(['finish' => 'unsupported']))->assertCreated();
+
+    expect(Estimate::query()->sole()->inputs['finish'])->toBe('standard');
+});
+
+it('does not draft an estimate from an ordinary contact form carrying estimator-like extras', function () {
+    $this->userWithRole('owner');
+    $this->postJson('/api/forms.php', browserEstimatorEnquiry(['form' => 'contact']))->assertCreated();
+
+    expect(Lead::query()->sole()->source->value)->toBe('website_form')
+        ->and(Estimate::query()->count())->toBe(0);
+});
+
+it('does not silently reprice the existing draft when a returning enquiry changes selections', function () {
+    $this->userWithRole('owner');
+    $firstResponse = $this->postJson('/api/forms.php', browserEstimatorEnquiry())->assertCreated();
+    $first = Estimate::query()->sole();
+    $inputs = $first->inputs;
+    $computed = $first->computed;
+
+    $this->postJson('/api/forms.php', browserEstimatorEnquiry(['area' => '2000', 'finish' => 'premium']))
+        ->assertOk()->assertJsonPath('id', $firstResponse->json('id'));
+
+    // This repair does not redefine CaptureLead's returning-enquiry metadata policy or overwrite snapshots.
+    expect($first->refresh()->inputs)->toBe($inputs)
+        ->and($first->computed)->toBe($computed)
+        ->and($first->status)->toBe(EstimateStatus::Draft);
+});
+
+it('preserves the Contact JavaScript JSON payload contract without native transport metadata', function () {
+    $this->postJson('/api/forms.php', originalEnquiry([
+        'form' => 'contact', 'page' => '/contact/', 'service' => 'Fit-out',
+    ]))->assertCreated()->assertHeader('Content-Type', 'application/json')->assertJsonStructure(['ok', 'id', 'reference']);
+
+    $lead = Lead::query()->sole();
+    expect($lead->source_detail)->toBe('contact')->and($lead->service)->toBe('Fit-out')
+        ->and($lead->meta['page'])->toBe('/contact/')->and($lead->meta['fields'])->toBe(['timeline' => 'Next month'])
+        ->and(Estimate::query()->count())->toBe(0);
 });

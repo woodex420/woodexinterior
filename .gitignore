@@ -4,6 +4,8 @@ woodex/README.md
 *.py
 # Version the isolated native-PDF QA source, not generated Python artifacts.
 !tools/sandbox/quotation-revision-pdf-check.py
+# Preserve the read-only remaining-form audit source.
+!tools/sandbox/forms-51c-audit.py
 __pycache__/
 *.pyc
 
@@ -17,7 +19,7 @@ graphify-out/
 Thumbs.db
 
 # Hostinger deploy manifest (composer.json in the root installs into platform/vendor)
-# Both genuine Composer locks must be tracked after compatible native resolution.
+# Both genuine Composer locks must stay versioned for reproducible installs.
 /vendor/
 # Installer setup code copy (written on the server, deleted after installation)
 /WOODEX-SETUP-CODE.txt
@@ -25,5 +27,12 @@ Thumbs.db
 # Website audit output (tools/website/audit.php)
 tools/website/audit.json
 
-# Disposable development/test dependencies; never publish.
+# Disposable development/test dependencies and private diagnostics; never publish.
 /.cache/
+/recovery/
+
+# Editor/patch leftovers (not application backups or release archives).
+*.tmp
+*.orig
+*.rej
+*~

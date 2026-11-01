@@ -209,8 +209,9 @@
     },
     send: function (key, data, form) {
       data.form = key; data.page = location.pathname;
+      delete data._response; // Native HTML negotiation never leaks into AJAX enquiry metadata.
       var t = form && form.querySelector('[name="cf-turnstile-response"]'); if (t) data['cf-turnstile-response'] = t.value;
-      return fetch('/api/forms.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+      return fetch('/api/forms.php', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(data) })
         .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok || !d.ok) throw new Error(d.error || 'Could not send.'); return d; }); })
         .finally(function () { if (window.turnstile && form && form.querySelector('.cf-turnstile')) try { window.turnstile.reset(form.querySelector('.cf-turnstile')); } catch (e) {} });
     },
@@ -239,7 +240,7 @@
       var st = doc.getElementById(statusId), btn = form.querySelector('[type=submit]'), label = btn ? btn.textContent : '';
       if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
       var extra = pick(d);
-      WXForms.send(key, d, form).then(function (r) {
+      Promise.resolve().then(function () { return WXForms.send(key, d, form); }).then(function (r) {
         form.reset(); WXForms.success(st, d, r.id, extra);
       }).catch(function (err) {
         if (st) { st.textContent = err.message + ' You can also WhatsApp us on +92 322 4000768.'; st.style.display = 'block'; st.classList.add('show'); }
@@ -249,7 +250,7 @@
   /* Forms added with the page builder ("Contact form" element) → same pipeline: honeypot, Turnstile, CRM, WhatsApp. */
   Array.prototype.forEach.call(doc.querySelectorAll('form.wx-form, form[action="/api/contact"]'), function (form) {
     if (form.dataset.wxWired) return; form.dataset.wxWired = '1';
-    form.setAttribute('action', '/api/forms.php'); form.setAttribute('novalidate', '');
+    form.setAttribute('action', '/api/forms.php'); form.setAttribute('method', 'post'); form.setAttribute('novalidate', '');
     if (!form.querySelector('[name="_hp"]')) { var hp = doc.createElement('input'); hp.type = 'text'; hp.name = '_hp'; hp.tabIndex = -1; hp.autocomplete = 'off'; hp.setAttribute('aria-hidden', 'true'); hp.style.cssText = 'position:absolute;left:-9999px;width:1px;height:1px;opacity:0'; form.appendChild(hp); }
     var st = doc.createElement('div'); st.className = 'wx-form-status'; st.setAttribute('aria-live', 'polite'); st.style.cssText = 'display:none;margin-top:12px;padding:14px 16px;border-radius:10px;background:#f3efe6;color:#0a0f1e;font-size:15px;line-height:1.5'; form.after(st);
     WXForms.guard(form);
@@ -260,7 +261,7 @@
       if (!d.service) d.service = form.getAttribute('data-wx-service') || (doc.title || '').split('|')[0].trim();
       var btn = form.querySelector('[type=submit]'), label = btn ? btn.textContent : '';
       if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
-      WXForms.send(form.getAttribute('data-wx-form') || 'website', d, form).then(function (r) {
+      Promise.resolve().then(function () { return WXForms.send(form.getAttribute('data-wx-form') || 'website', d, form); }).then(function (r) {
         form.reset(); WXForms.success(st, d, r.id, d.service ? ['Page: ' + d.service] : []);
       }).catch(function (err) {
         st.textContent = err.message + ' You can also WhatsApp us on +92 322 4000768.'; st.style.display = 'block';

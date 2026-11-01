@@ -58,7 +58,7 @@
   0% { opacity: 0; transform: translateY(18px) scale(0.97); }
   100% { opacity: 1; transform: none; }
 }:root { --wx-ink: #000; --wx-navy: #0c1628; --wx-muted: #525252; --wx-paper: #fff; --wx-surface: #f4efe7; --wx-beige: #fcf2e8; --wx-silver: #c0c0c0; --wx-line: rgba(12,22,40,.14); --wx-line-dark: rgba(255,255,255,.2); --wx-font: "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; --s-1: 8px; --s-2: 16px; --s-3: 24px; --s-4: 32px; --s-5: 48px; --s-6: 64px; --s-7: 96px; --s-8: 128px; --wx-section: clamp(64px,8vw,112px); --wx-head-gap: clamp(32px,4vw,56px); --wx-container: 1240px; --wx-gutter: clamp(20px,4vw,48px); --wx-r-sm: 8px; --wx-r-md: 12px; --wx-r-lg: 16px; --wx-r-xl: 20px; --wx-shadow: 0 18px 50px rgba(12,22,40,.10); --wx-ease: cubic-bezier(.22,1,.36,1); --navy: var(--wx-navy); --navy-2: var(--wx-navy); --ink: var(--wx-ink); --muted: var(--wx-muted); --line: var(--wx-line); }html { text-size-adjust: 100%; scroll-padding-top: 96px; }body, button, input, select, textarea { font-family: var(--wx-font) !important; }body { color: var(--wx-ink); line-height: 1.6; text-rendering: optimizelegibility; -webkit-font-smoothing: antialiased; }main h1 { font-size: clamp(2.25rem, 5vw, 4.25rem); line-height: 1.05; letter-spacing: -0.025em; font-weight: 600; text-wrap: balance; }main h2 { font-size: clamp(1.75rem, 3.4vw, 2.9rem); line-height: 1.1; letter-spacing: -0.02em; font-weight: 600; text-wrap: balance; }main h3 { font-size: clamp(1.125rem, 1.6vw, 1.375rem); line-height: 1.25; letter-spacing: -0.01em; font-weight: 600; }main p { text-wrap: pretty; }main p:not([class*="kicker"]):not([class*="eyebrow"]) { max-width: 68ch; }.wrap, [class$="-wrap"], [class*="-wrap "] { width: min(var(--wx-container),calc(100% - 2 * var(--wx-gutter))) !important; margin-inline: auto !important; }main > section:not([class*="hero"]):not(.wx-stats) { padding-block: var(--wx-section) !important; }main > section:not([class*="hero"]) + section:not([class*="hero"]):not([class*="dark"]):not([class*="closing"]):not([class*="quote"]) { border-top: 1px solid var(--wx-line); }.btn, [class$="-btn"], [class*="-btn "] { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; letter-spacing: 0.01em; transition: transform .25s var(--wx-ease),background-color .25s,color .25s,border-color .25s,box-shadow .25s; padding: 0px 26px !important; border-radius: var(--wx-btn-radius,999px) !important; font-weight: 600 !important; font-size: 0.95rem !important; }.btn:hover, [class$="-btn"]:hover, [class*="-btn "]:hover { transform: translateY(-2px); }[class$="-card"], [class*="-card "] { transition: transform .35s var(--wx-ease),box-shadow .35s var(--wx-ease); border-radius: var(--wx-r-lg) !important; }a[class$="-card"]:hover, a[class*="-card "]:hover { transform: translateY(-4px); box-shadow: var(--wx-shadow); }main figure { margin: 0px; }main figure img, main [class*="-media"] img { display: block; width: 100%; height: 100%; object-fit: cover; }main img { max-width: 100%; height: auto; }main input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), main select, main textarea { min-height: 48px; border-radius: var(--wx-r-md); font-size: 1rem; }main textarea { min-height: 120px; }.wx-skip { position: absolute; left: 16px; top: -60px; z-index: 9999; background: var(--wx-navy); color: rgb(255, 255, 255); padding: 12px 18px; border-radius: 8px; font-weight: 600; text-decoration: none; transition: top 0.2s; }.wx-skip:focus { top: 16px; }@media (prefers-reduced-motion: reduce){* { transition: none !important; animation: auto ease 0s 1 normal none running none !important; }}main h1, main h2, main h3 { font-family: var(--wx-font-head,var(--wx-font)); }:root { --wx-accent: #0c1628; }@font-face { font-family: "Plus Jakarta Sans"; src: url("/assets/fonts/plus-jakarta-sans-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }@font-face { font-family: "Plus Jakarta Sans"; src: url("/assets/fonts/plus-jakarta-sans-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }@font-face { font-family: "Plus Jakarta Sans"; src: url("/assets/fonts/plus-jakarta-sans-600.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }@font-face { font-family: "Plus Jakarta Sans"; src: url("/assets/fonts/plus-jakarta-sans-700.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }:root { --navy: #0c1628; --navy-2: #121e34; --card: #152033; --cream: #f4efe7; --cream-2: #ebe4d8; --wood: #b8956a; --wood-2: #c9a97a; --ink: #12151c; --muted: #6a6560; --surface: #f4efe7; --beige: #f4efe7; --wx-navy: #0c1628; --wx-font: "Plus Jakarta Sans",system-ui,sans-serif; }body { font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: var(--ink); }h1 { letter-spacing: -0.04em !important; word-spacing: 0.04em; }h2 { letter-spacing: -0.03em !important; word-spacing: 0.03em; }h3 { letter-spacing: -0.02em; }::selection { background: var(--wood); color: rgb(255, 255, 255); }.eyebrow::before, [class$="-label"]::before, [class*="-label "]::before { background: var(--wood) !important; }.mega-number, .footer-column h3 { color: var(--wood) !important; }.desktop-nav > a:hover, .desktop-nav > a[aria-current="page"], .footer a:hover { color: var(--wood-2); }.footer { background: var(--navy) !important; }.footer-word { color: rgba(184, 149, 106, 0.1) !important; border-top-color: rgba(184, 149, 106, 0.25) !important; }.wx-cream { background-color: var(--cream) !important; }@media (max-width: 520px){a[class*="btn"], button[class*="btn"] { white-space: nowrap; }:has(> a[class*="btn"] + a[class*="btn"]) { flex-direction: column !important; align-items: stretch !important; grid-template-columns: 1fr !important; }:has(> a[class*="btn"] + a[class*="btn"]) > a[class*="btn"] { width: 100%; justify-content: center; max-width: 100%; flex: 0 0 auto !important; }main [class*="grid"] > * { min-width: 0px; }a[class*="btn"] { max-width: 100%; }[class*="crumbs"] a, [class*="crumbs"] span, .eyebrow, .trust span, [class*="hero-trust"] span, .id-soon, .hm-hero-meta span, .ct-map-card span, .arch-hero-note span, .arch-elevation-price span { font-size: 12px !important; }}@media (max-width: 374px){a[class*="btn"], button[class*="btn"] { white-space: normal; }.header-cta-label { display: none !important; }}.footer-word[data-word]::before { content: attr(data-word); }</style>
-<link rel="preload" href="/assets/site-p21.css" as="style" onload="this.onload=null;this.rel='stylesheet'" /><noscript><link rel="stylesheet" href="/assets/site-p21.css" /></noscript><link rel="preload" href="/assets/v1-p21.css" as="style" onload="this.onload=null;this.rel='stylesheet'" /><noscript><link rel="stylesheet" href="/assets/v1-p21.css" /></noscript><link rel="stylesheet" href="/assets/theme.css?v=p21" />
+<link rel="preload" href="/assets/site-p21.css" as="style" onload="this.onload=null;this.rel='stylesheet'" /><noscript><link rel="stylesheet" href="/assets/site-p21.css" /></noscript><link rel="preload" href="/assets/v1-p21.css" as="style" onload="this.onload=null;this.rel='stylesheet'" /><noscript><link rel="stylesheet" href="/assets/v1-p21.css" /></noscript><link rel="stylesheet" href="/assets/theme.css?v=enquiry-20261101" />
 <style>
 /* No-JS fallbacks: everything visible, carousels natively scrollable, FAQ answers open. */
 .menu-cb{position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none}
@@ -127,7 +127,10 @@ html:not(.js) .hm-slider-dots{display:none}
     <section class="ct-section ct-visit" id="contact-visit"><div class="ct-wrap ct-visit-grid">
       <div class="ct-visit-copy" data-contact-reveal=""><p class="ct-label">Visit us</p><h2>Woodex Interior, Lahore.</h2><div class="ct-rule" aria-hidden="true"></div><address class="ct-address"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>M-71, Zainab Tower<br>Model Town Link Road<br>Lahore, Pakistan</address><p>Parking is available at the tower. If you are bringing drawings, call ahead so a designer is free to sit with you.</p><div class="ct-hours"><span class="ct-dot" aria-hidden="true"></span><strong>Mon–Sat 9:30–6:30</strong></div><div class="ct-actions"><a class="btn btn-secondary" href="/3d-visualization/">View our work</a></div></div>
       <div class="ct-visit-form" data-contact-reveal="">
-        <form class="ct-form" id="visit-form" novalidate>
+        <form class="ct-form" id="visit-form" novalidate method="post" action="/api/forms.php" enctype="application/x-www-form-urlencoded">
+          <input type="hidden" name="form" value="contact">
+          <input type="hidden" name="page" value="/contact/">
+          <input type="hidden" name="_response" value="html">
           <h3>Send an enquiry</h3>
           <p class="ct-form-sub">Tell us a little about the space and we will call you back.</p>
           <div class="ct-field"><label for="cf-name">Name</label><input id="cf-name" name="name" type="text" autocomplete="name" required></div>
@@ -135,7 +138,7 @@ html:not(.js) .hm-slider-dots{display:none}
             <div class="ct-field"><label for="cf-phone">Phone</label><input id="cf-phone" name="phone" type="tel" autocomplete="tel" required></div>
             <div class="ct-field"><label for="cf-email">Email</label><input id="cf-email" name="email" type="email" autocomplete="email"></div>
           </div>
-          <div class="ct-field"><label for="cf-type">Project type</label><select id="cf-type" name="type">
+          <div class="ct-field"><label for="cf-type">Project type</label><select id="cf-type" name="service">
             <option>Interior design</option><option>Fit-out</option><option>Renovation</option>
             <option>Architecture</option><option>3D visualization</option><option>Furniture</option><option>Something else</option>
           </select></div>
@@ -143,7 +146,7 @@ html:not(.js) .hm-slider-dots{display:none}
           <input type="text" id="cf-hp" name="_hp" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true" />
           <button class="btn" type="submit">Send enquiry</button>
           <p class="ct-form-note">Prefer talking? Call <a href="tel:+923224000768">+92 322 4000768</a>.</p>
-          <p class="ct-form-status" id="cf-status" style="display:none;margin-top:12px;font-size:14px"></p>
+          <p class="ct-form-status" id="cf-status" role="status" aria-live="polite" style="display:none;margin-top:12px;font-size:14px"></p>
         </form>
       </div>
     </div></section>
@@ -178,15 +181,18 @@ html:not(.js) .hm-slider-dots{display:none}
     <div class="footer-word" aria-hidden="true" data-word="INTERIORS"></div>
     <div class="footer-bottom"><span>© 2026 Woodex Interior</span><div><a href="/privacy/">Privacy</a><a href="https://woodexfurniture.pk" target="_blank" rel="noopener">Woodex Furniture™ ↗</a></div></div>
   </div></footer>
-<script src="/assets/site.js?v=p21" defer></script>
+<script src="/assets/site.js?v=enquiry-20261101" defer></script>
 <script src="/site/tags.js" defer></script>
 <script>
 (function(){var f=document.getElementById('visit-form');if(!f)return;
-document.addEventListener('DOMContentLoaded',function(){window.WXForms&&WXForms.guard(f);});
+document.addEventListener('DOMContentLoaded',function(){if(window.WXForms&&typeof window.WXForms.guard==='function')window.WXForms.guard(f);});
 var status=document.getElementById('cf-status');
 var btn=f.querySelector('button[type=submit]');
 function show(msg,ok){status.textContent=msg;status.style.display='block';status.style.color=ok?'#1c7a3d':'#a12622';}
-f.addEventListener('submit',function(e){e.preventDefault();
+f.addEventListener('submit',function(e){
+var forms=window.WXForms;
+if(!forms||typeof forms.send!=='function'||typeof forms.success!=='function'||typeof forms.waLink!=='function')return;
+e.preventDefault();
 var name=document.getElementById('cf-name').value.trim();
 var phone=document.getElementById('cf-phone').value.trim();
 if(!name||!phone){show('Please add your name and phone so we can call you back.',false);return;}
@@ -194,7 +200,7 @@ btn.disabled=true;var orig=btn.textContent;btn.textContent='Sending...';
 var data={name:name,phone:phone,email:document.getElementById('cf-email').value.trim(),
 service:document.getElementById('cf-type').value,message:document.getElementById('cf-msg').value.trim(),
 _hp:document.getElementById('cf-hp').value};
-WXForms.send('contact',data,f).then(function(r){f.reset();status.style.color='#0c1628';WXForms.success(status,data,r.id,data.service?['Project: '+data.service]:[]);})
+Promise.resolve().then(function(){return forms.send('contact',data,f);}).then(function(r){f.reset();status.style.color='#0c1628';forms.success(status,data,r.id,data.service?['Project: '+data.service]:[]);})
 .catch(function(err){show(err.message+' You can also WhatsApp us on +92 322 4000768.',false);})
 .finally(function(){btn.disabled=false;btn.textContent=orig;});});})();
 </script>

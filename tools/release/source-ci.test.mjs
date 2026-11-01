@@ -59,3 +59,34 @@ test('event logging permits one fixed synthetic path, not arbitrary output paths
   assert.equal(spawnSync('sh',[script,'--log-events-text=/workspace/platform/storage/framework/testing/native-events.log']).status,0);
   assert.equal(spawnSync('sh',[script,'--log-events-text=/private/owner.log']).status,64);
 });
+
+test('shipped build assets exactly match the current manifest, without obsolete hash bundles',()=>{
+  const directory=path.join(root,'platform/public/build');
+  const manifest=JSON.parse(read('platform/public/build/manifest.json'));
+  const expected=new Set();
+  for(const entry of Object.values(manifest)) {
+    for(const asset of [entry.file,...(entry.css??[]),...(entry.assets??[])]) {
+      assert.equal(typeof asset,'string');
+      expected.add(asset);
+    }
+  }
+  const actual=fs.readdirSync(path.join(directory,'assets'),{recursive:true})
+    .filter(name=>fs.statSync(path.join(directory,'assets',name)).isFile())
+    .map(name=>'assets/'+name.replaceAll(path.sep,'/'));
+  assert.deepEqual(actual.sort(),[...expected].sort(), 'Remove stale generated assets; retain every manifest-referenced file.');
+});
+
+test('hosted source runner admits only the fixed review ref and master, still enforcing checkout identity',()=>{
+  const accepted=['refs/heads/arena/8be318a2-woodexinterior','refs/heads/master'];
+  for(const ref of [...accepted,'refs/heads/unreviewed','refs/pull/1/merge','']) {
+    const r=spawnSync('bash',[path.join(root,'tools/release/test-branch.sh')],{cwd:root,encoding:'utf8',env:{
+      PATH:process.env.PATH,GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'woodex420/woodexinterior',RUNNER_ENVIRONMENT:'github-hosted',
+      GITHUB_REF:ref,GITHUB_RUN_ID:'1',GITHUB_RUN_ATTEMPT:'1',GITHUB_SHA:'0000000000000000000000000000000000000000'
+    }});
+    assert.equal(r.status,64);
+    assert(r.stderr.includes(accepted.includes(ref)?'checkout identity':'approved source refs only'),r.stderr);
+  }
+  const workflow=read('.github/workflows/native-app-validation.yml');
+  assert(workflow.includes('branches: [arena/8be318a2-woodexinterior, master]'));
+  for(const ref of accepted) assert(workflow.includes("github.ref == '"+ref+"'"));
+});

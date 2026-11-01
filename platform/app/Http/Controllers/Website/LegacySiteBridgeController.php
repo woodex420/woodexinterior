@@ -11,11 +11,13 @@ use App\Domain\Crm\Enums\LeadSource;
 use App\Http\Controllers\Controller;
 use App\Settings\BusinessSettings;
 use App\Support\Phone;
+use App\Support\Website\ContactFormResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * The two addresses the original website's JavaScript already calls (docs/11 §2).
@@ -50,8 +52,10 @@ final class LegacySiteBridgeController extends Controller
     }
 
     /** POST /api/forms.php — an enquiry from any form on any of the 142 pages. */
-    public function forms(Request $request, CaptureLead $captureLead): JsonResponse
+    public function forms(Request $request, CaptureLead $captureLead): Response
     {
+        ContactFormResponse::prepare($request);
+
         $action = trim((string) $request->input('action', ''));
 
         // A visitor tapping the WhatsApp button: counted by the widget itself, nothing to store.
@@ -75,18 +79,18 @@ final class LegacySiteBridgeController extends Controller
 
         // A bot fills the hidden field; a person never sees it. Look successful, store nothing.
         if (filled($request->input('_hp')) || filled($request->input('company_hp'))) {
-            return response()->json(['ok' => true, 'id' => 0]);
+            return ContactFormResponse::fromJson($request, response()->json(['ok' => true, 'id' => 0]));
         }
 
         // The limiter is counted here rather than on the route, because this address also answers the widget's
         // WhatsApp taps and the booking questions: only writing a lead should cost the studio's enquiry budget.
         if ($this->tooManyEnquiries($request)) {
-            return response()->json([
+            return ContactFormResponse::fromJson($request, response()->json([
                 'ok' => false,
                 // The number comes from Settings → Business: it is the studio's public WhatsApp line, and the
                 // one place it may be typed is the settings screen (docs/18 §4).
                 'error' => 'Too many enquiries from this connection. Please try again in a minute, or send us a WhatsApp message on '.Phone::display($this->business->phone).'.',
-            ], 429);
+            ], 429));
         }
 
         RateLimiter::hit('legacy-leads-minute:'.$request->ip(), 60);
@@ -95,23 +99,23 @@ final class LegacySiteBridgeController extends Controller
         // Someone asking for a visit is an enquiry even though we cannot confirm the slot: it is kept as a lead
         // and the page tells them the team will confirm on WhatsApp, which is how the studio has always worked.
         if ($action === 'book_create') {
-            return $this->bookingRequest($request, $captureLead);
+            return ContactFormResponse::fromJson($request, $this->bookingRequest($request, $captureLead));
         }
 
         try {
             $data = $this->validated($request);
         } catch (ValidationException $e) {
-            return $this->invalid($e);
+            return ContactFormResponse::fromJson($request, $this->invalid($e), array_keys($e->errors()));
         }
 
         $result = $captureLead->handle($this->leadInput($request, $data));
 
         // `id` is what the original JavaScript shows the visitor; the reference is our own, and worth keeping.
-        return response()->json([
+        return ContactFormResponse::fromJson($request, response()->json([
             'ok' => true,
             'id' => $result->lead->id,
             'reference' => $result->lead->ref,
-        ], $result->leadCreated ? 201 : 200);
+        ], $result->leadCreated ? 201 : 200));
     }
 
     /** GET|POST /api/chat.php — the live chat of the original pages, not switched on yet. */
@@ -248,6 +252,10 @@ final class LegacySiteBridgeController extends Controller
     private function extraFields(Request $request): array
     {
         $known = ['name', 'phone', 'email', 'service', 'message', 'page', 'form', 'action', '_hp', 'company_hp', 'cf-turnstile-response', 'turnstile'];
+
+        if (ContactFormResponse::wantsHtml($request)) {
+            $known[] = '_response';
+        }
 
         return collect($request->all())
             ->reject(fn (mixed $value, string $key): bool => in_array($key, $known, true) || ! is_scalar($value) || trim((string) $value) === '')

@@ -9,6 +9,7 @@ use App\Domain\Sales\Actions\CreateQuoteFromEstimate;
 use App\Domain\Sales\Enums\EstimateStatus;
 use App\Domain\Sales\Models\Estimate;
 use App\Domain\Sales\Models\EstimatorRate;
+use App\Domain\Sales\Services\EstimatorLeadDetails;
 use App\Support\Money;
 
 /*
@@ -110,4 +111,75 @@ it('converts the draft the enquiry already had instead of writing another one', 
         ->and($draft->refresh()->status)->toBe(EstimateStatus::Converted)
         ->and($draft->quote_id)->toBe($quote->id)
         ->and($quote->refresh()->estimate_id)->toBe($draft->id);
+});
+
+it('reads the estimator service column when real bridge extras omit only the service', function () {
+    $fields = ['area' => '1200', 'finish' => 'premium', 'estimate' => 'Visitor range'];
+    $lead = new Lead([
+        'source' => LeadSource::Estimator, 'service' => 'interior-design',
+        'meta' => ['fields' => $fields],
+    ]);
+
+    $read = app(EstimatorLeadDetails::class)->read($lead);
+
+    expect($read['service'])->toBe('interior-design')
+        ->and($read['rate']?->key)->toBe('interior-design')
+        ->and($read['area'])->toBe(1200.0)
+        ->and($read['finish'])->toBe('premium')
+        ->and($lead->meta['fields'])->toBe($fields);
+});
+
+it('preserves explicit metadata services rather than substituting the column', function (?string $service) {
+    $lead = new Lead([
+        'source' => LeadSource::Estimator, 'service' => 'interior-design',
+        'meta' => ['fields' => ['service' => $service, 'area' => '1200', 'finish' => 'standard']],
+    ]);
+
+    $read = app(EstimatorLeadDetails::class)->read($lead);
+
+    expect($read['service'])->toBe(trim((string) $service))
+        ->and($read['rate'])->toBeNull()
+        ->and(app(EstimatorLeadDetails::class)->available($lead))->toBeFalse();
+})->with(['unknown' => 'roof-thatching', 'explicit blank' => '', 'explicit null' => null]);
+
+it('honours a different active explicit metadata service', function () {
+    $lead = new Lead([
+        'source' => LeadSource::Estimator, 'service' => 'renovation',
+        'meta' => ['estimate' => ['service' => 'interior-design', 'area' => '1200']],
+    ]);
+
+    expect(app(EstimatorLeadDetails::class)->read($lead)['rate']?->key)->toBe('interior-design');
+});
+
+it('does not use service columns for non-estimator leads with partial fields', function () {
+    $lead = new Lead([
+        'source' => LeadSource::WebsiteForm, 'service' => 'interior-design', 'area_sqft' => 1200,
+        'meta' => ['fields' => ['area' => '1200', 'finish' => 'standard']],
+    ]);
+
+    expect(app(EstimatorLeadDetails::class)->read($lead)['service'])->toBe('')
+        ->and(app(EstimatorLeadDetails::class)->available($lead))->toBeFalse();
+});
+
+it('preserves legacy column fallback but never fills missing area in partial metadata', function () {
+    $lead = new Lead([
+        'source' => LeadSource::Estimator, 'service' => 'interior-design', 'area_sqft' => 1200,
+        'meta' => [],
+    ]);
+    expect(app(EstimatorLeadDetails::class)->available($lead))->toBeTrue();
+
+    $lead->meta = ['fields' => ['finish' => 'standard']];
+    expect(app(EstimatorLeadDetails::class)->read($lead)['area'])->toBe(0.0)
+        ->and(app(EstimatorLeadDetails::class)->available($lead))->toBeFalse();
+});
+
+it('does not replace an inactive explicit metadata rate with the active service column', function () {
+    EstimatorRate::query()->where('key', 'renovation')->update(['is_active' => false]);
+    $lead = new Lead([
+        'source' => LeadSource::Estimator, 'service' => 'interior-design',
+        'meta' => ['fields' => ['service' => 'renovation', 'area' => '1200']],
+    ]);
+
+    expect(app(EstimatorLeadDetails::class)->read($lead)['rate'])->toBeNull()
+        ->and(app(EstimatorLeadDetails::class)->available($lead))->toBeFalse();
 });

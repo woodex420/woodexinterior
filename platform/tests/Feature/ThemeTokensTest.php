@@ -70,7 +70,7 @@ it('serves the tokens as CSS, with the v1 vocabulary, its aliases and the v2 voc
     // what the theme mints for anything that wants an immutable address.
     $hashBefore = $theme->hash();
     $home = (string) file_get_contents(base_path('public/index.html'));
-    expect($home)->toContain('/assets/theme.css?v=p21')
+    expect($home)->toContain('/assets/theme.css?v=enquiry-20261101')
         ->and($this->get('/theme/'.$hashBefore.'.css'))->assertOk();
 });
 
