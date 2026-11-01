@@ -59,3 +59,19 @@ test('event logging permits one fixed synthetic path, not arbitrary output paths
   assert.equal(spawnSync('sh',[script,'--log-events-text=/workspace/platform/storage/framework/testing/native-events.log']).status,0);
   assert.equal(spawnSync('sh',[script,'--log-events-text=/private/owner.log']).status,64);
 });
+
+test('shipped build assets exactly match the current manifest, without obsolete hash bundles',()=>{
+  const directory=path.join(root,'platform/public/build');
+  const manifest=JSON.parse(read('platform/public/build/manifest.json'));
+  const expected=new Set();
+  for(const entry of Object.values(manifest)) {
+    for(const asset of [entry.file,...(entry.css??[]),...(entry.assets??[])]) {
+      assert.equal(typeof asset,'string');
+      expected.add(asset);
+    }
+  }
+  const actual=fs.readdirSync(path.join(directory,'assets'),{recursive:true})
+    .filter(name=>fs.statSync(path.join(directory,'assets',name)).isFile())
+    .map(name=>'assets/'+name.replaceAll(path.sep,'/'));
+  assert.deepEqual(actual.sort(),[...expected].sort(), 'Remove stale generated assets; retain every manifest-referenced file.');
+});
