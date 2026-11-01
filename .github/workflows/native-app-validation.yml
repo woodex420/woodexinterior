@@ -83,3 +83,46 @@ jobs:
             'Candidate locks are uncommitted and used ONLY in this disposable checkout; no automatic repository adoption.' \
             'No backup/restore, production data, provider egress, merge, deployment or auto-deploy change.' \
             'Any skipped/failed/warning test or missing acceptance evidence remains HOLD.' >> "$GITHUB_STEP_SUMMARY"
+
+  inspect-candidate-failure:
+    if: >-
+      github.ref == 'refs/heads/arena/8be318a2-woodexinterior' &&
+      github.event_name == 'push' &&
+      github.event.head_commit.message == '[woodex-qa:inspect-validation] source-only manual QA'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    steps:
+      - name: Inspect exact redacted synthetic failure output (no rerun or source adoption)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if ! gh api repos/woodex420/woodexinterior/actions/artifacts/13064279801/zip > "$RUNNER_TEMP/qa85-diagnostic.zip" 2> "$RUNNER_TEMP/qa85-download-error.txt"; then
+            echo '::error::HOLD: diagnostic artifact unavailable; no storage URLs published.'
+            exit 2
+          fi
+          python3 - "$RUNNER_TEMP/qa85-diagnostic.zip" <<'PY'
+          import hashlib,json,re,sys,zipfile
+          from urllib.parse import urlsplit,urlunsplit
+          from pathlib import Path
+          p=Path(sys.argv[1])
+          assert p.stat().st_size < 1000000
+          assert hashlib.sha256(p.read_bytes()).hexdigest()=='7956238e89d7b04dc6b61394760c0a8f4488f39201d3815e4310428e4b7bf6bc'
+          with zipfile.ZipFile(p) as z:
+              result=json.loads(z.read('results/result.json'))
+              assert result['readyForProductionDeployment'] is False and result['exitCode']==1
+              info=z.getinfo('results/tests.log');assert info.file_size < 4000000
+              text=z.read(info).decode('utf-8',errors='replace')
+          text=re.sub(r'\x1b\[[0-9;]*m','',text)
+          def safe_url(m):
+              try:
+                  u=urlsplit(m.group());return urlunsplit((u.scheme,u.hostname or '',u.path,'',''))
+              except Exception:return '[URL REDACTED]'
+          text=re.sub(r'https?://[^\s<>\"\x27]+',safe_url,text)
+          text='\n'.join(text.splitlines()[-100:])[-9000:]
+          message='FAILED candidate run41259777398; diagnostic only, NOT a native test pass.\n'+text
+          message=message.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+          print('::notice title=Candidate failure diagnostic — NOT acceptance::'+message)
+          PY
