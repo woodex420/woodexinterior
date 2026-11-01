@@ -370,6 +370,11 @@ it('refuses to silently deduplicate financial history when adding the milestone 
     safetyAccepted();
     $migration = require database_path('migrations/2026_10_17_030000_unique_invoice_project_milestone.php');
     $migration->down();
+    $milestoneKeys = array_values(array_filter(DB::connection()->getSchemaBuilder()->getForeignKeys('invoices'),
+        fn (array $key): bool => $key['columns'] === ['project_milestone_id']
+    ));
+    expect($milestoneKeys)->toHaveCount(1)
+        ->and($milestoneKeys[0]['foreign_table'])->toBe('project_milestones');
     $duplicate = Invoice::sole()->replicate(['public_id', 'number']);
     $duplicate->number = 'TEST-EXISTING-DUPLICATE';
     $duplicate->save();

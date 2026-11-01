@@ -24,6 +24,14 @@ return new class extends Migration
 
     public function down(): void
     {
+        // InnoDB may use the unique key as the FK's only supporting index. Preserve a
+        // non-unique lookup before removing uniqueness; never disable or drop the FK.
+        if (! Schema::hasIndex('invoices', 'invoices_project_milestone_lookup')) {
+            Schema::table('invoices', function (Blueprint $table): void {
+                $table->index('project_milestone_id', 'invoices_project_milestone_lookup');
+            });
+        }
+
         Schema::table('invoices', function (Blueprint $table): void {
             $table->dropUnique('invoices_project_milestone_unique');
         });
