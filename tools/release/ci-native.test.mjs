@@ -94,7 +94,10 @@ test('native image and probe require actual GD WebP support used by project medi
   assert.match(probe, /\$ok = \$webp &&/);
 });
 
-test('native PHPUnit URL is authoritative over the Compose process default', () => {
+test('native PHPUnit and Compose use the same test origin in every environment adapter', () => {
   const xml = fs.readFileSync(path.join(root, 'tools/docker/phpunit.mysql.xml'), 'utf8');
   assert.match(xml, /<env name="APP_URL" value="http:\/\/localhost" force="true" \/>/);
+  const compose = fs.readFileSync(path.join(root, 'tools/docker/compose.yaml'), 'utf8');
+  assert.match(compose, /APP_URL: http:\/\/localhost/);
+  assert(!compose.includes('APP_URL: http://woodex.test'));
 });
