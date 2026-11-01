@@ -103,7 +103,7 @@ abstract class ContactBook extends Component
             ->whereIn('contact_id', $contacts->pluck('id'))
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->get(['id', 'contact_id', 'source', 'stage_id', 'created_at', 'title'])
+            ->get(['id', 'contact_id', 'source', 'stage_id', 'created_at'])
             ->unique('contact_id')
             ->keyBy('contact_id');
 

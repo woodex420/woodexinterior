@@ -77,7 +77,7 @@ it('counts a customer by accepted quotations and shows the value they bring', fu
 
 it('calls a website enquiry a visitor until it converts, then drops it from the list', function () {
     $visitor = ladderContact('Web Visitor');
-    ladderLead($visitor, 'website_form');
+    $webLead = ladderLead($visitor, 'website_form');
 
     $converted = ladderContact('Converted Visitor', ['is_client' => true]);
     ladderLead($converted, 'estimator');
@@ -88,6 +88,7 @@ it('calls a website enquiry a visitor until it converts, then drops it from the 
     Livewire::actingAs($this->owner)
         ->test(VisitorsIndex::class)
         ->assertSee('Web Visitor')
+        ->assertSee($webLead->source->label())
         ->assertDontSee('Converted Visitor')
         ->assertDontSee('Walk In');
 });
