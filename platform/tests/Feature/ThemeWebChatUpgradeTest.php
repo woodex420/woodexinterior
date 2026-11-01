@@ -244,6 +244,8 @@ it('never turns visitor service text into privileged staff mention notifications
 });
 
 it('uses PKT calendar boundaries for tracking dates rather than the stored UTC day', function () {
+    // This fixture explicitly stores UTC; default application timestamps use app.timezone.
+    config(['app.timezone' => 'UTC']);
     Conversation::factory()->create(['channel' => Channel::WebChat, 'subject' => 'PKT midnight visitor', 'contact_id' => null, 'lead_id' => null, 'created_at' => '2026-10-28 20:00:00']);
     Livewire::test(WebChatLeads::class)->set('from', '2026-10-29')->set('to', '2026-10-29')
         ->assertSee('PKT midnight visitor')->set('from', '2026-10-28')->set('to', '2026-10-28')
