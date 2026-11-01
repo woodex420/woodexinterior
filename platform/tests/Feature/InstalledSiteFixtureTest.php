@@ -23,3 +23,7 @@ it('keeps the real installer redirect when the fixture is deliberately unconfigu
     expect($site->isConfigured())->toBeFalse();
     $this->get('/admin/login')->assertRedirect(url('/install'));
 });
+
+it('executes console helpers immediately and returns their real exit code', function () {
+    expect($this->artisan('list', ['--raw' => true]))->toBe(0);
+});

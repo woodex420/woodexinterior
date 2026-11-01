@@ -58,7 +58,9 @@ if p.exists():
 message=json.dumps(summary,separators=(',',':')).replace('%','%25').replace('\n','%0A').replace('\r','%0D')
 print('::'+('notice' if rc==0 else 'error')+' title=Reviewed artifact validation result::'+message)
 if mode=='first-failure-diagnostic' and p.exists():
- tail='\n'.join(text.splitlines()[-65:])[-3000:]
+ first=re.search(r'(?m)^\s*(?:FAILED\b|(?:PHP )?Fatal error:|Warning:)',text)
+ tail=(text[first.start():first.start()+1800]+'\n... bounded final output ...\n'+text[-1000:]) if first else '\n'.join(text.splitlines()[-65:])[-3000:]
+ tail=tail[:3000]
  message=('DIAGNOSTIC ONLY — not full acceptance.\n'+tail).replace('%','%25').replace('\r','%0D').replace('\n','%0A')
  print('::notice title=First native failure — NOT acceptance::'+message)
 PY

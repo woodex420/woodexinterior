@@ -29,6 +29,10 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        // This suite asserts integer exit codes and subsequent DB effects. Execute commands now,
+        // rather than leaving a PendingCommand to run during destruction after app teardown.
+        $this->withoutMockingConsoleOutput();
+
         // Ordinary feature tests model an installed site, without borrowing a developer/hosting .env.
         // Use an owned temporary layout so even a local developer .env is never borrowed. Installer tests
         // can (and do) replace this binding with their own deliberately unconfigured site.
