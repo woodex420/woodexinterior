@@ -121,7 +121,7 @@ jobs:
                   u=urlsplit(m.group());return urlunsplit((u.scheme,u.hostname or '',u.path,'',''))
               except Exception:return '[URL REDACTED]'
           text=re.sub(r'https?://[^\s<>\"\x27]+',safe_url,text)
-          text='\n'.join(text.splitlines()[-100:])[-9000:]
+          text='\n'.join(text.splitlines()[-50:])[-3000:]
           message='FAILED candidate run41259777398; diagnostic only, NOT a native test pass.\n'+text
           message=message.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
           print('::notice title=Candidate failure diagnostic — NOT acceptance::'+message)
