@@ -63,6 +63,11 @@ if mode=='first-failure-diagnostic' and p.exists():
  tail=tail[:3000]
  message=('DIAGNOSTIC ONLY — not full acceptance.\n'+tail).replace('%','%25').replace('\r','%0D').replace('\n','%0A')
  print('::notice title=First native failure — NOT acceptance::'+message)
+ warning=re.search(r'(?mi)^\s*(?:WARN\b|Warning:|Test code or tested code)',text)
+ if warning:
+  excerpt=text[warning.start():warning.start()+2800]
+  message=excerpt.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+  print('::notice title=Native warning detail — NOT acceptance::'+message)
 PY
   exit "$rc"
 }
@@ -94,7 +99,7 @@ if [[ $mode == first-failure-diagnostic ]]; then
   stage=application-diagnostic
   progress first-failure-diagnostic-started
   # A separate investigation only; this can NEVER replace the unchanged full gate below.
-  "${compose[@]}" run --rm --no-deps php-test --compact --stop-on-failure --stop-on-error --display-warnings 2>&1 | node tools/release/redact-disposable-qa.mjs | tee "$out/tests.log"
+  "${compose[@]}" run --rm --no-deps php-test --compact --stop-on-failure --stop-on-error --display-warnings --display-phpunit-warnings 2>&1 | node tools/release/redact-disposable-qa.mjs | tee "$out/tests.log"
   completed+=' application-diagnostic'
 else
 # FULL_SUITE_BRANCH

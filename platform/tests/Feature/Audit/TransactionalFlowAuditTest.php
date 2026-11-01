@@ -116,7 +116,7 @@ it('ties both brand workflows from approved quote to signed acceptance project r
     expect($invoice->refresh()->status)->toBe(InvoiceStatus::Paid)
         ->and($invoice->balance_minor)->toBe(0)
         ->and(audit45ReceivableNet())->toBe(0)
-        ->and(PaymentAllocation::query()->sum('amount_minor'))->toBe($invoice->total_minor)
+        ->and((int) PaymentAllocation::query()->sum('amount_minor'))->toBe($invoice->total_minor)
         ->and(JournalEntry::query()->where('source_type', 'payment')->count())->toBe(2)
         ->and($first->receipt_number)->not->toBe($last->receipt_number)
         ->and(JournalLine::query()->sum('debit_minor'))->toBe(JournalLine::query()->sum('credit_minor'))

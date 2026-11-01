@@ -98,7 +98,7 @@ test('CLI refuses arguments rather than accepting runtime/production overrides',
   const r = spawnSync(process.execPath, [path.join(repository, 'tools/release/preflight.mjs'), '--deploy'], { encoding: 'utf8' }); assert.equal(r.status, 64); assert.match(r.stderr, /read-only/);
 });
 
-for (const args of [[], ['--compact'], ['--stop-on-failure', '--stop-on-error', '--display-warnings'], ['tests/Feature/Accounts/PaymentPostingRepairTest.php', '--stop-on-failure']]) {
+for (const args of [[], ['--compact'], ['--stop-on-failure', '--stop-on-error', '--display-warnings', '--display-phpunit-warnings'], ['tests/Feature/Accounts/PaymentPostingRepairTest.php', '--stop-on-failure']]) {
   test(`QA argument allowlist accepts ${JSON.stringify(args)} without executing tests`, () => {
     const r = spawnSync('sh', [path.join(repository, 'tools/release/qa-test-arguments.sh'), ...args], { encoding: 'utf8' }); assert.equal(r.status, 0);
   });

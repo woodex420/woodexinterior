@@ -75,7 +75,7 @@ it('posts the staff Payments form atomically for both brands without widening ac
     $net = (int) JournalLine::where('account_id', $ar->id)->sum('debit_minor') - (int) JournalLine::where('account_id', $ar->id)->sum('credit_minor');
     expect($payment->receipt_number)->not->toBeNull()
         ->and($invoice->refresh()->balance_minor)->toBe(5000)->and($net)->toBe(5000)
-        ->and($entry->lines()->sum('debit_minor'))->toBe(5000)
+        ->and((int) $entry->lines()->sum('debit_minor'))->toBe(5000)
         ->and($this->accountant->can('accounts.view'))->toBeFalse();
 })->with([BusinessLine::Interior, BusinessLine::Furniture]);
 
