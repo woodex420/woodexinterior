@@ -34,10 +34,15 @@ services:
       COMPOSER_HOME: /tmp/woodex-qa-composer
       COMPOSER_CACHE_DIR: /tmp/woodex-qa-cache
       COMPOSER_ALLOW_SUPERUSER: "1"
+      # Trust only the reviewed read-only checkout inside this disposable container.
+      GIT_CONFIG_COUNT: "1"
+      GIT_CONFIG_KEY_0: safe.directory
+      GIT_CONFIG_VALUE_0: /workspace
     volumes:
       - *source
       - php-test-vendor:/workspace/platform/vendor
   php-test:
+    mem_limit: 3g
     build: *php-build
     image: woodex-qa-php:local
     networks: [qa-internal]
@@ -57,6 +62,10 @@ services:
       COMPOSER_HOME: /tmp/woodex-qa-composer
       COMPOSER_CACHE_DIR: /tmp/woodex-qa-cache
       COMPOSER_ALLOW_SUPERUSER: "1"
+      # Trust only the reviewed read-only checkout inside this disposable container.
+      GIT_CONFIG_COUNT: "1"
+      GIT_CONFIG_KEY_0: safe.directory
+      GIT_CONFIG_VALUE_0: /workspace
       DB_CONNECTION: mysql
       DB_HOST: mysql-test
       DB_PORT: "3306"

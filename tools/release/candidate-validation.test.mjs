@@ -61,3 +61,13 @@ test('generated QA passwords and URL credentials/query are removed before artifa
   });
   assert.equal(p.status, 0, p.stderr); assert(!p.stdout.includes(pw)); assert(!p.stdout.includes(rootPw)); assert(!p.stdout.includes('do-not-print')); assert.match(p.stdout, /https:\/\/example.test\/path/);
 });
+
+test('native suite has bounded QA-only memory and narrowly scoped ephemeral Git trust', () => {
+  const runner=fs.readFileSync(path.join(root,'tools/docker/test.sh'),'utf8');
+  const compose=fs.readFileSync(path.join(root,'tools/docker/compose.yaml'),'utf8');
+  assert.match(runner, /php -d memory_limit=2G vendor\/bin\/pest/);
+  assert.match(compose, /mem_limit: 3g/);
+  assert.equal((compose.match(/GIT_CONFIG_VALUE_0: \/workspace/g)||[]).length,2);
+  assert(!compose.includes('safe.directory=*'));
+  assert.match(compose, /internal: true/);
+});

@@ -15,4 +15,5 @@ composer dump-autoload --no-interaction --no-scripts
 composer --no-plugins --no-scripts check-platform-reqs
 php artisan config:clear
 php artisan package:discover --ansi
-php vendor/bin/pest --configuration=/workspace/tools/docker/phpunit.mysql.xml "$@"
+# Full-suite CLI budget only; not a production PHP configuration change.
+php -d memory_limit=2G vendor/bin/pest --configuration=/workspace/tools/docker/phpunit.mysql.xml "$@"
