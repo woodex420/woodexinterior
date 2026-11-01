@@ -29,10 +29,26 @@ cleanup() {
   rm -f -- tools/docker/.env
 }
 sh tools/docker/setup-env.sh
-trap cleanup EXIT
+finish() {
+  status=$?
+  trap - EXIT
+  if [[ $status != 0 ]]; then
+    python3 - "$out" <<'PY_REPORT'
+import pathlib,sys
+for p in sorted(pathlib.Path(sys.argv[1]).glob('*.log')):
+    text=p.read_text(errors='replace')[-2600:]
+    if text:
+        message=(p.name+'\n'+text).replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+        print('::error title=Native branch failure context::'+message)
+PY_REPORT
+  fi
+  cleanup
+  exit "$status"
+}
+trap finish EXIT
 node tools/release/redact-disposable-qa.mjs --mask
 "${compose[@]}" config --quiet
-docker build --pull -t woodex-qa-php:local -f tools/docker/Dockerfile tools/docker
+docker build --pull -t woodex-qa-php:local -f tools/docker/Dockerfile tools/docker 2>&1 | tee "$out/build.log"
 "${compose[@]}" run --rm --no-deps --entrypoint sh php-deps /workspace/tools/docker/dependencies.sh 2>&1 | node tools/release/redact-disposable-qa.mjs | tee "$out/install.log"
 "${compose[@]}" up --detach --wait mysql-test
 # Only this run's disposable volumes. Test as www-data so filesystem permission tests are real.
