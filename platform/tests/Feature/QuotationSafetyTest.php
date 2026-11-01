@@ -394,3 +394,18 @@ it('uses a grouped milestone projection compatible with strict MySQL for the mig
         ->toMatch('/select [`"]project_milestone_id[`"] from [`"]invoices[`"] /')
         ->not->toContain('select *');
 });
+
+
+it('keeps the payment method account reference type identical to the chart primary key', function () {
+    $schema = DB::connection()->getSchemaBuilder();
+
+    expect($schema->getColumnType('payment_method_accounts', 'account_id', fullDefinition: true))
+        ->toBe($schema->getColumnType('chart_of_accounts', 'id', fullDefinition: true));
+
+    $references = array_values(array_filter($schema->getForeignKeys('payment_method_accounts'),
+        fn (array $key): bool => $key['columns'] === ['account_id']
+    ));
+    expect($references)->toHaveCount(1)
+        ->and($references[0]['foreign_table'])->toBe('chart_of_accounts')
+        ->and($references[0]['foreign_columns'])->toBe(['id']);
+});

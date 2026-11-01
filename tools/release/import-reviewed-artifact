@@ -30,7 +30,7 @@ REVIEWED_FILES = {
 
 
 # Explicitly reviewed strict-MySQL guard correction plus regression, not arbitrary app overrides.
-REVIEWED_APP_FIXES = {'platform/database/migrations/2026_10_17_030000_unique_invoice_project_milestone.php': 'accd3a778d06151385692a79871f04e9167395aae6a6eb91b3e81e6f491b82ff', 'platform/tests/Feature/QuotationSafetyTest.php': 'c4edf9913251715aefdbab8fd1320d1d9662a8dda1dcfb46159bf25cb0ebe1e1'}
+REVIEWED_APP_FIXES = {'platform/database/migrations/2026_10_17_030000_unique_invoice_project_milestone.php': 'accd3a778d06151385692a79871f04e9167395aae6a6eb91b3e81e6f491b82ff', 'platform/database/migrations/2026_10_17_160000_create_payment_method_accounts.php': 'e1c1cc7751887ec48b204384adf90b0347c00fb44fb09afe000ea92ba6874c4b', 'platform/tests/Feature/QuotationSafetyTest.php': '2040027081429d150ef837cd2708d0bd99d79508129cea8d51f5d2df3d165287'}
 
 
 class Rejected(ValueError):

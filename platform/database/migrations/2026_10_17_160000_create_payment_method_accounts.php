@@ -25,7 +25,7 @@ return new class extends Migration
         Schema::create('payment_method_accounts', function (Blueprint $table): void {
             $table->id();
             $table->string('method', 40)->unique();
-            $table->unsignedInteger('account_id');
+            $table->unsignedBigInteger('account_id');
             $table->timestamps();
 
             $table->foreign('account_id')->references('id')->on('chart_of_accounts')->restrictOnDelete();
