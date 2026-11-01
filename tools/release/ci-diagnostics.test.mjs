@@ -45,3 +45,15 @@ test('ANSI removed, excerpt size bounded and tail preserved', () => {
 test('workflow command escapes newline, carriage return and percent', () => {
   assert.equal(annotation('a%\r\n::warning::not-a-command'), '::error title=Source-only native QA diagnostic::a%25%0D%0A::warning::not-a-command');
 });
+
+// Actual source metadata regression for the Composer conflict observed in hosted native QA.
+test('both manifests model the same PHP patch floor required by the unchanged Pest5 graph', () => {
+  const root = JSON.parse(fs.readFileSync(new URL('../../composer.json', import.meta.url), 'utf8'));
+  const app = JSON.parse(fs.readFileSync(new URL('../../platform/composer.json', import.meta.url), 'utf8'));
+  assert.deepEqual(root.require, app.require);
+  assert.equal(root.require.php, '^8.4.1');
+  assert.deepEqual(root.config.platform, app.config.platform);
+  assert.equal(root.config.platform.php, '8.4.1');
+  assert.equal(app['require-dev']['pestphp/pest'], '^5.3');
+  assert.equal(app['require-dev']['pestphp/pest-plugin-livewire'], '^5.0');
+});

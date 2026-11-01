@@ -6,7 +6,7 @@
     "keywords": ["laravel", "livewire", "crm", "quotations", "woodex"],
     "license": "proprietary",
     "require": {
-        "php": "^8.4",
+        "php": "^8.4.1",
         "barryvdh/laravel-dompdf": "^3.1",
         "brick/math": "^1.0",
         "laravel/fortify": "^1.41",
@@ -91,7 +91,7 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "platform": {
-            "php": "8.4.0"
+            "php": "8.4.1"
         },
         "allow-plugins": {
             "pestphp/pest-plugin": true,
