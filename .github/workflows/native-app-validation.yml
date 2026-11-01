@@ -94,37 +94,60 @@ jobs:
     permissions:
       actions: read
     steps:
-      - name: Inspect exact redacted synthetic failure output (no rerun or source adoption)
+      - name: Inspect timeout evidence and replacement dependency identity — read only
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          if ! gh api repos/woodex420/woodexinterior/actions/artifacts/13064279801/zip > "$RUNNER_TEMP/qa85-diagnostic.zip" 2> "$RUNNER_TEMP/qa85-download-error.txt"; then
-            echo '::error::HOLD: diagnostic artifact unavailable; no storage URLs published.'
-            exit 2
-          fi
-          python3 - "$RUNNER_TEMP/qa85-diagnostic.zip" <<'PY'
+          for pair in '13065909491:timeout' '13066020494:replacement'; do
+            id="${pair%%:*}"; label="${pair#*:}"
+            if ! gh api "repos/woodex420/woodexinterior/actions/artifacts/$id/zip" > "$RUNNER_TEMP/qa86-$label.zip" 2> "$RUNNER_TEMP/qa86-download-error.txt"; then
+              echo '::error::HOLD: pinned inspection artifact unavailable; no storage URLs published.'
+              exit 2
+            fi
+          done
+          python3 - "$RUNNER_TEMP/qa86-timeout.zip" "$RUNNER_TEMP/qa86-replacement.zip" <<'PY'
           import hashlib,json,re,sys,zipfile
           from urllib.parse import urlsplit,urlunsplit
           from pathlib import Path
-          p=Path(sys.argv[1])
-          assert p.stat().st_size < 1000000
-          assert hashlib.sha256(p.read_bytes()).hexdigest()=='7956238e89d7b04dc6b61394760c0a8f4488f39201d3815e4310428e4b7bf6bc'
-          with zipfile.ZipFile(p) as z:
-              result=json.loads(z.read('results/result.json'))
-              assert result['readyForProductionDeployment'] is False and result['exitCode']==1
-              info=z.getinfo('results/tests.log');assert info.file_size < 4000000
-              text=z.read(info).decode('utf-8',errors='replace')
+          archives=[]
+          for file,digest in zip(sys.argv[1:],[
+              'a1ae79f0d8db6c65b4458da802c772e5e5c177138b546f307f61e66c1f04faa8',
+              'b15d36505e85c45c05a462b369e298319439b3afb4b312717ddfb7e8935d7149']):
+              p=Path(file);assert p.stat().st_size < 1000000
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==digest
+              z=zipfile.ZipFile(p);entries=z.infolist()
+              assert len(entries)<=128 and len({i.filename for i in entries})==len(entries)
+              assert sum(i.file_size for i in entries)<=16000000 and all(i.file_size<=4000000 for i in entries)
+              archives.append(z)
+          original,replacement=archives
+          proof=json.loads(original.read('import-proof.json'))
+          assert proof['archiveSha256']=='d3ca74419dd0b10053e11386462b19e5fd6fd0f1d6b9b0656bcb3ccdbb06bf91'
+          assert proof['sourceSha']=='176e65e0c7f689af9be8494a8e5d17971ea8671b' and proof['readyForProductionDeployment'] is False
+          hashes={}
+          for local,source,paired in [
+              ('composer.json','locks/root/composer.json','locks/paired/composer.json'),
+              ('composer.lock','locks/root/composer.lock','locks/paired/composer.lock'),
+              ('platform/composer.json','locks/platform/composer.json','locks/paired/platform/composer.json'),
+              ('platform/composer.lock','locks/platform/composer.lock','locks/paired/platform/composer.lock')]:
+              data=replacement.read(source);assert data==replacement.read(paired)
+              hashes[local]=hashlib.sha256(data).hexdigest()
+          identity={'scope':'READ ONLY: byte comparison, not artifact adoption or application acceptance',
+              'originalFileSha256':proof['fileSha256'],'replacementFileSha256':hashes,
+              'sameDependencyBytes':hashes==proof['fileSha256'],'readyForProductionDeployment':False}
+          def notice(title,text):
+              text=text.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+              print('::notice title='+title+'::'+text)
+          notice('Dependency identity only — NOT acceptance',json.dumps(identity,separators=(',',':')))
+          text=original.read('results/tests.log').decode('utf-8',errors='replace')
           text=re.sub(r'\x1b\[[0-9;]*m','',text)
           def safe_url(m):
               try:
                   u=urlsplit(m.group());return urlunsplit((u.scheme,u.hostname or '',u.path,'',''))
               except Exception:return '[URL REDACTED]'
           text=re.sub(r'https?://[^\s<>\"\x27]+',safe_url,text)
-          text='\n'.join(text.splitlines()[-50:])[-3000:]
-          message='FAILED candidate run41259777398; diagnostic only, NOT a native test pass.\n'+text
-          message=message.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
-          print('::notice title=Candidate failure diagnostic — NOT acceptance::'+message)
+          text='\n'.join(text.splitlines()[-60:])[-3000:]
+          notice('Timeout evidence tail — NOT acceptance','TIMEOUT run41260856560; diagnostic only.\n'+text)
           PY
 
   first-failure-diagnostic:
