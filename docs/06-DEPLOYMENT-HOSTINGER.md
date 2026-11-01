@@ -47,7 +47,7 @@ there. It runs no build step except Composer. The repository is prepared for exa
 │       └── storage/                     ← uploads, logs, sessions, compiled views
 └── domains/…/public_html/…               ← the site folder = this repository (replaced on every deploy)
     ├── .htaccess  composer.json          ← routes everything to platform/public · installs platform/vendor
-    ├── docs/  tools/  woodex/            ← not web-reachable
+    ├── docs/  tools/                     ← not web-reachable
     └── platform/
         ├── public/                       ← the only web-visible folder (incl. build/)
         └── vendor/                       ← installed by Hostinger's Composer step
