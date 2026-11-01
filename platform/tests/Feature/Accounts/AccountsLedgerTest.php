@@ -136,11 +136,12 @@ it('refuses to post when no period covers the business date', function () {
     $capital = accountByCode('3010');
     $orphanDate = today()->addYears(3)->toDateString();
 
-    app(PostJournalEntry::class)->handle($this->owner, [
+    expect(fn () => app(PostJournalEntry::class)->handle($this->owner, [
         ['account_id' => $cash->id, 'debit_minor' => 100],
         ['account_id' => $capital->id, 'credit_minor' => 100],
-    ], ['business_date' => $orphanDate]);
-})->throws(JournalPostingFailed::class, "No accounting period covers {$orphanDate}");
+    ], ['business_date' => $orphanDate]))
+        ->toThrow(JournalPostingFailed::class, "No accounting period covers {$orphanDate}");
+});
 
 it('blocks posting into a closed period and allows it again after a deliberate reopen', function () {
     $cash = accountByCode('1010');
