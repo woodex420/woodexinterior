@@ -94,30 +94,27 @@ jobs:
     permissions:
       actions: read
     steps:
-      - name: Read pinned disposable warning evidence only
+      - name: One-time export of verified public Composer locks (no app or deployment)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          if ! gh api repos/woodex420/woodexinterior/actions/artifacts/13086856710/zip > "$RUNNER_TEMP/qa88.zip" 2> "$RUNNER_TEMP/qa88-download-error.txt"; then
-            echo '::error::HOLD: pinned QA evidence unavailable; no storage URL published.'
-            exit 2
-          fi
-          python3 - "$RUNNER_TEMP/qa88.zip" <<'PY'
-          import hashlib,json,re,sys,zipfile
+          gh api repos/woodex420/woodexinterior/actions/artifacts/13066020494/zip > "$RUNNER_TEMP/locks.zip" 2> "$RUNNER_TEMP/download-error.txt"
+          python3 - "$RUNNER_TEMP/locks.zip" <<'PY'
+          import base64,hashlib,json,sys,zipfile,zlib
           from pathlib import Path
-          p=Path(sys.argv[1]);assert p.stat().st_size<1000000
-          assert hashlib.sha256(p.read_bytes()).hexdigest()=='89dae8948cdd174316dbde9a561d8dafdd7322b46a98733a422757a111aedacf'
+          p=Path(sys.argv[1]);assert p.stat().st_size<2000000
+          assert hashlib.sha256(p.read_bytes()).hexdigest()=='b15d36505e85c45c05a462b369e298319439b3afb4b312717ddfb7e8935d7149'
+          expected={'composer.lock':'1f3c7b5f058153a0345a7743a73edd80ceb3a8809b2c83cc404dada2b1886f68','platform/composer.lock':'37c785a18211002ff3ba4c35ae75c2e23e997ab252a54bffd24dc32bd9c2ff0d'}
+          files={}
           with zipfile.ZipFile(p) as z:
-              info=z.getinfo('results/tests.log');assert info.file_size<4000000
-              text=z.read(info).decode('utf-8',errors='replace')
-          text=re.sub(r'\x1b\[[0-9;]*m','',text)
-          matches=list(re.finditer(r'(?im)^.*(?:warn|notice|error.handler|exception.handler|:30|file_get_contents).*$',text))
-          excerpts=[]
-          for m in matches[:4]:
-              excerpts.append(text[max(0,m.start()-100):m.end()+700])
-          message=('READ ONLY synthetic warning evidence; not acceptance.\n'+'\n'.join(excerpts))[:3000]
-          print('::notice title=Native warning evidence::'+message.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))
+              for name,member in [('composer.lock','locks/root/composer.lock'),('platform/composer.lock','locks/platform/composer.lock')]:
+                  assert z.getinfo(member).file_size<4000000
+                  data=z.read(member);assert hashlib.sha256(data).hexdigest()==expected[name]
+                  files[name]=data.decode('utf-8')
+          payload=base64.b64encode(zlib.compress(json.dumps(files).encode(),9)).decode()
+          for i in range(0,len(payload),12000):
+              print('::notice title=Reviewed public dependency chunk '+str(i//12000).zfill(3)+'::'+payload[i:i+12000])
           PY
 
   first-failure-diagnostic:
