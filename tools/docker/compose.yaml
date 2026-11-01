@@ -42,12 +42,13 @@ services:
       - *source
       - php-test-vendor:/workspace/platform/vendor
   php-test:
+    user: "33:33"
     mem_limit: 3g
     build: *php-build
     image: woodex-qa-php:local
     networks: [qa-internal]
     read_only: true
-    tmpfs: [/tmp, /workspace/platform/bootstrap/cache]
+    tmpfs: [/tmp, /workspace/platform/bootstrap/cache:mode=1777]
     depends_on:
       mysql-test:
         condition: service_healthy

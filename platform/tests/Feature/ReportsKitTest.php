@@ -38,6 +38,12 @@ function reportsOwner(): User
     return $owner;
 }
 
+// Relative-day fixtures must stay within their intended month, including on the first day.
+// Laravel clears the test clock during teardown; production time is never changed.
+beforeEach(function () {
+    $this->travelTo(now()->startOfMonth()->addDays(14)->setTime(12, 0));
+});
+
 it('shows the funnel: leads by source, win rate, and why leads were lost', function () {
     $owner = reportsOwner();
     $sales = User::factory()->create(['name' => 'Bilal Ahmed']);
@@ -244,4 +250,14 @@ it('labels collection methods using the actual bank column without exposing acco
         ->and($rows[0]['amount_minor'])->toBe(12000)
         ->and($rows[0]['count'])->toBe(1)
         ->and(json_encode($rows))->not->toContain('DO-NOT-EXPOSE-TEST-ACCOUNT', 'DO-NOT-EXPOSE-TEST-IBAN');
+});
+
+
+it('keeps previous-month leads out of the first-day current-month funnel', function () {
+    $this->travelTo(now()->setDate(2026, 11, 1)->startOfDay()->addHours(12));
+    Lead::factory()->create(['created_at' => now()->subDay()]);
+    Lead::factory()->create(['created_at' => now()]);
+    $report = app(SalesFunnelReport::class)->handle(ReportRange::fromPreset('this_month'));
+    expect($report['headline']['leads'])->toBe(1)
+        ->and($report['previous']['leads'])->toBe(1);
 });
