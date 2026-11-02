@@ -9,9 +9,12 @@ use App\Domain\Accounts\Enums\PaidFrom;
 use App\Domain\Accounts\Exceptions\JournalPostingFailed;
 use App\Domain\Accounts\Models\Account;
 use App\Domain\Accounts\Models\Expense;
+use App\Domain\Accounts\Services\SupplierCostReference;
+use App\Domain\Projects\Services\ProjectCostAccess;
 use App\Models\User;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * One expense or one piece of other income, written once and posted in the same transaction (slice I).
@@ -23,16 +26,22 @@ use Illuminate\Support\Facades\DB;
 final class RecordExpense
 {
     /**
-     * @param  array{direction: ExpenseDirection|string, account_id: int, amount_minor: int, spent_on: string, paid_from: PaidFrom|string, vendor_id?: int|null, reference?: string|null, notes?: string|null, recurring_expense_id?: int|null, description: string}  $attributes
+     * @param  array{direction: ExpenseDirection|string, account_id: int, amount_minor: int, spent_on: string, paid_from: PaidFrom|string, vendor_id?: int|null, reference?: string|null, notes?: string|null, recurring_expense_id?: int|null, project_id?: int|null, description: string}  $attributes
      */
     public function handle(array $attributes, User $actor): Expense
     {
+        $actor = app(ProjectCostAccess::class)->actor($actor);
+        $project = app(ProjectCostAccess::class)->project($attributes['project_id'] ?? null, $actor);
         $direction = $attributes['direction'] instanceof ExpenseDirection
             ? $attributes['direction']
             : ExpenseDirection::from((string) $attributes['direction']);
         $paidFrom = $attributes['paid_from'] instanceof PaidFrom
             ? $attributes['paid_from']
             : PaidFrom::from((string) $attributes['paid_from']);
+
+        if ($project !== null && ($direction !== ExpenseDirection::Out || $paidFrom === PaidFrom::Payable)) {
+            throw ValidationException::withMessages(['project_id' => 'Linked project expenses must be paid costs. Use a supplier bill for an unpaid cost.']);
+        }
 
         $amount = (int) $attributes['amount_minor'];
 
@@ -66,8 +75,12 @@ final class RecordExpense
                 ['account_id' => $counterAccount->id, 'credit_minor' => $amount, 'memo' => $attributes['description']],
             ];
 
-        return DB::transaction(function () use ($attributes, $actor, $direction, $paidFrom, $amount, $lines, $moneyAccount): Expense {
+        return DB::transaction(function () use ($attributes, $actor, $direction, $paidFrom, $amount, $lines, $moneyAccount, $project): Expense {
+            if ($direction === ExpenseDirection::Out && ! empty($attributes['vendor_id'])) {
+                app(SupplierCostReference::class)->assertAvailable((int) $attributes['vendor_id'], $attributes['reference'] ?? null);
+            }
             $expense = Expense::query()->create([
+                'project_id' => $project?->id,
                 'direction' => $direction,
                 'vendor_id' => $attributes['vendor_id'] ?? null,
                 'account_id' => $attributes['account_id'],
@@ -83,6 +96,8 @@ final class RecordExpense
             ]);
 
             $entry = app(PostJournalEntry::class)->handle($actor, $lines, [
+                'project_id' => $project?->id,
+                'business_line' => $project?->business_line->value,
                 'source_type' => 'expense',
                 'source_id' => $expense->id,
                 'business_date' => (string) $attributes['spent_on'],

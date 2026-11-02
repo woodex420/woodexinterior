@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Livewire\Admin\Accounts;
 
 use App\Domain\Accounts\Actions\PayBill;
-use App\Domain\Accounts\Actions\PostBillToLedger;
+use App\Domain\Accounts\Actions\ReceiveBill;
+use App\Domain\Accounts\Actions\SaveBill;
 use App\Domain\Accounts\Actions\VoidBill;
 use App\Domain\Accounts\Enums\BillStatus;
 use App\Domain\Accounts\Models\Account;
@@ -16,9 +17,10 @@ use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Settings\SalesSettings;
 use App\Support\Money;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Throwable;
@@ -43,6 +45,7 @@ class BillsIndex extends Component
 
     public bool $showForm = false;
 
+    #[Locked]
     public ?int $editingId = null;
 
     public ?int $vendorId = null;
@@ -60,7 +63,11 @@ class BillsIndex extends Component
     /** @var list<array{accountId: int|string, description: string, amountRupees: string}> */
     public array $lines = [];
 
+    #[Locked]
     public ?int $payingId = null;
+
+    #[Locked]
+    public ?string $payRequestKey = null;
 
     public string $payAmount = '';
 
@@ -160,15 +167,9 @@ class BillsIndex extends Component
         }
 
         try {
-            $entry = DB::transaction(function () use ($bill) {
-                $bill->update(['status' => BillStatus::Received]);
-                $entry = app(PostBillToLedger::class)->handle($bill->refresh(), $this->user());
-                $bill->update(['journal_entry_id' => $entry->id]);
-
-                return $entry;
-            });
+            $posted = app(ReceiveBill::class)->handle($bill, $this->user());
+            $entry = $posted->journalEntry()->firstOrFail();
         } catch (Throwable $exception) {
-            $bill->update(['status' => BillStatus::Draft]);
             $this->toast('Not posted — '.$exception->getMessage(), 'error');
 
             return;
@@ -191,6 +192,7 @@ class BillsIndex extends Component
 
         $this->resetValidation();
         $this->payingId = $bill->id;
+        $this->payRequestKey = (string) Str::uuid();
         $this->payAmount = (string) round($bill->balanceMinor() / 100, 2);
         $this->payMethod = 'bank_transfer';
         $this->payReference = '';
@@ -221,6 +223,7 @@ class BillsIndex extends Component
                 PaymentMethod::from($data['payMethod']),
                 $this->user(),
                 $data['payReference'] !== '' ? $data['payReference'] : null,
+                idempotencyKey: $this->payRequestKey,
             );
         } catch (ValidationException $exception) {
             foreach ($exception->errors() as $field => $messages) {
@@ -335,11 +338,9 @@ class BillsIndex extends Component
         ]);
 
         $taxMinor = Money::ofRupees((string) $data['taxRupees'])->minor;
-        $total = 0;
 
-        $items = array_map(function (array $line, int $index) use (&$total): array {
+        $items = array_map(function (array $line, int $index): array {
             $amount = Money::ofRupees((string) $line['amountRupees'])->minor;
-            $total += $amount;
 
             return [
                 'account_id' => (int) $line['accountId'],
@@ -351,47 +352,21 @@ class BillsIndex extends Component
 
         $existing = $this->editingId !== null ? Bill::query()->findOrFail($this->editingId) : null;
 
-        $duplicate = Bill::query()
-            ->where('vendor_id', $data['vendorId'])
-            ->where('number', trim($data['number']))
-            ->when($existing !== null, fn ($query) => $query->whereKeyNot($existing->id))
-            ->exists();
-
-        if ($duplicate) {
-            $this->addError('number', 'That vendor already has a bill with this number — the same invoice cannot be entered twice.');
+        try {
+            $bill = app(SaveBill::class)->handle([
+                'number' => trim($data['number']),
+                'vendor_id' => (int) $data['vendorId'],
+                'bill_date' => $data['billDate'],
+                'due_date' => $data['dueDate'] !== '' ? $data['dueDate'] : null,
+                'tax_minor' => $taxMinor,
+                'notes' => $this->blankToNull($data['notes']),
+            ], $items, $this->user(), $status, $existing);
+        } catch (ValidationException $exception) {
+            foreach ($exception->errors() as $field => $messages) {
+                $this->addError($field, (string) ($messages[0] ?? 'That bill was refused.'));
+            }
 
             return;
-        }
-
-        try {
-            $bill = DB::transaction(function () use ($data, $status, $items, $taxMinor, $total, $existing): Bill {
-                $bill = $existing ?? new Bill;
-                $bill->fill([
-                    'number' => trim($data['number']),
-                    'vendor_id' => (int) $data['vendorId'],
-                    'bill_date' => $data['billDate'],
-                    'due_date' => $data['dueDate'] !== '' ? $data['dueDate'] : null,
-                    'status' => $status,
-                    'subtotal_minor' => $total,
-                    'tax_minor' => $taxMinor,
-                    'total_minor' => $total + $taxMinor,
-                    'notes' => $this->blankToNull($data['notes']),
-                    'created_by' => $bill->created_by ?? $this->user()->id,
-                ])->save();
-
-                $bill->items()->delete();
-
-                foreach ($items as $item) {
-                    $bill->items()->create($item);
-                }
-
-                if ($status === BillStatus::Received) {
-                    $entry = app(PostBillToLedger::class)->handle($bill->refresh(), $this->user());
-                    $bill->update(['journal_entry_id' => $entry->id]);
-                }
-
-                return $bill->refresh();
-            });
         } catch (Throwable $exception) {
             $this->toast('Not saved — '.$exception->getMessage(), 'error');
 

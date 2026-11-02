@@ -7,6 +7,7 @@ namespace App\Domain\Accounts\Actions;
 use App\Domain\Accounts\Enums\BillStatus;
 use App\Domain\Accounts\Models\Bill;
 use App\Domain\Accounts\Models\JournalEntry;
+use App\Domain\Projects\Services\ProjectCostAccess;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -20,6 +21,7 @@ final class VoidBill
 {
     public function handle(Bill $bill, User $actor, string $reason): Bill
     {
+        $actor = app(ProjectCostAccess::class)->actor($actor);
         $reason = trim($reason);
 
         if (mb_strlen($reason) < 4) {
@@ -28,6 +30,8 @@ final class VoidBill
 
         return DB::transaction(function () use ($bill, $actor, $reason): Bill {
             $bill = Bill::query()->lockForUpdate()->findOrFail($bill->id);
+
+            app(ProjectCostAccess::class)->project($bill->project_id, $actor, true);
 
             if ($bill->status === BillStatus::Void) {
                 throw ValidationException::withMessages(['voidReason' => 'That bill is already void.']);

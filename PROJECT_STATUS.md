@@ -2,9 +2,11 @@
 
 **Updated:** 2 November 2026 · **Active branch:** `arena/7093000c-woodexinterior` · **Native synthetic preview:** port 8080
 
-## Current execution record — revisions 98 / 99
+## Current execution record — revisions 98 / 99 / 100
 
 **Owner ordering:** finish remaining pending/paused work first; deployment is the final task. Candidate native CI [41495382678](https://github.com/woodex420/woodexinterior/actions/runs/41495382678) is now **successful** at `1640506`; no merge/deployment follows automatically.
+
+**Increment 100, partial linked-cost workflow:** canonical bill/paid-expense project links, retry keys, cross-model supplier-reference guard and stale-draft protections are implemented; new Vendors/Costs screens and summaries are not yet implemented. Account/project tests120/623 and final new regressions41/200 passed; static/style/92 contracts and34 current browser checks passed. Final exact-source full native suite: **1,898 passed /10,710 assertions**, strict warnings/skips, exit0. [Implementation and boundaries](docs/audit/100_LINKED_PROJECT_COST_FOUNDATION_2026-11-02.md). One nullable additive migration ran **only in the isolated synthetic preview** (now104); no production migration/write. Prior6c04989 hosted CI41500249255 is successful, not acceptance for these new changes.
 
 [Consolidated master plan / resume instructions](docs/audit/98_MASTER_COMPLETION_PLAN_2026-11-02.md) · [30-item task register](docs/audit/98_COMPLETION_REGISTER_2026-11-02.csv).
 

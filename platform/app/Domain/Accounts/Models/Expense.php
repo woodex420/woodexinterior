@@ -6,6 +6,7 @@ namespace App\Domain\Accounts\Models;
 
 use App\Domain\Accounts\Enums\ExpenseDirection;
 use App\Domain\Accounts\Enums\PaidFrom;
+use App\Domain\Projects\Models\Project;
 use App\Models\User;
 use App\Support\Concerns\HasPublicId;
 use App\Support\Money;
@@ -29,6 +30,7 @@ class Expense extends Model
             'direction' => ExpenseDirection::class,
             'paid_from' => PaidFrom::class,
             'spent_on' => 'immutable_date',
+            'project_id' => 'integer',
             'amount_minor' => 'integer',
         ];
     }
@@ -43,6 +45,12 @@ class Expense extends Model
     public function paymentAccount(): BelongsTo
     {
         return $this->belongsTo(Account::class, 'payment_account_id');
+    }
+
+    /** @return BelongsTo<Project, $this> */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
     }
 
     /** @return BelongsTo<Vendor, $this> */
