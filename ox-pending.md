@@ -10,7 +10,7 @@
 4. **Secrets/provider work:** exposed credentials must be revoked/rotated privately; do not paste replacements here. Owner permits approved aggregate summaries and one conditional non-sensitive report to the paired owner chat. Model/budget/field policy, secure rotation, pairing and network access remain gates before any call/send. Telegram remains owner-only.
 5. **Deployment FINAL:** finish remaining gates, private installed audit, consistent backup/verified restore and isolated staging first. Auto-deploy OFF. Frozen finances immutable. No blanket approval for production writes, migration, import, publish/redirect or deployment.
 
-**Current102 validation:** full serial native **1,933 tests / 10,872 assertions PASS**; scoped static0, Pint3, frontend build and92 source contracts PASS;24 base browser +6 login-flow +4 local iframe checks PASS. Prior4cd99c6 hosted CI41508608055 succeeded; newer hosted CI/review remains separate.
+**Current102 validation:** full serial native **1,933 tests / 10,872 assertions PASS**; scoped static0, Pint3, frontend build and92 source contracts PASS;24 base browser +6 login-flow +4 local iframe checks PASS. Final local run at9c20de1 passed in263.59s. Hosted MySQL41512958972 **SUCCESS** at exact9c20de1:1,933 tests/10,870 assertions. Earlier2f62965 had a SQLite-only test assumption corrected for MySQL; no app guard was weakened. This is not production/concurrency acceptance.
 
 ### Status vocabulary
 
