@@ -1,5 +1,8 @@
 # Woodex OS — consolidated completion plan and resume record
 
+> **3 November update:** [ox-pending](../../ox-pending.md) is the current master queue; [revision102](102_PREVIEW_LOGIN_AND_WORKBOOK_REVIEW_2026-11-03.md) supersedes the workbook/provider deferral below **only for inspect/recommend and scoped planning**. No import/provider spend/send approved. Preview login and all17-tab review completed as described there. V02 screens are implemented101; real MySQL/installed/restore/staging gates remain. The narrative below is the historical 2 November plan; use the updated CSV for individual statuses.
+
+
 **Updated:** 2 November 2026, Asia/Karachi. **Not a declaration that the entire project is complete.**
 
 **Owner ordering, 2 November:** complete the remaining pending/paused work and verification first; deployment is the final task, not the current task. Owner clarified: support both unpaid bills and paid costs with linked payments/single accounting source; keep the previously deferred workbook/Sheets/backup/AI extras deferred. Frozen historical financial documents remain immutable.

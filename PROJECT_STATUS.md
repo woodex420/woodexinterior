@@ -1,5 +1,17 @@
 # Woodex OS — Project Status
 
+## Latest — revision102: preview login and all-tab workbook review
+
+- Current master queue: [ox-pending](ox-pending.md); 34 tracked gates, including earlier holds. V02 is now implemented101, not an incomplete workspace; V03 delivery/budget acceptance remains partial.
+- Owner choices: preview login; inspect/recommend two workbooks before import; Assistant diagnoses and proposes fixes, owner approves writes. Only workbook/provider planning scope reopened; Sheets append/backup integrations remain deferred.
+- Preview login works through normal authentication, failure feedback, retry and reload. Added opt-in local/testing SQLite identity guidance, default OFF; no password/bypass/account change. 10 new tests /42 assertions PASS; scoped static0/Pint3 PASS; browser login and4 local iframe checks PASS. Actual owner Arena-browser confirmation pending.
+- Both workbook originals privately inspected across all17 tabs; 2026/copied lead records and ambiguous accounting rows are quarantined from any import. Public revision102 contains only sanitized findings/mapping proposals, no workbook data or credentials.
+- Prior exact4cd99c6 hosted41508608055 confirmed SUCCESS; newer102 validation is separate. No workbook import, provider call/message, production write, merge or deployment. Full102 serial native suite: **1,933 tests /10,872 assertions PASS (213.70s)**; build and92 source contracts PASS;24 base +6 login +4 local iframe browser checks PASS.
+- **Deployment last; auto-deploy OFF.** See revision102 and ox-pending before older continuation notes below.
+
+---
+
+
 **Updated:** 2 November 2026 · **Active branch:** `arena/7093000c-woodexinterior` · **Native synthetic preview:** port 8080
 
 ## Current execution record — revisions 98 / 99 / 100 / 101
