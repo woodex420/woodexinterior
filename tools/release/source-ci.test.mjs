@@ -76,8 +76,8 @@ test('shipped build assets exactly match the current manifest, without obsolete 
   assert.deepEqual(actual.sort(),[...expected].sort(), 'Remove stale generated assets; retain every manifest-referenced file.');
 });
 
-test('hosted source runner admits only the fixed review ref and master, still enforcing checkout identity',()=>{
-  const accepted=['refs/heads/arena/8be318a2-woodexinterior','refs/heads/master'];
+test('hosted source runner admits only explicitly approved review refs and master, still enforcing checkout identity',()=>{
+  const accepted=['refs/heads/arena/8be318a2-woodexinterior','refs/heads/arena/7093000c-woodexinterior','refs/heads/master'];
   for(const ref of [...accepted,'refs/heads/unreviewed','refs/pull/1/merge','']) {
     const r=spawnSync('bash',[path.join(root,'tools/release/test-branch.sh')],{cwd:root,encoding:'utf8',env:{
       PATH:process.env.PATH,GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'woodex420/woodexinterior',RUNNER_ENVIRONMENT:'github-hosted',
@@ -87,6 +87,6 @@ test('hosted source runner admits only the fixed review ref and master, still en
     assert(r.stderr.includes(accepted.includes(ref)?'checkout identity':'approved source refs only'),r.stderr);
   }
   const workflow=read('.github/workflows/native-app-validation.yml');
-  assert(workflow.includes('branches: [arena/8be318a2-woodexinterior, master]'));
+  assert(workflow.includes('branches: [arena/8be318a2-woodexinterior, arena/7093000c-woodexinterior, master]'));
   for(const ref of accepted) assert(workflow.includes("github.ref == '"+ref+"'"));
 });

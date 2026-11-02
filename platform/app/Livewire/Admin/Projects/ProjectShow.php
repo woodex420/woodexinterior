@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin\Projects;
 
+use App\Domain\Accounts\Actions\PostProjectExpense;
+use App\Domain\Accounts\Actions\ReverseJournalEntry;
+use App\Domain\Accounts\Models\JournalEntry;
 use App\Domain\Crm\Models\Lead;
 use App\Domain\Projects\Actions\AcceptHandover;
 use App\Domain\Projects\Actions\ChangeProjectStage;
@@ -14,8 +17,6 @@ use App\Domain\Projects\Actions\ReachProjectMilestone;
 use App\Domain\Projects\Actions\RequestClientReviews;
 use App\Domain\Projects\Actions\ShareProjectUpdate;
 use App\Domain\Projects\Actions\StartHandover;
-use App\Domain\Accounts\Actions\PostProjectExpense;
-use App\Domain\Accounts\Actions\ReverseJournalEntry;
 use App\Domain\Projects\Enums\ProjectExpenseCategory;
 use App\Domain\Projects\Enums\ProjectStage;
 use App\Domain\Projects\Enums\ProjectStatus;
@@ -25,8 +26,8 @@ use App\Domain\Projects\Services\PortalLinks;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Models\User;
 use App\Settings\SalesSettings;
+use App\Support\Money;
 use Illuminate\Contracts\View\View;
-use App\Domain\Accounts\Models\JournalEntry;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
@@ -160,7 +161,7 @@ class ProjectShow extends Component
                     'category' => $this->expenseCategory,
                     'qty' => (float) $this->expenseQty,
                     'unit' => $this->expenseUnit !== '' ? $this->expenseUnit : null,
-                    'amount_minor' => (int) round(((float) $this->expenseAmount) * 100),
+                    'amount_minor' => Money::ofRupees($this->expenseAmount)->minor,
                     'incurred_on' => $this->expenseIncurredOn,
                     'created_by' => $this->user()->id,
                 ]);

@@ -2,6 +2,18 @@
 
 _Update at the end of every task (docs/03 Part A §7)._
 
+## Resume here — 2 Nov 2026: native preview and two accounting fixes, NOT production completion
+
+- Active branch **`arena/7093000c-woodexinterior`**; baseline master **`3fcaff8e0f78aaaa2e6e2aed2011541fd4cff944`**. Release 97 is already merged; baseline native GitHub run `41335633442` passed 1818/10348. Do not reimplement it or mistake those counts for new-candidate acceptance.
+- **Authoritative continuation:** `../docs/audit/98_MASTER_COMPLETION_PLAN_2026-11-02.md` and its **30-task CSV**. These preserve the current decisions, exact gaps, dependencies and separate implementation/test/merge/deploy/live states; older entries below are history.
+- Real native PHP 8.5.12 / Composer 2.9.1 isolated Laravel admin/public preview on **8080**, ignored `../.cache/preview/source/platform`, fresh synthetic SQLite, 103 migrations (82 schema +21 settings). Runtime-only HTTP rejection guard, no credentials, array mail, no worker/scheduler. No owner data restored. Ignored runtime is disposable across environment resets.
+- Source fixes: `ExpensesIndex` computes complete date/direction aggregates beyond 300 rendered details (also OtherIncome); `ProjectShow::addExpense` uses `Money::ofRupees` rather than floats. Regression before:4 fail/1 pass. Expanded native Unit/Accounts/Projects after:**196 pass/786 assertions**; source contracts:**92 pass**; changed-components Larastan0/Pint pass; **24 browser +4 local cross-site iframe checks** pass. No schema/lock/assets/frozen-document changes. Current branch explicitly admitted to existing read-only native CI; full candidate remote CI is separate.
+- Read-only preview integrity/FK checks pass, but finance fixtures are empty: zero detected anomalies is not financial acceptance. Production installed revision/engine/schema/ledger and isolated backup restore remain **unverified**.
+- Drive archive metadata/hashes refreshed; **content comparison pending**; no automatic overwrite/import. Workbook/financial import deferred. Next: archive comparison, remaining ledger invariants, Vendors/Projects links, owner-only Telegram, compact dedicated Website Chat, selective charcoal Website tools/SEO/media/theme/speed and permission-safe Assistant diagnostics; then exact-source gates/staging/recovery approval.
+- **Auto-deployment OFF; no production writes, provider sends, migration, deployment or merge.** Preserve existing hosting connection/ref/path and all owner data/pages/uploads/backups/keys. Current GitHub/branch works; do not request a replacement branch/prompt/Continue or credentials. Supplier unpaid-bill/paid-expense choice remains unresolved; both linked with explicit states is a recommendation, not an accepted new schema.
+
+## Historical resume records (retained; superseded where revision 98 states otherwise)
+
 ## Resume here (project memory, saved 17 Oct 2026 PKT — agent export MERGED, gate green)
 
 - **AGENT EXPORT MERGED (17 Oct, rebuilt after a sandbox reset):** the Drive export
