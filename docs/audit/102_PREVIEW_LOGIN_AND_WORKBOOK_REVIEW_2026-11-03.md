@@ -91,3 +91,9 @@ This sandbox restricts outbound hosts. A later Telegram/OpenRouter reachability/
 - **Telegram:** authorization is for **one non-sensitive test report** to the initiating owner's paired chat, conditional on private token rotation, fresh owner/pairing validation and a network-capable approved runtime. No customer/financial content; do not broadcast to every owner or chat. Report actual API outcome and separately confirmed owner receipt. These conditions are not yet verified and **no message was sent**.
 
 Source implementation/test acceptance remains at2f62965; this follow-up changes documentation/review artifacts only. PR8 is open/draft, not merged/deployed. Hosted102 run41511704658 was observed in progress, not yet certified here.
+
+### Hosted MySQL guard-test correction
+
+Hosted run41511704658 failed **one** new PreviewLoginTest assertion: it incorrectly expected the intentionally SQLite-only guidance to appear on the hosted synthetic **MySQL** runtime. Check-run annotations identify that exact assertion; all other groups passed. This is a test engine assumption, not an authentication failure. Full log download was blocked by the sandbox's outbound allowlist, so no unobserved log details are claimed.
+
+The test now explicitly verifies guidance appears on SQLite and stays hidden on other engines, while retaining guest/no-bypass assertions on both. No application guard, credentials, permissions, CSRF, session or authentication code was relaxed. Focused SQLite acceptance remains10/42 and Pint3 PASS. A fresh full serial run and hosted candidate are separate gates following this correction; prior failed hosted source is not a green release candidate.

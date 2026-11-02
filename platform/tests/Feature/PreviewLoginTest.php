@@ -9,12 +9,19 @@ it('keeps synthetic guidance off unless explicitly enabled', function () {
     $this->get(route('login'))->assertOk()->assertDontSee('Synthetic preview — not production')->assertDontSee('owner@woodex.test');
 });
 
-it('shows an opt-in synthetic identity hint without providing a password or bypass', function () {
+it('shows the opt-in identity hint only on SQLite without providing a password or bypass', function () {
     config(['preview.synthetic' => true, 'preview.login_email' => 'owner@woodex.test']);
-    expect(SyntheticPreview::enabled())->toBeTrue();
-    $this->get(route('login'))->assertOk()->assertSee('Synthetic preview — not production')
-        ->assertSee('Your production staff credentials will not work here.')
-        ->assertSee('owner@woodex.test')->assertSee('value="owner@woodex.test"', false);
+    $isSqlite = config('database.default') === 'sqlite';
+    expect(SyntheticPreview::enabled())->toBe($isSqlite);
+    $response = $this->get(route('login'))->assertOk();
+    if ($isSqlite) {
+        $response->assertSee('Synthetic preview — not production')
+            ->assertSee('Your production staff credentials will not work here.')
+            ->assertSee('owner@woodex.test')->assertSee('value="owner@woodex.test"', false);
+    } else {
+        // Hosted CI intentionally uses MySQL; its sign-in must not advertise a synthetic account.
+        $response->assertDontSee('Synthetic preview — not production')->assertDontSee('owner@woodex.test');
+    }
     $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
     $this->assertGuest();
 });
