@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Assistant;
 
+use App\Domain\Website\Seo\SearchMetadataAudit;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -36,6 +37,25 @@ final class Diagnostics
         $rows[] = ['label' => 'Queue worker', 'detail' => 'Worker execution not tested. Check the platform health heartbeat; no job dispatched.', 'url' => $url];
 
         return new AssistantAnswer('Runtime diagnostics — read-only. Recommendations require owner review; no fixes were executed.', $rows, 'Local PHP/configuration, frontend manifest and SELECT 1. No shell commands or external requests.');
+    }
+
+    public function website(User $user): AssistantAnswer
+    {
+        abort_unless($user->can('website.edit'), 403);
+        $audit = app(SearchMetadataAudit::class)->handle();
+        $url = route('admin.website.seo.overview', ['audit' => 'metadata']);
+        $rows = [['label' => 'Published files inspected', 'detail' => (string) $audit['counts']['files'], 'url' => $url]];
+        foreach ([
+            'canonical' => ['Canonical review', 'Review preferred URLs; cross-page targets can be intentional.'],
+            'social' => ['Social previews', 'Review missing title, description or image metadata in the builder.'],
+            'jsonld' => ['Structured data', 'Review JSON-LD syntax/shape. Search eligibility is not certified.'],
+            'indexing' => ['Indexing restrictions', 'Review intent. Never remove noindex automatically.'],
+            'unreadable' => ['Unreadable files', 'Ask the owner to review file availability and safety limits privately.'],
+        ] as $group => [$label, $recommendation]) {
+            $rows[] = ['label' => $label, 'detail' => $audit['counts'][$group].' pages. '.$recommendation, 'url' => route('admin.website.seo.overview', ['audit' => 'metadata', 'finding' => $group])];
+        }
+
+        return new AssistantAnswer('Website diagnostics — read-only. '.$audit['counts']['flagged'].' pages have review findings. Open SEO → Canonical & social; no pages edited or published.', $rows, 'Local published HTML metadata counts, not a live crawl, Search Console or search-ranking measurement. No URLs fetched; owner review required before fixes.');
     }
 
     public function connections(User $user): AssistantAnswer

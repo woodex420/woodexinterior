@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Domain\Website\Seo\FileAudit;
 use App\Domain\Website\Seo\SearchMetadataAudit;
 use App\Livewire\Admin\Website\SeoOverviewIndex;
+use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
@@ -58,7 +60,7 @@ it('inspects files read-only and keeps counts per affected page rather than per 
     File::put($this->site.'/complete/index.html', completeSearchMetadata('https://woodex.example/complete/'));
     $before = hash_file('sha256', $this->site.'/index.html');
     $audit = app(SearchMetadataAudit::class)->handle();
-    expect($audit['counts'])->toBe(['files' => 2, 'flagged' => 1, 'canonical' => 1, 'social' => 1, 'jsonld' => 0]);
+    expect($audit['counts'])->toBe(['files' => 2, 'flagged' => 1, 'canonical' => 1, 'social' => 1, 'jsonld' => 0, 'indexing' => 0, 'unreadable' => 0]);
     expect(hash_file('sha256', $this->site.'/index.html'))->toBe($before);
 });
 
@@ -93,4 +95,52 @@ it('keeps both audits available to editors without publishing changes', function
 it('rejects a user without website permission', function () {
     $support = $this->userWithRole('support');
     Livewire::actingAs($support)->test(SeoOverviewIndex::class)->assertForbidden();
+});
+
+it('filters metadata by category text and review state and clears filters atomically', function () {
+    File::put($this->site.'/index.html', completeSearchMetadata());
+    foreach (['canonical', 'indexing', 'schema'] as $slug) {
+        File::ensureDirectoryExists($this->site.'/'.$slug);
+        $html = completeSearchMetadata('https://woodex.example/'.$slug.'/');
+        $html = match ($slug) {
+            'canonical' => str_replace('https://woodex.example/canonical/', 'https://woodex.example/different/', $html),
+            'indexing' => str_replace('</head>', '<meta name="robots" content="noindex"></head>', $html),
+            default => str_replace('</head>', '<script type="application/ld+json">{broken}</script></head>', $html),
+        };
+        File::put($this->site.'/'.$slug.'/index.html', $html);
+    }
+    $editor = $this->userWithRole('owner');
+    Livewire::actingAs($editor)->test(SeoOverviewIndex::class)->call('setTab', 'metadata')
+        ->assertViewHas('metadataRows', fn (array $rows): bool => count($rows) === 3)
+        ->call('setMetadataGroup', 'indexing')->assertViewHas('metadataRows', fn (array $rows): bool => count($rows) === 1 && $rows[0]['url'] === '/indexing/')
+        ->set('search', 'SCHEMA')->assertSee('No pages match these review filters.')
+        ->call('clearMetadataFilters')->assertSet('search', '')->assertSet('metadataGroup', 'all')
+        ->call('setFilter', 'all')->assertViewHas('metadataRows', fn (array $rows): bool => count($rows) === 4)
+        ->call('setMetadataGroup', 'invalid')->assertSet('metadataGroup', 'all')
+        ->set('search', 'jsonld_syntax')->assertViewHas('metadataRows', fn (array $rows): bool => count($rows) === 1 && $rows[0]['url'] === '/schema/');
+});
+
+it('does not rerun the listing and link audit on metadata interactions', function () {
+    File::put($this->site.'/index.html', completeSearchMetadata());
+    $component = Livewire::actingAs($this->userWithRole('owner'))->test(SeoOverviewIndex::class)->call('setTab', 'metadata');
+    $this->app->bind(FileAudit::class, fn () => throw new RuntimeException('Listing audit must not run on metadata interactions.'));
+    $component->call('setMetadataGroup', 'canonical')->assertOk();
+});
+
+it('rechecks website permission before reading files after access is revoked', function () {
+    $editor = User::factory()->create();
+    $editor->givePermissionTo('website.edit');
+    $component = Livewire::actingAs($editor)->test(SeoOverviewIndex::class);
+    $editor->revokePermissionTo('website.edit');
+    $editor->unsetRelation('permissions');
+    $component->call('setTab', 'metadata')->assertForbidden();
+});
+
+it('opens cited metadata audit links directly and normalizes invalid URL controls', function () {
+    File::put($this->site.'/index.html', completeSearchMetadata());
+    $owner = $this->userWithRole('owner');
+    Livewire::actingAs($owner)->withQueryParams(['audit' => 'metadata', 'finding' => 'canonical'])->test(SeoOverviewIndex::class)
+        ->assertSet('tab', 'metadata')->assertSet('metadataGroup', 'canonical')->assertSee('Finding category');
+    Livewire::actingAs($owner)->withQueryParams(['audit' => 'invalid', 'finding' => 'invalid'])->test(SeoOverviewIndex::class)
+        ->assertSet('tab', 'listings')->assertSet('metadataGroup', 'all');
 });

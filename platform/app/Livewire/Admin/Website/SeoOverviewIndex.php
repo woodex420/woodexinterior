@@ -10,27 +10,27 @@ use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
-/**
- * The SEO overview: every page's search listing, read from the page itself (Woodex OS 1, step 6).
- *
- * It used to list the `pages` table and edit its `seo` array — a field no file reads, so an edit here changed
- * nothing a visitor or Google saw. The listing Google shows *is* the file's `<title>` and description, so the
- * screen reads those, and the place to change one is the builder, on that file.
- */
+/** Both read-only audits inspect published files. Editing stays in the native page builder. */
 #[Layout('layouts::admin')]
 #[Title('SEO')]
 class SeoOverviewIndex extends Component
 {
     use InteractsWithAdmin;
 
-    /** `all`, or only the pages with a finding. */
     public string $filter = 'issues';
 
     public string $search = '';
 
+    #[Url(as: 'audit', except: 'listings')]
     public string $tab = 'listings';
+
+    #[Url(as: 'finding', except: 'all')]
+    public string $metadataGroup = 'all';
+
+    private const METADATA_GROUPS = ['all', 'canonical', 'social', 'jsonld', 'indexing', 'unreadable'];
 
     public function setTab(string $tab): void
     {
@@ -40,6 +40,8 @@ class SeoOverviewIndex extends Component
     public function mount(): void
     {
         abort_unless($this->user()->can('website.edit'), 403);
+        $this->setTab($this->tab);
+        $this->setMetadataGroup($this->metadataGroup);
     }
 
     public function setFilter(string $filter): void
@@ -47,30 +49,62 @@ class SeoOverviewIndex extends Component
         $this->filter = $filter === 'all' ? 'all' : 'issues';
     }
 
+    public function setMetadataGroup(string $group): void
+    {
+        $this->metadataGroup = in_array($group, self::METADATA_GROUPS, true) ? $group : 'all';
+    }
+
+    public function clearMetadataFilters(): void
+    {
+        $this->search = '';
+        $this->metadataGroup = 'all';
+    }
+
     public function render(): View
     {
-        $audit = (new FileAudit)->handle();
+        // Mount is not enough when permissions are revoked while an existing component is open.
+        abort_unless($this->user()->can('website.edit'), 403);
+        $needle = mb_strtolower(mb_substr(trim($this->search), 0, 160));
+        $rows = collect();
+        $metadata = null;
+        $metadataRows = [];
+        $counts = ['files' => 0, 'flagged' => 0, 'missing_description' => 0, 'missing_title' => 0];
 
-        $rows = collect($audit['entries'])
-            ->when($this->filter === 'issues', fn ($rows) => $rows->where('issues', '!=', []))
-            ->when($this->search !== '', fn ($rows) => $rows->filter(fn (array $row): bool => str_contains(
-                mb_strtolower($row['url'].' '.$row['title'].' '.$row['description']),
-                mb_strtolower(trim($this->search)),
-            )))
-            ->sortBy('url')
-            ->values();
-
-        $metadata = $this->tab === 'metadata' ? app(SearchMetadataAudit::class)->handle() : null;
-
-        return view('livewire.admin.website.seo-overview-index', [
-            'metadata' => $metadata,
-            'rows' => $rows,
-            'counts' => [
+        // Do not run the complete listing/link audit on every metadata-filter keystroke.
+        if ($this->tab === 'metadata') {
+            $metadata = app(SearchMetadataAudit::class)->handle();
+            $group = in_array($this->metadataGroup, self::METADATA_GROUPS, true) ? $this->metadataGroup : 'all';
+            $metadataRows = collect($metadata['entries'])
+                ->when($this->filter === 'issues', fn ($entries) => $entries->where('issues', '!=', []))
+                ->when($group !== 'all', fn ($entries) => $entries->filter(fn (array $entry): bool => array_any(
+                    $entry['issues'], fn (array $issue): bool => str_starts_with($issue['code'], $group),
+                )))
+                ->when($needle !== '', fn ($entries) => $entries->filter(fn (array $entry): bool => str_contains(
+                    mb_strtolower($entry['url'].' '.$entry['canonical'].' '.implode(' ', array_column($entry['issues'], 'message')).' '.implode(' ', array_column($entry['issues'], 'code'))),
+                    $needle,
+                )))
+                ->sortBy('url')->values()->all();
+        } else {
+            $audit = app(FileAudit::class)->handle();
+            $rows = collect($audit['entries'])
+                ->when($this->filter === 'issues', fn ($entries) => $entries->where('issues', '!=', []))
+                ->when($needle !== '', fn ($entries) => $entries->filter(fn (array $entry): bool => str_contains(
+                    mb_strtolower($entry['url'].' '.$entry['title'].' '.$entry['description']), $needle,
+                )))
+                ->sortBy('url')->values();
+            $counts = [
                 'files' => $audit['counts']['files'],
                 'flagged' => $audit['counts']['flagged'],
                 'missing_description' => collect($audit['entries'])->where('description', '')->count(),
                 'missing_title' => collect($audit['entries'])->where('title', '')->count(),
-            ],
+            ];
+        }
+
+        return view('livewire.admin.website.seo-overview-index', [
+            'metadata' => $metadata,
+            'metadataRows' => $metadataRows,
+            'rows' => $rows,
+            'counts' => $counts,
             'filter' => $this->filter,
         ]);
     }

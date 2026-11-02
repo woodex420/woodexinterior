@@ -20,11 +20,18 @@ try{
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
    assert(await page.locator('button[type=submit]').isVisible());
    const card=await page.locator('.wx-auth-card').evaluate(e=>{const s=getComputedStyle(e);return {backdrop:s.backdropFilter,background:s.backgroundColor};});
-   const reduced=await page.evaluate(()=>matchMedia('(prefers-reduced-transparency: reduce)').matches);if(reduced){assert.equal(card.backdrop,'none');}else{assert(card.backdrop.includes('blur'),JSON.stringify(card));assert(card.background.startsWith('rgba('));}
+   const reduced=await page.evaluate(()=>matchMedia('(prefers-reduced-transparency: reduce)').matches);if(reduced){assert.equal(card.backdrop,'none');}else{assert(card.backdrop.includes('blur'),JSON.stringify(card));assert(card.background.startsWith('rgba('));assert(Number(card.background.split(',').at(-1).replace(')','').trim())<=0.35);assert.equal(await page.locator('.wx-auth-card').count(),1);assert.equal(await page.locator('.wx-auth-story').count(),0);assert.equal(await page.locator('.wx-auth-demo').evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)');}
    const response=await page.request.get(origin+'/assets/img/svc-interior-design.webp');assert.equal(response.status(),200);
-   await page.screenshot({path:base+'/shots/login103-'+width+'-'+(dark?'dark':'light')+'.png',fullPage:true});
+   await page.screenshot({path:base+'/shots/login104-'+width+'-'+(dark?'dark':'light')+'.png',fullPage:true});
   });
  }
+ await check('Reduced transparency uses an opaque readable fallback',async()=>{
+  const client=await context.newCDPSession(page);await client.send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-transparency',value:'reduce'},{name:'prefers-reduced-motion',value:'reduce'}]});
+  assert(await page.evaluate(()=>matchMedia('(prefers-reduced-transparency: reduce)').matches));
+  assert.equal(await page.locator('.wx-auth-card').evaluate(e=>getComputedStyle(e).backdropFilter),'none');
+  assert.equal(await page.locator('.wx-auth-card').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(36, 36, 36)');
+  await client.send('Emulation.setEmulatedMedia',{features:[]});await client.detach();
+ });
  await page.setViewportSize({width:390,height:844});await page.evaluate(()=>document.documentElement.classList.remove('dark'));
  await page.locator('[name=password]').fill('');
  await check('Empty password produces visible feedback, including inside constrained layouts',async()=>{await page.locator('button[type=submit]').click();await page.getByRole('alert').filter({hasText:'Enter your password'}).waitFor();assert(await page.locator('button[type=submit]').isEnabled());});
@@ -36,18 +43,22 @@ try{
  await check('Navigation filter expands matching permitted groups and supports clear/empty states',async()=>{
   await page.getByRole('searchbox',{name:'Filter navigation'}).fill('SEO');await page.locator('nav [data-nav-label]').filter({hasText:'SEO'}).first().waitFor({state:'visible'});
   await page.locator('[data-nav-label="Projects"]').waitFor({state:'hidden'});
-  await page.getByRole('searchbox',{name:'Filter navigation'}).fill('no-screen-103');await page.getByRole('status').filter({hasText:'No matching screen'}).waitFor();
+  await page.getByRole('searchbox',{name:'Filter navigation'}).fill('no-screen-104');await page.getByRole('status').filter({hasText:'No matching screen'}).waitFor();
   await page.getByRole('button',{name:'Clear navigation filter'}).click();assert.equal(await page.getByRole('searchbox',{name:'Filter navigation'}).inputValue(),'');
  });
  await check('Both SEO audits switch via real Livewire requests without publishing',async()=>{
-  await page.goto(origin+'/admin/website/seo-overview');await page.getByRole('button',{name:'Canonical & social',exact:true}).click();await page.getByText('Canonical & social metadata',{exact:true}).waitFor();
+  await page.goto(origin+'/admin/website/seo-overview?audit=metadata&finding=indexing');await page.getByText('Canonical & social metadata',{exact:true}).waitFor();await page.getByRole('button',{name:'Canonical & social',exact:true}).click();await page.getByText('Canonical & social metadata',{exact:true}).waitFor();
   assert(await page.getByText('JSON-LD checks syntax only.',{exact:false}).isVisible());
+  await page.getByRole('combobox',{name:'Finding category'}).selectOption('indexing');await page.getByRole('searchbox',{name:'Search metadata'}).fill('no-page-104');await page.getByText('No pages match these review filters.',{exact:false}).waitFor();
+  await page.getByRole('button',{name:'Clear filters',exact:true}).click();await page.waitForFunction(()=>document.querySelector('#metadata-group')?.value==='all'&&document.querySelector('[aria-label="Search metadata"]')?.value==='');
+  await page.getByRole('button',{name:/All pages/}).click();await page.waitForFunction(()=>document.querySelectorAll('main table tbody tr').length>1);
   await page.getByRole('button',{name:'Search listings',exact:true}).click();await page.getByRole('searchbox',{name:'Search listings'}).waitFor();
  });
- await check('Assistant runtime and connection diagnostics execute read-only and fit mobile',async()=>{
+ await check('All three Assistant diagnostics execute read-only and fit mobile',async()=>{
   await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Open the assistant',exact:true}).click();
   const dialog=page.getByRole('dialog',{name:'Assistant',exact:true});
   await dialog.getByRole('button',{name:'Check PHP, database and sign-in health',exact:true}).click();await dialog.getByText('Runtime diagnostics — read-only.',{exact:false}).waitFor();
+  await dialog.getByRole('button',{name:'Check website search metadata',exact:true}).click();await dialog.getByText('Website diagnostics — read-only.',{exact:false}).waitFor();
   await dialog.getByRole('button',{name:'Check connection setup safely',exact:true}).click();await dialog.getByText('Connection diagnostics — configuration',{exact:false}).waitFor();
   assert(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth));assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   await dialog.getByRole('button',{name:'Close the assistant'}).click();
@@ -61,7 +72,7 @@ try{
  }
  await loginPage();await fields();await page.route('**/admin/login',r=>r.request().method()==='POST'?r.abort():r.continue());
  await check('Network failure is visible and never leaves the button busy',async()=>{await page.locator('button[type=submit]').click();await page.getByRole('alert').filter({hasText:'could not reach the server'}).waitFor();assert.equal(await page.locator('button[type=submit]').getAttribute('aria-busy'),null);assert(await page.locator('button[type=submit]').isEnabled());});await page.unroute('**/admin/login');
- await page.screenshot({path:base+'/shots/auth103-error-mobile.png'});
+ await page.screenshot({path:base+'/shots/auth104-error-mobile.png'});
  await check('No uncaught auth JavaScript errors',async()=>assert.deepEqual(errors,[]));
  const frameContext=await browser.newContext({extraHTTPHeaders,permissions:['local-network-access']});
  await frameContext.route('**/*',r=>{const u=new URL(r.request().url());if(u.hostname==='127.0.0.1')return r.fulfill({contentType:'text/html',body:'<iframe sandbox="allow-scripts allow-same-origin" src="http://localhost:8080/admin/login" style="width:900px;height:900px"></iframe>'});return u.origin===origin?r.continue():r.abort();});
@@ -83,4 +94,4 @@ try{
   try{await publicPage.goto(origin+'/');for(const selector of ['.brand-mark','.footer-brand img']){const image=publicPage.locator(selector).first();assert((await image.getAttribute('src')).endsWith('/assets/brand/woodex-mark.svg'));assert.equal(await image.evaluate(e=>getComputedStyle(e).filter),'none');}assert.equal((await publicPage.request.get(origin+'/assets/brand/woodex-mark.svg')).status(),200);}finally{await publicContext.close();}
  });
 
-}catch(e){results.push({name:'browser failure',pass:false,error:e.message});console.error(e);console.error(await page.evaluate(()=>[...document.querySelectorAll('body *')].map(e=>({tag:e.tagName,class:e.className,left:e.getBoundingClientRect().left,right:e.getBoundingClientRect().right,width:e.getBoundingClientRect().width})).filter(e=>e.right>innerWidth||e.left<0).slice(0,20)));await page.screenshot({path:base+'/shots/login103-failure.png',fullPage:true});process.exitCode=1;}finally{await browser.close();fs.writeFileSync(base+'/103-brand-auth-browser.json',JSON.stringify({scope:'Local native runtime; mocked failures plus real native/async/constrained cross-site frame login; not actual Arena browser certification',results},null,2));}
+}catch(e){results.push({name:'browser failure',pass:false,error:e.message});console.error(e);console.error(await page.evaluate(()=>[...document.querySelectorAll('body *')].map(e=>({tag:e.tagName,class:e.className,left:e.getBoundingClientRect().left,right:e.getBoundingClientRect().right,width:e.getBoundingClientRect().width})).filter(e=>e.right>innerWidth||e.left<0).slice(0,20)));await page.screenshot({path:base+'/shots/login104-failure.png',fullPage:true});process.exitCode=1;}finally{await browser.close();fs.writeFileSync(base+'/104-brand-auth-browser.json',JSON.stringify({scope:'Local native runtime; mocked failures plus real native/async/constrained cross-site frame login; not actual Arena browser certification',results},null,2));}

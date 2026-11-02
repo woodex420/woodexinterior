@@ -1,5 +1,17 @@
 # Woodex OS: build state
 
+## Latest — revision104: single transparent welcome card and real SEO/Assistant extensions
+
+- [Current master queue](../ox-pending.md) is maintained with36 gates; **not all backlog items are complete**. [Evidence/report](../docs/audit/104_SINGLE_GLASS_CARD_SEO_AND_MYSQL_CHECKPOINT_2026-11-03.md).
+- Requested GitHub MySQL topic and genuine8.4.6 binary checked first: release-assets redirect fails SSL/0bytes. **Local MySQL still blocked**, SQLite preview honestly labelled; no compatible emulator/obsolete server substituted. Priorc793425 hosted genuine MySQL41523310965 is SUCCESS, not local-runtime proof/new104 certification.
+- One centred28%-opaque smoke-glass login, no split promotional panel or nested opaque hint; white text/transparent fields/photo and reduced-transparency fallback. Default-OFF synthetic prefill and normal authentication preserved.
+- SEO category/search/review/clear/direct links, permission revocation and selected-audit-only execution implemented. Third Assistant website-metadata diagnostic yields12 deterministic questions, with scoped counts/recommendations/category citations and no executable fix/provider call.
+- Local **1,969 tests /11,070 assertions PASS224.87s**; focused28/151; PHPStan0/Pint6/build;92+55 source contracts;28 browser cases PASS final exit0. [Desktop](../docs/audit/evidence/104/login-desktop.png).
+- **Production unchanged; deployment FINAL; auto-deploy OFF.** Remaining MySQL/concurrency/installed/backup/restore/staging/backlog gates stay open. Older entries below are historical.
+
+---
+
+
 ## Latest — revision103: vector brand, glass login and isolated testing
 
 - [Current master queue](../ox-pending.md): **36 gates**. [Revision103 evidence](../docs/audit/103_VECTOR_BRAND_GLASS_LOGIN_AND_DIAGNOSTICS_2026-11-03.md) supersedes proposed-only status of these slices; older entries below are historical.

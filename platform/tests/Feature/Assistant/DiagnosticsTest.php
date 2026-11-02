@@ -6,21 +6,22 @@ use App\Domain\Assistant\Assistant;
 use App\Domain\Assistant\Diagnostics;
 use App\Livewire\Admin\AssistantDrawer;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-it('adds two permission-scoped diagnostics without removing the original nine questions', function () {
+it('adds three permission-scoped diagnostics without removing the original nine questions', function () {
     $owner = $this->userWithRole('owner');
     $support = $this->userWithRole('support');
-    expect(array_column(Assistant::QUESTIONS, 'id'))->toHaveCount(11)->toContain(
+    expect(array_column(Assistant::QUESTIONS, 'id'))->toHaveCount(12)->toContain(
         'bills_to_pay', 'overdue_invoices', 'due_this_week', 'collected_this_month', 'follow_ups_due',
-        'new_enquiries', 'quotes_waiting', 'tasks_overdue', 'milestones_due', 'runtime_diagnostics', 'connection_diagnostics',
+        'new_enquiries', 'quotes_waiting', 'tasks_overdue', 'milestones_due', 'runtime_diagnostics', 'connection_diagnostics', 'website_diagnostics',
     );
-    expect(array_column(Assistant::questionsFor($support), 'id'))->not->toContain('runtime_diagnostics', 'connection_diagnostics');
-    foreach (['runtime_diagnostics', 'connection_diagnostics'] as $question) {
+    expect(array_column(Assistant::questionsFor($support), 'id'))->not->toContain('runtime_diagnostics', 'connection_diagnostics', 'website_diagnostics');
+    foreach (['runtime_diagnostics', 'connection_diagnostics', 'website_diagnostics'] as $question) {
         expect(app(Assistant::class)->ask($question, $support)->refused)->toBeTrue();
     }
     Livewire::actingAs($owner)->test(AssistantDrawer::class)->call('askChip', 'runtime_diagnostics')
@@ -82,4 +83,30 @@ it('redacts database exception details instead of echoing DSNs or credentials', 
     DB::shouldReceive('connection')->withNoArgs()->once()->andThrow(new RuntimeException('private-fixture-dsn-password'));
     $answer = app(Diagnostics::class)->runtime($owner);
     expect(json_encode($answer))->toContain('Failed. Ask the owner')->not->toContain('private-fixture-dsn-password');
+});
+
+it('offers permission-scoped website findings and recommendations without leaking page content or writing', function () {
+    $directory = sys_get_temp_dir().'/woodex-diagnostic-'.bin2hex(random_bytes(4));
+    File::ensureDirectoryExists($directory);
+    $this->app->usePublicPath($directory);
+    $html = '<html><head><title>private-fixture-customer-not-an-answer</title><meta name="robots" content="noindex"></head><body></body></html>';
+    file_put_contents($directory.'/index.html', $html);
+    try {
+        Http::fake();
+        Queue::fake();
+        Mail::fake();
+        $owner = $this->userWithRole('owner');
+        $answer = app(Assistant::class)->ask('website_diagnostics', $owner);
+        expect($answer->refused)->toBeFalse()->and(count($answer->rows))->toBe(6);
+        expect(json_encode($answer))->toContain('Website diagnostics', '1 pages', 'Never remove noindex automatically', 'no pages edited or published')
+            ->not->toContain('private-fixture-customer-not-an-answer');
+        expect($answer->rows[1]['url'])->toContain('audit=metadata', 'finding=canonical');
+        expect(file_get_contents($directory.'/index.html'))->toBe($html);
+        Http::assertNothingSent();
+        Queue::assertNothingPushed();
+        Mail::assertNothingSent();
+        expect(fn () => app(Diagnostics::class)->website($this->userWithRole('support')))->toThrow(HttpException::class);
+    } finally {
+        File::deleteDirectory($directory);
+    }
 });

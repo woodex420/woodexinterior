@@ -13,7 +13,7 @@ use JsonException;
 /** Local published-file inspection only. Never fetches canonical/image/schema URLs or writes pages. */
 final class SearchMetadataAudit
 {
-    /** @return array{entries: list<array{path: string, url: string, canonical: string, issues: list<array{code: string, message: string}>}>, counts: array{files: int, flagged: int, canonical: int, social: int, jsonld: int}} */
+    /** @return array{entries: list<array{path: string, url: string, canonical: string, issues: list<array{code: string, message: string}>}>, counts: array{files: int, flagged: int, canonical: int, social: int, jsonld: int, indexing: int, unreadable: int}} */
     public function handle(): array
     {
         $entries = [];
@@ -27,12 +27,12 @@ final class SearchMetadataAudit
             }
             $entries[] = ['path' => $file['path'], 'url' => $file['url']] + $entry;
         }
-        $counts = ['files' => count($entries), 'flagged' => 0, 'canonical' => 0, 'social' => 0, 'jsonld' => 0];
+        $counts = ['files' => count($entries), 'flagged' => 0, 'canonical' => 0, 'social' => 0, 'jsonld' => 0, 'indexing' => 0, 'unreadable' => 0];
         foreach ($entries as $entry) {
             if ($entry['issues'] !== []) {
                 $counts['flagged']++;
             }
-            foreach (['canonical', 'social', 'jsonld'] as $group) {
+            foreach (['canonical', 'social', 'jsonld', 'indexing', 'unreadable'] as $group) {
                 if (array_any($entry['issues'], fn (array $issue): bool => str_starts_with($issue['code'], $group))) {
                     $counts[$group]++;
                 }

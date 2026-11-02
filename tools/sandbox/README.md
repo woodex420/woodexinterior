@@ -1,13 +1,13 @@
 # Sandbox tooling (AI development environment only)
 
-## Current native preview (revision103)
+## Current native preview (revision104)
 
 The active isolated preview now uses native FrankenPHP/PHP8.5.12 with private `.cache/preview` runtime/dependencies and a fresh synthetic SQLite DB. The older php-wasm bootstrap below is historical; do not run it over the active native preview. This does not supply a supported local MySQL engine.
 
-- `node tools/sandbox/branding-login-check.mjs`:27 local Chromium checks; requires the existing private Playwright/Chromium dependency bootstrap, local8080 and opted-in synthetic login. It refuses a non-synthetic target. Actual Arena/proxy certification is separate.
+- `node tools/sandbox/branding-login-check.mjs`:28 local Chromium checks; requires the existing private Playwright/Chromium dependency bootstrap, local8080 and opted-in synthetic login. It refuses a non-synthetic target. Actual Arena/proxy certification is separate.
 - `node --test tools/sandbox/auth-unit-check.mjs tools/sandbox/admin-refresh-unit-check.mjs tools/sandbox/theme-unit-check.mjs`:55 pure source/helper checks, no backend writes.
 - `SyntheticPreviewSeeder` is explicit-only, defaults OFF, requires isolated local/testing SQLite/non-sending mail/no worker. Never run it against an installed DB.
-- See [revision103](../../docs/audit/103_VECTOR_BRAND_GLASS_LOGIN_AND_DIAGNOSTICS_2026-11-03.md) for exact boundaries and evidence. Never commit private environments, databases or provider credentials.
+- See [revision104](../../docs/audit/104_SINGLE_GLASS_CARD_SEO_AND_MYSQL_CHECKPOINT_2026-11-03.md) for exact boundaries and evidence. Never commit private environments, databases or provider credentials.
 
 ## Historical php-wasm tools
 

@@ -42,6 +42,7 @@ final class Assistant
      * @var list<Question>
      */
     public const QUESTIONS = [
+        ['id' => 'website_diagnostics', 'label' => 'Check website search metadata', 'permission' => 'website.edit', 'keywords' => ['website diagnostics', 'seo diagnostics', 'search metadata', 'website seo', 'canonical health']],
         ['id' => 'runtime_diagnostics', 'label' => 'Check PHP, database and sign-in health', 'permission' => 'system.health', 'keywords' => ['runtime diagnostics', 'diagnose runtime', 'php engine', 'database engine', 'system health']],
         ['id' => 'connection_diagnostics', 'label' => 'Check connection setup safely', 'permission' => 'integrations.manage', 'keywords' => ['connectivity', 'connection status', 'connection setup', 'telegram status', 'provider status']],
         ['id' => 'bills_to_pay', 'label' => 'What do we owe suppliers?', 'permission' => 'accounts.view', 'keywords' => ['bill', 'payable', 'supplier', 'we owe', 'to pay']],
@@ -78,6 +79,7 @@ final class Assistant
         }
 
         return match ($question['id']) {
+            'website_diagnostics' => app(Diagnostics::class)->website($user),
             'runtime_diagnostics' => app(Diagnostics::class)->runtime($user),
             'connection_diagnostics' => app(Diagnostics::class)->connections($user),
             'overdue_invoices' => $this->overdueInvoices(),

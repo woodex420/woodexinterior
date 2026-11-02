@@ -20,15 +20,9 @@
             <a href="{{ route('login') }}" class="wx-auth-brand" aria-label="Woodex OS sign in">
                 <x-brand-logo subtitle="OPERATING SYSTEM" />
             </a>
-            <a href="{{ config('woodex.public_site_url') }}" class="wx-auth-website">Woodex Interior <span aria-hidden="true">↗</span></a>
+            <a href="{{ \App\Support\SyntheticPreview::enabled() ? url('/') : config('woodex.public_site_url') }}" class="wx-auth-website">Woodex Interior <span aria-hidden="true">↗</span></a>
         </header>
         <main class="wx-auth-main">
-            <aside class="wx-auth-story" aria-label="About Woodex OS">
-                <p class="wx-auth-eyebrow"><span aria-hidden="true"></span> THE WOODEX WORKSPACE</p>
-                <h2>Beautiful spaces.<br>One connected<br>workspace.</h2>
-                <p class="wx-auth-story-copy">From the first enquiry to the final detail.<br>Bring your projects, people and business together.</p>
-                <div class="wx-auth-tags" aria-label="Workspace tools"><span>Projects</span><span>Quotations</span><span>Website</span></div>
-            </aside>
             <section class="wx-auth-card" aria-labelledby="auth-heading">
                 <p class="wx-auth-card-eyebrow">WOODEX OS</p>
                 <h1 id="auth-heading" class="wx-auth-heading">@yield('heading')</h1>
