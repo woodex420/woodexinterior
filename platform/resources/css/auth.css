@@ -38,7 +38,7 @@
 .wx-auth-fallback a { color:inherit; font-weight:600; text-decoration:underline; text-underline-offset:3px; }
 .wx-auth-footer { display:flex; justify-content:space-between; gap:16px; color:#eeece8; font-size:11px; }
 .wx-auth a:focus-visible,.wx-auth button:focus-visible { outline:2px solid #e6d4b8; outline-offset:4px; }
-@supports not (backdrop-filter:blur(1px)) { .wx-auth-card { background:rgba(28,28,28,.94); } }
+@supports not (backdrop-filter:blur(1px)) { :root:not([data-auth-glass="glass"]) .wx-auth-card { background:rgba(28,28,28,.94); } }
 @media(max-width:850px) {
   .wx-auth-shell { padding:24px; }
   .wx-auth-main { padding:32px 0; }
@@ -51,5 +51,8 @@
   .wx-auth-card { padding:24px 20px; border-radius:20px; }
   .wx-auth-website { font-size:11px; }
 }
-@media(prefers-reduced-transparency:reduce) { .wx-auth-card { background:#242424; -webkit-backdrop-filter:none; backdrop-filter:none; } }
+:root[data-auth-glass="solid"] .wx-auth-card { background:#242424; -webkit-backdrop-filter:none; backdrop-filter:none; }
+.wx-auth-card-tools { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+.wx-auth-card-tools button { color:#eeece8; font-size:10px; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+@media(prefers-reduced-transparency:reduce) { :root:not([data-auth-glass="glass"]) .wx-auth-card { background:#242424; -webkit-backdrop-filter:none; backdrop-filter:none; } }
 @media(prefers-reduced-motion:reduce) { .wx-auth *, .wx-auth *::before, .wx-auth *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }

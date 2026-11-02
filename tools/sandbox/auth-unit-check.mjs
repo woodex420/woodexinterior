@@ -21,7 +21,7 @@ test('redirects retain the same origin and allow intended and two-factor destina
     for (const url of ['/admin', '/admin/two-factor-challenge', '/admin/projects?tab=costs']) {
         assert.equal(sameOriginDestination(url, 'https://preview.example'), 'https://preview.example' + url);
     }
-    for (const url of ['https://evil.example/admin', '//evil.example/', 'javascript:alert(1)', 'data:text/html,example', 'http://preview.example/admin']) {
+    for (const url of ['https://evil.example/admin', '//evil.example/', 'javascript:alert(1)', 'data:text/html,example', 'http://preview.example/admin', null, undefined, '', '   ']) {
         assert.equal(sameOriginDestination(url, 'https://preview.example'), null);
     }
 });
@@ -46,4 +46,18 @@ test('active public HTML references use the filled SVG instead of the retired ra
     for (const view of ['errors/404', 'admin/website/builder']) {
         assert(!read('platform/resources/views/'+view+'.blade.php').includes('img-f941b08b9510'));
     }
+});
+
+test('proxy-safe sign-in never follows server redirects or posts to an unvalidated form address', () => {
+    const source = read('platform/resources/js/auth.js');
+    assert(source.includes("sameOriginDestination(form.getAttribute('action'), window.location.origin)"));
+    assert(source.includes("redirect: 'error'"));
+    assert(source.includes("Accept: 'application/json'"));
+    assert(!source.includes('fetch(form.action'));
+    assert(read('platform/resources/views/auth/login.blade.php').includes("route('login.store', [], false)"));
+});
+test('explicit glass appearance has a persisted solid-contrast alternative', () => {
+    assert(read('platform/resources/views/layouts/auth.blade.php').includes('data-auth-glass="glass"'));
+    assert(read('platform/resources/css/auth.css').includes(':root[data-auth-glass="solid"]'));
+    assert(read('platform/resources/js/auth.js').includes("localStorage.setItem('wx.auth.glass', value)"));
 });

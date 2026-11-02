@@ -25,7 +25,7 @@
     "isDynamicEntry": true
   },
   "resources/css/admin.css": {
-    "file": "assets/admin-CUeIVjBK.css",
+    "file": "assets/admin-BnmZST9D.css",
     "name": "admin",
     "names": [
       "admin.css"
@@ -85,7 +85,7 @@
     ]
   },
   "resources/js/auth.js": {
-    "file": "assets/auth-BTXLVG7E.js",
+    "file": "assets/auth-CpKduNcg.js",
     "name": "auth",
     "src": "resources/js/auth.js",
     "isEntry": true

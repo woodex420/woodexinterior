@@ -2,7 +2,17 @@
 
 **Updated:** 3 November 2026 (Asia/Karachi). **This is the current master list**, including earlier holds and new requests. Detailed machine-readable gates remain in [the completion register](docs/audit/98_COMPLETION_REGISTER_2026-11-02.csv); [revision 102](docs/audit/102_PREVIEW_LOGIN_AND_WORKBOOK_REVIEW_2026-11-03.md) records workbook/owner decisions; revisions103/104 below record implemented brand/login/SEO/diagnostic slices and their separate evidence. Earlier reports are historical evidence, not current release acceptance.
 
-## Active revision 104 — single transparent card and implemented SEO/Assistant extensions
+## Active revision 105 — preview sign-in quick fix; production still separate
+
+[Implementation and boundaries](docs/audit/105_PROXY_SAFE_SIGN_IN_QUICK_FIX_2026-11-03.md). Owner screenshots disproved actual-proxy acceptance of revision104; it is not just a stale-design report.
+
+- Relative same-origin login POST + Fortify JSON response with safe relative intended navigation; no following backend HTTP/internal-host redirects. Endpoint validation before sending credentials. Native responses, CSRF, active/password checks, throttling and original 2FA retained.
+- Explicit default Glass appearance, persisted Solid contrast alternative; no silent opaque preference fallback for the requested glass mode.
+- **1,988 tests /11,115 assertions PASS241.59s**, scoped PHPStan0/Pint3/build;57 source/helper contracts;**30 browser checks PASS/exit0**, including controlled HTTPS→HTTP/internal-host proxy sign-in/session reload and refusing foreign form endpoints without a POST. **Actual Arena browser retry still required.**
+- Parent104 hosted MySQL41526580232 is now API-confirmed SUCCESS; not105/local-engine acceptance.
+- **Production remains unchanged.** No hosting/runtime access or release certified; no blanket deployment of this pending branch, merge, migration, env replacement or data change. Deployment FINAL/auto-deployOFF/private backup+verified restore/staging gates remain. All36 master gates retained.
+
+## Previous revision 104 — single transparent card and implemented SEO/Assistant extensions
 
 [Report and exact boundaries](docs/audit/104_SINGLE_GLASS_CARD_SEO_AND_MYSQL_CHECKPOINT_2026-11-03.md) · [Single-card desktop](docs/audit/evidence/104/login-desktop.png) · [Mobile](docs/audit/evidence/104/login-mobile.png).
 

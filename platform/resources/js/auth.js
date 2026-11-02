@@ -12,6 +12,7 @@ export function signInFailure(status, retryAfter) {
 
 export function sameOriginDestination(value, origin) {
     try {
+        if (typeof value !== 'string' || !value.trim()) return null;
         const url = new URL(value, origin);
         return url.origin === origin && ['http:', 'https:'].includes(url.protocol) ? url.href : null;
     } catch {
@@ -77,25 +78,31 @@ export function installSignIn(form) {
         const controller = new AbortController();
         const timeout = window.setTimeout(() => controller.abort(), 20000);
         try {
-            // HTML keeps Fortify's existing error bags, throttle, two-factor challenge and intended URL.
-            const response = await fetch(form.action, {
-                method: 'POST', credentials: 'same-origin', redirect: 'follow',
-                headers: { Accept: 'text/html' },
+            const endpoint = sameOriginDestination(form.getAttribute('action'), window.location.origin);
+            if (!endpoint) {
+                show('The sign-in address does not match this page. Reload sign-in in a new tab.');
+                return;
+            }
+            // JSON retains Fortify validation/2FA, without following an HTTP or internal-host Location behind TLS proxies.
+            const response = await fetch(endpoint, {
+                method: 'POST', credentials: 'same-origin', redirect: 'error',
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 body: new URLSearchParams(new FormData(form)), signal: controller.signal,
             });
             if (!response.ok) {
-                show(signInFailure(response.status, response.headers.get('Retry-After')));
+                if (response.status === 422) {
+                    const failure = await response.json().catch(() => null);
+                    const message = failure?.errors?.email?.[0] || failure?.errors?.password?.[0];
+                    show(typeof message === 'string' ? message.slice(0, 400) : 'Check your email and password, then try again.');
+                } else {
+                    show(signInFailure(response.status, response.headers.get('Retry-After')));
+                }
                 return;
             }
-            const destination = sameOriginDestination(response.url, window.location.origin);
+            const result = await response.json().catch(() => null);
+            const destination = sameOriginDestination(result?.two_factor === true ? form.dataset.twoFactorUrl : result?.redirect, window.location.origin);
             if (!destination) {
-                show('Sign-in returned an unexpected address. Reload this page and try again.');
-                return;
-            }
-            if (new URL(destination).pathname === new URL(form.action).pathname) {
-                const html = new DOMParser().parseFromString(await response.text(), 'text/html');
-                const message = html.querySelector('[role="alert"]')?.textContent?.trim();
-                show(message || 'Your sign-in session could not be retained. Enable cookies, or open sign-in in a new tab.');
+                show('Sign-in returned an incomplete or unexpected result. Reload this page and try again.');
                 return;
             }
             show('Signed in. Opening your dashboard…', false);
@@ -113,4 +120,10 @@ export function installSignIn(form) {
 
 if (typeof document !== 'undefined') {
     document.querySelectorAll('form[data-sign-in]').forEach(installSignIn);
+    const glass = document.querySelector('[data-auth-glass-toggle]');
+    if (glass) {
+        const render = () => { const transparent = document.documentElement.dataset.authGlass !== 'solid'; glass.textContent = transparent ? 'Glass appearance' : 'Solid contrast'; glass.setAttribute('aria-pressed', transparent ? 'true' : 'false'); };
+        glass.addEventListener('click', () => { const value = document.documentElement.dataset.authGlass === 'solid' ? 'glass' : 'solid'; document.documentElement.dataset.authGlass = value; try { localStorage.setItem('wx.auth.glass', value); } catch {} render(); });
+        render();
+    }
 }

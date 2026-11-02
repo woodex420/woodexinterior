@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full" data-auth-glass="glass">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,7 +9,7 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <link rel="preload" as="image" href="{{ asset('assets/img/svc-interior-design.webp') }}">
     <script>
-        try { if (localStorage.getItem('wx.theme') === 'dark') { document.documentElement.classList.add('dark'); } } catch (e) {}
+        try { document.documentElement.dataset.authGlass = localStorage.getItem('wx.auth.glass') === 'solid' ? 'solid' : 'glass'; if (localStorage.getItem('wx.theme') === 'dark') { document.documentElement.classList.add('dark'); } } catch (e) {}
     </script>
     @vite(['resources/css/admin.css', 'resources/js/auth.js'])
 </head>
@@ -24,7 +24,7 @@
         </header>
         <main class="wx-auth-main">
             <section class="wx-auth-card" aria-labelledby="auth-heading">
-                <p class="wx-auth-card-eyebrow">WOODEX OS</p>
+                <div class="wx-auth-card-tools"><p class="wx-auth-card-eyebrow">WOODEX OS</p><button type="button" data-auth-glass-toggle aria-pressed="true" title="Switch between transparent glass and solid contrast">Glass appearance</button></div>
                 <h1 id="auth-heading" class="wx-auth-heading">@yield('heading')</h1>
                 <p class="wx-auth-subheading">@yield('subheading')</p>
                 @if (session('status'))

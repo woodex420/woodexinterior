@@ -33,7 +33,7 @@
         <a href="{{ route('google.login') }}" target="_top" class="mb-5 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-gray-300 text-theme-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200">Continue with Google</a>
         <p class="mb-5 text-center text-theme-xs text-gray-500">Previously linked staff accounts only. Or use your Woodex password below.</p>
     @endif
-    <form method="POST" action="{{ route('login.store') }}" class="space-y-5" data-sign-in>
+    <form method="POST" action="{{ route('login.store', [], false) }}" class="space-y-5" data-sign-in data-two-factor-url="{{ route('two-factor.login', [], false) }}">
         <p data-sign-in-status hidden role="status" aria-live="polite" class="rounded-lg border border-gray-300 bg-gray-50 p-3 text-theme-sm text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"></p>
         @csrf
         <div>

@@ -1,5 +1,15 @@
 # Woodex OS — Project Status
 
+## Latest — revision105: proxy-safe sign-in quick fix
+
+- [Report](docs/audit/105_PROXY_SAFE_SIGN_IN_QUICK_FIX_2026-11-03.md): relative validated same-origin POST; Fortify JSON safe relative intended navigation; do not follow proxy-generated absolute redirects. Native authentication/2FA/CSRF retained.
+- Requested default Glass appearance plus persisted Solid contrast option. Updated isolated runtime/assets; no seed or migration rerun.
+- **1,988 tests /11,115 assertions PASS241.59s**; PHPStan0/Pint3/build;57 source/helper checks;30 Chromium checks including a controlled HTTPS→HTTP/internal-host proxy/session reload. Actual Arena parent confirmation remains open.
+- Parent104 hosted MySQL41526580232 SUCCESS, separately confirmed; local genuine MySQL still blocked.
+- **Production not deployed; no data/env changes.** Manual release/installed identity/private backup+verified restore/staging still required. Deployment FINAL/auto-deployOFF/36 master gates retained.
+
+---
+
 ## Latest — revision104: single transparent welcome card and real SEO/Assistant extensions
 
 - [Current master queue](ox-pending.md) is maintained with36 gates; **not all backlog items are complete**. [Evidence/report](docs/audit/104_SINGLE_GLASS_CARD_SEO_AND_MYSQL_CHECKPOINT_2026-11-03.md).
