@@ -27,7 +27,7 @@ beforeEach(function () {
     ]);
     $this->fake = FakeTelegramGateway::bind();
     Cache::forget(TelegramHealth::STATUS_CACHE_KEY);
-    $this->user = $this->userWithRole('sales_manager');
+    $this->user = $this->userWithRole('owner');
 });
 
 /**

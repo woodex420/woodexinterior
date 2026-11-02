@@ -89,6 +89,7 @@ class Security extends Component
 
     public function createTelegramCode(): void
     {
+        abort_unless($this->user()->canUseTelegram(), 403);
         if (! $this->telegramConfigured()) {
             $missing = match (true) {
                 blank(config('services.telegram.bot_token')) => 'TELEGRAM_BOT_TOKEN is not set on the server',
@@ -107,6 +108,7 @@ class Security extends Component
 
     public function unlinkTelegram(): void
     {
+        abort_unless($this->user()->canUseTelegram(), 403);
         $this->user()->telegramLink()->update(['chat_id' => null, 'is_active' => false, 'linked_at' => null, 'link_code' => null, 'link_code_expires_at' => null]);
         $this->dispatch('toast', message: 'Telegram unlinked.', type: 'warning');
     }
@@ -120,7 +122,8 @@ class Security extends Component
         // the health ladder is computed in every state so a dead end always names its failing step.
         $pairing = app(TelegramPairing::class);
         $health = app(TelegramHealth::class);
-        $telegram = $user->telegramLink;
+        $telegramAllowed = $user->canUseTelegram();
+        $telegram = $telegramAllowed ? $user->telegramLink : null;
         $telegramStartUrl = $telegram?->link_code && $telegram->link_code_expires_at?->isFuture()
             ? $pairing->startUrl($telegram->link_code)
             : null;
@@ -133,12 +136,13 @@ class Security extends Component
             'enabled' => $user->hasTwoFactorEnabled(),
             'requiresTwoFactor' => $user->requiresTwoFactorAuthentication(),
             'pending' => $user->two_factor_secret !== null && $user->two_factor_confirmed_at === null,
-            'telegram' => $user->telegramLink,
-            'telegramConfigured' => $this->telegramConfigured(),
+            'telegramAllowed' => $telegramAllowed,
+            'telegram' => $telegram,
+            'telegramConfigured' => $telegramAllowed && $this->telegramConfigured(),
             'telegramStartUrl' => $telegramStartUrl,
             'telegramQrSvg' => $telegramStartUrl !== null ? $pairing->qrSvg($telegramStartUrl) : null,
-            'telegramHealth' => $health->steps($user->telegramLink),
-            'telegramLastMessageAt' => $health->lastMessageAt($user->telegramLink),
+            'telegramHealth' => $telegramAllowed ? $health->steps($telegram) : [],
+            'telegramLastMessageAt' => $telegramAllowed ? $health->lastMessageAt($telegram) : null,
             'setupKey' => ! $user->hasTwoFactorEnabled() && $user->two_factor_secret !== null
                 ? decrypt($user->two_factor_secret) : null,
         ]);

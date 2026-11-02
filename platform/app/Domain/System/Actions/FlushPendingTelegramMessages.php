@@ -29,7 +29,7 @@ final class FlushPendingTelegramMessages
             ->where('delivered_at', '<', now()->subDays(7))
             ->delete();
 
-        $links = TelegramLink::query()
+        $links = TelegramLink::query()->usable()
             ->whereHas('pendingMessages', fn ($query) => $query->whereNull('delivered_at'))
             ->with('user')
             ->get()
@@ -49,7 +49,12 @@ final class FlushPendingTelegramMessages
                 ->get();
 
             foreach ($messages as $message) {
-                if ($link->chat_id === null || ! $this->gateway->send((int) $link->chat_id, $message->toTelegramMessage())) {
+                // Re-read every delivery: role, activity, unlink, private-chat and mute may change mid-flush.
+                $current = TelegramLink::query()->usable()->find($link->id);
+                if ($current === null || ($current->muted_until !== null && $current->muted_until->isFuture())) {
+                    break;
+                }
+                if (! $this->gateway->send((int) $current->chat_id, $message->toTelegramMessage())) {
                     // Leave it queued; the next minute tries again.
                     continue;
                 }

@@ -9,6 +9,7 @@ use App\Domain\System\Models\TelegramLink;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -59,6 +60,22 @@ class User extends Authenticatable
         return $this->hasOne(TelegramLink::class);
     }
 
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeTelegramOwners(Builder $query): Builder
+    {
+        return $query->where('is_active', true)
+            ->whereHas('roles', fn ($roles) => $roles->where('name', 'owner')->where('guard_name', 'web'));
+    }
+
+    /** Fresh authority: cached roles must not survive demotion, deactivation or deletion. */
+    public function canUseTelegram(): bool
+    {
+        return $this->exists && static::query()->telegramOwners()->whereKey($this->getKey())->exists();
+    }
+
     public function hasTwoFactorEnabled(): bool
     {
         return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
@@ -94,14 +111,7 @@ class User extends Authenticatable
      */
     public function telegramChatIdIgnoringMute(): ?int
     {
-        $link = $this->telegramLink;
-
-        if (! $this->is_active || $link === null || ! $link->is_active || $link->chat_id === null
-            || $link->chat_id <= 0 || ($link->chat_type !== null && $link->chat_type !== 'private')) {
-            return null;
-        }
-
-        return (int) $link->chat_id;
+        return $this->telegramLink()->usable()->first()?->chat_id;
     }
 
     /**
@@ -110,9 +120,9 @@ class User extends Authenticatable
      */
     public function routeNotificationForTelegram(): ?int
     {
-        $link = $this->telegramLink;
+        $link = $this->telegramLink()->usable()->first();
 
-        if ($this->telegramChatIdIgnoringMute() === null) {
+        if ($link === null) {
             return null;
         }
 

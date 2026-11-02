@@ -2,6 +2,8 @@
 
 **Updated:** 2 November 2026, Asia/Karachi. **Not a declaration that the entire project is complete.**
 
+**Owner ordering, 2 November:** complete the remaining pending/paused work and verification first; deployment is the final task, not the current task. Owner clarified: support both unpaid bills and paid costs with linked payments/single accounting source; keep the previously deferred workbook/Sheets/backup/AI extras deferred. Frozen historical financial documents remain immutable.
+
 This is the current execution register. Read it before resuming older audit plans. Earlier decisions, accepted requirements and frozen document history remain binding; their historical test counts are not current-release acceptance.
 
 ## 1. Exact baseline and authority
@@ -33,7 +35,11 @@ Real FrankenPHP 1.13.1 / **PHP 8.5.12**, genuine **Composer 2.9.1**, application
 
 Five new regression cases: expense and income ranges exceeding 300, opposite-direction/date exclusion, older account groups, reversed/empty ranges, ordinary decimal, half-up rounding and large-integer precision. Before the fixes: **4 failed / 1 passed**. Afterward: focused **25 passed / 136 assertions**; expanded Unit + Accounts + Projects coverage **196 passed / 786 assertions**. Changed components pass Larastan level 6; four changed PHP files pass Pint. Source/release/website contract tests: **92 passed**. No dependency or schema changes, no frontend/build changes, no merge or production deployment implied.
 
+**Candidate native CI:** hosted run `41495382678` completed **successfully** for exact source commit `164050688445f050b4e7c0833f521f1eabfd3631` (GitHub API verified). Do not infer production deployment or new test counts from the run status; downloading its detailed logs encountered a restricted external log host.
+
 The native CI allowlist now explicitly includes this active review branch in addition to the existing review branch and master. Hosted-runner, checkout-SHA, no-secret, immutable-source and isolated-MySQL boundaries remain enforced. This enables testing, not deployment.
+
+**Next source increment:** owner-only Telegram enforcement and tests are recorded in [revision 99](99_OWNER_ONLY_TELEGRAM_2026-11-02.md). Prior GitHub success above covers `1640506`, not this newer increment.
 
 ## 3. Archive inventory — comparison still pending
 
@@ -64,9 +70,9 @@ Execution order:
 8. **Q01–Q03:** only justified versioned schema changes, fresh/upgrade/idempotence/concurrency tests and exact-candidate native CI/browser/PDF acceptance. Review source changes through a PR, not direct master writes.
 9. **A04–A05 / R01–R02:** actual installed revision/runtime/schema/ledger inventory; private consistent backup and successful isolated restore; approved staging rehearsal; then separately approved manual production rollout. No auto-deploy activation or arbitrary Database Update click.
 
-### Financial workflow decision that remains open
+### Financial workflow decision — now confirmed
 
-Unpaid supplier bills and paid expenses already have different posting semantics. Recommend supporting **both with explicit status and linked source records/allocations** so the same project cost cannot be booked again as a bill and then an expense. This recommendation is not confirmation of the unresolved owner choice. Do not add guessed liabilities, silently backfill old rows or select an old financial backup as the current ledger.
+Unpaid supplier bills and paid expenses already have different posting semantics. Owner selected **both with explicit status and linked source records/allocations** so the same project cost cannot be booked again as a bill and then an expense. The workflow choice is confirmed; linked-model implementation and any justified schema change remain pending. Do not add guessed liabilities, silently backfill old rows or select an old financial backup as the current ledger.
 
 ## 5. Release gates and held scope
 

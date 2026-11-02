@@ -80,7 +80,7 @@ it('refuses a command the linked role does not hold', function () {
     $support = $this->userWithRole('support');
     TelegramLink::query()->create(['user_id' => $support->id, 'chat_id' => 501, 'is_active' => true, 'linked_at' => now()]);
 
-    expect(centreSend('/due', 501))->toContain('Your role does not include this command');
+    expect(centreSend('/due', 501))->toContain('only to the active owner');
 });
 
 it('shows the morning view: visits, overdue leads, tasks, payments, approvals', function () {
@@ -102,7 +102,7 @@ it('keeps payments and approvals out of /today for a role that cannot act on the
 
     $reply = centreSend('/today', 502);
 
-    expect($reply)->toContain('Visits:')
+    expect($reply)->toContain('only to the active owner')
         ->and($reply)->not->toContain('Payments to verify:')
         ->and($reply)->not->toContain('Approvals waiting:');
 });
@@ -146,7 +146,7 @@ it('hides a lead the caller may not see, as if it did not exist', function () {
 
     $someoneElses = Lead::factory()->create(['owner_id' => $this->owner->id]);
 
-    expect(centreSend('/lead '.$someoneElses->ref, 503))->toContain('No lead matches');
+    expect(centreSend('/lead '.$someoneElses->ref, 503))->toContain('only to the active owner')->not->toContain($someoneElses->ref);
 });
 
 it('lists quotations with amounts and status', function () {

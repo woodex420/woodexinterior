@@ -47,8 +47,11 @@ class PendingTelegramMessage extends Model
      * Queue a message for a muted chat, enforcing the cap. The message keeps its
      * inline buttons so the flushed copy works exactly like a live one.
      */
-    public static function queue(TelegramLink $link, TelegramMessage $message): self
+    public static function queue(TelegramLink $link, TelegramMessage $message): ?self
     {
+        if (! TelegramLink::query()->usable()->whereKey($link->id)->exists()) {
+            return null;
+        }
         $undelivered = static::query()
             ->where('telegram_link_id', $link->id)
             ->whereNull('delivered_at')

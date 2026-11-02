@@ -140,7 +140,7 @@ final class TelegramHealth
      */
     public function lastMessageAt(?TelegramLink $link): ?CarbonImmutable
     {
-        if ($link === null || $link->chat_id === null) {
+        if ($link === null || ! TelegramLink::query()->usable()->whereKey($link->id)->exists()) {
             return null;
         }
 
@@ -157,7 +157,7 @@ final class TelegramHealth
      */
     private function chatStep(?TelegramLink $link): array
     {
-        if ($link === null || $link->chat_id === null || ! $link->is_active) {
+        if ($link === null || ! TelegramLink::query()->usable()->whereKey($link->id)->exists()) {
             return ['key' => 'chat', 'label' => 'Your Telegram', 'ok' => false, 'detail' => 'Not linked yet — use the pairing panel above.', 'hint' => null];
         }
 

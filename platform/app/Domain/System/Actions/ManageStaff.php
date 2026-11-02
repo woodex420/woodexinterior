@@ -65,6 +65,11 @@ final class ManageStaff
 
             if ($currentRole !== $role) {
                 $user->syncRoles([$role]);
+                if (! $user->canUseTelegram()) {
+                    TelegramLink::query()->where('user_id', $user->id)->update([
+                        'is_active' => false, 'link_code' => null, 'link_code_expires_at' => null,
+                    ]);
+                }
             }
         });
 
@@ -93,7 +98,7 @@ final class ManageStaff
             // Sign them out everywhere straight away (database sessions) and cut off Telegram (TGM-007).
             DB::table('sessions')->where('user_id', $user->id)->delete();
             $user->forceFill(['remember_token' => Str::random(60)])->save();
-            TelegramLink::query()->where('user_id', $user->id)->update(['is_active' => false]);
+            TelegramLink::query()->where('user_id', $user->id)->update(['is_active' => false, 'link_code' => null, 'link_code_expires_at' => null]);
         }
 
         return $user;

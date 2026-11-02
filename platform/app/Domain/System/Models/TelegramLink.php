@@ -6,6 +6,7 @@ namespace App\Domain\System\Models;
 
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * Link between a staff user (or a group chat) and a Telegram chat (TGM-001).
+ * Owner-only private Telegram link. Legacy staff/group rows are retained but carry no authority.
  */
 class TelegramLink extends Model
 {
@@ -53,13 +54,24 @@ class TelegramLink extends Model
     }
 
     /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
+    public function scopeUsable(Builder $query): Builder
+    {
+        return $query->where('is_active', true)->where('chat_id', '>', 0)
+            ->where(fn ($chats) => $chats->where('chat_type', 'private')->orWhereNull('chat_type'))
+            ->whereIn('user_id', User::query()->telegramOwners()->select('id'));
+    }
+
+    /**
      * Create (or refresh) a one-time code the user sends to the bot as "/start CODE".
      */
     public static function issueCodeFor(User $user, int $minutes = 30): self
     {
         return DB::transaction(function () use ($user, $minutes): self {
             $user = User::query()->lockForUpdate()->findOrFail($user->id);
-            if (! $user->is_active) {
+            if (! $user->canUseTelegram()) {
                 throw new AuthorizationException;
             }
             $link = self::query()->where('user_id', $user->id)->lockForUpdate()->first()

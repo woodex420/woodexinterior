@@ -68,18 +68,17 @@ it('alerts the unassigned-lead roles when nobody owns the enquiry', function () 
     Notification::assertSentTo([$this->manager, $this->owner], NewLeadNotification::class);
 });
 
-it('emails the alert to staff who have no Telegram link', function () {
-    $lead = captureEnquiry($this);
+it('emails staff with legacy Telegram links while only the owner can receive Telegram', function () {
+    $notification = new NewLeadNotification(captureEnquiry($this), true);
+    $this->manager->telegramLink()->create(['chat_id' => 500, 'chat_type' => 'private', 'is_active' => true]);
+    $this->owner->telegramLink()->create(['chat_id' => 501, 'chat_type' => 'private', 'is_active' => true]);
+    $unlinkedOwner = $this->userWithRole('owner');
 
-    $notification = new NewLeadNotification($lead, true);
-
-    $linked = $this->manager;
-    $linked->telegramLink()->create(['chat_id' => 500, 'chat_type' => 'private', 'is_active' => true]);
-
-    expect($notification->via($linked))->toContain(TelegramChannel::class)
-        ->and($notification->via($linked))->not->toContain('mail')
-        ->and($notification->via($this->owner))->toContain('mail') // no Telegram link → email fallback
-        ->and($notification->via($this->owner))->toContain('database');
+    expect($notification->via($this->manager))->not->toContain(TelegramChannel::class)
+        ->and($notification->via($this->manager))->toContain('mail')->toContain('database')
+        ->and($notification->via($this->owner))->toContain(TelegramChannel::class)
+        ->and($notification->via($this->owner))->not->toContain('mail')
+        ->and($notification->via($unlinkedOwner))->toContain('mail')->toContain('database');
 });
 
 it('stays silent when the new-enquiry alert automation is paused', function () {

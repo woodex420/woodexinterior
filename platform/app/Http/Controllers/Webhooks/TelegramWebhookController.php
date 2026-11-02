@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Webhooks;
 
+use App\Domain\System\Actions\HandleTelegramCommand;
 use App\Domain\System\Enums\ChangeRequestStatus;
 use App\Domain\System\Enums\ChangeRequestType;
 use App\Domain\System\Enums\WebhookStatus;
@@ -125,16 +126,21 @@ final class TelegramWebhookController extends Controller
      */
     private function callbackReply(array $callback): ?array
     {
-        $callbackId = (string) ($callback['id'] ?? '');
-        $chatId = $callback['message']['chat']['id'] ?? null;
-        $data = (string) ($callback['data'] ?? '');
+        $callbackId = $callback['id'] ?? null;
+        $chatId = self::positiveId($callback['message']['chat']['id'] ?? null);
+        $senderId = self::positiveId($callback['from']['id'] ?? null);
+        $data = $callback['data'] ?? null;
 
-        if ($chatId === null || $chatId === '' || $data === '') {
-            // A callback without a real message/chat is not button traffic — ignore it (no send, no authority).
+        if (! is_string($callbackId) || $callbackId === '' || $chatId === false || $senderId !== $chatId
+            || ($callback['message']['chat']['type'] ?? null) !== 'private'
+            || ($callback['from']['is_bot'] ?? false) || ! is_string($data) || $data === '') {
             return null;
         }
 
-        $user = $this->linkedUserOrNull((int) $chatId)?->user;
+        $user = $this->linkedUserOrNull($chatId)?->user;
+        if ($user === null) {
+            return null;
+        }
         $reply = $this->callbacks->dispatch($user, $data);
 
         return ['chat_id' => (int) $chatId, 'text' => $reply, 'callback_id' => $callbackId];
@@ -179,8 +185,12 @@ final class TelegramWebhookController extends Controller
 
         $user = $this->linkedUserOrNull($chatId)?->user;
 
+        if (! in_array($command, ['/start', '/link'], true) && $user === null) {
+            return ['chat_id' => $chatId, 'text' => TelegramCommandBus::OWNER_ONLY_MESSAGE];
+        }
+
         $reply = match ($command) {
-            '/start', '/link' => $this->link($message, $chatId, $argument),
+            '/start', '/link' => $this->link($message),
             '/idea', '/issue' => $this->changeRequest($chatId, $command === '/idea' ? ChangeRequestType::Idea : ChangeRequestType::Issue, $argument, (int) ($message['message_id'] ?? 0)),
             '/help' => $this->bus->help(),
             default => $this->bus->dispatch($user, $command, $argument),
@@ -197,46 +207,10 @@ final class TelegramWebhookController extends Controller
     /**
      * @param  array<string, mixed>  $message
      */
-    private function link(array $message, int $chatId, string $code): string
+    private function link(array $message): string
     {
-        if ($code === '') {
-            return $this->linkedUserOrNull($chatId) !== null
-                ? 'You are already linked to Woodex OS. Send /help to see the commands.'
-                : 'Welcome to Woodex OS. To link this chat, open your profile in the admin, tap "Link Telegram" and send the code shown there: /start CODE';
-        }
-
-        $link = TelegramLink::query()
-            ->where('link_code', Str::upper($code))
-            ->where('link_code_expires_at', '>', now())
-            ->first();
-
-        if ($link === null || ! $link->user()->where('is_active', true)->exists()) {
-            return 'That code is invalid or expired. Create a new code from your profile in the admin.';
-        }
-
-        // A chat can belong to one link only, and a code may never steal a chat that another
-        // account already holds: that would hand one phone's authority to whoever gets a second code.
-        $occupant = TelegramLink::query()->where('chat_id', $chatId)->where('is_active', true)->whereKeyNot($link->id)->first();
-        if ($occupant !== null && $occupant->user_id !== $link->user_id) {
-            return 'This chat is already linked to another Woodex OS account. Ask an admin to unlink it first.';
-        }
-
-        TelegramLink::query()->where('chat_id', $chatId)->whereKeyNot($link->id)->update(['chat_id' => null, 'is_active' => false]);
-
-        $link->forceFill([
-            'chat_id' => $chatId,
-            'chat_type' => (string) ($message['chat']['type'] ?? 'private'),
-            'title' => $message['chat']['title'] ?? trim(($message['from']['first_name'] ?? '').' '.($message['from']['last_name'] ?? '')),
-            'username' => $message['from']['username'] ?? null,
-            'link_code' => null,
-            'link_code_expires_at' => null,
-            'is_active' => true,
-            'linked_at' => now(),
-        ])->save();
-
-        $name = $link->user()->value('name') ?? 'the Woodex team';
-
-        return "✅ Linked to Woodex OS as {$name}. You will receive alerts here. Send /help for commands.";
+        // One pairing action owns the user -> link lock order and code consumption for both entry points.
+        return app(HandleTelegramCommand::class)->handle($message)['text'] ?? TelegramCommandBus::OWNER_ONLY_MESSAGE;
     }
 
     private function changeRequest(int $chatId, ChangeRequestType $type, string $text, int $messageId): string
@@ -268,14 +242,6 @@ final class TelegramWebhookController extends Controller
 
     private function linkedUserOrNull(int $chatId): ?TelegramLink
     {
-        return TelegramLink::query()
-            ->where('chat_id', $chatId)
-            ->where('is_active', true)
-            ->whereNotNull('user_id')
-            // Group/supergroup/channel links never carry private-message authority; null chat_type is a
-            // legacy private link from before the column existed and keeps its authority.
-            ->where(fn ($query) => $query->where('chat_type', 'private')->orWhereNull('chat_type'))
-            ->whereHas('user', fn ($query) => $query->where('is_active', true))
-            ->first();
+        return TelegramLink::query()->usable()->with('user')->where('chat_id', $chatId)->first();
     }
 }

@@ -16,6 +16,7 @@ use App\Domain\Sales\Services\QuoteEditor;
 use App\Domain\System\Enums\ApprovalStatus;
 use App\Domain\System\Models\Approval;
 use App\Domain\System\Models\TelegramLink;
+use App\Domain\System\Telegram\Commands\ApproveCommand;
 use App\Domain\System\Telegram\TelegramCallbackBus;
 use App\Integrations\Telegram\Fakes\FakeTelegramGateway;
 use App\Models\User;
@@ -53,6 +54,7 @@ function actionUpdate(int $updateId, string $data, int $chatId): array
         'update_id' => $updateId,
         'callback_query' => [
             'id' => 'cb-'.$updateId,
+            'from' => ['id' => $chatId, 'is_bot' => false],
             'data' => $data,
             'message' => [
                 'message_id' => $updateId + 100,
@@ -84,7 +86,8 @@ function runAction(string $text, int $chatId = 500): string
 
 function pressButton(string $data, int $chatId = 500): string
 {
-    $updateId = 3000 + count(test()->telegram->sent);
+    static $nextUpdateId = 3000;
+    $updateId = ++$nextUpdateId;
 
     test()->postJson('/webhooks/telegram/hook-secret', actionUpdate($updateId, $data, $chatId), headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])->assertOk();
 
@@ -145,8 +148,11 @@ it('keeps the screen rules on the phone: nobody approves their own request', fun
 
     $reply = runAction('/approve '.$approval->id, 501);
 
-    expect($reply)->toContain('cannot approve your own request')
+    expect($reply)->toContain('only to the active owner')
         ->and($approval->refresh()->status)->toBe(ApprovalStatus::Pending);
+    // The original domain rule still holds independently of the stricter Telegram entry gate.
+    expect(app(ApproveCommand::class)->handle($this->manager, (string) $approval->id))
+        ->toContain('cannot approve your own request');
 });
 
 it('assigns a lead to a colleague, and asks when the name matches two people', function () {
@@ -183,10 +189,10 @@ it('answers an assign-to-me press on the new-lead alert, with the presser as the
     $lead = Lead::factory()->create(['owner_id' => null]);
 
     // The alert carries the button; the press is what we test.
-    $reply = pressButton(TelegramCallbackBus::button('assign', $lead->id), 501);
+    $reply = pressButton(TelegramCallbackBus::button('assign', $lead->id), 500);
 
     expect($reply)->toContain('is now yours')
-        ->and($lead->refresh()->owner_id)->toBe($this->manager->id);
+        ->and($lead->refresh()->owner_id)->toBe($this->owner->id);
 
     // The toast on the button was answered too.
     expect(test()->telegram->answeredCallbacks)->not->toBeEmpty();
@@ -205,7 +211,7 @@ it('verifies a payment from the alert button, and refuses when it is not the pre
 
     $reply = pressButton(TelegramCallbackBus::button('payverify', $payment->id), 502);
 
-    expect($reply)->toContain('cannot verify payments')
+    expect($reply)->toBe('')
         ->and($payment->refresh()->status)->toBe(PaymentStatus::PendingVerification);
 
     $done = pressButton(TelegramCallbackBus::button('payverify', $payment->id), 500);
@@ -222,10 +228,10 @@ it('refuses a button that has expired, instead of acting on a changed world', fu
         ->and($lead->refresh()->owner_id)->toBeNull();
 });
 
-it('tells an unlinked chat that a button cannot act', function () {
+it('silently ignores an unlinked chat button', function () {
     $lead = Lead::factory()->create();
 
-    expect(pressButton(TelegramCallbackBus::button('assign', $lead->id), 606))->toContain('not linked');
+    expect(pressButton(TelegramCallbackBus::button('assign', $lead->id), 606))->toBe('');
 });
 
 it('keeps assign to a role that may assign', function () {
@@ -235,6 +241,6 @@ it('keeps assign to a role that may assign', function () {
     $support = $this->userWithRole('support');
     TelegramLink::query()->create(['user_id' => $support->id, 'chat_id' => 503, 'is_active' => true, 'linked_at' => now()]);
 
-    expect(runAction('/assign '.$lead->ref.' Bilal', 503))->toContain('Your role does not include this command')
+    expect(runAction('/assign '.$lead->ref.' Bilal', 503))->toContain('only to the active owner')
         ->and($lead->refresh()->owner_id)->toBe($this->owner->id);
 });

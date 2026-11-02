@@ -2,16 +2,20 @@
 
 **Updated:** 2 November 2026 · **Active branch:** `arena/7093000c-woodexinterior` · **Native synthetic preview:** port 8080
 
-## Current execution record — revision 98
+## Current execution record — revisions 98 / 99
+
+**Owner ordering:** finish remaining pending/paused work first; deployment is the final task. Candidate native CI [41495382678](https://github.com/woodex420/woodexinterior/actions/runs/41495382678) is now **successful** at `1640506`; no merge/deployment follows automatically.
 
 [Consolidated master plan / resume instructions](docs/audit/98_MASTER_COMPLETION_PLAN_2026-11-02.md) · [30-item task register](docs/audit/98_COMPLETION_REGISTER_2026-11-02.csv).
 
 - Master baseline `3fcaff8e0f78aaaa2e6e2aed2011541fd4cff944` includes merged release 97; its native GitHub run passed **1,818 / 10,348 assertions**. This does not certify newer edits or production deployment.
 - **Full real Laravel admin + public preview is running**, not a static mock: verified native PHP 8.5.12, genuine Composer 2.9.1, existing lock, fresh isolated synthetic SQLite and 103 migrations. Providers reject outgoing Laravel HTTP; mail is array-only; no worker/scheduler. No production data restored.
 - **Two source fixes with regression tests:** full-range expense/income totals beyond the 300-row display cap; exact decimal project costs through `Money`, not float. No schema, lock, frontend, document-history or production changes.
-- **Current local evidence:** 196 native tests / 786 assertions; 92 source contracts; Larastan 0 for changed components; Pint pass; 24 real-browser checks plus 4 local cross-site iframe/session/navigation checks. Full candidate remote CI and whole-action/PDF QA remain separate gates.
+- **Current local evidence:** 196 native tests / 786 assertions; 92 source contracts; Larastan 0 for changed components; Pint pass; 24 real-browser checks plus 4 local cross-site iframe/session/navigation checks. Full candidate remote CI for `1640506` is successful; whole-action/PDF QA and subsequent-candidate checks remain separate gates.
 - Drive inventory/hashes refreshed; **archive contents comparison remains unfinished**. No automatic archive overwrite or import. Workbook reconciliation/import is deferred.
-- **Not complete:** ledger cross-model/recovery acceptance, linked Vendors/Projects workflow, owner-only Telegram, Website Chat/UI/SEO/media/speed refinements, Assistant diagnostics, full candidate tests, isolated staging and verified restore. See the register for exact gaps/dependencies rather than restarting merged work.
+- **Owner-only Telegram source enforcement implemented:** pairing, webhook/command/callback authority, notification/quiet-hour/queued delivery, fresh role/link checks, profile/integration controls. Staff in-app notifications/email fallback retained; legacy links preserved without authority. **Full local native:1,857 pass/10,510 assertions;37 current browser checks; static/style/build/source contracts pass.** [Increment 99](docs/audit/99_OWNER_ONLY_TELEGRAM_2026-11-02.md) records current QA; new-candidate hosted CI remains separate.
+- **Owner choices confirmed:** both unpaid bills and paid costs with linked payments/single accounting source; previously deferred workbook/Sheets/backup/AI extras stay deferred. Deployment is last.
+- **Not complete:** ledger cross-model/recovery acceptance, linked Vendors/Projects workflow, live owner Telegram receipt, Website Chat/UI/SEO/media/speed refinements, Assistant diagnostics, full candidate tests, isolated staging and verified restore. See the register for exact gaps/dependencies rather than restarting merged work.
 - Candidate source is not merged/deployed. Production installed SHA/schema and backup restore remain unverified. **Auto-deployment stays OFF.** GitHub/active branch work; no new branch/master prompt/Continue or repeated SSH setup is needed.
 
 ---

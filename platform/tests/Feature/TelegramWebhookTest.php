@@ -27,8 +27,8 @@ it('rejects requests without the secret', function () {
     $this->postJson('/webhooks/telegram/wrong', telegramUpdate(1, 42, '/help'), headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])->assertNotFound();
 });
 
-it('links a staff account with a one-time code', function () {
-    $user = $this->userWithRole('sales_manager');
+it('links an owner account with a one-time code', function () {
+    $user = $this->userWithRole('owner');
     $link = TelegramLink::issueCodeFor($user);
 
     $this->postJson('/webhooks/telegram/hook-secret', telegramUpdate(10, 777, '/start '.$link->link_code), headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])->assertOk();
@@ -65,11 +65,13 @@ it('replies to plain start without requiring a link code', function () {
     expect($this->telegram->textsFor(888)[0])->toContain('Welcome to Woodex OS');
 });
 
-it('escapes command help and staff names for Telegram HTML parse mode', function () {
+it('escapes owner command help and names for Telegram HTML parse mode', function () {
+    $owner = $this->userWithRole('owner');
+    TelegramLink::query()->create(['user_id' => $owner->id, 'chat_id' => 888, 'is_active' => true]);
     $this->postJson('/webhooks/telegram/hook-secret', telegramUpdate(41, 888, '/help'), headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])->assertOk();
     expect($this->telegram->textsFor(888)[0])->toContain('&lt;text&gt;')->not->toContain('<text>');
 
-    $user = $this->userWithRole('sales', ['name' => 'Ali & Sons <Owner>']);
+    $user = $this->userWithRole('owner', ['name' => 'Ali & Sons <Owner>']);
     $link = TelegramLink::issueCodeFor($user);
     $this->postJson('/webhooks/telegram/hook-secret', telegramUpdate(42, 889, '/start '.$link->link_code), headers: ['X-Telegram-Bot-Api-Secret-Token' => 'hook-secret'])->assertOk();
     expect($this->telegram->textsFor(889)[0])->toContain('Ali &amp; Sons &lt;Owner&gt;');

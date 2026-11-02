@@ -65,7 +65,7 @@ it('keeps the recycle bin away from sales users', function () {
 it('shows integration status and the outbound log without secrets', function () {
     config(['services.telegram.bot_token' => '123:SECRET-TOKEN']);
     IntegrationLog::create(['integration' => 'telegram', 'action' => 'sendMessage', 'ok' => false, 'status_code' => 403, 'response' => ['description' => 'bot was blocked by the user'], 'created_at' => now()]);
-    $this->actingAs($this->userWithRole('admin'));
+    $this->actingAs($this->userWithRole('owner'));
 
     $this->get(route('admin.integrations'))->assertOk()
         ->assertSee('Telegram bot')

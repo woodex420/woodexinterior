@@ -77,7 +77,7 @@ it('rejects a failed Turnstile check but lets the live-site bridge key through',
     expect(Lead::query()->sole()->meta)->toBe(['via' => 'live-site-bridge']);
 });
 
-it('auto-assigns the least-loaded sales user and alerts them on Telegram', function () {
+it('auto-assigns the least-loaded sales user and preserves their in-app alert without staff Telegram', function () {
     $telegram = FakeTelegramGateway::bind();
 
     $busy = $this->userWithRole('sales');
@@ -90,7 +90,6 @@ it('auto-assigns the least-loaded sales user and alerts them on Telegram', funct
     $lead = Lead::query()->latest('id')->first();
 
     expect($lead->owner_id)->toBe($free->id)
-        ->and($telegram->textsFor(555001))->toHaveCount(1)
-        ->and($telegram->textsFor(555001)[0])->toContain('New lead')->toContain('Ayesha Khan')
+        ->and($telegram->textsFor(555001))->toBe([])
         ->and($free->notifications()->count())->toBe(1);
 });

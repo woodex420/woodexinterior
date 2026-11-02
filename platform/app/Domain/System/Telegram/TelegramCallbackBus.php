@@ -55,6 +55,10 @@ final class TelegramCallbackBus
             return 'This chat is not linked to Woodex OS, so the button cannot act. Link it from your profile.';
         }
 
+        if (! $user->canUseTelegram()) {
+            return TelegramCommandBus::OWNER_ONLY_MESSAGE;
+        }
+
         [$action, $id, $expires] = array_pad(explode(':', $data, 3) + [''], 3, '');
 
         if ($action === '' || ! ctype_digit($id) || ! ctype_digit($expires)) {
