@@ -44,7 +44,7 @@
         @endif
         @if ($showForm && $canManage)
             <x-admin.card title="Record a project cost" description="Use the supplier's original invoice/reference. For multiple lines, asset purchases or recoverable supplier tax, use Supplier bills and choose this project.">
-                <form wire:submit="save" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <form wire:submit="save" x-on:keydown.enter="if ($event.target.tagName === 'INPUT' &amp;&amp; !['checkbox','radio','file'].includes($event.target.type)) { $event.preventDefault(); $el.querySelector('[data-explicit-save]')?.click(); }" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div><label for="cost-kind" class="wx-label">Cost type</label><select id="cost-kind" wire:model.live="kind" class="wx-input"><option value="bill">Unpaid supplier bill</option><option value="paid">Already paid cost</option></select>@error('kind')<p class="text-theme-xs text-error-600">{{ $message }}</p>@enderror</div>
                     <div><label for="cost-vendor" class="wx-label">Vendor</label><select id="cost-vendor" wire:model="vendorId" class="wx-input"><option value="">Choose a vendor…</option>@foreach ($vendors as $vendor)<option value="{{ $vendor->id }}">{{ $vendor->name }}</option>@endforeach</select>@error('vendorId')<p class="text-theme-xs text-error-600">{{ $message }}</p>@enderror</div>
                     <div><label for="cost-reference" class="wx-label">Supplier reference</label><input id="cost-reference" wire:model="reference" class="wx-input" maxlength="60" />@error('reference')<p role="alert" class="text-theme-xs text-error-600">{{ $message }}</p>@enderror</div>
@@ -57,7 +57,7 @@
                     @else
                         <div><label for="cost-paid-from" class="wx-label">Paid from</label><select id="cost-paid-from" wire:model="paidFrom" class="wx-input"><option value="bank">Bank</option><option value="cash">Cash</option><option value="wallet">Mobile wallet</option></select>@error('paidFrom')<p class="text-theme-xs text-error-600">{{ $message }}</p>@enderror</div>
                     @endif
-                    <div class="flex flex-wrap gap-2 sm:col-span-2"><x-admin.button type="submit" wire:loading.attr="disabled" wire:target="save">{{ $kind === 'bill' ? 'Record unpaid bill' : 'Record paid cost' }}</x-admin.button><x-admin.button type="button" variant="secondary" wire:click="$set('showForm', false)">Close</x-admin.button></div>
+                    <div class="flex flex-wrap gap-2 sm:col-span-2"><x-admin.button type="button" data-explicit-save wire:click="save" wire:loading.attr="disabled" wire:target="save">{{ $kind === 'bill' ? 'Record unpaid bill' : 'Record paid cost' }}</x-admin.button><x-admin.button type="button" variant="secondary" wire:click="$set('showForm', false)">Close</x-admin.button></div>
                 </form>
             </x-admin.card>
         @endif

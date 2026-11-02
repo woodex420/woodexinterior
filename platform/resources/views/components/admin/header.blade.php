@@ -53,12 +53,16 @@
                 <a href="{{ route('admin.profile.security') }}" wire:navigate class="mt-1 flex items-center gap-3 rounded-lg px-3 py-2 text-theme-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5">
                     <x-icon name="shield" class="size-4" /> Security &amp; Telegram
                 </a>
+                @if (request()->attributes->get('synthetic_direct_preview') === true)
+                    <a href="{{ route('login', [], false) }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-theme-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5">Leave admin demo</a>
+                @else
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-theme-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5">
                         <x-icon name="logout" class="size-4" /> Sign out
                     </button>
                 </form>
+                @endif
             </div>
         </div>
     </div>

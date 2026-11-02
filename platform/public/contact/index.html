@@ -189,10 +189,11 @@ document.addEventListener('DOMContentLoaded',function(){if(window.WXForms&&typeo
 var status=document.getElementById('cf-status');
 var btn=f.querySelector('button[type=submit]');
 function show(msg,ok){status.textContent=msg;status.style.display='block';status.style.color=ok?'#1c7a3d':'#a12622';}
-f.addEventListener('submit',function(e){
+function submitEnquiry(e){
 var forms=window.WXForms;
 if(!forms||typeof forms.send!=='function'||typeof forms.success!=='function'||typeof forms.waLink!=='function')return;
 e.preventDefault();
+if(btn.disabled)return;
 var name=document.getElementById('cf-name').value.trim();
 var phone=document.getElementById('cf-phone').value.trim();
 if(!name||!phone){show('Please add your name and phone so we can call you back.',false);return;}
@@ -202,7 +203,13 @@ service:document.getElementById('cf-type').value,message:document.getElementById
 _hp:document.getElementById('cf-hp').value};
 Promise.resolve().then(function(){return forms.send('contact',data,f);}).then(function(r){f.reset();status.style.color='#0c1628';forms.success(status,data,r.id,data.service?['Project: '+data.service]:[]);})
 .catch(function(err){show(err.message+' You can also WhatsApp us on +92 322 4000768.',false);})
-.finally(function(){btn.disabled=false;btn.textContent=orig;});});})();
+.finally(function(){btn.disabled=false;btn.textContent=orig;});}
+f.addEventListener('submit',submitEnquiry);
+// Explicit click avoids a sandbox blocking native submission before the submit listener runs.
+// Without WXForms, do not prevent the browser's existing native POST fallback.
+btn.addEventListener('click',submitEnquiry);
+f.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.tagName==='INPUT'&&window.WXForms&&typeof window.WXForms.send==='function'){e.preventDefault();btn.click();}});
+})();
 </script>
 </body>
 </html>

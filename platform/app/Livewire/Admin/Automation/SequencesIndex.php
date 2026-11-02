@@ -8,6 +8,7 @@ use App\Domain\Automation\Enums\EnrolmentStatus;
 use App\Domain\Automation\Models\AutomationEnrolment;
 use App\Domain\Automation\Models\AutomationSequence;
 use App\Livewire\Concerns\InteractsWithAdmin;
+use Database\Seeders\AutomationSequenceSeeder;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -32,13 +33,25 @@ class SequencesIndex extends Component
         $this->authorize('automation.manage');
     }
 
+    public function restoreMissingDefaults(AutomationSequenceSeeder $seeder): void
+    {
+        $this->authorize('automation.manage');
+        abort_unless($this->user()->hasRole('owner'), 403);
+        $count = $seeder->restoreMissingPaused();
+        activity('system')->causedBy($this->user())->withProperties(['created' => $count])
+            ->log('Restored missing sequence defaults, paused. Existing definitions and enrolments unchanged.');
+        $this->toast($count === 0 ? 'All defaults already exist — nothing changed.' : $count.' missing defaults added, paused. No clients enrolled or messages sent.');
+    }
+
     public function select(?int $id): void
     {
+        $this->authorize('automation.manage');
         $this->selectedId = $id;
     }
 
     public function toggleSequence(int $id): void
     {
+        $this->authorize('automation.manage');
         $sequence = AutomationSequence::query()->findOrFail($id);
         $sequence->forceFill(['is_active' => ! $sequence->is_active])->save();
 
@@ -52,6 +65,7 @@ class SequencesIndex extends Component
 
     public function pauseEnrolment(int $id): void
     {
+        $this->authorize('automation.manage');
         $enrolment = AutomationEnrolment::query()->findOrFail($id);
         $enrolment->pause();
         $this->toast('Enrolment paused — it holds its place.');
@@ -59,6 +73,7 @@ class SequencesIndex extends Component
 
     public function resumeEnrolment(int $id): void
     {
+        $this->authorize('automation.manage');
         $enrolment = AutomationEnrolment::query()->findOrFail($id);
         $enrolment->resume();
         $this->toast('Enrolment resumed.');
@@ -66,6 +81,7 @@ class SequencesIndex extends Component
 
     public function cancelEnrolment(int $id): void
     {
+        $this->authorize('automation.manage');
         $enrolment = AutomationEnrolment::query()->findOrFail($id);
         $enrolment->end(EnrolmentStatus::Cancelled, 'cancelled from the sequences screen');
         $this->toast('Enrolment cancelled — nothing more will be sent.');
@@ -73,6 +89,7 @@ class SequencesIndex extends Component
 
     public function render(): View
     {
+        $this->authorize('automation.manage');
         $sequences = AutomationSequence::query()
             ->with('steps')
             ->withCount([

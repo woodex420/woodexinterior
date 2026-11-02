@@ -15,6 +15,7 @@ use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Models\Message;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Livewire\Concerns\InteractsWithAdmin;
+use App\Livewire\Concerns\WithConversationHistory;
 use App\Models\User;
 use App\Settings\BusinessSettings;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -45,6 +46,7 @@ use Throwable;
 class Inbox extends Component
 {
     use InteractsWithAdmin;
+    use WithConversationHistory;
     use WithFileUploads;
 
     #[Url(except: 'open')]
@@ -61,8 +63,6 @@ class Inbox extends Component
 
     #[Url(except: '')]
     public string $assignment = '';
-
-    public int $historyLimit = 60;
 
     public ?int $selectedId = null;
 
@@ -93,11 +93,6 @@ class Inbox extends Component
         $this->selectedId = null;
     }
 
-    public function loadEarlier(): void
-    {
-        $this->historyLimit = min(600, max(60, $this->historyLimit) + 60);
-    }
-
     /** @return Collection<int, Conversation> */
     public function conversations(): Collection
     {
@@ -123,7 +118,7 @@ class Inbox extends Component
         $this->authorize('view', $conversation);
 
         $this->selectedId = $id;
-        $this->historyLimit = 60;
+        $this->resetHistory();
         $this->draft = '';
         $this->note = '';
         $this->attachment = null;
@@ -237,7 +232,8 @@ class Inbox extends Component
 
         $this->draft = '';
         $this->attachment = null;
-        $this->dispatch('chat-scroll');
+        $this->resetHistory();
+        $this->dispatch('chat-scroll', reset: true);
         $this->toast($message->status === MessageStatus::Sent ? 'Sent.' : 'Saved as failed — WhatsApp refused it.');
     }
 
@@ -254,6 +250,8 @@ class Inbox extends Component
         $action->note($conversation, $this->note, $user);
 
         $this->note = '';
+        $this->resetHistory();
+        $this->dispatch('chat-scroll', reset: true);
         $this->toast('Note added — the client never sees it.');
     }
 
@@ -313,18 +311,23 @@ class Inbox extends Component
     {
         $this->authorize('viewAny', Conversation::class);
         $conversation = $this->selected();
-        $limit = min(600, max(60, $this->historyLimit));
+        $window = $this->historyWindow($conversation, authors: true);
 
         return view('livewire.admin.conversations.inbox', [
             'conversations' => $this->conversations(),
             'counts' => $this->counts(),
             'selected' => $conversation,
-            'thread' => $conversation?->messages()->with('author')->latest('id')->limit($limit)->get()->reverse()->values() ?? new Collection,
-            'hasEarlier' => $conversation !== null && $conversation->messages()->count() > $limit,
+            'thread' => $window['messages'],
+            'hasEarlier' => $window['hasEarlier'],
             'configured' => $whatsapp->isConfigured(),
             'channels' => Channel::cases(),
             'staff' => $this->staff(),
         ]);
+    }
+
+    protected function historyConversation(): ?Conversation
+    {
+        return $this->selected();
     }
 
     private function selected(): ?Conversation

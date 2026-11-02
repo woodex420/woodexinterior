@@ -11,6 +11,7 @@ use App\Domain\Conversations\Enums\MessageDirection;
 use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Models\Message;
 use App\Livewire\Concerns\InteractsWithAdmin;
+use App\Livewire\Concerns\WithConversationHistory;
 use App\Settings\NotificationSettings;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
@@ -32,6 +33,7 @@ use Livewire\Component;
 class LiveChatBell extends Component
 {
     use InteractsWithAdmin;
+    use WithConversationHistory;
 
     /** Click or new inbound message opens the drawer; closing it preserves the announcement baseline. */
     public bool $drawer = false;
@@ -40,14 +42,7 @@ class LiveChatBell extends Component
 
     public string $draft = '';
 
-    public int $historyLimit = 60;
-
     public ?int $pendingId = null;
-
-    public function loadEarlier(): void
-    {
-        $this->historyLimit = min(600, max(60, $this->historyLimit) + 60);
-    }
 
     /**
      * The baseline is taken when the header mounts, not on every render: a message that arrives
@@ -146,20 +141,17 @@ class LiveChatBell extends Component
         $visitorActive = $live->contains(fn (Conversation $c): bool => $c->last_direction === 'in'
             && $c->last_message_at !== null && $c->last_message_at->gt(now()->subMinutes(2)));
 
-        $messages = new Collection;
-        if ($this->selectedId !== null) {
-            $conversation = $this->selectedConversation();
-            $messages = $conversation->messages()->latest('id')->limit(min(600, max(60, $this->historyLimit)))->get()->reverse()->values();
-        }
+        $conversation = $this->historyConversation();
+        $window = $this->historyWindow($conversation);
 
         return view('livewire.admin.conversations.live-chat-bell', [
             'canUse' => true,
             'live' => $live,
             'unread' => $unread,
             'visitorActive' => $visitorActive,
-            'messages' => $messages,
-            'selectedConversation' => $this->selectedId !== null ? $this->selectedConversation() : null,
-            'hasEarlier' => $this->selectedId !== null && $this->selectedConversation()->messages()->count() > min(600, max(60, $this->historyLimit)),
+            'messages' => $window['messages'],
+            'selectedConversation' => $conversation,
+            'hasEarlier' => $window['hasEarlier'],
             'soundOn' => (bool) app(NotificationSettings::class)->chat_alert_sound,
             'canManageSound' => $this->user()->can('settings.manage'),
         ]);
@@ -193,7 +185,7 @@ class LiveChatBell extends Component
 
         $this->selectedId = $conversation->id;
         $this->pendingId = null;
-        $this->historyLimit = 60;
+        $this->resetHistory();
         $this->draft = '';
         $this->markSelectedRead();
         $this->dispatch('chat-scroll', reset: true);
@@ -209,7 +201,8 @@ class LiveChatBell extends Component
         app(SendConversationMessage::class)->handle($conversation, $this->draft, $this->user());
 
         $this->draft = '';
-        $this->dispatch('chat-scroll');
+        $this->resetHistory();
+        $this->dispatch('chat-scroll', reset: true);
         $this->toast('Sent — the visitor sees it on their next poll.');
     }
 
@@ -280,11 +273,16 @@ class LiveChatBell extends Component
 
     private function markSelectedRead(): void
     {
-        if ($this->selectedId === null) {
+        if ($this->selectedId === null || $this->historyBeforeId !== null) {
             return;
         }
 
         $this->selectedConversation()->markRead();
+    }
+
+    protected function historyConversation(): ?Conversation
+    {
+        return $this->selectedId === null ? null : $this->selectedConversation();
     }
 
     private function selectedConversation(): Conversation

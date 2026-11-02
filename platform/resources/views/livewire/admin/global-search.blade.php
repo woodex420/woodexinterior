@@ -5,48 +5,38 @@
      x-on:focus-global-search.window="open = true; $nextTick(() => $refs.term.focus())"
      x-on:open-search.window="open = true; $nextTick(() => $refs.term.focus())"
      class="max-w-md flex-1">
-    <button type="button" x-on:click="open = true; $nextTick(() => $refs.term.focus())"
+    <button type="button" x-ref="trigger" x-on:click="open = true; $nextTick(() => $refs.term.focus())"
             class="flex h-10 w-full items-center gap-2.5 rounded-lg border border-gray-200 bg-gray-50 px-3.5 text-left text-theme-sm text-gray-400 transition hover:border-gray-300 hover:bg-white dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-gray-700"
             aria-label="Search (Ctrl K)">
         <x-icon name="search" class="size-4" />
-        <span class="hidden flex-1 truncate md:block">Search name, phone or L-2026-…</span>
+        <span class="hidden flex-1 truncate md:block">Search screens, names or references…</span>
         <kbd class="ml-auto hidden rounded border border-gray-200 bg-white px-1.5 py-0.5 font-sans text-[11px] text-gray-500 md:inline dark:border-gray-700 dark:bg-gray-800">Ctrl K</kbd>
     </button>
 
     @teleport('body')
         <div x-show="open" x-cloak x-transition.opacity class="fixed inset-0 z-[10000] flex items-start justify-center bg-gray-900/50 p-4 pt-[10vh] backdrop-blur-[2px]"
-             x-on:keydown.escape.window="open = false" x-on:click.self="open = false" role="dialog" aria-modal="true" aria-label="Search">
-            <div class="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-theme-xl dark:bg-gray-900" x-trap.noscroll="open">
+             x-on:keydown.escape.window="open = false; $nextTick(() => $refs.trigger.focus())" x-on:click.self="open = false" role="dialog" aria-modal="true" aria-label="Search">
+            <div class="flex max-h-[80dvh] w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-white shadow-theme-xl dark:bg-gray-900" x-trap.noscroll="open">
                 <div class="flex items-center gap-3 border-b border-gray-100 px-4 dark:border-gray-800">
                     <x-icon name="search" class="size-5 text-gray-400" />
-                    <input x-ref="term" type="search" wire:model.live.debounce.250ms="term" placeholder="Search leads, contacts, companies and quotations…"
-                           class="h-14 flex-1 border-0 bg-transparent text-theme-sm text-gray-800 placeholder:text-gray-400 focus:ring-0 focus:outline-none dark:text-white"
+                    <input x-ref="term" type="search" wire:model.live.debounce.250ms="term" placeholder="Search screens, people, projects and document references…"
+                           maxlength="160" class="h-14 min-w-0 flex-1 border-0 bg-transparent text-theme-sm text-gray-800 placeholder:text-gray-400 focus:ring-0 focus:outline-none dark:text-white"
                            x-on:keydown.down.prevent="$focus.within($refs.results).first()" autocomplete="off" aria-label="Search">
                     <span wire:loading wire:target="term" class="size-4 animate-spin rounded-full border-2 border-gray-300 border-t-navy-700"></span>
-                    <kbd class="rounded border border-gray-200 px-1.5 py-0.5 text-[11px] text-gray-400 dark:border-gray-700">Esc</kbd>
+                    <button type="button" aria-label="Close search" x-on:click="open = false; $nextTick(() => $refs.trigger.focus())" class="shrink-0 rounded border border-gray-200 px-1.5 py-0.5 text-[11px] text-gray-400 dark:border-gray-700">Esc</button>
                 </div>
 
-                <div x-ref="results" class="max-h-[60vh] overflow-y-auto p-2"
+                <div x-ref="results" class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2"
                      x-on:keydown.down.prevent="$focus.wrap().next()" x-on:keydown.up.prevent="$focus.wrap().previous()">
-                    @if (! $searched)
-                        <p class="px-3 pt-2 pb-1 text-theme-xs font-medium tracking-wide text-gray-400 uppercase">Go to</p>
-                        @foreach (array_filter([
-                            ['Operations', 'dashboard', auth()->user()->can('dashboard.view') ? route('admin.dashboard', ['tab' => 'operations']) : null],
-                            ['Website pages', 'layout', auth()->user()->can('website.edit') ? route('admin.website.pages') : null],
-                            ['Marketing', 'megaphone', auth()->user()->can('social.manage') ? route('admin.marketing.index') : null],
-                            ['My Day', 'sun', auth()->user()->can('leads.view') ? route('admin.dashboard', ['tab' => 'my-day']) : null],
-                            ['Leads', 'users', auth()->user()->can('leads.view') ? route('admin.leads.index') : null],
-                            ['Pipeline', 'kanban', auth()->user()->can('leads.view') ? route('admin.leads.index', ['tab' => 'pipeline']) : null],
-                            ['Contacts', 'contact', Route::has('admin.contacts.index') && auth()->user()->can('contacts.view') ? route('admin.contacts.index') : null],
-                            ['Tasks', 'tasks', Route::has('admin.tasks.index') && auth()->user()->can('leads.view') ? route('admin.tasks.index') : null],
-                            ['Site visits', 'calendar', auth()->user()->can('leads.view') ? route('admin.tasks.index', ['tab' => 'visits']) : null],
-                            ['Quotations', 'quote', Route::has('admin.quotes.index') && auth()->user()->can('quotes.view') ? route('admin.quotes.index') : null],
-                        ], fn ($item) => $item[2] !== null) as [$label, $icon, $url])
-                            <a href="{{ $url }}" wire:navigate x-on:click="open = false" class="flex items-center gap-3 rounded-lg px-3 py-2 text-theme-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-white/5 dark:focus:bg-white/10">
-                                <x-icon :name="$icon" class="size-4 text-gray-400" /> {{ $label }}
+                    @if ($pages->isNotEmpty())
+                        <p class="px-3 pt-2 pb-1 text-theme-xs font-medium tracking-wide text-gray-400 uppercase">Go to · {{ $pages->count() }} screens</p>
+                        @foreach ($pages as $page)
+                            <a href="{{ $page['url'] }}" @unless ($page['fullDocument']) wire:navigate @endunless x-on:click="open = false" class="flex items-center gap-3 rounded-lg px-3 py-2 text-theme-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-white/5 dark:focus:bg-white/10">
+                                <x-icon :name="$page['icon']" class="size-4 text-gray-400" /> {{ $page['label'] }}
                             </a>
                         @endforeach
-                    @else
+                    @endif
+                    @if ($searched)
                         @if ($leads->isNotEmpty())
                             <p class="px-3 pt-2 pb-1 text-theme-xs font-medium tracking-wide text-gray-400 uppercase">Leads</p>
                             @foreach ($leads as $lead)
@@ -102,10 +92,19 @@
                                 </a>
                             @endforeach
                         @endif
-                        @if ($leads->isEmpty() && $contacts->isEmpty() && $companies->isEmpty() && $quotes->isEmpty())
+                        @foreach ($records->groupBy('group') as $group => $matches)
+                            <p class="px-3 pt-3 pb-1 text-theme-xs font-medium tracking-wide text-gray-400 uppercase">{{ $group }}</p>
+                            @foreach ($matches as $match)
+                                <a href="{{ $match['url'] }}" wire:navigate x-on:click="open = false" class="block rounded-lg px-3 py-2 hover:bg-gray-50 focus:bg-gray-100 focus:outline-none dark:hover:bg-white/5 dark:focus:bg-white/10">
+                                    <span class="block truncate text-theme-sm font-medium text-gray-800 dark:text-white/90">{{ $match['label'] }}</span>
+                                    <span class="block truncate text-theme-xs text-gray-500">{{ $match['detail'] }}</span>
+                                </a>
+                            @endforeach
+                        @endforeach
+                        @if ($pages->isEmpty() && $leads->isEmpty() && $contacts->isEmpty() && $companies->isEmpty() && $quotes->isEmpty() && $records->isEmpty())
                             <div class="px-3 py-10 text-center">
                                 <p class="text-theme-sm text-gray-600 dark:text-gray-400">Nothing found for “{{ $term }}”.</p>
-                                <p class="mt-1 text-theme-xs text-gray-400">Try a phone number in any format, part of a name, a lead reference or a quotation number.</p>
+                                <p class="mt-1 text-theme-xs text-gray-400">Try a screen name, phone number, project code, lead reference, invoice, receipt or quotation number.</p>
                             </div>
                         @endif
                     @endif

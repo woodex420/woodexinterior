@@ -27,6 +27,7 @@ use App\Livewire\Admin\Crm\CompanyShow;
 use App\Livewire\Admin\Crm\ContactShow;
 use App\Livewire\Admin\Crm\LeadImport;
 use App\Livewire\Admin\Crm\LeadShow;
+use App\Livewire\Admin\Hubs\AccountsHub;
 use App\Livewire\Admin\Hubs\ContactsHub;
 use App\Livewire\Admin\Hubs\DashboardHub;
 use App\Livewire\Admin\Hubs\DocumentsHub;
@@ -128,6 +129,7 @@ Route::get('/sales/tracking/quotes', fn () => redirect()->route('admin.quotes.in
 Route::get('/sales/tracking/invoices', fn () => redirect()->route('admin.invoices.index', ['tab' => 'tracking'], 301))->name('sales.tracking.invoices')->middleware('can:invoices.view');
 Route::get('/clients/{contact}/statement.pdf', ClientStatementController::class)->name('contacts.statement')->middleware('can:invoices.view')->whereNumber('contact');
 Route::get('/contacts/{contact}/data.json', ContactDataExportController::class)->name('contacts.data')->middleware('can:leads.view')->whereNumber('contact');
+Route::livewire('/accounts', AccountsHub::class)->name('accounts.workspace')->middleware('can:accounts.view');
 Route::livewire('/accounts/chart', ChartOfAccounts::class)->name('accounts.chart')->middleware('can:accounts.view');
 Route::livewire('/accounts/journals', JournalsIndex::class)->name('accounts.journals')->middleware('can:accounts.view');
 Route::livewire('/accounts/periods', PeriodsIndex::class)->name('accounts.periods')->middleware('can:accounts.view');

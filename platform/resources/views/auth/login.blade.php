@@ -2,9 +2,18 @@
 
 @section('title', 'Sign in')
 @section('heading', 'Welcome back')
-@section('subheading', 'Sign in to your Woodex workspace.')
+@section('subheading', request()->attributes->get('synthetic_direct_preview') === true ? 'Explore the updated Woodex workspace.' : 'Sign in to your Woodex workspace.')
 
 @section('content')
+    @if (request()->attributes->get('synthetic_direct_preview') === true)
+        <aside class="wx-auth-demo" aria-label="Direct synthetic demo — not production">
+            <div class="wx-auth-demo-heading">Admin demo <span>NOT PRODUCTION</span></div>
+            <p><strong>Sign-in is paused in this isolated demo.</strong></p>
+            <p>Open the updated admin directly. No password or retained browser session is needed.</p>
+            <p>Disposable synthetic data only. Do not enter real customer information or provider credentials. This does not sign you into production.</p>
+        </aside>
+        <a href="{{ route('admin.dashboard', [], false) }}" data-direct-admin class="wx-auth-submit flex h-11 w-full items-center justify-center rounded-lg text-theme-sm font-medium">Open updated admin</a>
+    @else
     @php
         $syntheticPreview = \App\Support\SyntheticPreview::enabled();
         $demoCredentials = \App\Support\SyntheticPreview::credentials();
@@ -54,4 +63,5 @@
         <button type="submit" class="wx-auth-submit flex h-11 w-full items-center justify-center rounded-lg text-theme-sm font-medium">Sign in</button>
     </form>
     <p class="wx-auth-fallback">Having trouble in this window? <a href="{{ route('login') }}" target="_blank" rel="noopener" class="font-medium text-gray-800 underline dark:text-gray-200">Open sign-in in a new tab</a>.</p>
+    @endif
 @endsection

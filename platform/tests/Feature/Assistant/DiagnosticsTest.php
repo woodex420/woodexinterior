@@ -9,19 +9,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-it('adds three permission-scoped diagnostics without removing the original nine questions', function () {
+it('adds four permission-scoped diagnostics without removing the original nine questions', function () {
     $owner = $this->userWithRole('owner');
     $support = $this->userWithRole('support');
-    expect(array_column(Assistant::QUESTIONS, 'id'))->toHaveCount(12)->toContain(
+    expect(array_column(Assistant::QUESTIONS, 'id'))->toHaveCount(13)->toContain(
         'bills_to_pay', 'overdue_invoices', 'due_this_week', 'collected_this_month', 'follow_ups_due',
-        'new_enquiries', 'quotes_waiting', 'tasks_overdue', 'milestones_due', 'runtime_diagnostics', 'connection_diagnostics', 'website_diagnostics',
+        'new_enquiries', 'quotes_waiting', 'tasks_overdue', 'milestones_due', 'runtime_diagnostics', 'connection_diagnostics', 'website_diagnostics', 'enquiry_diagnostics',
     );
-    expect(array_column(Assistant::questionsFor($support), 'id'))->not->toContain('runtime_diagnostics', 'connection_diagnostics', 'website_diagnostics');
-    foreach (['runtime_diagnostics', 'connection_diagnostics', 'website_diagnostics'] as $question) {
+    expect(array_column(Assistant::questionsFor($support), 'id'))->not->toContain('runtime_diagnostics', 'connection_diagnostics', 'website_diagnostics', 'enquiry_diagnostics');
+    foreach (['runtime_diagnostics', 'connection_diagnostics', 'website_diagnostics', 'enquiry_diagnostics'] as $question) {
         expect(app(Assistant::class)->ask($question, $support)->refused)->toBeTrue();
     }
     Livewire::actingAs($owner)->test(AssistantDrawer::class)->call('askChip', 'runtime_diagnostics')
@@ -109,4 +110,14 @@ it('offers permission-scoped website findings and recommendations without leakin
     } finally {
         File::deleteDirectory($directory);
     }
+});
+
+it('diagnoses enquiry capture without sending messages or exposing customer details', function () {
+    Http::preventStrayRequests();
+    Notification::fake();
+    $owner = $this->userWithRole('owner');
+    $answer = app(Assistant::class)->ask('contact form not saving', $owner);
+    expect(json_encode($answer))->toContain('Enquiry diagnostics', 'last 7 days', 'no repair or live-site test', 'your own notification inbox');
+    Notification::assertNothingSent();
+    Http::assertNothingSent();
 });

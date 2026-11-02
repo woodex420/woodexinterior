@@ -1,5 +1,15 @@
 # Woodex OS: build state
 
+## Latest — revision106: direct synthetic admin and verified workflow repairs
+
+- [Report](../docs/audit/106_DIRECT_SYNTHETIC_ADMIN_AND_REPAIRS_2026-11-03.md) / [canonical queue](../ox-pending.md). Actual105 sign-in failed; transparent welcome now pauses login and offers explicitly isolated direct synthetic access. No production auth bypass.
+- Three Accounts front doors/all original URLs retained; iframe-safe vendor/project-cost/Contact enquiry actions; authorised screen/record search; duplicate-header manual review; owner-only missing-default restore **paused**. Original9 Assistant queries plus4 diagnostics. Bounded native Chat windows/drafts tested on both650-message surfaces.
+- **2,028 tests /11,277 assertions PASS239.58s**, full app PHPStan0, Pint/build,61 Node checks and16 cookie-stripped browser checks. Additional constrained-frame tests verified enquiry→lead/contact/in-app notification, vendor validation/edit/Enter, linked cost save, Accounts tabs and mobile Redirects search. These are isolated checks, not actual Arena-parent/production certification.
+- Archive inspected source-only; no historical import/recovery/provider send. Live Sheets/channel/AI work incomplete; financial reference-only hold/mapping/backup gates retained. Requested repository privacy change waits for completion, not performed.
+- **Not all36 gates complete. Production unchanged. Deployment FINAL / auto-deploy OFF.** Supported local MySQL, installed/restore/staging/exact-release and owner-browser acceptance remain separate.
+
+---
+
 ## Latest — revision105: proxy-safe sign-in quick fix
 
 - [Report](../docs/audit/105_PROXY_SAFE_SIGN_IN_QUICK_FIX_2026-11-03.md): relative validated same-origin POST; Fortify JSON safe relative intended navigation; do not follow proxy-generated absolute redirects. Native authentication/2FA/CSRF retained.

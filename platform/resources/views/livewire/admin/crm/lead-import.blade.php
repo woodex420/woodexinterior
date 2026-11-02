@@ -26,7 +26,7 @@
 
     <x-admin.card class="mb-5">
         <h2 class="mb-1 text-theme-base font-medium text-gray-900 dark:text-white">1 · Choose the sheet</h2>
-        <p class="mb-4 text-theme-xs text-gray-500">UTF-8 CSV, up to 5 MB and 5,000 rows. Dates must look like 05/01/2025 (day/month/year).</p>
+        <p class="mb-4 text-theme-xs text-gray-500">UTF-8 CSV, up to 5 MB, 5,000 rows and 200 columns. From Google Sheets, download the current sheet as CSV; review each year separately. This does not connect or sync a Google account. Dates must look like 05/01/2025 (day/month/year).</p>
         <input type="file" wire:model="file" accept=".csv,text/csv,text/plain" class="wx-input h-auto py-2.5" aria-label="Lead sheet CSV">
         @error('file') <p class="mt-2 text-theme-xs text-error-600">{{ $message }}</p> @enderror
         <div wire:loading wire:target="file" class="mt-2 text-theme-xs text-gray-500">Reading the sheet…</div>
@@ -43,6 +43,14 @@
         <x-admin.card class="mb-5">
             <h2 class="mb-1 text-theme-base font-medium text-gray-900 dark:text-white">2 · Match the columns</h2>
             <p class="mb-4 text-theme-xs text-gray-500">Headings are pre-matched where the sheet gives them away — check each one. Status is optional; it is kept as a note on the lead, not as a stage.</p>
+
+            @if ($headingsForReview !== [])
+                <div class="mb-4 rounded-xl border border-warning-200 bg-warning-50 p-4 text-theme-sm dark:bg-warning-500/10">
+                    <p class="font-medium">Duplicate or blank headings need your review</p>
+                    <p class="mt-1">Each has its original column number: {{ implode(', ', $headingsForReview) }}. Values are kept separately, never merged or overwritten. Choose the intended column below; unmatched columns remain notes.</p>
+                    <label class="mt-3 flex items-start gap-2"><input type="checkbox" wire:model.live="headingsReviewed" class="mt-1">I checked the original sheet positions and reviewed the column mapping.</label>
+                </div>
+            @endif
 
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 @foreach ($canonical as $target)

@@ -117,10 +117,8 @@
                     </div>
                 </div>
 
-                <div class="min-h-0 flex-1 space-y-3 wx-message-canvas overflow-y-auto p-4" id="thread" x-data="{ pinned: true }" x-init="$nextTick(() => $el.scrollTop = $el.scrollHeight)" x-on:scroll="pinned = $el.scrollHeight - $el.clientHeight - $el.scrollTop < 80" x-on:chat-scroll.window="if ($event.detail.reset) pinned = true; if (pinned) $nextTick(() => $el.scrollTop = $el.scrollHeight)" role="log" aria-label="Conversation messages">
-                    @if ($hasEarlier)
-                        <div class="mb-4 text-center">@if ($historyLimit < 600)<button type="button" wire:click="loadEarlier" x-on:click="pinned = false" class="wx-history-button">Load earlier messages</button>@else<span class="text-theme-xs text-gray-500">Showing latest 600 messages</span>@endif</div>
-                    @endif
+                <div class="min-h-0 flex-1 space-y-3 wx-message-canvas overflow-y-auto p-4" id="thread" x-data="{ pinned: true }" x-init="$nextTick(() => $el.scrollTop = $el.scrollHeight)" x-on:scroll="pinned = $el.scrollHeight - $el.clientHeight - $el.scrollTop < 80" x-on:chat-scroll.window="if ($event.detail.reset) pinned = true; if (pinned) $nextTick(() => $el.scrollTop = $el.scrollHeight)" x-on:chat-history-page.window="pinned = false; $nextTick(() => $el.scrollTop = 0)" role="log" aria-label="Conversation messages">
+                    <x-admin.conversation-history :has-earlier="$hasEarlier" :older-window="$historyBeforeId !== null" :history-limit="$historyLimit" />
                     @php($lastDay = null)
                     @foreach ($thread as $message)
                         @if ($lastDay !== $message->created_at->format('Y-m-d'))

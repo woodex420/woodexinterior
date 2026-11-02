@@ -21,6 +21,10 @@
             try { if (localStorage.getItem('wx.sidebar') === 'collapsed') document.documentElement.dataset.sidebar = 'collapsed'; } catch (e) {}
         })();
     </script>
+    @if (request()->attributes->get('synthetic_direct_preview') === true)
+        <meta name="woodex-demo-context" content="{{ request()->attributes->get('synthetic_demo_context') }}">
+        <script type="module" src="{{ asset('__sandbox/direct-context.js') }}"></script>
+    @endif
     @vite(['resources/css/admin.css', 'resources/js/admin.js'])
     @livewireStyles
 </head>
@@ -43,6 +47,13 @@
             <x-admin.header :title="$title ?? null" />
 
             <main id="main" class="mx-auto w-full max-w-(--breakpoint-2xl) flex-1 p-4 md:p-6">
+                @if (request()->attributes->get('synthetic_direct_preview') === true)
+                    <aside data-direct-preview-banner role="note" class="mb-5 rounded-xl border border-warning-500/40 bg-warning-50 px-4 py-3 text-theme-sm text-warning-700 dark:bg-warning-500/10">
+                        <strong>Admin demo · no sign-in · NOT PRODUCTION</strong>
+                        <p class="mt-1">Disposable synthetic data only. Do not enter real customer data or provider credentials. Production authentication is unchanged.</p>
+                        <a href="{{ route('login', [], false) }}" class="mt-2 inline-block font-medium underline">View transparent welcome page</a>
+                    </aside>
+                @endif
                 @if (session('warning'))
                     <div class="mb-5 flex items-start gap-3 rounded-xl border border-warning-500/30 bg-warning-50 px-4 py-3 text-warning-700 dark:bg-warning-500/10">
                         <x-icon name="alert" class="mt-0.5 size-5 shrink-0" />

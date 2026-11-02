@@ -66,7 +66,8 @@ it('consolidates the sidebar to the confirmed P10.1 map', function () {
     // **Trial balance** (part 2) and the money-out trio **Profit & loss / Payables / Income & expenses**
     // (slice I, 26 Oct). The exact number is asserted on purpose — a screen cannot join or leave the sidebar
     // without a test.
-    expect($live)->toHaveCount(48);
+    // Six ledger tools now share one front door; every original URL remains available.
+    expect($live)->toHaveCount(43);
     expect(collect($groups['Projects']['items'])->pluck('route')->all())->toBe(['admin.projects.index', 'admin.projects.board', 'admin.projects.costs', 'admin.projects.portal', 'admin.projects.handovers']);
 });
 

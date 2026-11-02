@@ -158,3 +158,34 @@ it('refuses to match one sheet column twice', function () {
         ->assertHasErrors('map')
         ->assertSet('report', null);
 });
+
+it('preserves duplicate and blank heading positions and requires explicit mapping review', function () {
+    $this->actingAs($this->userWithRole('owner'));
+    $csv = leadImportSheetCsv(
+        ['Sr', 'Date', 'Name', 'Name', 'Contact', '', 'Name [column 3]'],
+        [[1, '05/01/2025', 'Unselected source name', 'Synthetic Chosen Person', '0321 5550199', 'Blank-heading value', 'Literal collision value']],
+    );
+    $screen = Livewire::test(LeadImport::class)
+        ->set('file', UploadedFile::fake()->createWithContent('review.csv', $csv))->assertHasNoErrors()
+        ->assertSet('map.Name', '')
+        ->set('map.Name', 'Name [column 4]')
+        ->set('headingsForReview', [])
+        ->call('dryRun')->assertHasErrors('import')->assertSet('report', null);
+    expect($screen->get('columns'))->toHaveCount(7)
+        ->and(array_unique($screen->get('columns')))->toHaveCount(7)
+        ->and(Lead::query()->count())->toBe(0);
+    $screen->set('headingsReviewed', true)->call('dryRun')->assertHasNoErrors()
+        ->assertDontSee('Synthetic Chosen Person')->call('apply')->assertHasNoErrors()->assertSet('applied', true);
+    $lead = Lead::query()->with('contact')->sole();
+    expect($lead->contact->name)->toBe('Synthetic Chosen Person')
+        ->and($lead->message)->toContain('Unselected source name', 'Blank-heading value', 'Literal collision value')
+        ->and($lead->created_at->format('Y-m-d'))->toBe('2025-01-05');
+});
+
+it('rejects a mapped heading that is absent from the stored source', function () {
+    $this->actingAs($this->userWithRole('owner'));
+    $csv = leadImportSheetCsv(['Sr', 'Date', 'Name', 'Contact'], [[1, '05/01/2025', 'Synthetic Person', '0321 5550198']]);
+    Livewire::test(LeadImport::class)->set('file', UploadedFile::fake()->createWithContent('review.csv', $csv))
+        ->set('map.Name', 'Not in source')->call('dryRun')->assertHasErrors('import')->assertSet('report', null);
+    $this->assertDatabaseCount('leads', 0);
+});

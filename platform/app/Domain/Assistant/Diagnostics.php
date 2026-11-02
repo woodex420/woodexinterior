@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Assistant;
 
+use App\Domain\Crm\Enums\LeadSource;
+use App\Domain\Crm\Models\Lead;
+use App\Domain\System\Models\AlertRule;
+use App\Domain\System\Models\Automation;
 use App\Domain\Website\Seo\SearchMetadataAudit;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -56,6 +60,34 @@ final class Diagnostics
         }
 
         return new AssistantAnswer('Website diagnostics — read-only. '.$audit['counts']['flagged'].' pages have review findings. Open SEO → Canonical & social; no pages edited or published.', $rows, 'Local published HTML metadata counts, not a live crawl, Search Console or search-ranking measurement. No URLs fetched; owner review required before fixes.');
+    }
+
+    public function enquiries(User $user): AssistantAnswer
+    {
+        abort_unless($user->can('system.health'), 403);
+        $since = now()->subDays(7);
+        $count = $user->can('leads.view') ? Lead::query()->visibleTo($user)->where('source', LeadSource::WebsiteForm->value)->where('created_at', '>=', $since)->count() : null;
+        $enabled = Automation::query()->where('key', 'woodex:new-lead-alert')->value('is_enabled') ?? Automation::defaultEnabled('woodex:new-lead-alert');
+        $overrides = AlertRule::query()->where('event', 'lead.new')->where('is_active', true)->count();
+        $alerts = $user->notifications()->where('created_at', '>=', $since)
+            ->whereIn('data->kind', ['lead.new', 'lead.returning'])->count();
+        $rows = [
+            ['label' => 'Visible website-form leads · last 7 days', 'detail' => ($count === null ? 'Not available to your role' : (string) $count).'. A zero count is not proof the live endpoint was tested; imports and chat are separate sources.', 'url' => route('admin.leads.index')],
+            ['label' => 'New-enquiry alerts', 'detail' => $enabled ? 'Automation switch on. Routing and transport can still prevent an alert.' : 'Automation switch paused. Lead capture can still succeed without an alert.', 'url' => route('admin.automation.index')],
+            ['label' => 'Alert routing overrides', 'detail' => $overrides.' active rules. Rules may intentionally restrict recipients or channels; no routing changed.', 'url' => route('admin.system.alert-rules')],
+            ['label' => 'Your in-app lead alerts · last 7 days', 'detail' => $alerts.'. This is only your own notification inbox, not proof of email or Telegram delivery.', 'url' => route('admin.notifications')],
+            ['label' => 'Transport distinction', 'detail' => 'Lead alerts run after the HTTP response. Outbound webhook and automation jobs need a running worker. No test enquiry, job, email or provider message was sent.', 'url' => route('admin.system.health')],
+        ];
+        // Links obey their own screen permissions even when a custom health-only role runs this probe.
+        $permissions = ['leads.view', 'automation.manage', 'settings.manage', null, 'system.health'];
+        foreach ($rows as $index => &$row) {
+            if ($permissions[$index] !== null && ! $user->can($permissions[$index])) {
+                $row['url'] = route('admin.system.health');
+            }
+        }
+        unset($row);
+
+        return new AssistantAnswer('Enquiry diagnostics — read-only. Capture, in-app alerts and external delivery are separate checks; no repair or live-site test was executed.', $rows, 'Permission-scoped database counts, your own notification inbox and the alert switch/rule configuration. No customer details, credentials or external requests.');
     }
 
     public function connections(User $user): AssistantAnswer

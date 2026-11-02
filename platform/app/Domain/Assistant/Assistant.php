@@ -42,6 +42,7 @@ final class Assistant
      * @var list<Question>
      */
     public const QUESTIONS = [
+        ['id' => 'enquiry_diagnostics', 'label' => 'Check enquiry capture and alerts', 'permission' => 'system.health', 'keywords' => ['enquiry health', 'enquiry diagnostics', 'contact form', 'send enquiry', 'lead capture', 'missing enquiry', 'lead notification']],
         ['id' => 'website_diagnostics', 'label' => 'Check website search metadata', 'permission' => 'website.edit', 'keywords' => ['website diagnostics', 'seo diagnostics', 'search metadata', 'website seo', 'canonical health']],
         ['id' => 'runtime_diagnostics', 'label' => 'Check PHP, database and sign-in health', 'permission' => 'system.health', 'keywords' => ['runtime diagnostics', 'diagnose runtime', 'php engine', 'database engine', 'system health']],
         ['id' => 'connection_diagnostics', 'label' => 'Check connection setup safely', 'permission' => 'integrations.manage', 'keywords' => ['connectivity', 'connection status', 'connection setup', 'telegram status', 'provider status']],
@@ -79,6 +80,7 @@ final class Assistant
         }
 
         return match ($question['id']) {
+            'enquiry_diagnostics' => app(Diagnostics::class)->enquiries($user),
             'website_diagnostics' => app(Diagnostics::class)->website($user),
             'runtime_diagnostics' => app(Diagnostics::class)->runtime($user),
             'connection_diagnostics' => app(Diagnostics::class)->connections($user),

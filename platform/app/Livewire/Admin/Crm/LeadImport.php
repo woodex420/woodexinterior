@@ -58,6 +58,11 @@ class LeadImport extends Component
     /** @var list<string> headings found in the uploaded sheet */
     public array $columns = [];
 
+    /** @var list<string> Duplicate or blank headings, labelled by their original column position. */
+    public array $headingsForReview = [];
+
+    public bool $headingsReviewed = false;
+
     /** @var array<string, string> canonical heading → sheet column ('' = not matched) */
     public array $map = ['Sr' => '', 'Date' => '', 'Name' => '', 'Contact' => '', 'Status' => ''];
 
@@ -89,6 +94,7 @@ class LeadImport extends Component
     public function updatedFile(): void
     {
         $this->resetRun();
+        $this->reset('headingsForReview', 'headingsReviewed');
         $this->columns = [];
         $this->map = ['Sr' => '', 'Date' => '', 'Name' => '', 'Contact' => '', 'Status' => ''];
         $this->rowCount = 0;
@@ -113,6 +119,7 @@ class LeadImport extends Component
         Storage::disk('local')->putFileAs('lead-imports', $this->file, $token.'.csv');
         $this->stored = $token;
         $this->columns = $sheet['header'];
+        $this->headingsForReview = $sheet['review'];
         $this->rowCount = count($sheet['rows']);
         $this->map = $this->guessMap($sheet['header']);
         $this->prefillBatch($sheet['rows']);
@@ -150,7 +157,7 @@ class LeadImport extends Component
     public function startOver(): void
     {
         $this->deleteStored();
-        $this->reset('file', 'columns', 'rowCount');
+        $this->reset('file', 'columns', 'rowCount', 'headingsForReview', 'headingsReviewed');
         $this->map = ['Sr' => '', 'Date' => '', 'Name' => '', 'Contact' => '', 'Status' => ''];
         $this->resetRun();
     }
@@ -210,7 +217,7 @@ class LeadImport extends Component
     /**
      * Reads the sheet the same way the importer does (BOM-tolerant, blank lines skipped).
      *
-     * @return array{header: list<string>, rows: list<array<string, string>>}
+     * @return array{header: list<string>, rows: list<array<string, string>>, review: list<string>}
      */
     private function readSheet(string $path): array
     {
@@ -225,6 +232,7 @@ class LeadImport extends Component
 
         $header = null;
         $rows = [];
+        $review = [];
         try {
             while (($values = fgetcsv($handle, escape: '')) !== false) {
                 $values = array_map(fn (?string $value): string => trim((string) preg_replace('/^\xEF\xBB\xBF/', '', $value ?? '')), $values);
@@ -232,10 +240,26 @@ class LeadImport extends Component
                     continue;
                 }
                 if ($header === null) {
-                    if (count(array_unique($values)) !== count($values)) {
-                        throw ValidationException::withMessages(['import' => 'Duplicate column headings require review.']);
+                    if (count($values) > 200) {
+                        throw ValidationException::withMessages(['import' => 'Sheets are limited to 200 columns.']);
                     }
-                    $header = $values;
+                    $normalised = array_map(fn (string $value): string => mb_strtolower($value), $values);
+                    $counts = array_count_values($normalised);
+                    $reserved = $normalised;
+                    $header = [];
+                    foreach ($values as $position => $value) {
+                        if ($value === '' || $counts[$normalised[$position]] > 1) {
+                            $label = ($value === '' ? 'Unnamed' : $value).' [column '.($position + 1).']';
+                            while (in_array(mb_strtolower($label), $reserved, true)) {
+                                $label .= ' [review]';
+                            }
+                            $reserved[] = mb_strtolower($label);
+                            $review[] = $label;
+                            $header[] = $label;
+                        } else {
+                            $header[] = $value;
+                        }
+                    }
 
                     continue;
                 }
@@ -255,7 +279,7 @@ class LeadImport extends Component
             throw ValidationException::withMessages(['import' => 'No headings and data rows were found in this sheet.']);
         }
 
-        return ['header' => $header, 'rows' => $rows];
+        return ['header' => $header, 'rows' => $rows, 'review' => $review];
     }
 
     /**
@@ -308,6 +332,13 @@ class LeadImport extends Component
     private function buildCanonical(string $original): string
     {
         $sheet = $this->readSheet($original);
+        // Re-read the stored source, not the browser's mutable display metadata.
+        if ($sheet['review'] !== [] && ! $this->headingsReviewed) {
+            throw ValidationException::withMessages(['import' => 'Review the position-labelled headings, choose the intended columns, and confirm the heading review.']);
+        }
+        if (array_diff(array_filter($this->map), $sheet['header']) !== []) {
+            throw ValidationException::withMessages(['import' => 'A matched column is not in this sheet. Match the columns again.']);
+        }
 
         $consumed = array_values(array_filter($this->map));
         $extras = [];
@@ -315,7 +346,11 @@ class LeadImport extends Component
             if (in_array($column, $consumed, true)) {
                 continue;
             }
-            $extras[$column] = in_array($column, self::CANONICAL, true) ? 'Sheet '.$column : $column;
+            $label = in_array($column, self::CANONICAL, true) ? 'Sheet '.$column : $column;
+            while (in_array($label, [...self::CANONICAL, ...array_values($extras)], true)) {
+                $label .= ' [extra]';
+            }
+            $extras[$column] = $label;
         }
 
         $handle = tmpfile();
