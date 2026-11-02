@@ -32,6 +32,7 @@ export default defineConfig({
             input: [
                 'resources/css/admin.css',
                 'resources/js/admin.js',
+                'resources/js/auth.js',
                 'resources/css/site.css',
                 'resources/js/site.js',
             ],

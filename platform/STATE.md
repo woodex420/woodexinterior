@@ -1,5 +1,17 @@
 # Woodex OS: build state
 
+## Latest — revision103: vector brand, glass login and isolated testing
+
+- [Current master queue](../ox-pending.md): **36 gates**. [Revision103 evidence](../docs/audit/103_VECTOR_BRAND_GLASS_LOGIN_AND_DIAGNOSTICS_2026-11-03.md) supersedes proposed-only status of these slices; older entries below are historical.
+- Approved filled W + gold-dot SVG across shared OS/Interior UI,142 public pages,404/builder/Studio/favicons. Original glass login over existing site photograph; gated visible/pre-filled test credentials; normal Fortify/CSRF/session authentication retained. Saved/frozen/custom PDF history untouched.
+- Fresh private synthetic SQLite DB:104 existing migrations/reference seeds, owner/manager/accountant accounts, non-sending mail and no worker. Prior preview DB/environment retained. No production/chat DB change or import.
+- First slices implemented: read-only SEO canonical/social/JSON-LD tab; two permission-safe Assistant diagnostics preserving nine queries; sidebar client filter/neutral stats. No provider call, executable fix or publishing action.
+- Final local acceptance: **1,964 tests /11,035 assertions PASS225.41s**, PHPStan0, Pint12, build,92 release +55 UI/auth source checks and27 browser checks. New exact-SHA hosted MySQL CI is separate; actual Arena owner/proxy confirmation and broader backlog/release acceptance remain open.
+- **Production unchanged; deployment FINAL; auto-deploy OFF.** No provider send, merge or deployment. See current master/report before older continuation notes.
+
+---
+
+
 ## Latest continuation — revision102: preview login, workbook review and ox-pending
 
 - Current master queue: [ox-pending](../ox-pending.md); 34 tracked gates, including earlier holds. V02 is now implemented101, not an incomplete workspace; V03 delivery/budget acceptance remains partial.

@@ -1,4 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#0a0f1e"/>
-  <text x="16" y="23" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="19" fill="#e9c97b" text-anchor="middle">W</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 68 64" color="#17212d" role="img" aria-label="Woodex"><title>Woodex — filled W and gold dot</title><path d="M7 12h9l7 24 7-24h8l7 24 7-24h9L50 50H40L34 29 28 50H18Z" fill="currentColor"/><circle cx="34" cy="55" r="3" fill="#b49a73"/></svg>

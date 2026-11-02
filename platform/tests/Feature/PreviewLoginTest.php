@@ -41,6 +41,15 @@ it('never labels a non-sqlite runtime as the synthetic preview', function () {
     } finally {
         config(['database.default' => $connection]);
     }
+    $sqlite = config('database.connections.sqlite');
+    try {
+        foreach ([['driver' => 'mysql'], ['url' => 'mysql://synthetic.invalid/never-connect'], ['read' => ['database' => 'ordinary.sqlite']], ['write' => ['database' => 'ordinary.sqlite']]] as $override) {
+            config(['database.default' => 'sqlite', 'database.connections.sqlite' => array_replace($sqlite, $override)]);
+            expect(SyntheticPreview::enabled())->toBeFalse()->and(SyntheticPreview::credentials())->toBeNull();
+        }
+    } finally {
+        config(['database.default' => $connection, 'database.connections.sqlite' => $sqlite]);
+    }
 });
 
 it('rejects an incorrect password without flashing the password', function () {

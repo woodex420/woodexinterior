@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Admin\Website;
 
 use App\Domain\Website\Seo\FileAudit;
+use App\Domain\Website\Seo\SearchMetadataAudit;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
@@ -29,6 +30,13 @@ class SeoOverviewIndex extends Component
 
     public string $search = '';
 
+    public string $tab = 'listings';
+
+    public function setTab(string $tab): void
+    {
+        $this->tab = $tab === 'metadata' ? 'metadata' : 'listings';
+    }
+
     public function mount(): void
     {
         abort_unless($this->user()->can('website.edit'), 403);
@@ -52,7 +60,10 @@ class SeoOverviewIndex extends Component
             ->sortBy('url')
             ->values();
 
+        $metadata = $this->tab === 'metadata' ? app(SearchMetadataAudit::class)->handle() : null;
+
         return view('livewire.admin.website.seo-overview-index', [
+            'metadata' => $metadata,
             'rows' => $rows,
             'counts' => [
                 'files' => $audit['counts']['files'],

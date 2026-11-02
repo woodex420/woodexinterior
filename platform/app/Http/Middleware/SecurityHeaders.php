@@ -70,7 +70,8 @@ final class SecurityHeaders
 
         // OAuth callbacks carry short-lived authorization codes in the query string. Never forward them as Referer.
         $response->headers->set('Referrer-Policy', $request->routeIs('google.*') ? 'no-referrer' : 'strict-origin-when-cross-origin');
-        if ($request->routeIs('google.*')) {
+        // Auth pages can include reset tokens and opted-in synthetic demo credentials: never cache them.
+        if ($request->routeIs('google.*', 'login', 'login.store', 'password.*', 'two-factor.*')) {
             $response->headers->set('Cache-Control', 'no-store, private');
         }
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');

@@ -6,11 +6,48 @@
         </x-slot:actions>
     </x-admin.page-header>
 
+    <div class="mb-5 flex flex-wrap gap-2 border-b border-gray-200 pb-3 dark:border-gray-700" aria-label="SEO audit view">
+        <x-admin.button variant="{{ $tab === 'listings' ? 'primary' : 'secondary' }}" wire:click="setTab('listings')" aria-pressed="{{ $tab === 'listings' ? 'true' : 'false' }}">Search listings</x-admin.button>
+        <x-admin.button variant="{{ $tab === 'metadata' ? 'primary' : 'secondary' }}" wire:click="setTab('metadata')" aria-pressed="{{ $tab === 'metadata' ? 'true' : 'false' }}">Canonical &amp; social</x-admin.button>
+    </div>
+
+    @if ($tab === 'metadata' && $metadata !== null)
+        <div class="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+            <x-admin.stat label="Files inspected" :value="$metadata['counts']['files']" icon="file" />
+            <x-admin.stat label="Canonical findings" :value="$metadata['counts']['canonical']" icon="link" tone="warning" />
+            <x-admin.stat label="Social preview gaps" :value="$metadata['counts']['social']" icon="globe" tone="warning" />
+            <x-admin.stat label="JSON-LD findings" :value="$metadata['counts']['jsonld']" icon="file" tone="warning" />
+        </div>
+        <x-admin.card title="Canonical & social metadata" description="Read-only checks against the configured public website, not the preview host. No URLs are fetched, pages edited or indexing rules removed. Cross-page canonicals and noindex can be intentional. JSON-LD checks syntax only.">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-theme-sm">
+                    <thead><tr class="border-b border-gray-200 text-theme-xs text-gray-500 dark:border-gray-700"><th class="px-3 py-3">Page</th><th class="px-3 py-3">Canonical</th><th class="px-3 py-3">Review findings</th></tr></thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @forelse ($metadata['entries'] as $entry)
+                            <tr wire:key="metadata-{{ $entry['path'] }}" class="align-top">
+                                <td class="px-3 py-4"><a href="{{ route('admin.website.builder', ['path' => $entry['path']]) }}" class="font-medium underline">{{ $entry['url'] }}</a></td>
+                                <td class="max-w-xs break-all px-3 py-4 text-theme-xs">{{ $entry['canonical'] ?: 'Not declared' }}</td>
+                                <td class="min-w-64 px-3 py-4">
+                                    @forelse ($entry['issues'] as $issue)
+                                        <p class="mb-2 text-theme-xs text-gray-700 dark:text-gray-300">{{ $issue['message'] }}</p>
+                                    @empty
+                                        <span class="text-theme-xs text-success-700 dark:text-success-500">No metadata findings in these checks</span>
+                                    @endforelse
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="3" class="p-5">No published HTML files available to inspect.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </x-admin.card>
+    @else
     <div class="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
         <x-admin.stat label="Pages" :value="$counts['files']" icon="layout" />
         <x-admin.stat label="With findings" :value="$counts['flagged']" icon="alert" />
-        <x-admin.stat label="No description" :value="$counts['missing_description']" icon="alert" color="warning" />
-        <x-admin.stat label="No title" :value="$counts['missing_title']" icon="alert" color="warning" />
+        <x-admin.stat label="No description" :value="$counts['missing_description']" icon="alert" tone="warning" />
+        <x-admin.stat label="No title" :value="$counts['missing_title']" icon="alert" tone="warning" />
     </div>
 
     <div class="mb-4 flex flex-wrap items-center gap-2">
@@ -85,4 +122,5 @@
             </table>
         </div>
     </x-admin.card>
+    @endif
 </div>

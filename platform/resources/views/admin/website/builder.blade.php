@@ -14,7 +14,7 @@
 <!-- ================= SESSION ENDED ================= -->
 <div id="session" class="login" hidden>
   <div class="login-card">
-    <img src="/assets/img/img-f941b08b9510.png" alt="Woodex" width="90">
+    <img src="/assets/brand/woodex-mark.svg" alt="Woodex" width="90">
     <h1>Session ended</h1>
     <p>Your Woodex OS session ended. Sign in again — this tab keeps your unsaved edits.</p>
     <a class="btn btn-pri" href="/admin/login">Sign in to Woodex OS</a>

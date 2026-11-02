@@ -2653,3 +2653,8 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
 .wx-skin-navy h1,.wx-skin-navy h2,.wx-skin-navy h3,.wx-skin-navy h4{color:#fff}
 .wx-skin-navy p,.wx-skin-navy li{color:rgba(244,239,231,.76)}
 .wx-skin-navy a:not([class*="btn"]){color:#e6cfa5}
+
+/* Approved filled vector mark: preserve charcoal/gold on light and dark headers. */
+body[data-page] .site-header img.brand-mark,
+.site-header img.brand-mark { filter:none; width:38px; height:36px; flex-basis:38px; padding:2px; border-radius:8px; background:#fff; }
+@media(max-width:600px){body[data-page] .site-header img.brand-mark{width:34px;height:32px;flex-basis:34px}}

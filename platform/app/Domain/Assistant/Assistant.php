@@ -26,8 +26,8 @@ use Illuminate\Support\Str;
  * Slice M: the admin assistant. A small, fixed set of **read-only questions**, each answered by the same
  * query its screen uses, with the records it read cited underneath. There is deliberately no free-form
  * generation: in keyless mode (no AI provider configured) these deterministic answers are the whole
- * product, and a question outside the whitelist says so instead of guessing. If an AI key ever arrives
- * it may rephrase a headline — the rows and the numbers stay exactly these.
+ * product, and a question outside the whitelist says so instead of guessing. No external provider is
+ * integrated. Any future provider must satisfy the approved aggregate/model/budget/retention gates.
  *
  * @phpstan-type Question array{id: string, label: string, permission: string, keywords: list<string>}
  */
@@ -42,6 +42,8 @@ final class Assistant
      * @var list<Question>
      */
     public const QUESTIONS = [
+        ['id' => 'runtime_diagnostics', 'label' => 'Check PHP, database and sign-in health', 'permission' => 'system.health', 'keywords' => ['runtime diagnostics', 'diagnose runtime', 'php engine', 'database engine', 'system health']],
+        ['id' => 'connection_diagnostics', 'label' => 'Check connection setup safely', 'permission' => 'integrations.manage', 'keywords' => ['connectivity', 'connection status', 'connection setup', 'telegram status', 'provider status']],
         ['id' => 'bills_to_pay', 'label' => 'What do we owe suppliers?', 'permission' => 'accounts.view', 'keywords' => ['bill', 'payable', 'supplier', 'we owe', 'to pay']],
         ['id' => 'overdue_invoices', 'label' => 'What is overdue?', 'permission' => 'invoices.view', 'keywords' => ['overdue', 'late invoice', 'unpaid', 'outstanding']],
         ['id' => 'due_this_week', 'label' => 'What is due this week?', 'permission' => 'invoices.view', 'keywords' => ['due this week', 'due soon', 'coming due', 'due date']],
@@ -76,6 +78,8 @@ final class Assistant
         }
 
         return match ($question['id']) {
+            'runtime_diagnostics' => app(Diagnostics::class)->runtime($user),
+            'connection_diagnostics' => app(Diagnostics::class)->connections($user),
             'overdue_invoices' => $this->overdueInvoices(),
             'due_this_week' => $this->dueThisWeek(),
             'collected_this_month' => $this->collectedThisMonth(),

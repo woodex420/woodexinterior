@@ -3,7 +3,7 @@
      x-on:open-assistant.window="open = true; $nextTick(() => $refs.question?.focus())">
     <button type="button" @click="open = true; $nextTick(() => $refs.question?.focus())"
             class="flex size-10 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-white/5"
-            aria-label="Open the assistant" title="Assistant — fixed questions over your records">
+            aria-label="Open the assistant" title="Assistant — records and safe diagnostics">
         <x-icon name="sparkles" class="size-5" />
     </button>
 
@@ -24,7 +24,7 @@
                     <x-icon name="sparkles" class="mt-0.5 size-5 shrink-0 text-gray-400" />
                     <div class="min-w-0 flex-1">
                         <p class="text-theme-sm font-medium text-gray-800 dark:text-white/90">Assistant</p>
-                        <p class="text-theme-xs text-gray-500">Fixed read-only questions over your records — every answer cites the rows it read. No AI key is configured, so the wording is plain and the numbers are exact.</p>
+                        <p class="text-theme-xs text-gray-500">Cited records and permission-safe diagnostics. Read-only recommendations never change settings or send messages. External AI is not connected.</p>
                     </div>
                     <button type="button" @click="open = false" class="flex size-8 shrink-0 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5" aria-label="Close the assistant">
                         <x-icon name="x" class="size-4" />
@@ -56,9 +56,9 @@
                                 <p class="text-theme-sm text-gray-800 dark:text-white/90">{{ $turn['answer']['headline'] }}</p>
                                 @foreach ($turn['answer']['rows'] as $row)
                                     <a href="{{ $row['url'] }}" wire:navigate @click="open = false"
-                                       class="mt-1.5 flex items-baseline justify-between gap-3 rounded-lg px-2 py-1 hover:bg-white dark:hover:bg-white/5">
-                                        <span class="min-w-0 truncate text-theme-sm font-medium text-brand-700 dark:text-brand-300">{{ $row['label'] }}</span>
-                                        <span class="shrink-0 text-theme-xs whitespace-nowrap text-gray-500">{{ $row['detail'] }}</span>
+                                       class="mt-1.5 flex min-w-0 flex-col gap-1 rounded-lg px-2 py-1 hover:bg-white dark:hover:bg-white/5">
+                                        <span class="min-w-0 break-words text-theme-sm font-medium text-brand-700 dark:text-brand-300">{{ $row['label'] }}</span>
+                                        <span class="max-w-full break-words text-theme-xs leading-relaxed text-gray-600 dark:text-gray-400">{{ $row['detail'] }}</span>
                                     </a>
                                 @endforeach
                                 @if ($turn['answer']['source'] !== '')
