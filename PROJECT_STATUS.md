@@ -7,6 +7,7 @@
 - Preview login works through normal authentication, failure feedback, retry and reload. Added opt-in local/testing SQLite identity guidance, default OFF; no password/bypass/account change. 10 new tests /42 assertions PASS; scoped static0/Pint3 PASS; browser login and4 local iframe checks PASS. Actual owner Arena-browser confirmation pending.
 - Both workbook originals privately inspected across all17 tabs; 2026/copied lead records and ambiguous accounting rows are quarantined from any import. Public revision102 contains only sanitized findings/mapping proposals, no workbook data or credentials.
 - Prior exact4cd99c6 hosted41508608055 confirmed SUCCESS; newer102 validation is separate. No workbook import, provider call/message, production write, merge or deployment. Full102 serial native suite: **1,933 tests /10,872 assertions PASS (213.70s)**; build and92 source contracts PASS;24 base +6 login +4 local iframe browser checks PASS.
+- Follow-up choices: separate2025/2026 review (dates unchanged); historical accounts reference-only/no import dry-run; AI may receive approved permission-checked aggregates after model/budget/field-policy approval; one conditional non-sensitive report to the paired owner chat. No external call/send yet.
 - **Deployment last; auto-deploy OFF.** See revision102 and ox-pending before older continuation notes below.
 
 ---
