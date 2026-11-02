@@ -11,7 +11,9 @@ use App\Domain\Accounts\Actions\VoidBill;
 use App\Domain\Accounts\Enums\BillStatus;
 use App\Domain\Accounts\Models\Account;
 use App\Domain\Accounts\Models\Bill;
+use App\Domain\Accounts\Models\BillPayment;
 use App\Domain\Accounts\Models\Vendor;
+use App\Domain\Projects\Models\Project;
 use App\Domain\Sales\Enums\PaymentMethod;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Settings\SalesSettings;
@@ -22,6 +24,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Throwable;
 
@@ -42,6 +45,11 @@ class BillsIndex extends Component
     public string $statusFilter = 'open';
 
     public ?int $vendorFilter = null;
+
+    #[Url(as: 'billProject')]
+    public ?int $projectFilter = null;
+
+    public ?int $projectId = null;
 
     public bool $showForm = false;
 
@@ -107,15 +115,16 @@ class BillsIndex extends Component
 
         $this->editingId = $bill->id;
         $this->vendorId = $bill->vendor_id;
+        $this->projectId = $bill->project_id;
         $this->number = $bill->number;
         $this->billDate = $bill->bill_date->toDateString();
         $this->dueDate = $bill->due_date?->toDateString() ?? '';
-        $this->taxRupees = (string) round($bill->tax_minor / 100, 2);
+        $this->taxRupees = Money::ofMinor($bill->tax_minor)->toDecimalString();
         $this->notes = (string) $bill->notes;
         $this->lines = $bill->items->map(fn ($item): array => [
             'accountId' => $item->account_id,
             'description' => $item->description,
-            'amountRupees' => (string) round($item->amount_minor / 100, 2),
+            'amountRupees' => Money::ofMinor($item->amount_minor)->toDecimalString(),
         ])->values()->all();
         $this->showForm = true;
     }
@@ -193,7 +202,7 @@ class BillsIndex extends Component
         $this->resetValidation();
         $this->payingId = $bill->id;
         $this->payRequestKey = (string) Str::uuid();
-        $this->payAmount = (string) round($bill->balanceMinor() / 100, 2);
+        $this->payAmount = Money::ofMinor($bill->balanceMinor())->toDecimalString();
         $this->payMethod = 'bank_transfer';
         $this->payReference = '';
     }
@@ -274,7 +283,12 @@ class BillsIndex extends Component
 
     public function render(): View
     {
-        $query = Bill::query()->with(['vendor', 'journalEntry']);
+        $this->authorize('accounts.view');
+        if ($this->projectFilter !== null) {
+            $this->authorize('view', Project::withTrashed()->findOrFail($this->projectFilter));
+        }
+        $base = Bill::query()->when($this->projectFilter !== null, fn ($query) => $query->where('project_id', $this->projectFilter));
+        $query = (clone $base)->with(['vendor', 'journalEntry', 'project']);
 
         if ($this->statusFilter === 'open') {
             $query->whereIn('status', [BillStatus::Received, BillStatus::PartiallyPaid]);
@@ -292,11 +306,12 @@ class BillsIndex extends Component
 
         $bills = $query->orderByDesc('bill_date')->orderByDesc('id')->limit(200)->get();
 
-        $open = Bill::query()->whereIn('status', [BillStatus::Received, BillStatus::PartiallyPaid])->get();
+        $open = (clone $base)->whereIn('status', [BillStatus::Received, BillStatus::PartiallyPaid])->get();
         $overdue = $open->filter(fn (Bill $bill): bool => $bill->isOverdue());
 
         return view('livewire.admin.accounts.bills-index', [
             'bills' => $bills,
+            'projects' => $this->user()->can('projects.view') ? Project::withTrashed()->orderBy('code')->get(['id', 'code', 'name', 'deleted_at']) : collect(),
             'vendors' => Vendor::query()->orderBy('name')->get(['id', 'name', 'is_active']),
             'accounts' => Account::query()
                 ->whereIn('type', ['expense', 'asset'])
@@ -307,10 +322,10 @@ class BillsIndex extends Component
             'methods' => PaymentMethod::options(),
             'outstanding' => (int) $open->sum(fn (Bill $bill): int => $bill->balanceMinor()),
             'overdueTotal' => (int) $overdue->sum(fn (Bill $bill): int => $bill->balanceMinor()),
-            'paidThisMonth' => (int) Bill::query()
-                ->where('status', BillStatus::Paid)
-                ->whereDate('updated_at', '>=', today()->startOfMonth())
-                ->sum('total_minor'),
+            'paidThisMonth' => (int) BillPayment::query()
+                ->when($this->projectFilter !== null, fn ($query) => $query->whereHas('bill', fn ($bill) => $bill->where('project_id', $this->projectFilter)))
+                ->whereDate('paid_on', '>=', today()->startOfMonth())
+                ->whereDate('paid_on', '<', today()->startOfMonth()->addMonth())->sum('amount_minor'),
             'canManage' => $this->user()->can('accounts.manage'),
             'lakh' => app(SalesSettings::class)->lakh_grouping,
         ]);
@@ -322,6 +337,7 @@ class BillsIndex extends Component
 
         $data = $this->validate([
             'vendorId' => ['required', 'integer', 'exists:vendors,id'],
+            'projectId' => ['nullable', 'integer', 'exists:projects,id'],
             'number' => ['required', 'string', 'max:60'],
             'billDate' => ['required', 'date'],
             'dueDate' => ['nullable', 'date', 'after_or_equal:billDate'],
@@ -355,6 +371,7 @@ class BillsIndex extends Component
         try {
             $bill = app(SaveBill::class)->handle([
                 'number' => trim($data['number']),
+                'project_id' => $data['projectId'],
                 'vendor_id' => (int) $data['vendorId'],
                 'bill_date' => $data['billDate'],
                 'due_date' => $data['dueDate'] !== '' ? $data['dueDate'] : null,
@@ -362,8 +379,10 @@ class BillsIndex extends Component
                 'notes' => $this->blankToNull($data['notes']),
             ], $items, $this->user(), $status, $existing);
         } catch (ValidationException $exception) {
+            $this->toast('Not saved — '.$exception->getMessage(), 'error');
             foreach ($exception->errors() as $field => $messages) {
-                $this->addError($field, (string) ($messages[0] ?? 'That bill was refused.'));
+                $mapped = ['project_id' => 'projectId', 'vendor_id' => 'vendorId', 'bill_date' => 'billDate', 'due_date' => 'dueDate', 'tax_minor' => 'taxRupees'];
+                $this->addError($mapped[$field] ?? $field, (string) ($messages[0] ?? 'That bill was refused.'));
             }
 
             return;
@@ -383,6 +402,7 @@ class BillsIndex extends Component
     private function resetForm(): void
     {
         $this->vendorId = null;
+        $this->projectId = $this->user()->can('projects.view') ? $this->projectFilter : null;
         $this->number = '';
         $this->billDate = today()->toDateString();
         $this->dueDate = today()->addDays(15)->toDateString();

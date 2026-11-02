@@ -36,6 +36,7 @@ use App\Livewire\Admin\Hubs\LedgerHub;
 use App\Livewire\Admin\Hubs\MarketingHub;
 use App\Livewire\Admin\Hubs\PayablesHub;
 use App\Livewire\Admin\Hubs\PaymentsHub;
+use App\Livewire\Admin\Hubs\ProjectCostsHub;
 use App\Livewire\Admin\Hubs\QuotationsHub;
 use App\Livewire\Admin\Hubs\ReportsHub;
 use App\Livewire\Admin\Hubs\SystemAccessHub;
@@ -141,6 +142,8 @@ Route::get('/quote-templates', fn () => redirect()->route('admin.quotes.index', 
 Route::get('/rate-book', fn () => redirect()->route('admin.sales.documents', ['tab' => 'rate-book'], 301))->name('rate-book')->middleware('can:quotes.view');
 Route::get('/description-library', fn () => redirect()->route('admin.sales.documents', ['tab' => 'descriptions'], 301))->name('description-library')->middleware('can:quotes.view');
 Route::get('/document-design', fn () => redirect()->route('admin.sales.documents', ['tab' => 'design'], 301))->name('document-design')->middleware('can:quotes.view');
+
+Route::livewire('/projects/costs', ProjectCostsHub::class)->name('projects.costs')->middleware('can:accounts.view');
 
 // Projects (P4, PRJ-001…PRJ-005)
 Route::livewire('/projects', ProjectsIndex::class)->name('projects.index')->middleware('can:projects.view');

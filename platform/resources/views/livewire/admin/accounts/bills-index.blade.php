@@ -30,6 +30,15 @@
                       description="The vendor's own number is kept. Tax is added on top of the lines and booked to input tax (1210) — leave it at zero when the vendor charged none."
                       class="mb-6">
             <form wire:submit="saveReceived" class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                @if ($projects->isNotEmpty())
+                    <div>
+                        <label class="wx-label" for="bill-project">Project (optional, whole bill)</label>
+                        <select id="bill-project" wire:model="projectId" class="wx-input"><option value="">No project</option>@foreach ($projects as $option)@if (! $option->deleted_at)<option value="{{ $option->id }}">{{ $option->code }} · {{ $option->name }}</option>@endif @endforeach</select>
+                        @error('projectId')<p role="alert" class="mt-1 text-theme-xs text-error-600">{{ $message }}</p>@enderror
+                    </div>
+                @endif
+                @error('bill')<p role="alert" class="text-theme-sm text-error-600 md:col-span-3">{{ $message }}</p>@enderror
+                @error('items')<p role="alert" class="text-theme-sm text-error-600 md:col-span-3">{{ $message }}</p>@enderror
                 <div>
                     <label class="wx-label" for="bill-vendor">Vendor</label>
                     <select id="bill-vendor" wire:model="vendorId" class="wx-input">
@@ -159,6 +168,10 @@
     @endif
 
     <div class="mb-4 flex flex-wrap items-end gap-3">
+        @if ($projects->isNotEmpty())
+            <div><label class="wx-label" for="bill-project-filter">Project</label><select id="bill-project-filter" wire:model.live="projectFilter" class="wx-input"><option value="">All projects / unlinked</option>@foreach ($projects as $option)<option value="{{ $option->id }}">{{ $option->code }} · {{ $option->name }}{{ $option->deleted_at ? ' (archived)' : '' }}</option>@endforeach</select></div>
+        @endif
+
         <div>
             <label class="wx-label" for="bill-filter">Show</label>
             <select id="bill-filter" wire:model.live="statusFilter" class="wx-input">
@@ -200,6 +213,7 @@
                         <tr wire:key="bill-{{ $bill->id }}" class="align-top">
                             <td class="px-5 py-3 font-medium text-gray-800 dark:text-white/90">
                                 {{ $bill->number }}
+                                @if ($bill->project_id && auth()->user()->can('projects.view'))<span class="block text-theme-xs text-gray-500">{{ $bill->project?->code ?? 'Archived project' }}</span>@endif
                                 @if ($bill->journalEntry)
                                     <span class="block text-theme-xs text-gray-400">{{ $bill->journalEntry->entry_no }}@if ($bill->journalEntry->isReversed()) · reversed @endif</span>
                                 @endif

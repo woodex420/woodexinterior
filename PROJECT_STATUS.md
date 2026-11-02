@@ -2,9 +2,11 @@
 
 **Updated:** 2 November 2026 · **Active branch:** `arena/7093000c-woodexinterior` · **Native synthetic preview:** port 8080
 
-## Current execution record — revisions 98 / 99 / 100
+## Current execution record — revisions 98 / 99 / 100 / 101
 
 **Owner ordering:** finish remaining pending/paused work first; deployment is the final task. Candidate native CI [41495382678](https://github.com/woodex420/woodexinterior/actions/runs/41495382678) is now **successful** at `1640506`; no merge/deployment follows automatically.
+
+**Increment101:** Vendors & costs hub and project-local linked cost form/tables/summaries are implemented; canonical bills include project filters/selection and exact prefills. Supplier AP, customer AR and unreconciled legacy costs are separate. Updated synthetic preview is running on8080 with PREVIEW-COSTS-01; no production operation.21 new screen/summary cases and37 current browser checks pass; static/style/build/contracts pass. Final exact-source serial native suite **1,923 tests /10,830 assertions** passes; new hosted CI is a separate gate. [Details and limitations](docs/audit/101_PROJECT_COST_SCREENS_2026-11-02.md). Priorabad230 hosted41504047552 succeeded. MySQL concurrency/upgrade and the remaining release backlog are not certified by these screens.
 
 **Increment 100, partial linked-cost workflow:** canonical bill/paid-expense project links, retry keys, cross-model supplier-reference guard and stale-draft protections are implemented; new Vendors/Costs screens and summaries are not yet implemented. Account/project tests120/623 and final new regressions41/200 passed; static/style/92 contracts and34 current browser checks passed. Final exact-source full native suite: **1,898 passed /10,710 assertions**, strict warnings/skips, exit0. [Implementation and boundaries](docs/audit/100_LINKED_PROJECT_COST_FOUNDATION_2026-11-02.md). One nullable additive migration ran **only in the isolated synthetic preview** (now104); no production migration/write. Prior6c04989 hosted CI41500249255 is successful, not acceptance for these new changes.
 

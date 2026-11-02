@@ -72,6 +72,10 @@
         </div>
     </x-admin.card>
 
+    @can('accounts.view')
+        <div class="mb-6"><livewire:admin.projects.project-costs :project-id="$project->id" :key="'project-costs-'.$project->id" /></div>
+    @endcan
+
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {{-- Left: the work --}}
         <div class="space-y-4 lg:col-span-2">
@@ -377,7 +381,7 @@
 
             {{-- PRJ-009 + slice I: cost tracking — what it cost against what the quote said it would, and every
                  rupee of it booked (Dr the cost account / Cr accounts payable) the moment it is recorded. --}}
-            <x-admin.card title="Costs" description="Purchases and expenses against the quote's internal cost — each one is posted to the ledger when you record it.">
+            <x-admin.card title="Legacy project cost history" description="Original project-expense records only; supplier/payment identity is unknown. Do not re-enter these as supplier bills or paid costs. Use linked Project costs for new purchases.">
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <div class="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-800">
                         <p class="text-theme-xs text-gray-500">Quote's internal cost</p>
@@ -386,11 +390,11 @@
                         </p>
                     </div>
                     <div class="rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-800">
-                        <p class="text-theme-xs text-gray-500">Spent (posted to the books)</p>
+                        <p class="text-theme-xs text-gray-500">Legacy recorded total (not payment status)</p>
                         <p class="text-theme-sm font-medium tabular-nums text-gray-800 dark:text-white/90">{{ Money::ofMinor($spentMinor)->format($lakh) }}</p>
                     </div>
                     <div class="rounded-xl border px-4 py-3 {{ $overQuoted ? 'border-warning-500/40 bg-warning-50 dark:bg-warning-500/10' : 'border-gray-200 dark:border-gray-800' }}">
-                        <p class="text-theme-xs text-gray-500">Margin (quote − spent)</p>
+                        <p class="text-theme-xs text-gray-500">Quote less legacy costs only</p>
                         <p class="text-theme-sm font-medium tabular-nums {{ $marginMinor < 0 ? 'text-error-600' : 'text-gray-800 dark:text-white/90' }}">{{ Money::ofMinor($marginMinor)->format($lakh) }}</p>
                         @if ($overQuoted)
                             <p class="text-theme-xs text-warning-700">Spent is past the quote's internal cost.</p>
@@ -416,11 +420,13 @@
                             </div>
                         </li>
                     @empty
-                        <li class="py-2 text-theme-sm text-gray-500">Nothing recorded yet — add the first purchase or expense below.</li>
+                        <li class="py-2 text-theme-sm text-gray-500">No legacy project-expense records. Use linked Project costs for new supplier purchases.</li>
                     @endforelse
                 </ul>
 
                 @can('update', $project)
+                    @cannot('accounts.manage')
+                    <p class="mt-3 text-theme-xs text-gray-500">Legacy cost recording credits accounts payable but has no supplier/payment link. Ask finance to use linked costs for supplier purchases.</p>
                     <form wire:submit.prevent="addExpense" class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-12">
                         <input type="text" wire:model="expenseDescription" placeholder="What was bought or paid" class="wx-input sm:col-span-4" aria-label="Description">
                         <select wire:model="expenseCategory" class="wx-input sm:col-span-2" aria-label="Category">
@@ -434,6 +440,7 @@
                         <input type="date" wire:model="expenseIncurredOn" class="wx-input sm:col-span-1" aria-label="Date">
                         <div class="sm:col-span-12"><x-admin.button icon="plus">Record expense</x-admin.button></div>
                     </form>
+                    @endcannot
                 @endcan
             </x-admin.card>
 

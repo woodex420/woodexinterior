@@ -42,7 +42,7 @@ class Bill extends Model
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Project::class)->withTrashed();
     }
 
     /** @return BelongsTo<Vendor, $this> */

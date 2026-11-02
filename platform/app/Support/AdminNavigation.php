@@ -62,6 +62,7 @@ final class AdminNavigation
             self::group('Projects', [
                 self::item('Projects', 'hammer', 'admin.projects.index', 'projects.view'),
                 self::item('Board', 'kanban', 'admin.projects.board', 'projects.view'),
+                self::item('Vendors & costs', 'wallet', 'admin.projects.costs', 'accounts.view'),
                 self::item('Client portal', 'link', 'admin.projects.portal', 'projects.view'),
                 self::item('Handovers', 'check-circle', 'admin.projects.handovers', 'projects.view'),
             ]),
