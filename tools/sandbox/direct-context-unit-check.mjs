@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const code=fs.readFileSync(new URL('./native-direct-context.js',import.meta.url),'utf8');
-const {demoFetch}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
+const {demoFetch,demoXhrContext}=await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'));
 const origin='https://preview.example';const context='ab'.repeat(16);
 function capture(){let call;return {fetch:(input,init)=>{call={input,init};return Promise.resolve('ok');},get call(){return call;}};}
 test('direct context preserves normal CSRF and fetch options on same-origin requests',async()=>{
@@ -22,4 +22,10 @@ test('Request objects retain their original headers',async()=>{
  const state=capture(),request=new Request(origin+'/livewire/update',{headers:{'X-CSRF-TOKEN':'fixture-token'}});
  await demoFetch(request,{headers:{'X-Livewire':'1'}},{fetch:state.fetch,origin,context});
  assert.equal(state.call.input,request);assert.equal(state.call.init.headers.get('X-CSRF-TOKEN'),'fixture-token');assert.equal(state.call.init.headers.get('X-Livewire'),'1');
+});
+
+test('XHR upload context stays on the exact preview origin and never becomes a URL token',()=>{
+ for(const url of ['/livewire/upload-file?signature=fixture',origin+'/livewire/upload-file']) assert.equal(demoXhrContext(url,{origin,context}),context);
+ for(const url of ['https://foreign.invalid/upload','//foreign.invalid/upload','http://preview.example/upload','https://preview.example.evil/upload']) assert.equal(demoXhrContext(url,{origin,context}),null);
+ assert.equal(demoXhrContext('/upload',{origin,context:'invalid'}),null);
 });

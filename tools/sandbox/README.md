@@ -1,6 +1,16 @@
 # Sandbox tooling (AI development environment only)
 
-## Current native preview (revision105)
+## Current native preview (revision108)
+
+Port8080 is served by native FrankenPHP from a private `.cache/preview/source/platform` copy; never point the direct launcher at an installed database. The launcher now loads `NativePreviewTransport.php` to keep self-links relative under an authorized preview wrapper; signed Livewire snapshots remain unchanged. `native-direct-context.js` must be served at `public/__sandbox/direct-context.js` in that private clone, including its XHR upload support.
+
+- `node tools/sandbox/preview-origin-check.mjs`:15 controlled browser checks under a different origin, dropping cookies and refusing raw-origin requests. Requires the private Playwright/Chromium bootstrap and opted-in synthetic server. Not actual Arena-parent acceptance.
+- `tools/sandbox/fixtures/leads-demo-2026.csv`:16 fictional rows with reserved NANP555-01xx numbers, one year only; not the owner's workbook. Serve only in the explicit demo under `/__sandbox/leads-demo-2026.csv`. Import still uses dry-run and owner confirmation.
+- The optional `WOODEX_PREVIEW_DEMO_SHEET_URL` belongs only in private preview configuration. It links to a **manual snapshot**, not a live-sync credential or background job. No Drive access URL/token is versioned.
+- An E2B “Missing traffic access token” on the initial document must be resolved by refreshing the Arena/platform preview authorization. App code cannot mint this token; never put it in URLs or request it in chat.
+
+
+## Historical native preview (revision105)
 
 The active isolated preview now uses native FrankenPHP/PHP8.5.12 with private `.cache/preview` runtime/dependencies and a fresh synthetic SQLite DB. The older php-wasm bootstrap below is historical; do not run it over the active native preview. This does not supply a supported local MySQL engine.
 

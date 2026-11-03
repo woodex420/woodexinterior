@@ -7,6 +7,25 @@
         </x-slot:actions>
     </x-admin.page-header>
 
+    <x-admin.card class="mb-5" title="One year · import / export" description="Export is a read-only snapshot of active CRM leads created in the selected UTC year, with current stage kept as reference. Archived leads/contacts and all financial data are excluded.">
+        <div class="flex flex-wrap items-end gap-3">
+            <div>
+                <label for="export-lead-year" class="wx-label">CSV year</label>
+                <input id="export-lead-year" type="number" min="2000" max="{{ now()->year }}" wire:model.live="year" class="wx-input w-36">
+            </div>
+            <x-admin.button variant="secondary" icon="download" :href="route('admin.leads.export', ['year' => $year], false)" download>Export year CSV</x-admin.button>
+            @if (request()->attributes->get('synthetic_direct_preview') === true)
+                <x-admin.button variant="secondary" :href="asset('__sandbox/leads-demo-2026.csv')" download>Download 16-row 2026 demo CSV</x-admin.button>
+                @if (is_string(config('preview.demo_sheet_url')) && preg_match('~\Ahttps://docs\.google\.com/spreadsheets/d/[a-zA-Z0-9_-]+/edit\z~', config('preview.demo_sheet_url')) === 1)
+                    <x-admin.button variant="secondary" :href="config('preview.demo_sheet_url')" target="_blank" rel="noopener noreferrer">Open manual Drive snapshot</x-admin.button>
+                @endif
+            @endif
+        </div>
+        <p class="mt-3 text-theme-xs text-gray-500">CSV columns: Sr, Date, Name, Contact, Status. Contacts use the international 00 prefix. Keep all columns as plain text in Sheets, especially phone numbers and day/month/year dates. Formula-like names/stages are escaped in the export; stored records are unchanged. Imports still require mapping, a dry run and your final confirmation.</p>
+        <p class="mt-2 text-theme-xs text-gray-500">Recommended Drive workflow: a dedicated one-year demo sheet, manual snapshot export and owner-reviewed CSV import. No background or two-way sync is enabled, and no old workbook is overwritten. Arena’s connected Drive is separate from the app’s Google Workspace connection.</p>
+        <a href="{{ route('admin.system.connections', [], false) }}" class="mt-2 inline-block text-theme-sm underline">Google Workspace connection settings</a>
+    </x-admin.card>
+
     <x-admin.card class="mb-5">
         <div class="grid gap-4 md:grid-cols-3">
             <div>

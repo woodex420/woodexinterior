@@ -2,7 +2,17 @@
 
 **Updated:** 3 November 2026 (Asia/Karachi). **This is the current master list**, including earlier holds and new requests. Detailed machine-readable gates remain in [the completion register](docs/audit/98_COMPLETION_REGISTER_2026-11-02.csv); [revision 102](docs/audit/102_PREVIEW_LOGIN_AND_WORKBOOK_REVIEW_2026-11-03.md) records workbook/owner decisions; revisions103/104 below record implemented brand/login/SEO/diagnostic slices and their separate evidence. Earlier reports are historical evidence, not current release acceptance.
 
-## Active revision 107 — leads/contacts review, not import
+## Active revision108 — preview-origin repair and single-year demo
+
+[Implementation and evidence](docs/audit/108_PREVIEW_NAVIGATION_AND_SINGLE_YEAR_DEMO_2026-11-03.md).
+
+- Owner confirmed March/April/May are copies of the **same16 test enquiries**, and approved simpler one-year test data. No more48-distinct-opportunity assumption. Actual workbooks remain unchanged; financial reference-only/no historical import/dry-run hold remains.
+- **Implemented:** private-launcher relative-origin navigation/redirect/Livewire effects, signed snapshots preserved; XHR demo context for uploads without weakening CSRF. Controlled alternate-origin browser15checks PASS. The actual screenshot is E2B infrastructure403, not Fortify; actual owner acceptance after Arena preview refresh is still required. Never request or embed traffic-access tokens.
+- **Working demo:**16 fictional2026 leads imported through real browser mapping/date review/dry-run/confirmation. Fresh re-upload is recognized as already imported. Owner-only single-year CSV export implemented, UTC New-Year boundary/formula safety/archive exclusion covered. Original pages retained; no financial records created.
+- **Drive:** new private text-safe one-year demo Sheet created and exported back; all17 records including headings match app export field-for-field. Drive CSV re-import also recognizes the same16 rows. Optional private preview link is labelled manual snapshot; no automatic/two-way sync or original-workbook overwrite. App OAuth connection is separate from Arena's connected Drive; live scheduled writes still need destination/scopes/conflict policy and owner approval.
+- Local focused native15tests/138assertions,92source+62UI/context contracts, Pint7 and preview Vite PASS. Full local PHPStan blocked by the multicall-runtime re-exec; not a pass. Exact-source hosted results are tracked in PR8.36 parent gates retained; deployment FINAL/auto-deploy OFF; no production write, merge, deployment or repo-privacy change.
+
+## Previous revision107 — leads/contacts review, not import
 
 [Review, proposed column mapping and implementation](docs/audit/107_LEADS_CONTACTS_SOURCE_REVIEW_2026-11-03.md).
 

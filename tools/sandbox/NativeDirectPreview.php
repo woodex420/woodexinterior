@@ -37,6 +37,8 @@ final class NativeDirectPreview
             }
             /** @var HttpKernel $kernel */
             $kernel = $app->make(Kernel::class);
+            require_once __DIR__.'/NativePreviewTransport.php';
+            $kernel->prependMiddleware(NativePreviewTransport::class);
             $kernel->prependToMiddlewarePriority(self::class);
             $app->make(Router::class)->prependMiddlewareToGroup('web', self::class);
         });

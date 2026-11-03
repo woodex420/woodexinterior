@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ConnectorOAuthController;
 use App\Http\Controllers\Admin\ContactDataExportController;
 use App\Http\Controllers\Admin\ConversationMediaController;
 use App\Http\Controllers\Admin\InvoicePdfController;
+use App\Http\Controllers\Admin\LeadCsvExportController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\QuoteDraftPreviewController;
 use App\Http\Controllers\Admin\QuotePdfController;
@@ -94,6 +95,7 @@ Route::get('/my-day', fn () => redirect()->route('admin.dashboard', ['tab' => 'm
 // CRM (P1): Leads (list · pipeline · tracking), Contacts (people · companies), Tasks & Visits
 Route::livewire('/leads', LeadsHub::class)->name('leads.index')->middleware('can:leads.view');
 Route::livewire('/leads/import', LeadImport::class)->name('leads.import')->middleware('can:system.import');
+Route::get('/leads/export.csv', LeadCsvExportController::class)->name('leads.export')->middleware('can:system.import');
 Route::livewire('/leads/{lead}', LeadShow::class)->name('leads.show')->middleware('can:leads.view');
 Route::get('/pipeline', fn () => redirect()->route('admin.leads.index', ['tab' => 'pipeline'], 301))->name('pipeline')->middleware('can:leads.view');
 Route::livewire('/contacts', ContactsHub::class)->name('contacts.index')->middleware('can:contacts.view');

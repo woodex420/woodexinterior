@@ -1,5 +1,14 @@
 # Woodex OS: build state
 
+## Latest — revision108: relative preview navigation and2026 demo
+
+- [Report](../docs/audit/108_PREVIEW_NAVIGATION_AND_SINGLE_YEAR_DEMO_2026-11-03.md), [queue](../ox-pending.md). Owner confirmed three copied tabs represent the same16 test enquiries. New fictional single-year2026 demo is now in the isolated preview; original workbooks/production unchanged.
+- Private relative-origin transport plus cookie-independent XHR upload context; signed Livewire state and normal CSRF preserved.15 controlled alternate-origin browser checks PASS; actual Arena/E2B403 owner acceptance remains open. Initial traffic authorization is a platform boundary, not an app password issue.
+-16 demo rows browser-imported, repeat skipped, one-year CSV export implemented; text-safe manual Drive snapshot created and field-for-field round-trip verified. Automatic/two-way app sync is OFF; no original workbook overwritten or financial dry-run/import.
+- Native focused15/138,92source+62UI/context, Pint7 and preview Vite PASS. Local full PHPStan blocked by FrankenPHP subprocess re-exec; hosted exact-source results tracked in PR8. No production/deployment/merge/privacy conversion; all36 gates retained.
+
+---
+
 ## Latest — revision107: source-year review and import provenance
 
 - [Read-only review](../docs/audit/107_LEADS_CONTACTS_SOURCE_REVIEW_2026-11-03.md), [queue](../ox-pending.md).22 dated2025/48 dated2026/7 undated monthly candidates;42 Target-client/26 database references. No actual import/database comparison or financial dry-run; financial reference-only hold unchanged.
