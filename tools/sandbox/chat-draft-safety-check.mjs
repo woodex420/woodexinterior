@@ -78,7 +78,7 @@ try {
     assert.equal(state.note, '');
     check('Explicit discard opens the requested visitor with a clean reply and note');
     await page.setViewportSize({width: 1440, height: 1000});
-    await page.getByRole('button', {name: 'Website chat', exact: true}).click();
+    await page.getByRole('button', {name: /^Website chat(?: \(\d+ unread\))?$/}).click();
     const drawer = page.getByRole('dialog', {name: 'Website chats', exact: true});
     await drawer.waitFor({state: 'visible'});
     await clickWire(drawer, `openThread(${fixture.first})`);

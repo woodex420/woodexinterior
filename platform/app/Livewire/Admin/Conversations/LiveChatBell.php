@@ -14,6 +14,7 @@ use App\Livewire\Concerns\InteractsWithAdmin;
 use App\Livewire\Concerns\WithConversationHistory;
 use App\Settings\NotificationSettings;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Locked;
@@ -144,14 +145,17 @@ class LiveChatBell extends Component
         if (! $this->user()->can('inbox.view')) {
             return view('livewire.admin.conversations.live-chat-bell', [
                 'canUse' => false, 'live' => new Collection, 'unread' => 0, 'visitorActive' => false,
+                'activeTotal' => 0, 'unreadOutsideList' => 0,
                 'messages' => new Collection, 'soundOn' => false, 'canManageSound' => false,
             ]);
         }
 
         $live = $this->liveConversations();
-        $unread = $live->where('unread_count', '>', 0)->count();
-        $visitorActive = $live->contains(fn (Conversation $c): bool => $c->last_direction === 'in'
-            && $c->last_message_at !== null && $c->last_message_at->gt(now()->subMinutes(2)));
+        // Header totals describe every active website conversation, not just the compact list.
+        $activeTotal = $this->activeWebChats()->count();
+        $unread = $this->activeWebChats()->where('unread_count', '>', 0)->count();
+        $visitorActive = $this->activeWebChats()->where('last_direction', 'in')
+            ->where('last_message_at', '>', now()->subMinutes(2))->exists();
 
         $conversation = $this->historyConversation();
         $window = $this->historyWindow($conversation);
@@ -160,6 +164,8 @@ class LiveChatBell extends Component
             'canUse' => true,
             'live' => $live,
             'unread' => $unread,
+            'activeTotal' => $activeTotal,
+            'unreadOutsideList' => max(0, $unread - $live->where('unread_count', '>', 0)->count()),
             'visitorActive' => $visitorActive,
             'messages' => $window['messages'],
             'selectedConversation' => $conversation,
@@ -250,13 +256,18 @@ class LiveChatBell extends Component
     /** @return Collection<int, Conversation> */
     private function liveConversations(): Collection
     {
-        return Conversation::query()
-            ->where('channel', Channel::WebChat->value)
-            ->whereIn('status', [ConversationStatus::Open->value, ConversationStatus::Pending->value])
+        return $this->activeWebChats()
             ->with('contact:id,name')
-            ->orderByDesc('last_message_at')
+            ->orderByDesc('last_message_at')->orderByDesc('id')
             ->limit(30)
             ->get();
+    }
+
+    /** @return Builder<Conversation> */
+    private function activeWebChats(): Builder
+    {
+        return Conversation::query()->where('channel', Channel::WebChat->value)
+            ->whereIn('status', [ConversationStatus::Open->value, ConversationStatus::Pending->value]);
     }
 
     /**

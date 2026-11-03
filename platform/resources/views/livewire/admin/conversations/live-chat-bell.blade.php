@@ -10,10 +10,10 @@
         <div x-cloak x-show="$wire.drawer" x-transition.opacity class="fixed inset-0 z-[9998] bg-gray-900/40 backdrop-blur-[2px]" wire:click="closeDrawer"></div>
         <aside x-cloak x-show="$wire.drawer" x-trap.inert.noscroll="$wire.drawer" x-transition.opacity role="dialog" aria-modal="true" aria-label="Website chats" class="wx-chat-drawer fixed inset-y-0 right-0 z-[9999] flex w-full flex-col border-l border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900">
             <header class="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-gray-800">
-                <div><h2 class="font-semibold text-navy-900 dark:text-white">Website chats</h2><p class="mt-1 text-theme-xs text-gray-500">{{ $unread }} unread · website enquiries</p></div>
+                <div><h2 class="font-semibold text-navy-900 dark:text-white">Website chats</h2><p class="mt-1 text-theme-xs text-gray-500">{{ $unread }} unread conversations · {{ $activeTotal }} active</p></div>
                 <div class="flex items-center gap-1">
                     @if ($canManageSound)<button type="button" wire:click="toggleSound" title="{{ $soundOn ? 'Chat sound on — click to mute' : 'Chat sound off — click to enable' }}" class="wx-icon-button" aria-label="Chat alert sound"><x-icon :name="$soundOn ? 'volume-2' : 'volume-x'" class="size-4" /></button>@endif
-                    <a href="{{ route('admin.inbox', ['channel' => 'web_chat']) }}" wire:navigate class="wx-icon-button" aria-label="Open the full inbox"><x-icon name="inbox" class="size-4" /></a>
+                    <a href="{{ route('admin.inbox', ['channel' => 'web_chat', 'status' => 'all']) }}" wire:navigate class="wx-icon-button" aria-label="Open the full inbox"><x-icon name="inbox" class="size-4" /></a>
                     <button type="button" wire:click="closeDrawer" class="wx-icon-button" aria-label="Close"><x-icon name="x" class="size-4" /></button>
                 </div>
             </header>
@@ -22,6 +22,12 @@
                     <span>Another website thread needs attention. Your current draft is kept.</span>
                     <button type="button" wire:click="cancelSwitch" class="wx-history-button">Keep current conversation</button>
                     <button type="button" wire:click="switchPending" @if (trim($draft) !== '') wire:confirm="Switch threads and discard the current draft?" @endif class="wx-history-button">Switch to new message</button>
+                </div>
+            @endif
+            @if ($activeTotal > $live->count())
+                <div class="shrink-0 border-b border-gray-100 px-4 py-2 text-theme-xs text-gray-500 dark:border-gray-800 dark:text-gray-400" role="status">
+                    <p>Showing the latest {{ $live->count() }} of {{ $activeTotal }} active conversations. Use the full Inbox for older conversations.</p>
+                    @if ($unreadOutsideList > 0)<p class="mt-1 font-medium">{{ $unreadOutsideList }} unread {{ $unreadOutsideList === 1 ? 'conversation is' : 'conversations are' }} outside this list.</p>@endif
                 </div>
             @endif
             <div class="wx-live-chat-layout flex min-h-0 flex-1">

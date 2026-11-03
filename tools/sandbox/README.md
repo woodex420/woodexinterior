@@ -1,6 +1,10 @@
 # Sandbox tooling (AI development environment only)
 
-## Current Chat QA (revision109)
+## Current header/source-sync QA (revision110)
+
+`node tools/sandbox/website-chat-header-check.mjs` runs6 normal-Fortify Chromium checks against the same separately copied QA database below, privately prepared with61 active website conversations/35 unread and incoming activity outside the30-row list. It verifies full totals, bounded rows/disclosure, selected-only reading, phone reflow and full Inbox navigation. It never targets production or main preview data. `chat-draft-safety-check.mjs` also passes with nonzero unread counts. Regenerated deployable assets come from a clean exact-source build, not leftover working-tree bundles. See [revision110](../../docs/audit/110_WEBSITE_CHAT_HEADER_AND_MASTER_SOURCE_SYNC_2026-11-03.md); PR8 holds the actual source merge/master outcome. Deployment remains held.
+
+## Chat draft QA (revision109)
 
 The main8080 native preview is preserved, including its16 demo leads. `node tools/sandbox/chat-draft-safety-check.mjs` runs9 normal-Fortify Chromium checks only against a **separately copied disposable QA SQLite** on temporary9095. It requires privately provisioned `.cache/preview/qa/source/platform/.env` and `fixture109.json`,61 fictional conversations, native dependencies and the private browser bootstrap. It refuses the direct launcher or a different database. Credentials, database, provisioning scripts and screenshots stay ignored/private; never use an installed database. The temporary QA listener is stopped after checking. [Revision109](../../docs/audit/109_CHAT_DRAFT_SAFETY_AND_INBOX_PAGING_2026-11-03.md) records the implemented C01/C02 slice and remaining acceptance.
 
