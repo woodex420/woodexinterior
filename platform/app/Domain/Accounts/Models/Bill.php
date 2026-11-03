@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Accounts\Models;
 
 use App\Domain\Accounts\Enums\BillStatus;
+use App\Domain\Projects\Models\Project;
 use App\Models\User;
 use App\Support\Concerns\HasPublicId;
 use App\Support\Money;
@@ -26,6 +27,7 @@ class Bill extends Model
     protected function casts(): array
     {
         return [
+            'project_id' => 'integer',
             'status' => BillStatus::class,
             'bill_date' => 'immutable_date',
             'due_date' => 'immutable_date',
@@ -35,6 +37,12 @@ class Bill extends Model
             'total_minor' => 'integer',
             'paid_minor' => 'integer',
         ];
+    }
+
+    /** @return BelongsTo<Project, $this> */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class)->withTrashed();
     }
 
     /** @return BelongsTo<Vendor, $this> */

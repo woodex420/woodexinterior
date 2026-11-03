@@ -1,0 +1,66 @@
+// Guarded normal-Fortify browser checks for the separate61-thread disposable QA fixture only.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {createRequire} from 'node:module';
+const base = '/home/user/woodexinterior/.cache/preview';
+const env = fs.readFileSync(base + '/qa/source/platform/.env', 'utf8');
+assert(/^WOODEX_SYNTHETIC_PREVIEW=true$/m.test(env));
+assert(/^WOODEX_PREVIEW_DIRECT_ADMIN=false$/m.test(env));
+assert(env.includes('DB_DATABASE=' + base + '/qa/woodex-synthetic-chat109.sqlite\n'));
+assert(/^MAIL_MAILER=array$/m.test(env));
+assert(/^QUEUE_CONNECTION=database$/m.test(env));
+const fixture = JSON.parse(fs.readFileSync(base + '/qa/fixture109.json', 'utf8'));
+const require = createRequire(base + '/source/platform/.cache/browser/package.json');
+const {chromium} = require('playwright-core');
+const mod = require('@sparticuz/chromium');
+mod.setupLambdaEnvironment('/tmp/al2023/lib');
+const {inflate} = await import(base + '/source/platform/.cache/browser/node_modules/@sparticuz/chromium/build/lambdafs.js');
+await inflate(base + '/source/platform/.cache/browser/node_modules/@sparticuz/chromium/bin/al2023.tar.br');
+const browser = await chromium.launch({executablePath: await mod.default.executablePath(), args: mod.default.args.filter(a => !['--single-process', '--disable-web-security'].includes(a)), headless: true});
+const page = await browser.newPage({viewport: {width: 1440, height: 1000}});
+const checks = [], errors = [];
+page.on('pageerror', error => errors.push(error.message));
+const check = name => {checks.push(name); console.log('PASS', name);};
+try {
+    await page.goto('http://127.0.0.1:9095/admin/login');
+    await page.locator('input[name="email"]').fill(fixture.email);
+    await page.locator('input[name="password"]').fill(fixture.password);
+    await page.locator('button[type="submit"]').click();
+    await page.waitForURL('**/admin');
+    const bell = page.getByRole('button', {name: 'Website chat (35 unread)', exact: true});
+    await bell.waitFor();
+    check('Header counts all35 unread conversations, not only its latest30 rows');
+    assert(await bell.locator('[title="A visitor is chatting right now"]').count());
+    check('Recent incoming presence outside the compact list still appears');
+    await bell.click();
+    const drawer = page.getByRole('dialog', {name: 'Website chats', exact: true});
+    await drawer.getByText('Showing the latest 30 of 61 active conversations.', {exact: false}).waitFor();
+    await drawer.getByText('5 unread conversations are outside this list.', {exact: true}).waitFor();
+    assert.equal(await drawer.locator('nav[aria-label="Website conversations"] > button').count(), 30);
+    await drawer.getByText('34 unread conversations · 61 active', {exact: true}).waitFor();
+    check('Opening reads only the selected visitor; bounded list discloses all5 hidden unread conversations');
+    await page.setViewportSize({width: 390, height: 844});
+    await page.waitForFunction(() => document.documentElement.scrollWidth <= innerWidth + 1, null, {timeout: 15000});
+    assert(await drawer.getByText('5 unread conversations are outside this list.', {exact: true}).isVisible());
+    await page.screenshot({path: base + '/shots/110-chat-header-mobile.png', fullPage: false});
+    check('Phone drawer keeps count and overflow disclosure visible without horizontal overflow');
+    const link = drawer.getByRole('link', {name: 'Open the full inbox', exact: true});
+    const destination = new URL(await link.getAttribute('href'), page.url());
+    assert.equal(destination.searchParams.get('status'), 'all');
+    assert.equal(destination.searchParams.get('channel'), 'web_chat');
+    await link.click();
+    await page.waitForURL('**/admin/inbox?**');
+    const main = page.locator('main');
+    await main.getByRole('button', {name: 'Next', exact: true}).waitFor();
+    await main.getByRole('button', {name: 'Next', exact: true}).click();
+    await main.locator(`button[wire\\:click="select(${fixture.oldest})"]`).waitFor();
+    check('Full Inbox link includes all statuses and older visitors are reachable by real pagination');
+    assert.deepEqual(errors, []);
+    check('Normal sign-in, header, drawer and Inbox navigation have no JavaScript page errors');
+} catch (error) {
+    await page.screenshot({path: base + '/shots/110-header-failure.png', fullPage: true});
+    throw error;
+} finally {
+    fs.writeFileSync(base + '/110-browser-results.json', JSON.stringify({scope: 'Separate disposable QA database and normal Fortify; not actual Arena-parent certification; no external or financial sends', checks, errors}, null, 2));
+    await browser.close();
+}

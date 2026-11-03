@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Accounts\Actions\PostInvoiceToLedger;
 use App\Domain\Accounts\Actions\RaiseRecurringExpense;
+use App\Domain\Accounts\Actions\RecordExpense;
 use App\Domain\Accounts\Models\Account;
 use App\Domain\Accounts\Models\AccountingPeriod;
 use App\Domain\Accounts\Models\Expense;
@@ -219,3 +220,46 @@ it('refuses to post an expense when the period is closed', function () {
 
     expect(Expense::query()->where('description', 'Should not post')->exists())->toBeFalse();
 });
+
+it('totals the whole filtered range even when the detail list is capped', function (string $component, string $direction, string $mainCode, string $olderCode, string $oppositeCode) {
+    $record = app(RecordExpense::class);
+    $mainId = Account::query()->where('code', $mainCode)->sole()->id;
+    $olderId = Account::query()->where('code', $olderCode)->sole()->id;
+    $oppositeId = Account::query()->where('code', $oppositeCode)->sole()->id;
+    $today = today()->toDateString();
+    $yesterday = today()->subDay()->toDateString();
+    $attributes = [
+        'direction' => $direction,
+        'account_id' => $mainId,
+        'amount_minor' => 12501,
+        'spent_on' => $today,
+        'paid_from' => 'cash',
+        'description' => 'Synthetic range regression',
+    ];
+
+    // This account appears only in the older, 301st row: both its category and amount must survive the cap.
+    $record->handle(array_replace($attributes, ['account_id' => $olderId, 'amount_minor' => 701, 'spent_on' => $yesterday]), $this->owner);
+    for ($i = 0; $i < 300; $i++) {
+        $record->handle($attributes, $this->owner);
+    }
+    $record->handle(array_replace($attributes, ['amount_minor' => 99999, 'spent_on' => today()->subDays(2)->toDateString()]), $this->owner);
+    $record->handle(array_replace($attributes, ['direction' => $direction === 'out' ? 'in' : 'out', 'account_id' => $oppositeId]), $this->owner);
+
+    $assertGroups = fn ($groups): bool => $groups->pluck('total')->sort()->values()->all() === [701, 3750300];
+    Livewire::actingAs($this->owner)->test($component)
+        ->set('filterFrom', $yesterday)->set('filterTo', $today)
+        ->assertViewHas('rows', fn ($rows): bool => $rows->count() === 300)
+        ->assertViewHas('total', 3751001)
+        ->assertViewHas('byAccount', $assertGroups)
+        // Reversed dates use the same bounds for the detail list and the complete aggregates.
+        ->set('filterFrom', $today)->set('filterTo', $yesterday)
+        ->assertViewHas('total', 3751001)
+        ->assertViewHas('byAccount', $assertGroups)
+        ->set('filterFrom', today()->addDays(2)->toDateString())
+        ->set('filterTo', today()->addDays(3)->toDateString())
+        ->assertViewHas('total', 0)
+        ->assertViewHas('byAccount', fn ($groups): bool => $groups->isEmpty());
+})->with([
+    'expenses' => [ExpensesIndex::class, 'out', '5110', '5010', '4090'],
+    'other income' => [OtherIncome::class, 'in', '4090', '4010', '5110'],
+]);

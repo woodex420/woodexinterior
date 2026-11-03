@@ -139,25 +139,34 @@ class ExpensesIndex extends Component
             [$from, $to] = [$to, $from];
         }
 
-        $rows = Expense::query()
-            // Every relation the blade reads, eager-loaded — the app runs with lazy loading disabled.
-            ->with(['account', 'paymentAccount', 'vendor', 'journalEntry', 'recurring'])
+        $query = Expense::query()
             ->where('direction', $direction)
             ->whereDate('spent_on', '>=', $from)
-            ->whereDate('spent_on', '<=', $to)
+            ->whereDate('spent_on', '<=', $to);
+
+        $rows = (clone $query)
+            // Every relation the blade reads, eager-loaded — the app runs with lazy loading disabled.
+            ->with(['account', 'paymentAccount', 'vendor', 'journalEntry', 'recurring'])
             ->orderByDesc('spent_on')
             ->orderByDesc('id')
             ->limit(300)
             ->get();
 
-        $byAccount = $rows->groupBy('account_id')->map(function ($group): array {
-            $account = $group->first()->account;
+        // Summaries cover the complete filtered range, not only the 300 most recent detail rows.
+        $byAccount = (clone $query)
+            ->selectRaw('account_id, SUM(amount_minor) AS aggregate_total_minor')
+            ->with('account')
+            ->groupBy('account_id')
+            ->orderByDesc('aggregate_total_minor')
+            ->get()
+            ->map(function (Expense $group): array {
+                $account = $group->account;
 
-            return [
-                'label' => $account === null ? 'Unknown account' : $account->code.' · '.$account->name,
-                'total' => (int) $group->sum('amount_minor'),
-            ];
-        })->sortByDesc('total')->values();
+                return [
+                    'label' => $account === null ? 'Unknown account' : $account->code.' · '.$account->name,
+                    'total' => (int) $group->getAttribute('aggregate_total_minor'),
+                ];
+            })->values();
 
         return view($this->viewName(), [
             'direction' => $direction,
@@ -166,7 +175,7 @@ class ExpensesIndex extends Component
                 ? 'Costs that are not a client invoice and not a bill from a supplier — fuel, fees, a repair. Each one posts the moment you save it.'
                 : 'Money that came in and is not a client invoice — a scrap sale, interest, a refund. Each one posts the moment you save it.',
             'rows' => $rows,
-            'total' => (int) $rows->sum('amount_minor'),
+            'total' => (int) $byAccount->sum('total'),
             'byAccount' => $byAccount,
             'accounts' => Account::query()
                 ->where('type', $direction->accountType()->value)

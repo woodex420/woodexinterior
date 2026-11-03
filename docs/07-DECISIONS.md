@@ -180,3 +180,11 @@ Owner approved the Phase 0 audit (`docs/audit/`) and the phase order: Phase 1 tr
 | **A-03** | Static → CMS cutover | **After the builder is complete**, group by group, with the compare tool and a per-group rollback. |
 | **A-04** | v2.1 pro builder reference | Supplied and verified: `marketingwoodex-cloud/-marketingwoodex@720d817`, branch `arena/8a776c65-marketingwoodex` (`frontend-v1/builder/*`). See `docs/audit/09`. |
 | **A-05** | `P4b` phase label | **Convention:** `P4b` is the client-portal + handover slice that ran alongside P4. The portal shipped; the handover screens did not, so the badges are stale. Renaming the two sidebar items is Phase 5 work (audit finding N-01/N-03). |
+
+## Completion order and financial workflow — owner confirmed 2 November 2026
+
+- **Deployment is the final task.** Finish remaining core pending/paused work, regression acceptance and staging/recovery checks before separately approved deployment. Auto-deployment remains OFF; an open PR or successful CI does not authorize a production rollout.
+- **Vendors/project costs support both unpaid supplier bills and paid costs**, with linked payments and a single accounting source so a cost is not booked twice. Reuse existing financial models/actions; justify any new migration. This confirms the choice previously left unresolved in revision 98, not authority to backfill/repost historical finances.
+- **Keep deferred extras deferred:** financial workbook reconciliation/import, Sheets append, Drive/GitHub backup integrations and provider-based AI are not brought into this core completion release. The owner selected this explicitly when asked whether all paused tasks included those extras.
+- **Telegram remains owner-only.** This narrows older staff-link/role-based Telegram behavior: only a currently active, non-deleted web-guard owner with a usable private link has message/command/pairing authority. Multi-role owners are allowed; cached roles, legacy staff/group links and queued messages cannot bypass the current role. Staff retain their in-app notifications and existing email fallback.
+- Frozen historical quotations/invoices/PDFs remain immutable. “Paused/frozen tasks” is not authorization to regenerate or change frozen financial history. Continue on the active branch; no repeated branch/hosting setup or GitHub credentials request.

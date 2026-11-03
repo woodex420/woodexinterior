@@ -1,69 +1,55 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full" data-auth-glass="glass">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <meta name="theme-color" content="#0f1e36">
+    <meta name="theme-color" content="#242424">
     <title>@yield('title', 'Sign in') · Woodex OS</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="preload" as="image" href="{{ asset('assets/img/svc-interior-design.webp') }}">
     <script>
-        try { if (localStorage.getItem('wx.theme') === 'dark') { document.documentElement.classList.add('dark'); } } catch (e) {}
+        try { document.documentElement.dataset.authGlass = localStorage.getItem('wx.auth.glass') === 'solid' ? 'solid' : 'glass'; if (localStorage.getItem('wx.theme') === 'dark') { document.documentElement.classList.add('dark'); } } catch (e) {}
     </script>
-    @vite(['resources/css/admin.css'])
+    @vite(['resources/css/admin.css', 'resources/js/auth.js'])
 </head>
-<body class="h-full bg-white dark:bg-gray-950">
-    <div class="grid min-h-screen lg:grid-cols-2">
-        <main class="flex items-center justify-center px-6 py-12 sm:px-10">
-            <div class="w-full max-w-md">
-                <a href="{{ route('login') }}" class="mb-10 inline-flex text-navy-900 dark:text-white">
-                    <x-brand-logo subtitle="OPERATING SYSTEM" />
-                </a>
-
-                <h1 class="font-heading text-title-sm font-normal text-gray-900 dark:text-white">@yield('heading')</h1>
-                <p class="mt-2 text-theme-sm text-gray-500 dark:text-gray-400">@yield('subheading')</p>
-
+<body class="wx-auth">
+    <div class="wx-auth-backdrop" aria-hidden="true"></div>
+    <div class="wx-auth-shell">
+        <header class="wx-auth-header">
+            <a href="{{ route('login') }}" class="wx-auth-brand" aria-label="Woodex OS sign in">
+                <x-brand-logo subtitle="OPERATING SYSTEM" />
+            </a>
+            <a href="{{ \App\Support\SyntheticPreview::enabled() ? url('/') : config('woodex.public_site_url') }}" class="wx-auth-website">Woodex Interior <span aria-hidden="true">↗</span></a>
+        </header>
+        <main class="wx-auth-main">
+            <section class="wx-auth-card" aria-labelledby="auth-heading">
+                <div class="wx-auth-card-tools"><p class="wx-auth-card-eyebrow">WOODEX OS</p><button type="button" data-auth-glass-toggle aria-pressed="true" title="Switch between transparent glass and solid contrast">Glass appearance</button></div>
+                <h1 id="auth-heading" class="wx-auth-heading">@yield('heading')</h1>
+                <p class="wx-auth-subheading">@yield('subheading')</p>
                 @if (session('status'))
-                    <div class="mt-6 rounded-xl border border-success-500/30 bg-success-50 px-4 py-3 text-theme-sm text-success-700">{{ session('status') }}</div>
+                    <div class="mt-5 rounded-lg border border-success-500/30 bg-success-50 p-3 text-theme-sm text-success-700" role="status">{{ session('status') }}</div>
                 @endif
-
                 @if ($errors->any())
-                    <div class="mt-6 rounded-xl border border-error-500/30 bg-error-50 px-4 py-3 text-theme-sm text-error-700" role="alert">
+                    <div class="mt-5 rounded-lg border border-error-500/30 bg-error-50 p-3 text-theme-sm text-error-700" role="alert">
                         @foreach ($errors->all() as $error)
                             <p>{{ $error }}</p>
                         @endforeach
                     </div>
                 @endif
-
-                <div class="mt-8">
-                    @yield('content')
-                </div>
-            </div>
+                <div class="wx-auth-content">@yield('content')</div>
+            </section>
         </main>
-
-        <aside class="relative hidden overflow-hidden bg-navy-900 lg:flex lg:flex-col lg:justify-between lg:p-14">
-            <div class="absolute inset-0 grid grid-cols-4 opacity-20" aria-hidden="true">
-                <i class="border-r border-white/20"></i><i class="border-r border-white/20"></i><i class="border-r border-white/20"></i><i></i>
-            </div>
-            <p class="relative text-[13px] font-medium text-sand-200">● Woodex Interior · Lahore · since 2016</p>
-            <div class="relative">
-                <h2 class="font-heading text-[56px] leading-[1.04] font-normal text-white">Every enquiry.<br>Every quotation.<br>One place.</h2>
-                <p class="mt-6 max-w-md text-[15px] text-navy-100/80">CRM, quotations, invoices, WhatsApp and the website: the Woodex operating system.</p>
-            </div>
-            <p class="relative font-heading text-[140px] leading-none font-semibold tracking-tight text-white/10" aria-hidden="true">WOODEX</p>
-        </aside>
+        <footer class="wx-auth-footer"><span>Woodex Interior · Lahore</span><span>A considered space for better work.</span></footer>
     </div>
     <script>
-        // Each form submits once (D-51). Signing in takes about a second (password hashing); a second click used to
-        // send a second request that arrived already signed in. Reset when the page returns from the back/forward cache.
+        // Native fallback for the other Fortify forms. The enhanced login prevents this handler.
         (function () {
             var busy = ['opacity-70', 'cursor-wait'];
             document.addEventListener('submit', function (event) {
+                if (event.defaultPrevented) return;
                 var form = event.target;
-                if (form.dataset.submitting) {
-                    event.preventDefault();
-                    return;
-                }
+                if (form.dataset.submitting) { event.preventDefault(); return; }
                 form.dataset.submitting = '1';
                 form.querySelectorAll('button[type="submit"]').forEach(function (button) {
                     button.setAttribute('aria-busy', 'true');

@@ -117,3 +117,25 @@ it('keeps the books balanced after a project cost is posted and reversed', funct
         ->assertSee('Balanced.')
         ->assertDontSee('Out of balance');
 });
+
+it('converts decimal project costs without losing a paisa through binary floats', function (string $amount, int $expectedMinor) {
+    Livewire::actingAs($this->owner)
+        ->test(ProjectShow::class, ['project' => $this->project])
+        ->set('expenseDescription', 'Synthetic exact-decimal cost')
+        ->set('expenseCategory', 'material')
+        ->set('expenseQty', '1')
+        ->set('expenseAmount', $amount)
+        ->set('expenseIncurredOn', '2026-11-20')
+        ->call('addExpense')
+        ->assertHasNoErrors();
+
+    $expense = $this->project->expenses()->sole();
+    $entry = JournalEntry::query()->where('source_type', 'project_expense')->where('source_id', $expense->id)->sole();
+    expect($expense->amount_minor)->toBe($expectedMinor)
+        ->and((int) $entry->lines()->sum('debit_minor'))->toBe($expectedMinor)
+        ->and((int) $entry->lines()->sum('credit_minor'))->toBe($expectedMinor);
+})->with([
+    'ordinary decimal' => ['12500.50', 1250050],
+    'half-up rounding' => ['1.005', 101],
+    'integer precision beyond binary float' => ['90071992547409.93', 9007199254740993],
+]);

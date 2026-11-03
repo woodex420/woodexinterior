@@ -37,6 +37,8 @@ use Throwable;
  */
 final class TelegramCommandBus
 {
+    public const OWNER_ONLY_MESSAGE = 'Telegram commands are available only to the active owner. This chat is not linked to an authorized owner account.';
+
     /** @var list<class-string<TelegramCommand>> */
     private const COMMANDS = [
         TodayCommand::class,
@@ -81,6 +83,10 @@ final class TelegramCommandBus
      */
     public function dispatch(?User $user, string $name, string $argument): string
     {
+        if ($user !== null && ! $user->canUseTelegram()) {
+            return self::OWNER_ONLY_MESSAGE;
+        }
+
         $command = $this->commands[$name] ?? null;
 
         if ($command === null) {

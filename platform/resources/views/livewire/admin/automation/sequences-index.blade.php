@@ -1,6 +1,12 @@
 <div class="grid grid-cols-1 gap-6">
     <x-admin.page-header title="Sequences" description="Follow-up on autopilot: every sequence the studio runs, who is enrolled, and exactly what the engine did — each wait, send, skip and hold is logged. Automated sends respect quiet hours and the daily per-client cap (AUT-006); a client's reply stops a sequence."></x-admin.page-header>
 
+    @if (auth()->user()->hasRole('owner'))
+        <x-admin.card title="Studio defaults" description="Restore only missing built-in definitions, paused. Existing edits and enrolments are preserved; no clients are enrolled and no messages are sent.">
+            <x-admin.button variant="secondary" wire:click="restoreMissingDefaults" wire:loading.attr="disabled" wire:target="restoreMissingDefaults" wire:confirm="Add missing studio defaults in the paused state? Existing definitions, steps and enrolments will not change.">Restore missing defaults (paused)</x-admin.button>
+        </x-admin.card>
+    @endif
+
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <div class="space-y-3 xl:col-span-1">
             @forelse ($sequences as $sequence)
@@ -19,7 +25,7 @@
                     <p class="mt-2 text-theme-xs text-gray-400">{{ $sequence->active_count }} running · {{ $sequence->finished_count }} finished</p>
                 </button>
             @empty
-                <x-admin.card><p class="py-6 text-center text-theme-sm text-gray-500">No sequences yet — they are seeded with the studio defaults (Automation → Sequences should list six).</p></x-admin.card>
+                <x-admin.card><p class="py-6 text-center text-theme-sm text-gray-500">No sequences are configured. The owner can restore missing studio defaults above; they start paused for review.</p></x-admin.card>
             @endforelse
         </div>
 
@@ -38,7 +44,7 @@
                             @if ($selected->is_active)
                                 <x-admin.button variant="secondary" icon="hourglass" wire:click="toggleSequence({{ $selected->id }})" wire:confirm="Pause this sequence? People already enrolled keep running; new leads stop being enrolled.">Pause</x-admin.button>
                             @else
-                                <x-admin.button variant="primary" icon="zap" wire:click="toggleSequence({{ $selected->id }})">Turn on</x-admin.button>
+                                <x-admin.button variant="primary" icon="zap" wire:click="toggleSequence({{ $selected->id }})" wire:confirm="Enable new enrolments for this sequence? Its steps may send client messages when the automation engine runs.">Turn on</x-admin.button>
                             @endif
                         </div>
                     </div>

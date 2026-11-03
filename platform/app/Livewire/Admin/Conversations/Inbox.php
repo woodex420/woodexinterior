@@ -15,21 +15,24 @@ use App\Domain\Conversations\Models\Conversation;
 use App\Domain\Conversations\Models\Message;
 use App\Integrations\WhatsApp\Contracts\WhatsAppGateway;
 use App\Livewire\Concerns\InteractsWithAdmin;
+use App\Livewire\Concerns\WithConversationHistory;
 use App\Models\User;
 use App\Settings\BusinessSettings;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use Throwable;
 
 /**
@@ -45,7 +48,9 @@ use Throwable;
 class Inbox extends Component
 {
     use InteractsWithAdmin;
+    use WithConversationHistory;
     use WithFileUploads;
+    use WithPagination;
 
     #[Url(except: 'open')]
     public string $status = 'open';
@@ -62,9 +67,14 @@ class Inbox extends Component
     #[Url(except: '')]
     public string $assignment = '';
 
-    public int $historyLimit = 60;
-
+    #[Locked]
     public ?int $selectedId = null;
+
+    #[Locked]
+    public ?int $pendingSelectionId = null;
+
+    /** Mobile list navigation never detaches the composer from its conversation. */
+    public bool $showList = false;
 
     public string $draft = '';
 
@@ -81,7 +91,7 @@ class Inbox extends Component
     public function updating(string $name): void
     {
         if (in_array($name, ['status', 'channel', 'search', 'unreadOnly', 'assignment'], true)) {
-            $this->selectedId = null;
+            $this->resetPage();
         }
     }
 
@@ -90,18 +100,13 @@ class Inbox extends Component
         abort_unless(in_array($filter, ['all', 'open', 'pending', 'closed', 'unread'], true), 422);
         $this->status = $filter === 'unread' ? 'all' : $filter;
         $this->unreadOnly = $filter === 'unread';
-        $this->selectedId = null;
+        $this->resetPage();
     }
 
-    public function loadEarlier(): void
+    /** @return LengthAwarePaginator<int, Conversation> */
+    public function conversations(): LengthAwarePaginator
     {
-        $this->historyLimit = min(600, max(60, $this->historyLimit) + 60);
-    }
-
-    /** @return Collection<int, Conversation> */
-    public function conversations(): Collection
-    {
-        return $this->query()->limit(60)->get();
+        return $this->query()->paginate(60);
     }
 
     /** @return array{open: int, pending: int, unread: int, closed: int} */
@@ -121,9 +126,52 @@ class Inbox extends Component
     {
         $conversation = Conversation::query()->findOrFail($id);
         $this->authorize('view', $conversation);
+        $this->showList = false;
 
-        $this->selectedId = $id;
-        $this->historyLimit = 60;
+        if ($this->selectedId === $id) {
+            $this->pendingSelectionId = null;
+            if ($this->historyBeforeId === null) {
+                $conversation->markRead();
+            }
+
+            return;
+        }
+        if (trim($this->draft) !== '' || trim($this->note) !== '' || $this->attachment !== null) {
+            $this->pendingSelectionId = $id;
+
+            return;
+        }
+        $this->activateConversation($conversation);
+    }
+
+    public function cancelSwitch(): void
+    {
+        $this->pendingSelectionId = null;
+    }
+
+    public function confirmSwitch(): void
+    {
+        if ($this->pendingSelectionId === null) {
+            return;
+        }
+        $conversation = Conversation::query()->findOrFail($this->pendingSelectionId);
+        $this->authorize('view', $conversation);
+        $this->activateConversation($conversation);
+    }
+
+    public function backToList(): void
+    {
+        $this->showList = true;
+        $this->pendingSelectionId = null;
+    }
+
+    private function activateConversation(Conversation $conversation): void
+    {
+        $this->selectedId = $conversation->id;
+        $this->pendingSelectionId = null;
+        $this->showList = false;
+        $this->resetHistory();
+        $this->resetValidation();
         $this->draft = '';
         $this->note = '';
         $this->attachment = null;
@@ -237,7 +285,8 @@ class Inbox extends Component
 
         $this->draft = '';
         $this->attachment = null;
-        $this->dispatch('chat-scroll');
+        $this->resetHistory();
+        $this->dispatch('chat-scroll', reset: true);
         $this->toast($message->status === MessageStatus::Sent ? 'Sent.' : 'Saved as failed — WhatsApp refused it.');
     }
 
@@ -254,6 +303,8 @@ class Inbox extends Component
         $action->note($conversation, $this->note, $user);
 
         $this->note = '';
+        $this->resetHistory();
+        $this->dispatch('chat-scroll', reset: true);
         $this->toast('Note added — the client never sees it.');
     }
 
@@ -313,18 +364,23 @@ class Inbox extends Component
     {
         $this->authorize('viewAny', Conversation::class);
         $conversation = $this->selected();
-        $limit = min(600, max(60, $this->historyLimit));
+        $window = $this->historyWindow($conversation, authors: true);
 
         return view('livewire.admin.conversations.inbox', [
             'conversations' => $this->conversations(),
             'counts' => $this->counts(),
             'selected' => $conversation,
-            'thread' => $conversation?->messages()->with('author')->latest('id')->limit($limit)->get()->reverse()->values() ?? new Collection,
-            'hasEarlier' => $conversation !== null && $conversation->messages()->count() > $limit,
+            'thread' => $window['messages'],
+            'hasEarlier' => $window['hasEarlier'],
             'configured' => $whatsapp->isConfigured(),
             'channels' => Channel::cases(),
             'staff' => $this->staff(),
         ]);
+    }
+
+    protected function historyConversation(): ?Conversation
+    {
+        return $this->selected();
     }
 
     private function selected(): ?Conversation
@@ -358,6 +414,6 @@ class Inbox extends Component
                         ->orWhereHas('contact', fn (Builder $c): Builder => $c->where('name', 'like', $term));
                 });
             })
-            ->orderByDesc('last_message_at');
+            ->orderByDesc('last_message_at')->orderByDesc('id');
     }
 }

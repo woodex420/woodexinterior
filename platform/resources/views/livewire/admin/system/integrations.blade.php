@@ -28,7 +28,7 @@
             <div class="flex h-full flex-col p-5">
                 <div class="flex items-center justify-between gap-3">
                     <span class="flex size-12 items-center justify-center rounded-xl bg-gray-50 text-navy-800 dark:bg-white/5 dark:text-white"><x-icon :name="$provider['icon']" class="size-6" /></span>
-                    <x-admin.badge :color="$looks[$provider['state']][0]">{{ $looks[$provider['state']][1] }}</x-admin.badge>
+                    <x-admin.badge :color="$looks[$provider['state']][0]">{{ $provider['state_label'] ?? $looks[$provider['state']][1] }}</x-admin.badge>
                 </div>
                 <p class="mt-4 text-theme-xs uppercase tracking-wide text-gray-400">{{ $groups[$provider['group']] }}</p>
                 <h2 class="mt-1 text-theme-lg font-medium text-gray-900 dark:text-white">{{ $provider['name'] }}</h2>

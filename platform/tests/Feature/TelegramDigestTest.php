@@ -93,7 +93,7 @@ it('sends the daily digest to every linked chat', function () {
     expect($this->owner->fresh()->notifications)->toHaveCount(1);
 });
 
-it('keeps each role to the numbers it may see', function () {
+it('keeps staff digests in-app while only the owner receives Telegram', function () {
     $sales = $this->userWithRole('sales');
     TelegramLink::query()->create(['user_id' => $sales->id, 'chat_id' => 600, 'is_active' => true, 'linked_at' => now()]);
 
@@ -105,9 +105,8 @@ it('keeps each role to the numbers it may see', function () {
     expect($ownerText)->toContain('Money in yesterday:')
         ->and($ownerText)->toContain('Approvals waiting:');
 
-    expect($salesText)->toContain('Follow-ups due:')
-        ->and($salesText)->not->toContain('Money in yesterday:')
-        ->and($salesText)->not->toContain('Approvals waiting:');
+    expect($salesText)->toBe('')
+        ->and($sales->fresh()->notifications)->toHaveCount(1);
 });
 
 it('summarises the week that just ended on Mondays', function () {

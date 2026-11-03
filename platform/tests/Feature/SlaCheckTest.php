@@ -12,8 +12,9 @@ beforeEach(function () {
     $this->newStage = PipelineStage::query()->where('key', 'new')->value('id');
 });
 
-it('flags an uncontacted lead once and alerts the owner and managers on Telegram', function () {
+it('flags an uncontacted lead once with owner-only Telegram and preserved staff in-app alerts', function () {
     $owner = $this->userWithRole('owner');
+    TelegramLink::query()->create(['user_id' => $owner->id, 'chat_id' => 503, 'is_active' => true]);
     $manager = $this->userWithRole('sales_manager');
     $sales = $this->userWithRole('sales');
     TelegramLink::query()->create(['user_id' => $sales->id, 'chat_id' => 501, 'is_active' => true, 'linked_at' => now()]);
@@ -29,16 +30,18 @@ it('flags an uncontacted lead once and alerts the owner and managers on Telegram
         ->and($contacted->fresh()->sla_breached_at)->toBeNull()
         ->and($notDue->fresh()->sla_breached_at)->toBeNull()
         ->and($late->activities()->where('type', 'system')->where('body', 'like', 'First response time missed%')->exists())->toBeTrue()
-        ->and($this->telegram->textsFor(501))->toHaveCount(1)
-        ->and($this->telegram->textsFor(501)[0])->toContain('Response time missed')->toContain($late->ref)
-        ->and($this->telegram->textsFor(502))->toHaveCount(1)
+        ->and($this->telegram->textsFor(501))->toBe([])
+        ->and($this->telegram->textsFor(502))->toBe([])
+        ->and($this->telegram->textsFor(503))->toHaveCount(1)
+        ->and($this->telegram->textsFor(503)[0])->toContain('Response time missed')->toContain($late->ref)
+        ->and($manager->notifications()->count())->toBe(1)
         ->and($owner->notifications()->count())->toBe(1)
         ->and($sales->notifications()->first()->data['kind'])->toBe('lead.sla_breached');
 
     // Running again does not alert again.
     Artisan::call('woodex:sla-check');
 
-    expect($this->telegram->sent)->toHaveCount(2)
+    expect($this->telegram->sent)->toHaveCount(1)
         ->and($sales->notifications()->count())->toBe(1);
 });
 

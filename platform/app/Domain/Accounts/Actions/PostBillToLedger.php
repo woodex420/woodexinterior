@@ -10,6 +10,7 @@ use App\Domain\Accounts\Models\Account;
 use App\Domain\Accounts\Models\Bill;
 use App\Domain\Accounts\Models\JournalEntry;
 use App\Domain\Accounts\Models\Vendor;
+use App\Domain\Projects\Services\ProjectCostAccess;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -22,84 +23,90 @@ final class PostBillToLedger
 {
     public function handle(Bill $bill, ?User $actor = null): JournalEntry
     {
-        $existing = JournalEntry::query()
-            ->where('source_type', 'bill')
-            ->where('source_id', $bill->id)
-            ->first();
+        $actor = app(ProjectCostAccess::class)->actor($actor ?? $this->systemActor());
 
-        if ($existing !== null) {
-            return $existing;
-        }
+        return DB::transaction(function () use ($bill, $actor): JournalEntry {
+            // Re-read under a source-row lock before checking idempotence or the bill's state.
+            $bill = Bill::query()->lockForUpdate()->findOrFail($bill->id);
+            $existing = JournalEntry::query()
+                ->where('source_type', 'bill')
+                ->where('source_id', $bill->id)
+                ->lockForUpdate()->first();
 
-        if ($bill->status === BillStatus::Draft) {
-            throw new JournalPostingFailed("Bill {$bill->number} is still a draft — mark it received before it reaches the books.");
-        }
-
-        if ($bill->status === BillStatus::Void) {
-            throw new JournalPostingFailed("Bill {$bill->number} is void and cannot be posted.");
-        }
-
-        $payable = $this->account('2010', 'Accounts payable');
-        $total = (int) $bill->total_minor;
-
-        if ($total <= 0) {
-            throw new JournalPostingFailed("Bill {$bill->number} has no amount to post.");
-        }
-
-        $items = $bill->items()->with('account')->get();
-
-        if ($items->isEmpty()) {
-            throw new JournalPostingFailed("Bill {$bill->number} has no lines to post.");
-        }
-
-        $lines = [];
-
-        foreach ($items as $item) {
-            if ((int) $item->amount_minor <= 0) {
-                continue;
+            if ($existing !== null) {
+                return $existing;
             }
 
-            $account = $item->account;
-
-            if ($account === null || ! $account->acceptsPostings()) {
-                throw new JournalPostingFailed('A bill line points at an account that cannot receive postings. Fix the line and post again.');
+            if ($bill->status === BillStatus::Draft) {
+                throw new JournalPostingFailed("Bill {$bill->number} is still a draft — mark it received before it reaches the books.");
             }
 
-            $lines[] = [
-                'account_id' => $account->id,
-                'debit_minor' => (int) $item->amount_minor,
-                'memo' => "Bill {$bill->number} — {$item->description}",
-            ];
-        }
+            if ($bill->status === BillStatus::Void) {
+                throw new JournalPostingFailed("Bill {$bill->number} is void and cannot be posted.");
+            }
 
-        $itemTotal = array_sum(array_map(static fn (array $line): int => (int) $line['debit_minor'], $lines));
-        $tax = (int) $bill->tax_minor;
+            $payable = $this->account('2010', 'Accounts payable');
+            $total = (int) $bill->total_minor;
 
-        if ($tax > 0) {
-            $lines[] = [
-                'account_id' => $this->account('1210', 'Input tax (recoverable)')->id,
-                'debit_minor' => $tax,
-                'memo' => "Bill {$bill->number} — input tax",
-            ];
-        }
+            if ($total <= 0) {
+                throw new JournalPostingFailed("Bill {$bill->number} has no amount to post.");
+            }
 
-        if ($itemTotal + $tax !== $total) {
-            throw new JournalPostingFailed(sprintf(
-                'Bill %s totals do not add up: lines %s + tax %s ≠ total %s. Re-save the bill.',
-                $bill->number,
-                number_format($itemTotal / 100, 2),
-                number_format($tax / 100, 2),
-                number_format($total / 100, 2),
-            ));
-        }
+            $items = $bill->items()->with('account')->get();
 
-        $lines[] = ['account_id' => $payable->id, 'credit_minor' => $total, 'memo' => "Bill {$bill->number} — payable"];
+            if ($items->isEmpty()) {
+                throw new JournalPostingFailed("Bill {$bill->number} has no lines to post.");
+            }
 
-        $actor ??= $this->systemActor();
-        $vendorName = Vendor::query()->whereKey($bill->vendor_id)->value('name') ?? 'vendor';
+            $lines = [];
 
-        return DB::transaction(function () use ($bill, $actor, $lines, $vendorName): JournalEntry {
+            foreach ($items as $item) {
+                if ((int) $item->amount_minor <= 0) {
+                    continue;
+                }
+
+                $account = $item->account;
+
+                if ($account === null || ! $account->acceptsPostings()) {
+                    throw new JournalPostingFailed('A bill line points at an account that cannot receive postings. Fix the line and post again.');
+                }
+
+                $lines[] = [
+                    'account_id' => $account->id,
+                    'debit_minor' => (int) $item->amount_minor,
+                    'memo' => "Bill {$bill->number} — {$item->description}",
+                ];
+            }
+
+            $itemTotal = array_sum(array_map(static fn (array $line): int => (int) $line['debit_minor'], $lines));
+            $tax = (int) $bill->tax_minor;
+
+            if ($tax > 0) {
+                $lines[] = [
+                    'account_id' => $this->account('1210', 'Input tax (recoverable)')->id,
+                    'debit_minor' => $tax,
+                    'memo' => "Bill {$bill->number} — input tax",
+                ];
+            }
+
+            if ($itemTotal + $tax !== $total) {
+                throw new JournalPostingFailed(sprintf(
+                    'Bill %s totals do not add up: lines %s + tax %s ≠ total %s. Re-save the bill.',
+                    $bill->number,
+                    number_format($itemTotal / 100, 2),
+                    number_format($tax / 100, 2),
+                    number_format($total / 100, 2),
+                ));
+            }
+
+            $lines[] = ['account_id' => $payable->id, 'credit_minor' => $total, 'memo' => "Bill {$bill->number} — payable"];
+
+            $project = app(ProjectCostAccess::class)->project($bill->project_id, $actor);
+            $vendorName = Vendor::query()->whereKey($bill->vendor_id)->value('name') ?? 'vendor';
+
             return app(PostJournalEntry::class)->handle($actor, $lines, [
+                'project_id' => $project?->id,
+                'business_line' => $project?->business_line->value,
                 'source_type' => 'bill',
                 'source_id' => $bill->id,
                 'business_date' => $bill->bill_date->toDateString(),

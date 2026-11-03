@@ -13,7 +13,7 @@
         <x-admin.card :title="$editingId ? 'Edit vendor' : 'Add a vendor'"
                       description="Only the name is required. Payment terms decide the due date a new bill starts from; the default expense account pre-fills the first line."
                       class="mb-6">
-            <form wire:submit="save" class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <form wire:submit="save" x-on:keydown.enter="if ($event.target.tagName === 'INPUT' &amp;&amp; !['checkbox','radio','file'].includes($event.target.type)) { $event.preventDefault(); $el.querySelector('[data-explicit-save]')?.click(); }" class="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
                     <label class="wx-label" for="vendor-name">Name</label>
                     <input id="vendor-name" type="text" wire:model="name" class="wx-input" placeholder="Chughtai Timber" />
@@ -69,7 +69,7 @@
                         <input type="checkbox" wire:model="isActive" class="size-4 rounded border-gray-300" />
                         Active
                     </label>
-                    <x-admin.button type="submit" icon="save">Save vendor</x-admin.button>
+                    <x-admin.button type="button" data-explicit-save wire:click="save" wire:loading.attr="disabled" wire:target="save" icon="save">Save vendor</x-admin.button>
                     <button type="button" wire:click="closeForm" class="text-theme-sm text-gray-500 hover:underline">Cancel</button>
                 </div>
             </form>

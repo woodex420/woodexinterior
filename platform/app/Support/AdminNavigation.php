@@ -49,19 +49,14 @@ final class AdminNavigation
                 self::item('Documents', 'book', 'admin.sales.documents', 'quotes.view'),
             ]),
             self::group('Accounts', [
-                self::item('Chart of Accounts', 'book', 'admin.accounts.chart', 'accounts.view'),
-                self::item('Journals', 'layers', 'admin.accounts.journals', 'accounts.view'),
-                self::item('Trial balance', 'chart', 'admin.accounts.trial', 'accounts.view'),
-                // Slice I: the money-out side, which had no screen at all before 26 Oct.
-                self::item('Profit & loss', 'trending-up', 'admin.accounts.profit', 'accounts.view'),
+                self::item('Ledger & reports', 'book', 'admin.accounts.workspace', 'accounts.view'),
                 self::item('Payables', 'invoice', 'admin.accounts.payables', 'accounts.view'),
                 self::item('Income & expenses', 'banknote', 'admin.accounts.expenses', 'accounts.view'),
-                self::item('Periods', 'clock', 'admin.accounts.periods', 'accounts.view'),
-                self::item('Payment Methods', 'wallet', 'admin.accounts.methods', 'accounts.view'),
             ]),
             self::group('Projects', [
                 self::item('Projects', 'hammer', 'admin.projects.index', 'projects.view'),
                 self::item('Board', 'kanban', 'admin.projects.board', 'projects.view'),
+                self::item('Vendors & costs', 'wallet', 'admin.projects.costs', 'accounts.view'),
                 self::item('Client portal', 'link', 'admin.projects.portal', 'projects.view'),
                 self::item('Handovers', 'check-circle', 'admin.projects.handovers', 'projects.view'),
             ]),

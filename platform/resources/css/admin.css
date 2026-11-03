@@ -4,6 +4,7 @@
  */
 @import "tailwindcss";
 @import "./tokens.css";
+@import "./auth.css";
 @import "preline/variants.css";
 
 @source "../views";
@@ -322,3 +323,12 @@ button.wx-summary-card:hover { background:var(--wx-elevated); border-color:var(-
 .dark .wx-admin .bg-error-50 { background:#402126; }
 .dark .wx-admin .bg-warning-50 { background:#3d301c; }
 @media (prefers-reduced-motion:reduce) { .wx-admin *, .wx-admin *::before, .wx-admin *::after { scroll-behavior:auto !important; transition-duration:0.01ms !important; animation-duration:0.01ms !important; } }
+
+/* Compact Preline-style operational surfaces; existing tokens/routes/plugins remain authoritative. */
+.wx-stat { box-shadow:0 1px 2px rgb(0 0 0 / .025); }
+a.wx-stat:hover { border-color:var(--wx-control-border); transform:translateY(-1px); }
+.wx-admin .menu-item-active::before { content:""; position:absolute; left:0; top:25%; bottom:25%; width:3px; border-radius:3px; background:var(--wx-primary); }
+@media (prefers-reduced-motion: reduce) {
+  .wx-admin-sidebar,.wx-stat,.wx-admin .menu-item { transition:none !important; }
+  a.wx-stat:hover { transform:none; }
+}

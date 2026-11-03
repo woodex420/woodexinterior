@@ -7,6 +7,25 @@
         </x-slot:actions>
     </x-admin.page-header>
 
+    <x-admin.card class="mb-5" title="One year · import / export" description="Export is a read-only snapshot of active CRM leads created in the selected UTC year, with current stage kept as reference. Archived leads/contacts and all financial data are excluded.">
+        <div class="flex flex-wrap items-end gap-3">
+            <div>
+                <label for="export-lead-year" class="wx-label">CSV year</label>
+                <input id="export-lead-year" type="number" min="2000" max="{{ now()->year }}" wire:model.live="year" class="wx-input w-36">
+            </div>
+            <x-admin.button variant="secondary" icon="download" :href="route('admin.leads.export', ['year' => $year], false)" download>Export year CSV</x-admin.button>
+            @if (request()->attributes->get('synthetic_direct_preview') === true)
+                <x-admin.button variant="secondary" :href="asset('__sandbox/leads-demo-2026.csv')" download>Download 16-row 2026 demo CSV</x-admin.button>
+                @if (is_string(config('preview.demo_sheet_url')) && preg_match('~\Ahttps://docs\.google\.com/spreadsheets/d/[a-zA-Z0-9_-]+/edit\z~', config('preview.demo_sheet_url')) === 1)
+                    <x-admin.button variant="secondary" :href="config('preview.demo_sheet_url')" target="_blank" rel="noopener noreferrer">Open manual Drive snapshot</x-admin.button>
+                @endif
+            @endif
+        </div>
+        <p class="mt-3 text-theme-xs text-gray-500">CSV columns: Sr, Date, Name, Contact, Status. Contacts use the international 00 prefix. Keep all columns as plain text in Sheets, especially phone numbers and day/month/year dates. Formula-like names/stages are escaped in the export; stored records are unchanged. Imports still require mapping, a dry run and your final confirmation.</p>
+        <p class="mt-2 text-theme-xs text-gray-500">Recommended Drive workflow: a dedicated one-year demo sheet, manual snapshot export and owner-reviewed CSV import. No background or two-way sync is enabled, and no old workbook is overwritten. Arena’s connected Drive is separate from the app’s Google Workspace connection.</p>
+        <a href="{{ route('admin.system.connections', [], false) }}" class="mt-2 inline-block text-theme-sm underline">Google Workspace connection settings</a>
+    </x-admin.card>
+
     <x-admin.card class="mb-5">
         <div class="grid gap-4 md:grid-cols-3">
             <div>
@@ -15,7 +34,7 @@
             </div>
             <div>
                 <p class="text-theme-sm font-medium text-navy-800 dark:text-white">2 · Dry run</p>
-                <p class="mt-1 text-theme-xs text-gray-500">A read-only rehearsal. The report shows counts and row numbers only — never names or phone numbers — so you can review it safely.</p>
+                <p class="mt-1 text-theme-xs text-gray-500">A read-only rehearsal. The report shows counts and original CSV record numbers only — never names or phone numbers — so you can review it safely.</p>
             </div>
             <div>
                 <p class="text-theme-sm font-medium text-navy-800 dark:text-white">3 · Import</p>
@@ -26,7 +45,7 @@
 
     <x-admin.card class="mb-5">
         <h2 class="mb-1 text-theme-base font-medium text-gray-900 dark:text-white">1 · Choose the sheet</h2>
-        <p class="mb-4 text-theme-xs text-gray-500">UTF-8 CSV, up to 5 MB and 5,000 rows. Dates must look like 05/01/2025 (day/month/year).</p>
+        <p class="mb-4 text-theme-xs text-gray-500">UTF-8 CSV, up to 5 MB, 5,000 rows and 200 columns. From Google Sheets, download the current sheet as CSV; review each year separately. This does not connect or sync a Google account. Dates must look like 05/01/2025 (day/month/year).</p>
         <input type="file" wire:model="file" accept=".csv,text/csv,text/plain" class="wx-input h-auto py-2.5" aria-label="Lead sheet CSV">
         @error('file') <p class="mt-2 text-theme-xs text-error-600">{{ $message }}</p> @enderror
         <div wire:loading wire:target="file" class="mt-2 text-theme-xs text-gray-500">Reading the sheet…</div>
@@ -43,6 +62,14 @@
         <x-admin.card class="mb-5">
             <h2 class="mb-1 text-theme-base font-medium text-gray-900 dark:text-white">2 · Match the columns</h2>
             <p class="mb-4 text-theme-xs text-gray-500">Headings are pre-matched where the sheet gives them away — check each one. Status is optional; it is kept as a note on the lead, not as a stage.</p>
+
+            @if ($headingsForReview !== [])
+                <div class="mb-4 rounded-xl border border-warning-200 bg-warning-50 p-4 text-theme-sm dark:bg-warning-500/10">
+                    <p class="font-medium">Duplicate or blank headings need your review</p>
+                    <p class="mt-1">Each has its original column number: {{ implode(', ', $headingsForReview) }}. Values are kept separately, never merged or overwritten. Choose the intended column below; unmatched columns remain notes.</p>
+                    <label class="mt-3 flex items-start gap-2"><input type="checkbox" wire:model.live="headingsReviewed" class="mt-1">I checked the original sheet positions and reviewed the column mapping.</label>
+                </div>
+            @endif
 
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 @foreach ($canonical as $target)
@@ -74,6 +101,23 @@
                     @error('batch') <p class="mt-1 text-theme-xs text-error-600">{{ $message }}</p> @enderror
                 </div>
             </div>
+        </x-admin.card>
+
+        <x-admin.card class="mb-5" title="Review source years — no import" description="Counts from the matched Date column only. No database comparison, date changes or application records are written. Run again after changing the mapping or selected year.">
+            <x-admin.button variant="secondary" icon="search" wire:click="reviewSourceDates" wire:loading.attr="disabled" wire:target="reviewSourceDates">Review source dates</x-admin.button>
+            @if ($sourceDateReview !== null)
+                @if (! $sourceDateReview['mapped'])
+                    <p class="mt-3 text-theme-sm text-warning-700">Choose the Date column first. {{ $sourceDateReview['unmapped'] }} rows have not been assigned a source date.</p>
+                @else
+                    <div class="mt-4 flex flex-wrap gap-2" aria-label="Source year counts">
+                        @foreach ($sourceDateReview['years'] as $sourceYear => $count)
+                            <x-admin.badge color="gray">{{ $sourceYear }} · {{ $count }} dates</x-admin.badge>
+                        @endforeach
+                    </div>
+                    <p class="mt-3 text-theme-sm text-gray-600 dark:text-gray-400">{{ $sourceDateReview['selected'] }} non-future dates in selected year {{ $year }} · {{ $sourceDateReview['other'] }} in other years · {{ $sourceDateReview['missing'] }} missing · {{ $sourceDateReview['invalid'] }} invalid · {{ $sourceDateReview['future'] }} future.</p>
+                    <p class="mt-2 text-theme-xs text-gray-500">Keep 2025 and 2026 separate. Do not assign a year to undated rows or infer an opportunity from a contact/reference list. These are date counts, not approved or eligible import counts; duplicate identities and the existing database still need review. Dates must be day/month/year.</p>
+                @endif
+            @endif
         </x-admin.card>
 
         <x-admin.card>
@@ -111,7 +155,7 @@
                                     <th class="px-3 py-2.5 font-medium">Outcome</th>
                                     <th class="px-3 py-2.5 font-medium">Why</th>
                                     <th class="px-3 py-2.5 text-right font-medium">Rows</th>
-                                    <th class="px-3 py-2.5 font-medium">Sheet row numbers</th>
+                                    <th class="px-3 py-2.5 font-medium">Source CSV record numbers</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">

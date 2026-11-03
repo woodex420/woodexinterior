@@ -1,6 +1,122 @@
 # Woodex OS: build state
 
+## Latest — revision108: relative preview navigation and2026 demo
+
+- [Report](../docs/audit/108_PREVIEW_NAVIGATION_AND_SINGLE_YEAR_DEMO_2026-11-03.md), [queue](../ox-pending.md). Owner confirmed three copied tabs represent the same16 test enquiries. New fictional single-year2026 demo is now in the isolated preview; original workbooks/production unchanged.
+- Private relative-origin transport plus cookie-independent XHR upload context; signed Livewire state and normal CSRF preserved.15 controlled alternate-origin browser checks PASS; actual Arena/E2B403 owner acceptance remains open. Initial traffic authorization is a platform boundary, not an app password issue.
+-16 demo rows browser-imported, repeat skipped, one-year CSV export implemented; text-safe manual Drive snapshot created and field-for-field round-trip verified. Automatic/two-way app sync is OFF; no original workbook overwritten or financial dry-run/import.
+- Native focused15/138,92source+62UI/context, Pint7 and preview Vite PASS. Local full PHPStan blocked by FrankenPHP subprocess re-exec; hosted exact-source results tracked in PR8. No production/deployment/merge/privacy conversion; all36 gates retained.
+
+---
+
+## Latest — revision107: source-year review and import provenance
+
+- [Read-only review](../docs/audit/107_LEADS_CONTACTS_SOURCE_REVIEW_2026-11-03.md), [queue](../ox-pending.md).22 dated2025/48 dated2026/7 undated monthly candidates;42 Target-client/26 database references. No actual import/database comparison or financial dry-run; financial reference-only hold unchanged.
+- Year inventory/source CSV record positions/per-review temporary cleanup implemented. Repeated16 content groups across three2026 tabs and33 cross-tab phone groups need owner identity/source decisions, not automatic merging/opportunity creation.
+- Fixed the106 hosted guard-test failure's absent-directory short-circuit, preserving every private-launcher refusal. Local107 native helper17, guard/syntax/Pint5/92source+61UI checks PASS; added3unit+2feature tests. Fresh hosted MySQL run41575009030 at application-source `e05a50c` **2033 tests/11282 assertions PASS**; prior106 SQLite success is not107 certification. Actual owner/browser and local static/build acceptance remain separate. Disposable106 local app runtime did not persist; no existing DB was reset/reseeded.
+- No production changes, apply, merge/deployment/provider send/privacy conversion. Deployment FINAL, auto-deploy OFF; not all36 gates complete.
+
+---
+
+## Latest — revision106: direct synthetic admin and verified workflow repairs
+
+- [Report](../docs/audit/106_DIRECT_SYNTHETIC_ADMIN_AND_REPAIRS_2026-11-03.md) / [canonical queue](../ox-pending.md). Actual105 sign-in failed; transparent welcome now pauses login and offers explicitly isolated direct synthetic access. No production auth bypass.
+- Three Accounts front doors/all original URLs retained; iframe-safe vendor/project-cost/Contact enquiry actions; authorised screen/record search; duplicate-header manual review; owner-only missing-default restore **paused**. Original9 Assistant queries plus4 diagnostics. Bounded native Chat windows/drafts tested on both650-message surfaces.
+- **2,028 tests /11,277 assertions PASS239.58s**, full app PHPStan0, Pint/build,61 Node checks and16 cookie-stripped browser checks. Additional constrained-frame tests verified enquiry→lead/contact/in-app notification, vendor validation/edit/Enter, linked cost save, Accounts tabs and mobile Redirects search. These are isolated checks, not actual Arena-parent/production certification.
+- Archive inspected source-only; no historical import/recovery/provider send. Live Sheets/channel/AI work incomplete; financial reference-only hold/mapping/backup gates retained. Requested repository privacy change waits for completion, not performed.
+- **Not all36 gates complete. Production unchanged. Deployment FINAL / auto-deploy OFF.** Supported local MySQL, installed/restore/staging/exact-release and owner-browser acceptance remain separate.
+
+---
+
+## Latest — revision105: proxy-safe sign-in quick fix
+
+- [Report](../docs/audit/105_PROXY_SAFE_SIGN_IN_QUICK_FIX_2026-11-03.md): relative validated same-origin POST; Fortify JSON safe relative intended navigation; do not follow proxy-generated absolute redirects. Native authentication/2FA/CSRF retained.
+- Requested default Glass appearance plus persisted Solid contrast option. Updated isolated runtime/assets; no seed or migration rerun.
+- **1,988 tests /11,115 assertions PASS241.59s**; PHPStan0/Pint3/build;57 source/helper checks;30 Chromium checks including a controlled HTTPS→HTTP/internal-host proxy/session reload. Actual Arena parent confirmation remains open.
+- Parent104 hosted MySQL41526580232 SUCCESS, separately confirmed; local genuine MySQL still blocked.
+- **Production not deployed; no data/env changes.** Manual release/installed identity/private backup+verified restore/staging still required. Deployment FINAL/auto-deployOFF/36 master gates retained.
+
+---
+
+## Latest — revision104: single transparent welcome card and real SEO/Assistant extensions
+
+- [Current master queue](../ox-pending.md) is maintained with36 gates; **not all backlog items are complete**. [Evidence/report](../docs/audit/104_SINGLE_GLASS_CARD_SEO_AND_MYSQL_CHECKPOINT_2026-11-03.md).
+- Requested GitHub MySQL topic and genuine8.4.6 binary checked first: release-assets redirect fails SSL/0bytes. **Local MySQL still blocked**, SQLite preview honestly labelled; no compatible emulator/obsolete server substituted. Priorc793425 hosted genuine MySQL41523310965 is SUCCESS, not local-runtime proof/new104 certification.
+- One centred28%-opaque smoke-glass login, no split promotional panel or nested opaque hint; white text/transparent fields/photo and reduced-transparency fallback. Default-OFF synthetic prefill and normal authentication preserved.
+- SEO category/search/review/clear/direct links, permission revocation and selected-audit-only execution implemented. Third Assistant website-metadata diagnostic yields12 deterministic questions, with scoped counts/recommendations/category citations and no executable fix/provider call.
+- Local **1,969 tests /11,070 assertions PASS224.87s**; focused28/151; PHPStan0/Pint6/build;92+55 source contracts;28 browser cases PASS final exit0. [Desktop](../docs/audit/evidence/104/login-desktop.png).
+- **Production unchanged; deployment FINAL; auto-deploy OFF.** Remaining MySQL/concurrency/installed/backup/restore/staging/backlog gates stay open. Older entries below are historical.
+
+---
+
+
+## Latest — revision103: vector brand, glass login and isolated testing
+
+- [Current master queue](../ox-pending.md): **36 gates**. [Revision103 evidence](../docs/audit/103_VECTOR_BRAND_GLASS_LOGIN_AND_DIAGNOSTICS_2026-11-03.md) supersedes proposed-only status of these slices; older entries below are historical.
+- Approved filled W + gold-dot SVG across shared OS/Interior UI,142 public pages,404/builder/Studio/favicons. Original glass login over existing site photograph; gated visible/pre-filled test credentials; normal Fortify/CSRF/session authentication retained. Saved/frozen/custom PDF history untouched.
+- Fresh private synthetic SQLite DB:104 existing migrations/reference seeds, owner/manager/accountant accounts, non-sending mail and no worker. Prior preview DB/environment retained. No production/chat DB change or import.
+- First slices implemented: read-only SEO canonical/social/JSON-LD tab; two permission-safe Assistant diagnostics preserving nine queries; sidebar client filter/neutral stats. No provider call, executable fix or publishing action.
+- Final local acceptance: **1,964 tests /11,035 assertions PASS225.41s**, PHPStan0, Pint12, build,92 release +55 UI/auth source checks and27 browser checks. New exact-SHA hosted MySQL CI is separate; actual Arena owner/proxy confirmation and broader backlog/release acceptance remain open.
+- **Production unchanged; deployment FINAL; auto-deploy OFF.** No provider send, merge or deployment. See current master/report before older continuation notes.
+
+---
+
+
+## Latest continuation — revision102: preview login, workbook review and ox-pending
+
+- Current master queue: [ox-pending](../ox-pending.md); 34 tracked gates, including earlier holds. V02 is now implemented101, not an incomplete workspace; V03 delivery/budget acceptance remains partial.
+- Owner choices: preview login; inspect/recommend two workbooks before import; Assistant diagnoses and proposes fixes, owner approves writes. Only workbook/provider planning scope reopened; Sheets append/backup integrations remain deferred.
+- Preview login works through normal authentication, failure feedback, retry and reload. Added opt-in local/testing SQLite identity guidance, default OFF; no password/bypass/account change. 10 new tests /42 assertions PASS; scoped static0/Pint3 PASS; browser login and4 local iframe checks PASS. Actual owner Arena-browser confirmation pending.
+- Both workbook originals privately inspected across all17 tabs; 2026/copied lead records and ambiguous accounting rows are quarantined from any import. Public revision102 contains only sanitized findings/mapping proposals, no workbook data or credentials.
+- Prior exact4cd99c6 hosted41508608055 confirmed SUCCESS; newer102 validation is separate. No workbook import, provider call/message, production write, merge or deployment. Full102 serial native suite: **1,933 tests /10,872 assertions PASS (263.59s; exact9c20de1 after cross-engine test correction)**; build and92 source contracts PASS;24 base +6 login +4 local iframe browser checks PASS.
+- Follow-up choices: separate2025/2026 review (dates unchanged); historical accounts reference-only/no import dry-run; AI may receive approved permission-checked aggregates after model/budget/field-policy approval; one conditional non-sensitive report to the paired owner chat. No external call/send yet.
+- Final candidate **9c20de1** hosted MySQL **41512958972 SUCCESS:1,933 tests/10,870 assertions**, all groups exit0. LocalSQLite1,933/10,872 PASS263.59s; deliberate banner show/hide assertions differ. Source guard/authentication unchanged; initial single test-engine assumption corrected. Documentation-only follow-up does not certify production/concurrent writers.
+- **Deployment last; auto-deploy OFF.** See revision102 and ox-pending before older continuation notes below.
+
+---
+
+
 _Update at the end of every task (docs/03 Part A §7)._
+
+## Latest continuation — increment101: project-cost screens and updated preview
+
+- Projects now has **Vendors & costs** (`/admin/projects/costs`): existing Hub pattern reusing Project costs, Bills, Expenses and Vendors. Same new project-cost component is embedded in ProjectShow, with one page H1 and a locked embedded project identity. Forms use canonical bill-or-paid-expense action and stable request identity; visible domain errors and duplicate feedback. Only explicit New cost rotates a key.
+- Read-only summaries separate purchase basis from recoverable bill tax, supplier bills/payments/AP, customer issued invoices/allocated receipts/AR and credit notes. Draft/void/reversed source exclusions tested. Legacy costs have separate recorded/posted counts and unknown supplier/payment warning; legacy-only difference is not overall profit. Finance managers use linked entry; existing non-finance project-manager legacy behavior remains available under the old update policy.
+- Existing bill screen gains whole-document project selector/filter, scoped totals and actual dated partial-payment sums within the current calendar month. Edit/payment amounts use exact Money decimal strings, including90071992547409.93; archived project labels retained. No new migration, dependency or financial backfill in101.
+- New21 UI/summary cases107 assertions and navigation/role regression83/288 passed before final month-bound hardening; scoped Larastan0/Pint/build/92 contracts pass. New9 real browser workflow checks plus rerun24 app +4 local iframe checks all pass (37 current checks), including actual one-source ledger assertions and mobile390px. Final exact-source serial full native suite **1923 passed /10830 assertions /217.35s**, strict warnings/skips and exit0. **Do not run concurrent Pest processes against the same runtime: fake-storage directories are shared.** An overlapping focused run saw foreign synthetic quote files; no test/vendor weakening was used. Final run is serial.
+- Updated native preview restarted on0.0.0.0:8080, process `woodex-os-updated-project-costs--c3459941`, source `.cache/preview/source/platform`,104 migrations, external HTTP rejected/mail array/no workers or scheduler. Synthetic PREVIEW-COSTS-01 (project1) has a Bill, partial payment, paid expense and unposted legacy example; quote is draft/synthetic. Browser test additions were removed by restoring the pre-browser synthetic fixture, leaving this demo usable. User preview: `/admin/projects/costs?costProject=1`.
+- Prior hosted41504047552 confirmed SUCCESS forabad230; new candidate hosted CI is separate. Report `../docs/audit/101_PROJECT_COST_SCREENS_2026-11-02.md`. Real MySQL concurrent writers/upgrade, installed financial identity/audit, backup+restore, staging and wider Chat/Website/Assistant/archive gates remain. Mixed-project line allocations are not implemented. Deployment LAST; auto-deploy OFF; no production writes/provider sends/merge/deploy.
+
+## Latest continuation — increment 100: linked project cost foundation (partial workflow)
+
+- New source: optional project links on existing Bills/Expenses; project-aware journals; one-source bill OR paid-expense action; request UUID/fingerprint retry protection; optional UUID payment replay protection with payment-row journal source IDs. Canonical `SaveBill` / `ReceiveBill` now protect the existing bill screen from stale draft overwrites and post-failure status clobbering. Shared vendor lock/reference check guards new bill/outgoing-expense writes. Posted history and legacy `project_expenses` are not inferred, moved or reposted.
+- One justified additive migration: `2026_11_02_180000_link_project_cost_sources.php`. Nullable indexed links; nullable unique payment UUID; request identity/fingerprint/source pointers only (no amounts). Applied only to the disposable synthetic SQLite preview; ordinary migration rerun was a no-op. Preview now has 104 migrations. No production Database Update/migration/write.
+- QA: account/project group 120/623 passed before the final isolated upgrade-fixture refactor; all 41 new cases passed again with 200 assertions after it. Full-app Larastan0 plus final save/post action recheck0; Pint passed; 92 source contracts passed. Real browser: 6 bill create/post/partial-pay/final-pay/mobile/JS checks plus rerun24 application +4 local iframe checks, all passed. Synthetic ledger assertions: one cost journal, two source-linked payments, exact50025 settlement, FK clean; synthetic fixture restored afterward. Final exact-source full native suite: **1898 passed /10710 assertions /213.04s**, strict warning/skip flags, exit0.
+- Hosted run41500249255 is confirmed SUCCESS for prior6c04989. New-source hosted CI remains pending; draft PR8 is not merged/deployed. Full workflow/UI and real MySQL concurrent-writer/upgrade checks are still gates.
+- **Next implementation:** Vendors & costs hub beside Projects using existing components; project-local form and project filters/selectors; cost/customer-billed/received/outstanding summary separating supplier AP, customer AR, recoverable tax and legacy/unreconciled project costs. None of those new screens/summaries is implemented in increment100. Whole-document linking only; no mixed-project line allocation claimed. Include visible stale-bill/domain validation feedback, field-name mapping and replace legacy float bill edit/payment prefills with an exact Money formatter plus large-value browser regressions when refining forms.
+- Report: `../docs/audit/100_LINKED_PROJECT_COST_FOUNDATION_2026-11-02.md`. Then remaining Chat/Website/Assistant/archive/install/backup-restore/staging gates. Deployment FINAL; auto-deploy OFF; deferred extras stay deferred.
+
+## Resume here — 2 Nov 2026: native preview and two accounting fixes, NOT production completion
+
+- Latest owner instruction: complete remaining pending/paused work before deployment; deployment is the final task. Owner answered: BOTH unpaid bills and paid costs with linked payments/single accounting source; KEEP previously deferred workbook/Sheets/backup/AI extras deferred. Historical frozen documents stay immutable.
+- Hosted native candidate run **41495382678: SUCCESS**, exact source **164050688445f050b4e7c0833f521f1eabfd3631**, verified through GitHub API. Detailed log download hit a restricted external host; no unverified new suite counts are claimed. PR **#8** remains draft/open, not merged/deployed.
+
+- Active branch **`arena/7093000c-woodexinterior`**; baseline master **`3fcaff8e0f78aaaa2e6e2aed2011541fd4cff944`**. Release 97 is already merged; baseline native GitHub run `41335633442` passed 1818/10348. Do not reimplement it or mistake those counts for new-candidate acceptance.
+- **Authoritative continuation:** `../docs/audit/98_MASTER_COMPLETION_PLAN_2026-11-02.md` and its **30-task CSV**. These preserve the current decisions, exact gaps, dependencies and separate implementation/test/merge/deploy/live states; older entries below are history.
+- Real native PHP 8.5.12 / Composer 2.9.1 isolated Laravel admin/public preview on **8080**, ignored `../.cache/preview/source/platform`, fresh synthetic SQLite, 103 migrations (82 schema +21 settings). Runtime-only HTTP rejection guard, no credentials, array mail, no worker/scheduler. No owner data restored. Ignored runtime is disposable across environment resets.
+- Source fixes: `ExpensesIndex` computes complete date/direction aggregates beyond 300 rendered details (also OtherIncome); `ProjectShow::addExpense` uses `Money::ofRupees` rather than floats. Regression before:4 fail/1 pass. Expanded native Unit/Accounts/Projects after:**196 pass/786 assertions**; source contracts:**92 pass**; changed-components Larastan0/Pint pass; **24 browser +4 local cross-site iframe checks** pass. No schema/lock/assets/frozen-document changes. Current branch explicitly admitted to existing read-only native CI; full candidate remote CI is separate.
+- Read-only preview integrity/FK checks pass, but finance fixtures are empty: zero detected anomalies is not financial acceptance. Production installed revision/engine/schema/ledger and isolated backup restore remain **unverified**.
+- Drive archive metadata/hashes refreshed; **content comparison pending**; no automatic overwrite/import. Workbook/financial import deferred. Next: archive comparison, remaining ledger invariants, Vendors/Projects links, owner-only Telegram, compact dedicated Website Chat, selective charcoal Website tools/SEO/media/theme/speed and permission-safe Assistant diagnostics; then exact-source gates/staging/recovery approval.
+- **Auto-deployment OFF; no production writes, provider sends, migration, deployment or merge.** Preserve existing hosting connection/ref/path and all owner data/pages/uploads/backups/keys. Current GitHub/branch works; do not request a replacement branch/prompt/Continue or credentials. Supplier workflow choice is now BOTH linked with explicit states; implementation/schema design is still pending and no historical backfill is authorized.
+
+### Revision 99 — next completed source batch
+
+- Owner-only Telegram policy now uses fresh DB authority and a reusable usable-link scope: pairing issuance/consumption, both command entry points, callback sender/private-chat checks, notification routing/channel, anonymous-route refusal, quiet-hour enqueue/flush and per-message role rechecks. Role demotion/deactivation invalidates active links/pending codes. Legacy rows and undelivered transport messages are retained; unauthorized backlog is held, not marked delivered.
+- Profile and integration actions/data are owner-gated; staff security/2FA and in-app/mail notifications remain. Shared pairing action keeps user -> link lock order. No migrations/dependency changes/provider sends/production writes.
+- QA: **152 Telegram tests /769 assertions**, including **34 new owner-only regressions**; adjacent CRM/SLA/public-intake/system tests **22/100**; full-app Larastan0; Pint26; Vite build and92 source contracts pass. Nine additional real-browser owner/staff/mobile checks pass. **Final full native suite:1857 pass/10510 assertions/216.80s**, strict warnings/skips flags and exit0, isolated SQLite under native PHP8.5.12 with private 1GB CLI memory limit. Prior24+4 browser checks rerun; total37 current browser checks. Four old staff-Telegram expectations were changed to explicit owner-positive/staff-negative checks without weakening in-app/mail assertions. New hosted CI remains pending for the next pushed source SHA, not inherited from `1640506`.
+- Report: `../docs/audit/99_OWNER_ONLY_TELEGRAM_2026-11-02.md`. Remaining next source gaps are project/vendor cost links and cross-model financial invariants, then Website Chat/UI/SEO/media/speed/Assistant. Archive comparison and actual-install/staging/restore remain unfinished gates. Do not claim full project completion or deploy.
+
+## Historical resume records (retained; superseded where revision 98 states otherwise)
 
 ## Resume here (project memory, saved 17 Oct 2026 PKT — agent export MERGED, gate green)
 

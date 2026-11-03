@@ -7,7 +7,7 @@ namespace App\Notifications\Concerns;
 use App\Integrations\Telegram\TelegramChannel;
 
 /**
- * In-app (bell) always; Telegram as well when the staff member has linked their account.
+ * In-app (bell) always; Telegram only for an active owner with a usable private link.
  */
 trait SendsToDatabaseAndTelegram
 {

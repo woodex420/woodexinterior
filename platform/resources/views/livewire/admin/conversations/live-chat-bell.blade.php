@@ -10,17 +10,24 @@
         <div x-cloak x-show="$wire.drawer" x-transition.opacity class="fixed inset-0 z-[9998] bg-gray-900/40 backdrop-blur-[2px]" wire:click="closeDrawer"></div>
         <aside x-cloak x-show="$wire.drawer" x-trap.inert.noscroll="$wire.drawer" x-transition.opacity role="dialog" aria-modal="true" aria-label="Website chats" class="wx-chat-drawer fixed inset-y-0 right-0 z-[9999] flex w-full flex-col border-l border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900">
             <header class="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 px-5 py-4 dark:border-gray-800">
-                <div><h2 class="font-semibold text-navy-900 dark:text-white">Website chats</h2><p class="mt-1 text-theme-xs text-gray-500">{{ $unread }} unread · website enquiries</p></div>
+                <div><h2 class="font-semibold text-navy-900 dark:text-white">Website chats</h2><p class="mt-1 text-theme-xs text-gray-500">{{ $unread }} unread conversations · {{ $activeTotal }} active</p></div>
                 <div class="flex items-center gap-1">
                     @if ($canManageSound)<button type="button" wire:click="toggleSound" title="{{ $soundOn ? 'Chat sound on — click to mute' : 'Chat sound off — click to enable' }}" class="wx-icon-button" aria-label="Chat alert sound"><x-icon :name="$soundOn ? 'volume-2' : 'volume-x'" class="size-4" /></button>@endif
-                    <a href="{{ route('admin.inbox', ['channel' => 'web_chat']) }}" wire:navigate class="wx-icon-button" aria-label="Open the full inbox"><x-icon name="inbox" class="size-4" /></a>
+                    <a href="{{ route('admin.inbox', ['channel' => 'web_chat', 'status' => 'all']) }}" wire:navigate class="wx-icon-button" aria-label="Open the full inbox"><x-icon name="inbox" class="size-4" /></a>
                     <button type="button" wire:click="closeDrawer" class="wx-icon-button" aria-label="Close"><x-icon name="x" class="size-4" /></button>
                 </div>
             </header>
             @if ($pendingId !== null && $pendingId !== $selectedId)
                 <div class="wx-chat-pending flex shrink-0 flex-wrap items-center justify-between gap-2 border-b p-3 text-theme-xs" role="status">
                     <span>Another website thread needs attention. Your current draft is kept.</span>
+                    <button type="button" wire:click="cancelSwitch" class="wx-history-button">Keep current conversation</button>
                     <button type="button" wire:click="switchPending" @if (trim($draft) !== '') wire:confirm="Switch threads and discard the current draft?" @endif class="wx-history-button">Switch to new message</button>
+                </div>
+            @endif
+            @if ($activeTotal > $live->count())
+                <div class="shrink-0 border-b border-gray-100 px-4 py-2 text-theme-xs text-gray-500 dark:border-gray-800 dark:text-gray-400" role="status">
+                    <p>Showing the latest {{ $live->count() }} of {{ $activeTotal }} active conversations. Use the full Inbox for older conversations.</p>
+                    @if ($unreadOutsideList > 0)<p class="mt-1 font-medium">{{ $unreadOutsideList }} unread {{ $unreadOutsideList === 1 ? 'conversation is' : 'conversations are' }} outside this list.</p>@endif
                 </div>
             @endif
             <div class="wx-live-chat-layout flex min-h-0 flex-1">
@@ -41,8 +48,8 @@
                         <div class="flex flex-1 items-center justify-center p-8 text-center text-theme-sm text-gray-500">Pick a conversation to read and reply.</div>
                     @else
                         <header class="shrink-0 border-b border-gray-100 p-4 dark:border-gray-800"><h3 class="truncate text-theme-sm font-semibold text-gray-900 dark:text-white">{{ $selectedConversation->contact?->name ?? $selectedConversation->subject ?? 'Website visitor' }}</h3><p class="mt-1 text-theme-xs text-gray-400">Private website thread · {{ $selectedConversation->last_message_at?->diffForHumans() ?? 'No messages yet' }}</p></header>
-                        <div class="wx-message-canvas min-h-0 flex-1 space-y-3 overflow-y-auto p-4" x-data="{ pinned: true }" x-init="$nextTick(() => $el.scrollTop = $el.scrollHeight)" x-on:scroll="pinned = $el.scrollHeight - $el.clientHeight - $el.scrollTop < 80" x-on:chat-scroll.window="if ($event.detail.reset) pinned = true; if (pinned) $nextTick(() => $el.scrollTop = $el.scrollHeight)" role="log" aria-label="Website chat messages">
-                            @if ($hasEarlier)<div class="text-center">@if ($historyLimit < 600)<button type="button" wire:click="loadEarlier" x-on:click="pinned = false" class="wx-history-button">Load earlier messages</button>@else<span class="text-theme-xs text-gray-500">Showing latest 600 messages</span>@endif</div>@endif
+                        <div class="wx-message-canvas min-h-0 flex-1 space-y-3 overflow-y-auto p-4" x-data="{ pinned: true }" x-init="$nextTick(() => $el.scrollTop = $el.scrollHeight)" x-on:scroll="pinned = $el.scrollHeight - $el.clientHeight - $el.scrollTop < 80" x-on:chat-scroll.window="if ($event.detail.reset) pinned = true; if (pinned) $nextTick(() => $el.scrollTop = $el.scrollHeight)" x-on:chat-history-page.window="pinned = false; $nextTick(() => $el.scrollTop = 0)" role="log" aria-label="Website chat messages">
+                            <x-admin.conversation-history :has-earlier="$hasEarlier" :older-window="$historyBeforeId !== null" :history-limit="$historyLimit" />
                             @forelse ($messages as $message)
                                 @if ($message->type?->value === 'note')
                                     <div wire:key="lcm-{{ $message->id }}" class="rounded-lg border border-dashed border-warning-300 bg-warning-50 p-3 text-theme-xs text-warning-700">Internal note · {{ $message->body }}</div>

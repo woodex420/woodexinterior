@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Domain\Automation\Models\AutomationSequence;
 use App\Domain\Automation\Models\AutomationStep;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * The built-in sequences (AUT-002), seeded as editable rows, not code. Wording lives in Meta's
@@ -35,6 +36,31 @@ class AutomationSequenceSeeder extends Seeder
                 }
             }
         }
+    }
+
+    /** Owner-requested repair only: never updates existing definitions, steps or enrolments. */
+    public function restoreMissingPaused(): int
+    {
+        return DB::transaction(function (): int {
+            $created = 0;
+            foreach ($this->sequences() as $definition) {
+                $steps = $definition['steps'];
+                unset($definition['steps']);
+                $sequence = AutomationSequence::query()->firstOrCreate(
+                    ['slug' => $definition['slug']],
+                    $definition + ['is_builtin' => true, 'is_active' => false],
+                );
+                if (! $sequence->wasRecentlyCreated) {
+                    continue;
+                }
+                foreach ($steps as $position => $step) {
+                    AutomationStep::create(['sequence_id' => $sequence->id, 'position' => $position + 1] + $step);
+                }
+                $created++;
+            }
+
+            return $created;
+        });
     }
 
     /**

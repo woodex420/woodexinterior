@@ -105,7 +105,7 @@ it('never grants group members the authority of a previously linked staff user',
 });
 
 it('rejects inactive unlinked group and deleted staff authority', function (string $case) {
-    $user = $this->userWithRole('sales');
+    $user = $this->userWithRole('owner');
     $link = TelegramLink::query()->create(['user_id' => $user->id, 'chat_id' => 101, 'is_active' => true, 'chat_type' => 'private']);
     match ($case) {
         'inactive' => $user->update(['is_active' => false]),
@@ -118,7 +118,7 @@ it('rejects inactive unlinked group and deleted staff authority', function (stri
 })->with(['inactive', 'unlinked', 'group_link', 'deleted']);
 
 it('refuses inactive expired rotated and used codes', function (string $case) {
-    $user = $this->userWithRole('sales');
+    $user = $this->userWithRole('owner');
     $link = TelegramLink::issueCodeFor($user);
     $code = $link->link_code;
     match ($case) {
@@ -132,7 +132,7 @@ it('refuses inactive expired rotated and used codes', function (string $case) {
 })->with(['inactive', 'expired', 'rotated', 'used']);
 
 it('consumes one code once and never steals a chat already linked to another account', function () {
-    $first = TelegramLink::issueCodeFor($this->userWithRole('sales'));
+    $first = TelegramLink::issueCodeFor($this->userWithRole('owner'));
     $second = TelegramLink::issueCodeFor($this->userWithRole('owner'));
     $code = $first->link_code;
     secureTelegramPost(secureTelegramUpdate(text: '/start '.$code))->assertOk();
@@ -238,7 +238,7 @@ it('does not treat callback or edited-message updates as approval authority', fu
 })->with(['callback_query', 'edited_message', 'channel_post']);
 
 it('rereads staff and notification routing rather than trusting a cached link', function (string $case) {
-    $user = $this->userWithRole('sales');
+    $user = $this->userWithRole('owner');
     $link = TelegramLink::query()->create(['user_id' => $user->id, 'chat_id' => 101, 'chat_type' => 'private', 'is_active' => true]);
     $user->load('telegramLink');
     match ($case) {

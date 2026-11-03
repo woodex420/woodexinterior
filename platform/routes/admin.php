@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ConnectorOAuthController;
 use App\Http\Controllers\Admin\ContactDataExportController;
 use App\Http\Controllers\Admin\ConversationMediaController;
 use App\Http\Controllers\Admin\InvoicePdfController;
+use App\Http\Controllers\Admin\LeadCsvExportController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\QuoteDraftPreviewController;
 use App\Http\Controllers\Admin\QuotePdfController;
@@ -27,6 +28,7 @@ use App\Livewire\Admin\Crm\CompanyShow;
 use App\Livewire\Admin\Crm\ContactShow;
 use App\Livewire\Admin\Crm\LeadImport;
 use App\Livewire\Admin\Crm\LeadShow;
+use App\Livewire\Admin\Hubs\AccountsHub;
 use App\Livewire\Admin\Hubs\ContactsHub;
 use App\Livewire\Admin\Hubs\DashboardHub;
 use App\Livewire\Admin\Hubs\DocumentsHub;
@@ -36,6 +38,7 @@ use App\Livewire\Admin\Hubs\LedgerHub;
 use App\Livewire\Admin\Hubs\MarketingHub;
 use App\Livewire\Admin\Hubs\PayablesHub;
 use App\Livewire\Admin\Hubs\PaymentsHub;
+use App\Livewire\Admin\Hubs\ProjectCostsHub;
 use App\Livewire\Admin\Hubs\QuotationsHub;
 use App\Livewire\Admin\Hubs\ReportsHub;
 use App\Livewire\Admin\Hubs\SystemAccessHub;
@@ -92,6 +95,7 @@ Route::get('/my-day', fn () => redirect()->route('admin.dashboard', ['tab' => 'm
 // CRM (P1): Leads (list · pipeline · tracking), Contacts (people · companies), Tasks & Visits
 Route::livewire('/leads', LeadsHub::class)->name('leads.index')->middleware('can:leads.view');
 Route::livewire('/leads/import', LeadImport::class)->name('leads.import')->middleware('can:system.import');
+Route::get('/leads/export.csv', LeadCsvExportController::class)->name('leads.export')->middleware('can:system.import');
 Route::livewire('/leads/{lead}', LeadShow::class)->name('leads.show')->middleware('can:leads.view');
 Route::get('/pipeline', fn () => redirect()->route('admin.leads.index', ['tab' => 'pipeline'], 301))->name('pipeline')->middleware('can:leads.view');
 Route::livewire('/contacts', ContactsHub::class)->name('contacts.index')->middleware('can:contacts.view');
@@ -127,6 +131,7 @@ Route::get('/sales/tracking/quotes', fn () => redirect()->route('admin.quotes.in
 Route::get('/sales/tracking/invoices', fn () => redirect()->route('admin.invoices.index', ['tab' => 'tracking'], 301))->name('sales.tracking.invoices')->middleware('can:invoices.view');
 Route::get('/clients/{contact}/statement.pdf', ClientStatementController::class)->name('contacts.statement')->middleware('can:invoices.view')->whereNumber('contact');
 Route::get('/contacts/{contact}/data.json', ContactDataExportController::class)->name('contacts.data')->middleware('can:leads.view')->whereNumber('contact');
+Route::livewire('/accounts', AccountsHub::class)->name('accounts.workspace')->middleware('can:accounts.view');
 Route::livewire('/accounts/chart', ChartOfAccounts::class)->name('accounts.chart')->middleware('can:accounts.view');
 Route::livewire('/accounts/journals', JournalsIndex::class)->name('accounts.journals')->middleware('can:accounts.view');
 Route::livewire('/accounts/periods', PeriodsIndex::class)->name('accounts.periods')->middleware('can:accounts.view');
@@ -141,6 +146,8 @@ Route::get('/quote-templates', fn () => redirect()->route('admin.quotes.index', 
 Route::get('/rate-book', fn () => redirect()->route('admin.sales.documents', ['tab' => 'rate-book'], 301))->name('rate-book')->middleware('can:quotes.view');
 Route::get('/description-library', fn () => redirect()->route('admin.sales.documents', ['tab' => 'descriptions'], 301))->name('description-library')->middleware('can:quotes.view');
 Route::get('/document-design', fn () => redirect()->route('admin.sales.documents', ['tab' => 'design'], 301))->name('document-design')->middleware('can:quotes.view');
+
+Route::livewire('/projects/costs', ProjectCostsHub::class)->name('projects.costs')->middleware('can:accounts.view');
 
 // Projects (P4, PRJ-001…PRJ-005)
 Route::livewire('/projects', ProjectsIndex::class)->name('projects.index')->middleware('can:projects.view');

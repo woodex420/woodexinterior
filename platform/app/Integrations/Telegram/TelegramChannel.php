@@ -25,26 +25,27 @@ final class TelegramChannel
 
     public function send(object $notifiable, Notification $notification): void
     {
-        if ($notifiable instanceof User) {
-            $notifiable = User::query()->with('telegramLink')->find($notifiable->id);
-            if ($notifiable === null || ! $notifiable->is_active) {
-                return;
-            }
-        }
-
-        if (! method_exists($notifiable, 'routeNotificationFor') || ! method_exists($notification, 'toTelegram')) {
+        // Anonymous routes and legacy staff links cannot bypass owner-only delivery.
+        if (! $notifiable instanceof User) {
             return;
         }
 
-        $chatId = $notifiable instanceof User
-            ? $notifiable->telegramChatIdIgnoringMute()
-            : $notifiable->routeNotificationFor('telegram', $notification);
-
-        if ($chatId === null || $chatId === '' || ! $this->gateway->isConfigured()) {
+        $notifiable = User::query()->with('telegramLink')->find($notifiable->id);
+        if ($notifiable === null || ! $notifiable->canUseTelegram()) {
             return;
         }
 
-        if ($notifiable instanceof User && $this->isMuted($notifiable) && ! $this->isCritical($notification)) {
+        if (! method_exists($notification, 'toTelegram')) {
+            return;
+        }
+
+        $chatId = $notifiable->telegramChatIdIgnoringMute();
+
+        if ($chatId === null || ! $this->gateway->isConfigured()) {
+            return;
+        }
+
+        if ($this->isMuted($notifiable) && ! $this->isCritical($notification)) {
             $link = $notifiable->telegramLink;
 
             if ($link !== null) {

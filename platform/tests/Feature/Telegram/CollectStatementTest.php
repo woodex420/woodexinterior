@@ -133,7 +133,7 @@ it('keeps /collect away from roles that cannot record payments', function () {
     $sales = $this->userWithRole('sales');
     TelegramLink::query()->create(['user_id' => $sales->id, 'chat_id' => 700, 'is_active' => true, 'linked_at' => now()]);
 
-    expect(sendCommand('/collect INV-2026-0001 1000 cash', 700))->toContain('role does not include');
+    expect(sendCommand('/collect INV-2026-0001 1000 cash', 700))->toContain('only to the active owner');
 });
 
 it('states what a client owes and what they recently paid', function () {

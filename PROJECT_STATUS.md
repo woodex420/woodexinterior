@@ -1,5 +1,107 @@
 # Woodex OS — Project Status
 
+## Latest — revision108: relative preview navigation and2026 demo
+
+- [Report](docs/audit/108_PREVIEW_NAVIGATION_AND_SINGLE_YEAR_DEMO_2026-11-03.md), [queue](ox-pending.md). Owner confirmed three copied tabs represent the same16 test enquiries. New fictional single-year2026 demo is now in the isolated preview; original workbooks/production unchanged.
+- Private relative-origin transport plus cookie-independent XHR upload context; signed Livewire state and normal CSRF preserved.15 controlled alternate-origin browser checks PASS; actual Arena/E2B403 owner acceptance remains open. Initial traffic authorization is a platform boundary, not an app password issue.
+-16 demo rows browser-imported, repeat skipped, one-year CSV export implemented; text-safe manual Drive snapshot created and field-for-field round-trip verified. Automatic/two-way app sync is OFF; no original workbook overwritten or financial dry-run/import.
+- Native focused15/138,92source+62UI/context, Pint7 and preview Vite PASS. Local full PHPStan blocked by FrankenPHP subprocess re-exec; hosted exact-source results tracked in PR8. No production/deployment/merge/privacy conversion; all36 gates retained.
+
+---
+
+## Latest — revision107: source-year review and import provenance
+
+- [Read-only review](docs/audit/107_LEADS_CONTACTS_SOURCE_REVIEW_2026-11-03.md), [queue](ox-pending.md).22 dated2025/48 dated2026/7 undated monthly candidates;42 Target-client/26 database references. No actual import/database comparison or financial dry-run; financial reference-only hold unchanged.
+- Year inventory/source CSV record positions/per-review temporary cleanup implemented. Repeated16 content groups across three2026 tabs and33 cross-tab phone groups need owner identity/source decisions, not automatic merging/opportunity creation.
+- Fixed the106 hosted guard-test failure's absent-directory short-circuit, preserving every private-launcher refusal. Local107 native helper17, guard/syntax/Pint5/92source+61UI checks PASS; added3unit+2feature tests. Fresh hosted MySQL run41575009030 at application-source `e05a50c` **2033 tests/11282 assertions PASS**; prior106 SQLite success is not107 certification. Actual owner/browser and local static/build acceptance remain separate. Disposable106 local app runtime did not persist; no existing DB was reset/reseeded.
+- No production changes, apply, merge/deployment/provider send/privacy conversion. Deployment FINAL, auto-deploy OFF; not all36 gates complete.
+
+---
+
+## Latest — revision106: direct synthetic admin and verified workflow repairs
+
+- [Report](docs/audit/106_DIRECT_SYNTHETIC_ADMIN_AND_REPAIRS_2026-11-03.md) / [canonical queue](ox-pending.md). Actual105 sign-in failed; transparent welcome now pauses login and offers explicitly isolated direct synthetic access. No production auth bypass.
+- Three Accounts front doors/all original URLs retained; iframe-safe vendor/project-cost/Contact enquiry actions; authorised screen/record search; duplicate-header manual review; owner-only missing-default restore **paused**. Original9 Assistant queries plus4 diagnostics. Bounded native Chat windows/drafts tested on both650-message surfaces.
+- **2,028 tests /11,277 assertions PASS239.58s**, full app PHPStan0, Pint/build,61 Node checks and16 cookie-stripped browser checks. Additional constrained-frame tests verified enquiry→lead/contact/in-app notification, vendor validation/edit/Enter, linked cost save, Accounts tabs and mobile Redirects search. These are isolated checks, not actual Arena-parent/production certification.
+- Archive inspected source-only; no historical import/recovery/provider send. Live Sheets/channel/AI work incomplete; financial reference-only hold/mapping/backup gates retained. Requested repository privacy change waits for completion, not performed.
+- **Not all36 gates complete. Production unchanged. Deployment FINAL / auto-deploy OFF.** Supported local MySQL, installed/restore/staging/exact-release and owner-browser acceptance remain separate.
+
+---
+
+## Latest — revision105: proxy-safe sign-in quick fix
+
+- [Report](docs/audit/105_PROXY_SAFE_SIGN_IN_QUICK_FIX_2026-11-03.md): relative validated same-origin POST; Fortify JSON safe relative intended navigation; do not follow proxy-generated absolute redirects. Native authentication/2FA/CSRF retained.
+- Requested default Glass appearance plus persisted Solid contrast option. Updated isolated runtime/assets; no seed or migration rerun.
+- **1,988 tests /11,115 assertions PASS241.59s**; PHPStan0/Pint3/build;57 source/helper checks;30 Chromium checks including a controlled HTTPS→HTTP/internal-host proxy/session reload. Actual Arena parent confirmation remains open.
+- Parent104 hosted MySQL41526580232 SUCCESS, separately confirmed; local genuine MySQL still blocked.
+- **Production not deployed; no data/env changes.** Manual release/installed identity/private backup+verified restore/staging still required. Deployment FINAL/auto-deployOFF/36 master gates retained.
+
+---
+
+## Latest — revision104: single transparent welcome card and real SEO/Assistant extensions
+
+- [Current master queue](ox-pending.md) is maintained with36 gates; **not all backlog items are complete**. [Evidence/report](docs/audit/104_SINGLE_GLASS_CARD_SEO_AND_MYSQL_CHECKPOINT_2026-11-03.md).
+- Requested GitHub MySQL topic and genuine8.4.6 binary checked first: release-assets redirect fails SSL/0bytes. **Local MySQL still blocked**, SQLite preview honestly labelled; no compatible emulator/obsolete server substituted. Priorc793425 hosted genuine MySQL41523310965 is SUCCESS, not local-runtime proof/new104 certification.
+- One centred28%-opaque smoke-glass login, no split promotional panel or nested opaque hint; white text/transparent fields/photo and reduced-transparency fallback. Default-OFF synthetic prefill and normal authentication preserved.
+- SEO category/search/review/clear/direct links, permission revocation and selected-audit-only execution implemented. Third Assistant website-metadata diagnostic yields12 deterministic questions, with scoped counts/recommendations/category citations and no executable fix/provider call.
+- Local **1,969 tests /11,070 assertions PASS224.87s**; focused28/151; PHPStan0/Pint6/build;92+55 source contracts;28 browser cases PASS final exit0. [Desktop](docs/audit/evidence/104/login-desktop.png).
+- **Production unchanged; deployment FINAL; auto-deploy OFF.** Remaining MySQL/concurrency/installed/backup/restore/staging/backlog gates stay open. Older entries below are historical.
+
+---
+
+
+## Latest — revision103: vector brand, glass login and isolated testing
+
+- [Current master queue](ox-pending.md): **36 gates**. [Revision103 evidence](docs/audit/103_VECTOR_BRAND_GLASS_LOGIN_AND_DIAGNOSTICS_2026-11-03.md) supersedes proposed-only status of these slices; older entries below are historical.
+- Approved filled W + gold-dot SVG across shared OS/Interior UI,142 public pages,404/builder/Studio/favicons. Original glass login over existing site photograph; gated visible/pre-filled test credentials; normal Fortify/CSRF/session authentication retained. Saved/frozen/custom PDF history untouched.
+- Fresh private synthetic SQLite DB:104 existing migrations/reference seeds, owner/manager/accountant accounts, non-sending mail and no worker. Prior preview DB/environment retained. No production/chat DB change or import.
+- First slices implemented: read-only SEO canonical/social/JSON-LD tab; two permission-safe Assistant diagnostics preserving nine queries; sidebar client filter/neutral stats. No provider call, executable fix or publishing action.
+- Final local acceptance: **1,964 tests /11,035 assertions PASS225.41s**, PHPStan0, Pint12, build,92 release +55 UI/auth source checks and27 browser checks. New exact-SHA hosted MySQL CI is separate; actual Arena owner/proxy confirmation and broader backlog/release acceptance remain open.
+- **Production unchanged; deployment FINAL; auto-deploy OFF.** No provider send, merge or deployment. See current master/report before older continuation notes.
+
+---
+
+
+## Latest — revision102: preview login and all-tab workbook review
+
+- Current master queue: [ox-pending](ox-pending.md); 34 tracked gates, including earlier holds. V02 is now implemented101, not an incomplete workspace; V03 delivery/budget acceptance remains partial.
+- Owner choices: preview login; inspect/recommend two workbooks before import; Assistant diagnoses and proposes fixes, owner approves writes. Only workbook/provider planning scope reopened; Sheets append/backup integrations remain deferred.
+- Preview login works through normal authentication, failure feedback, retry and reload. Added opt-in local/testing SQLite identity guidance, default OFF; no password/bypass/account change. 10 new tests /42 assertions PASS; scoped static0/Pint3 PASS; browser login and4 local iframe checks PASS. Actual owner Arena-browser confirmation pending.
+- Both workbook originals privately inspected across all17 tabs; 2026/copied lead records and ambiguous accounting rows are quarantined from any import. Public revision102 contains only sanitized findings/mapping proposals, no workbook data or credentials.
+- Prior exact4cd99c6 hosted41508608055 confirmed SUCCESS; newer102 validation is separate. No workbook import, provider call/message, production write, merge or deployment. Full102 serial native suite: **1,933 tests /10,872 assertions PASS (263.59s; exact9c20de1 after cross-engine test correction)**; build and92 source contracts PASS;24 base +6 login +4 local iframe browser checks PASS.
+- Follow-up choices: separate2025/2026 review (dates unchanged); historical accounts reference-only/no import dry-run; AI may receive approved permission-checked aggregates after model/budget/field-policy approval; one conditional non-sensitive report to the paired owner chat. No external call/send yet.
+- Final candidate **9c20de1** hosted MySQL **41512958972 SUCCESS:1,933 tests/10,870 assertions**, all groups exit0. LocalSQLite1,933/10,872 PASS263.59s; deliberate banner show/hide assertions differ. Source guard/authentication unchanged; initial single test-engine assumption corrected. Documentation-only follow-up does not certify production/concurrent writers.
+- **Deployment last; auto-deploy OFF.** See revision102 and ox-pending before older continuation notes below.
+
+---
+
+
+**Updated:** 2 November 2026 · **Active branch:** `arena/7093000c-woodexinterior` · **Native synthetic preview:** port 8080
+
+## Current execution record — revisions 98 / 99 / 100 / 101
+
+**Owner ordering:** finish remaining pending/paused work first; deployment is the final task. Candidate native CI [41495382678](https://github.com/woodex420/woodexinterior/actions/runs/41495382678) is now **successful** at `1640506`; no merge/deployment follows automatically.
+
+**Increment101:** Vendors & costs hub and project-local linked cost form/tables/summaries are implemented; canonical bills include project filters/selection and exact prefills. Supplier AP, customer AR and unreconciled legacy costs are separate. Updated synthetic preview is running on8080 with PREVIEW-COSTS-01; no production operation.21 new screen/summary cases and37 current browser checks pass; static/style/build/contracts pass. Final exact-source serial native suite **1,923 tests /10,830 assertions** passes; new hosted CI is a separate gate. [Details and limitations](docs/audit/101_PROJECT_COST_SCREENS_2026-11-02.md). Priorabad230 hosted41504047552 succeeded. MySQL concurrency/upgrade and the remaining release backlog are not certified by these screens.
+
+**Increment 100, partial linked-cost workflow:** canonical bill/paid-expense project links, retry keys, cross-model supplier-reference guard and stale-draft protections are implemented; new Vendors/Costs screens and summaries are not yet implemented. Account/project tests120/623 and final new regressions41/200 passed; static/style/92 contracts and34 current browser checks passed. Final exact-source full native suite: **1,898 passed /10,710 assertions**, strict warnings/skips, exit0. [Implementation and boundaries](docs/audit/100_LINKED_PROJECT_COST_FOUNDATION_2026-11-02.md). One nullable additive migration ran **only in the isolated synthetic preview** (now104); no production migration/write. Prior6c04989 hosted CI41500249255 is successful, not acceptance for these new changes.
+
+[Consolidated master plan / resume instructions](docs/audit/98_MASTER_COMPLETION_PLAN_2026-11-02.md) · [30-item task register](docs/audit/98_COMPLETION_REGISTER_2026-11-02.csv).
+
+- Master baseline `3fcaff8e0f78aaaa2e6e2aed2011541fd4cff944` includes merged release 97; its native GitHub run passed **1,818 / 10,348 assertions**. This does not certify newer edits or production deployment.
+- **Full real Laravel admin + public preview is running**, not a static mock: verified native PHP 8.5.12, genuine Composer 2.9.1, existing lock, fresh isolated synthetic SQLite and 103 migrations. Providers reject outgoing Laravel HTTP; mail is array-only; no worker/scheduler. No production data restored.
+- **Two source fixes with regression tests:** full-range expense/income totals beyond the 300-row display cap; exact decimal project costs through `Money`, not float. No schema, lock, frontend, document-history or production changes.
+- **Current local evidence:** 196 native tests / 786 assertions; 92 source contracts; Larastan 0 for changed components; Pint pass; 24 real-browser checks plus 4 local cross-site iframe/session/navigation checks. Full candidate remote CI for `1640506` is successful; whole-action/PDF QA and subsequent-candidate checks remain separate gates.
+- Drive inventory/hashes refreshed; **archive contents comparison remains unfinished**. No automatic archive overwrite or import. Workbook reconciliation/import is deferred.
+- **Owner-only Telegram source enforcement implemented:** pairing, webhook/command/callback authority, notification/quiet-hour/queued delivery, fresh role/link checks, profile/integration controls. Staff in-app notifications/email fallback retained; legacy links preserved without authority. **Full local native:1,857 pass/10,510 assertions;37 current browser checks; static/style/build/source contracts pass.** [Increment 99](docs/audit/99_OWNER_ONLY_TELEGRAM_2026-11-02.md) records current QA; new-candidate hosted CI remains separate.
+- **Owner choices confirmed:** both unpaid bills and paid costs with linked payments/single accounting source; previously deferred workbook/Sheets/backup/AI extras stay deferred. Deployment is last.
+- **Not complete:** ledger cross-model/recovery acceptance, linked Vendors/Projects workflow, live owner Telegram receipt, Website Chat/UI/SEO/media/speed refinements, Assistant diagnostics, full candidate tests, isolated staging and verified restore. See the register for exact gaps/dependencies rather than restarting merged work.
+- Candidate source is not merged/deployed. Production installed SHA/schema and backup restore remain unverified. **Auto-deployment stays OFF.** GitHub/active branch work; no new branch/master prompt/Continue or repeated SSH setup is needed.
+
+---
+
+## Historical records (retained; current status is above)
+
 **Updated:** 29 October 2026 · **Branch:** `arena/8be318a2-woodexinterior` · **Preview:** port 33143 (local demo)
 
 > **Current request — revision49: Website-first audit and four-phase plan; implementation approval pending.**
@@ -40,7 +142,7 @@
 > preview then said **“good update now”**, also requesting Furniture logo/header/cards/footer and bottom
 > terms/signatory controls. New quotation-only Interior2 / Furniture4 renderers are implemented. Native
 >12-row Interior and5-row Furniture references each fit1 A4; commercial/long documents paginate safely.
-> Final gate: **1,620 passed /1 skipped /8,704 assertions /461.13s**, focused74/434, PHPStan0, Pint11,
+> Final gate: **1,620 passed /1 skipped /8,704 assertions /461.13s**, focused74/434, PHPStan0, Pint12,
 > Vite/native desktop/390px/PDF/restricted-cookie framing pass. Existing invoices, old renderers and frozen
 > history are preserved. No schema or production deployment. [Report42](docs/audit/42_INTERIOR_IMPLEMENTATION_FURNITURE_POLISH_2026-10-27.md).
 > [Interior screenshot](docs/audit/evidence/42_interior_quotation.png) · [Furniture screenshot](docs/audit/evidence/42_furniture_quotation.png).

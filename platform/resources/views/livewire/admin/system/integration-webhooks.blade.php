@@ -19,7 +19,7 @@
                 @endforeach
             </fieldset>
             @error('webhookEvents')<p class="text-error-600">{{ $message }}</p>@enderror
-            <x-admin.button type="submit" icon="plus" wire:loading.attr="disabled">Add endpoint</x-admin.button>
+            <x-admin.button type="button" wire:click="createWebhook" wire:target="createWebhook" icon="plus" wire:loading.attr="disabled">Add endpoint</x-admin.button>
         </form>
     @endif
     <div class="space-y-3">
@@ -41,6 +41,7 @@
             <p class="py-4 text-theme-sm text-gray-500">No endpoints yet. Add an app above — no test delivery is sent until you press Test.</p>
         @endforelse
     </div>
+    <p class="mt-5 text-theme-xs text-gray-500">An enabled endpoint is configuration, not proof of delivery. Queued tests need a running queue worker. HTTP success confirms the receiving server accepted the request, not that its downstream workflow completed. This is outbound event delivery, not a two-way chat channel.</p>
     <h3 class="mt-6 font-medium">Delivery history · latest 30</h3>
     <div class="mt-3 overflow-x-auto" wire:poll.10s>
         <table class="w-full text-left text-theme-xs">

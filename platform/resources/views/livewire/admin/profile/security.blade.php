@@ -63,6 +63,7 @@
             </div>
         </x-admin.card>
 
+        @if ($telegramAllowed)
         <x-admin.card title="Telegram alerts" description="New leads, SLA breaches, quote views and payments, delivered to your phone.">
             @if (! $telegramConfigured)
                 <div class="flex items-center gap-3">
@@ -122,8 +123,12 @@
                 </div>
             @endif
         </x-admin.card>
+        @else
+            <x-admin.card title="In-app notifications" description="Telegram is available to the owner only. Your in-app notifications remain available." />
+        @endif
     </div>
 
+    @if ($telegramAllowed)
     {{-- Slice L: the health ladder. Every row is read from where the truth lives; the first failing step is the blocker. --}}
     <x-admin.card class="mt-6" title="Telegram connection health" description="Each step is checked live. When pairing stalls, fix the first step that fails — the ones after it cannot pass until it does.">
         <ul class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -141,4 +146,5 @@
             @endforeach
         </ul>
     </x-admin.card>
+    @endif
 </div>

@@ -1,5 +1,35 @@
 # Sandbox tooling (AI development environment only)
 
+## Current header/source-sync QA (revision110)
+
+`node tools/sandbox/website-chat-header-check.mjs` runs6 normal-Fortify Chromium checks against the same separately copied QA database below, privately prepared with61 active website conversations/35 unread and incoming activity outside the30-row list. It verifies full totals, bounded rows/disclosure, selected-only reading, phone reflow and full Inbox navigation. It never targets production or main preview data. `chat-draft-safety-check.mjs` also passes with nonzero unread counts. Regenerated deployable assets come from a clean exact-source build, not leftover working-tree bundles. See [revision110](../../docs/audit/110_WEBSITE_CHAT_HEADER_AND_MASTER_SOURCE_SYNC_2026-11-03.md); PR8 holds the actual source merge/master outcome. Deployment remains held.
+
+## Chat draft QA (revision109)
+
+The main8080 native preview is preserved, including its16 demo leads. `node tools/sandbox/chat-draft-safety-check.mjs` runs9 normal-Fortify Chromium checks only against a **separately copied disposable QA SQLite** on temporary9095. It requires privately provisioned `.cache/preview/qa/source/platform/.env` and `fixture109.json`,61 fictional conversations, native dependencies and the private browser bootstrap. It refuses the direct launcher or a different database. Credentials, database, provisioning scripts and screenshots stay ignored/private; never use an installed database. The temporary QA listener is stopped after checking. [Revision109](../../docs/audit/109_CHAT_DRAFT_SAFETY_AND_INBOX_PAGING_2026-11-03.md) records the implemented C01/C02 slice and remaining acceptance.
+
+## Native preview transport (revision108)
+
+Port8080 is served by native FrankenPHP from a private `.cache/preview/source/platform` copy; never point the direct launcher at an installed database. The launcher now loads `NativePreviewTransport.php` to keep self-links relative under an authorized preview wrapper; signed Livewire snapshots remain unchanged. `native-direct-context.js` must be served at `public/__sandbox/direct-context.js` in that private clone, including its XHR upload support.
+
+- `node tools/sandbox/preview-origin-check.mjs`:15 controlled browser checks under a different origin, dropping cookies and refusing raw-origin requests. Requires the private Playwright/Chromium bootstrap and opted-in synthetic server. Not actual Arena-parent acceptance.
+- `tools/sandbox/fixtures/leads-demo-2026.csv`:16 fictional rows with reserved NANP555-01xx numbers, one year only; not the owner's workbook. Serve only in the explicit demo under `/__sandbox/leads-demo-2026.csv`. Import still uses dry-run and owner confirmation.
+- The optional `WOODEX_PREVIEW_DEMO_SHEET_URL` belongs only in private preview configuration. It links to a **manual snapshot**, not a live-sync credential or background job. No Drive access URL/token is versioned.
+- An E2B “Missing traffic access token” on the initial document must be resolved by refreshing the Arena/platform preview authorization. App code cannot mint this token; never put it in URLs or request it in chat.
+
+
+## Historical native preview (revision105)
+
+The active isolated preview now uses native FrankenPHP/PHP8.5.12 with private `.cache/preview` runtime/dependencies and a fresh synthetic SQLite DB. The older php-wasm bootstrap below is historical; do not run it over the active native preview. This does not supply a supported local MySQL engine.
+
+- `node tools/sandbox/branding-login-check.mjs`:30 Chromium checks (including a controlled HTTPS→HTTP/internal-host proxy, not the actual Arena parent); requires the existing private Playwright/Chromium dependency bootstrap, local8080 and opted-in synthetic login. It refuses a non-synthetic target. Actual Arena/proxy certification is separate.
+- `node --test tools/sandbox/auth-unit-check.mjs tools/sandbox/admin-refresh-unit-check.mjs tools/sandbox/theme-unit-check.mjs`:57 pure source/helper checks, no backend writes.
+- `SyntheticPreviewSeeder` is explicit-only, defaults OFF, requires isolated local/testing SQLite/non-sending mail/no worker. Never run it against an installed DB.
+- See [revision105](../../docs/audit/105_PROXY_SAFE_SIGN_IN_QUICK_FIX_2026-11-03.md) for exact boundaries and evidence. Never commit private environments, databases or provider credentials.
+
+## Historical php-wasm tools
+
+
 The AI coding sandbox has Node.js but **no native PHP or Composer**, packagist is blocked and every VM reset wipes
 `/tmp`. These scripts rebuild a full PHP 8.4 dev environment there in about 3–4 minutes. They are **not** used by CI
 (real PHP + Composer, `docs/ci/`) or by Hostinger (`docs/06`), and nothing here contains secrets.

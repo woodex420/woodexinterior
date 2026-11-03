@@ -8,6 +8,7 @@ use App\Domain\System\Enums\ChangeRequestStatus;
 use App\Domain\System\Enums\ChangeRequestType;
 use App\Domain\System\Models\ChangeRequest;
 use App\Domain\System\Models\TelegramLink;
+use App\Domain\System\Telegram\TelegramCommandBus;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -39,6 +40,9 @@ final class HandleTelegramCommand
         $argument = trim($argument);
 
         return DB::transaction(function () use ($chatId, $command, $argument, $message): array {
+            if (! in_array($command, ['/start', '/link'], true) && $this->linkedUserOrNull($chatId) === null) {
+                return ['chat_id' => $chatId, 'text' => TelegramCommandBus::OWNER_ONLY_MESSAGE];
+            }
             $reply = match ($command) {
                 '/start', '/link' => $this->link($chatId, $argument, $message),
                 '/help' => "Woodex OS bot\n/idea <text>: suggest an improvement\n/issue <text>: report a problem\n/help: this list\nImportant business writes and approvals are not available in this bot yet.",
@@ -69,7 +73,7 @@ final class HandleTelegramCommand
             return $invalid;
         }
         // Consistent lock order with profile code issuance: user, then link. Recheck the code under lock.
-        $user = User::query()->whereKey($candidate->user_id)->where('is_active', true)->lockForUpdate()->first();
+        $user = User::query()->telegramOwners()->whereKey($candidate->user_id)->lockForUpdate()->first();
         $link = TelegramLink::query()->whereKey($candidate->id)->where('link_code', Str::upper($code))
             ->where('link_code_expires_at', '>', now())->lockForUpdate()->first();
         if ($user === null || $link === null || $link->user_id !== $user->id) {
@@ -116,7 +120,7 @@ final class HandleTelegramCommand
         if ($candidate === null || $candidate->user_id === null) {
             return null;
         }
-        $user = User::query()->whereKey($candidate->user_id)->where('is_active', true)->lockForUpdate()->first();
+        $user = User::query()->telegramOwners()->whereKey($candidate->user_id)->lockForUpdate()->first();
         if ($user === null) {
             return null;
         }

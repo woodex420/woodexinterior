@@ -97,13 +97,13 @@ class Integrations extends Component
 
     public function checkTelegramConfiguration(): void
     {
-        abort_unless($this->user()->hasRole('owner') && $this->user()->can('integrations.manage'), 403);
+        abort_unless($this->user()->canUseTelegram() && $this->user()->can('integrations.manage'), 403);
         $this->showTelegramConfiguration = true;
     }
 
     public function reloadTelegramConfiguration(): void
     {
-        abort_unless($this->user()->hasRole('owner') && $this->user()->can('integrations.manage'), 403);
+        abort_unless($this->user()->canUseTelegram() && $this->user()->can('integrations.manage'), 403);
 
         try {
             $exit = Artisan::call('config:clear');
@@ -128,7 +128,7 @@ class Integrations extends Component
 
     public function checkTelegramConnection(TelegramGateway $telegram): void
     {
-        abort_unless($this->user()->can('integrations.manage'), 403);
+        abort_unless($this->user()->canUseTelegram() && $this->user()->can('integrations.manage'), 403);
 
         if (! $telegram->isConfigured() || blank(config('services.telegram.webhook_secret'))) {
             $this->telegramSetupRequired();
@@ -307,6 +307,7 @@ class Integrations extends Component
     public function openDetails(string $key): void
     {
         abort_unless($this->user()->can('integrations.manage'), 403);
+        abort_if($key === 'telegram' && ! $this->user()->canUseTelegram(), 403);
         $this->detailKey = $key;
         $this->showDetails = true;
     }
@@ -406,7 +407,7 @@ class Integrations extends Component
 
     public function testTelegram(TelegramGateway $telegram): void
     {
-        abort_unless($this->user()->can('integrations.manage'), 403);
+        abort_unless($this->user()->canUseTelegram() && $this->user()->can('integrations.manage'), 403);
         $chatId = $this->user()->routeNotificationForTelegram();
 
         if (! $telegram->isConfigured()) {
@@ -427,7 +428,7 @@ class Integrations extends Component
 
     public function setTelegramWebhook(TelegramGateway $telegram): void
     {
-        abort_unless($this->user()->can('integrations.manage'), 403);
+        abort_unless($this->user()->canUseTelegram() && $this->user()->can('integrations.manage'), 403);
         $secret = (string) config('services.telegram.webhook_secret');
 
         if (! $telegram->isConfigured() || $secret === '') {
@@ -608,8 +609,8 @@ class Integrations extends Component
         // Communication — server channels whose secrets live in the server .env.
         $providers[] = $server([
             'key' => 'telegram', 'name' => 'Telegram bot', 'icon' => 'send', 'group' => 'communication',
-            'benefit' => 'Team alerts, commands and the daily summary in Telegram.',
-            'detail' => TelegramLink::query()->where('is_active', true)->whereNotNull('chat_id')->count().' staff linked · webhook secret '.(filled(config('services.telegram.webhook_secret')) ? 'set' : 'missing'),
+            'benefit' => 'Owner-only alerts, commands and the daily summary in Telegram.',
+            'detail' => TelegramLink::query()->usable()->count().' owner linked · webhook secret '.(filled(config('services.telegram.webhook_secret')) ? 'set' : 'missing'),
             'help' => 'Create the bot with @BotFather, put TELEGRAM_BOT_TOKEN and a long TELEGRAM_WEBHOOK_SECRET you invent into the server .env, then press Connect webhook.',
             'lines' => [['Credentials', 'Server .env — TELEGRAM_BOT_TOKEN · TELEGRAM_WEBHOOK_SECRET']],
         ], filled(config('services.telegram.bot_token')), 'telegram');
@@ -719,8 +720,9 @@ class Integrations extends Component
             'key' => 'webhooks', 'name' => 'Webhooks', 'icon' => 'zap', 'group' => 'automation', 'kind' => 'webhooks',
             'benefit' => 'Tell Zapier, Make or your own app the moment a lead, quotation or payment lands.',
             'detail' => $webhookTotal === 0 ? 'No endpoints yet — add your first app.' : $webhookActive.' of '.$webhookTotal.' endpoints listening',
-            'state' => $webhookActive === 0 ? 'off' : ($lastDelivery === null ? 'check' : ($lastDelivery->status === 'sent' ? 'connected' : ($lastDelivery->status === 'failed' ? 'error' : 'check'))),
-            'state_note' => $lastDelivery === null ? 'Nothing delivered yet' : 'Last delivery '.$lastDelivery->created_at?->diffForHumans().' · '.$lastDelivery->status,
+            'state' => $webhookActive === 0 ? 'off' : ($lastDelivery?->status === 'failed' ? 'error' : 'check'),
+            'state_label' => $webhookActive === 0 ? 'Endpoints paused / absent' : 'Endpoints configured',
+            'state_note' => $lastDelivery === null ? 'Nothing delivered yet; configuration is not proof of connectivity.' : 'Most recent delivery across endpoints '.$lastDelivery->created_at?->diffForHumans().' · '.$lastDelivery->status,
             'account' => null, 'scopes' => [], 'missing' => null,
             'last_error' => $lastDelivery !== null && $lastDelivery->status === 'failed' ? $lastDelivery->error : null,
             'log_key' => 'webhooks',
@@ -809,6 +811,8 @@ class Integrations extends Component
         $googleConnection = GoogleConnection::query()->find(1);
         $activeBridgeCount = McpAccessToken::query()->whereNull('revoked_at')->where('expires_at', '>', now())->count();
         $providers = $this->providers($manager, $credentials, $connections, $googleConnection, $activeBridgeCount);
+        $telegramAllowed = $this->user()->canUseTelegram();
+        $providers = array_values(array_filter($providers, fn (array $provider): bool => $provider['key'] !== 'telegram' || $telegramAllowed));
         $detail = collect($providers)->firstWhere('key', $this->detailKey);
         $filtered = array_values(array_filter($providers, fn (array $provider): bool => ($this->appCategory === 'all' || $provider['group'] === $this->appCategory)
             && ($this->appSearch === '' || str_contains(strtolower($provider['name'].' '.$provider['benefit']), strtolower($this->appSearch)))));
@@ -824,15 +828,15 @@ class Integrations extends Component
             'bridgeKeys' => $this->user()->hasRole('owner')
                 ? McpAccessToken::query()->with('user:id,name')->latest('id')->limit(30)->get() : collect(),
             'activeBridgeCount' => $activeBridgeCount,
-            'telegramConfiguration' => $this->showTelegramConfiguration && $this->user()->hasRole('owner')
+            'telegramConfiguration' => $this->showTelegramConfiguration && $telegramAllowed
                 ? app(TelegramConfiguration::class)->inspect() : null,
             'webhooks' => $this->showWebhooks ? OutboundWebhook::query()->withCount('deliveries')->latest('id')->get() : collect(),
             'deliveries' => $this->showWebhooks ? WebhookDelivery::query()->with('webhook')->latest('id')->limit(30)->get() : collect(),
             'eventOptions' => WebhookEvents::options(),
-            'logs' => IntegrationLog::query()
+            'logs' => IntegrationLog::query()->when(! $telegramAllowed, fn ($query) => $query->where('integration', '!=', 'telegram'))
                 ->when($this->logIntegration !== '', fn ($q) => $q->where('integration', $this->logIntegration))
                 ->when($this->failedOnly, fn ($q) => $q->where('ok', false))->latest('id')->paginate(20),
-            'integrations' => IntegrationLog::query()->distinct()->orderBy('integration')->pluck('integration'),
+            'integrations' => IntegrationLog::query()->when(! $telegramAllowed, fn ($query) => $query->where('integration', '!=', 'telegram'))->distinct()->orderBy('integration')->pluck('integration'),
         ]);
     }
 }

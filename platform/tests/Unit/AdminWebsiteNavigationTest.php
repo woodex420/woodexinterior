@@ -11,9 +11,16 @@ it('groups the seven existing tools under one Website heading without changing t
         ->and(array_column($website[0]['items'], 'permission'))->toBe(['website.edit', 'website.edit', 'website.edit', 'website.edit', 'website.edit', 'theme.manage', 'settings.manage']);
 });
 
-it('keeps all forty-seven existing navigation destinations', function () {
+it('keeps the linked project-cost hub while consolidating accounting into three front doors', function () {
     $groups = AdminNavigation::groups();
 
-    expect(array_merge(...array_column($groups, 'items')))->toHaveCount(47)
+    $items = array_merge(...array_column($groups, 'items'));
+    $existing = array_filter($items, fn (array $item): bool => $item['route'] !== 'admin.projects.costs');
+    $added = array_values(array_filter($items, fn (array $item): bool => $item['route'] === 'admin.projects.costs'));
+    expect($items)->toHaveCount(43)
+        ->and($existing)->toHaveCount(42)
+        ->and($added)->toHaveCount(1)
+        ->and($added[0]['label'])->toBe('Vendors & costs')
+        ->and($added[0]['permission'])->toBe('accounts.view')
         ->and(array_column($groups, 'title'))->not->toContain(null);
 });

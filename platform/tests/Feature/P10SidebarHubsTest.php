@@ -59,14 +59,16 @@ it('consolidates the sidebar to the confirmed P10.1 map', function () {
         ->and(collect($groups['Sales']['items'])->pluck('label')->all())->toBe(['Estimations', 'Quotations', 'Invoices', 'Payments', 'Documents']);
 
     $live = collect(AdminNavigation::for($this->owner))->flatMap(fn (array $g): array => $g['items'])->filter(fn (array $item): bool => $item['route'] !== null);
-    // 47 live destinations after estimator rates joined the native Estimations hub; previously 48: the P10.1 map plus the Website screens still switched on for OS 1, plus the
+    // 48 live destinations including the requested Vendors & costs entry beside Projects; 47 after estimator rates joined the native Estimations hub; previously 48: the P10.1 map plus the Website screens still switched on for OS 1, plus the
     // three screens that were shipped but advertised as future work — Client portal, Handovers and Chat
     // Bot — with the eleven System entries folded into Settings + three hubs (deep QA 21 Oct, slice B:
     // Access & team, Connections, Platform: -7) and the duplicate Alert Rules placeholder removed, plus
     // **Trial balance** (part 2) and the money-out trio **Profit & loss / Payables / Income & expenses**
     // (slice I, 26 Oct). The exact number is asserted on purpose — a screen cannot join or leave the sidebar
     // without a test.
-    expect($live)->toHaveCount(47);
+    // Six ledger tools now share one front door; every original URL remains available.
+    expect($live)->toHaveCount(43);
+    expect(collect($groups['Projects']['items'])->pluck('route')->all())->toBe(['admin.projects.index', 'admin.projects.board', 'admin.projects.costs', 'admin.projects.portal', 'admin.projects.handovers']);
 });
 
 it('renders every hub tab for the owner', function (string $path, string $marker) {
@@ -90,6 +92,10 @@ it('renders every hub tab for the owner', function (string $path, string $marker
     'invoice tracking' => ['/admin/invoices?tab=tracking', 'Tracking'],
     'invoice recurring' => ['/admin/invoices?tab=recurring', 'Recurring invoices'],
     'invoice bank accounts' => ['/admin/invoices?tab=bank', 'Bank accounts'],
+    'project costs' => ['/admin/projects/costs', 'Choose a project'],
+    'project cost bills' => ['/admin/projects/costs?tab=bills', 'New bill'],
+    'project cost expenses' => ['/admin/projects/costs?tab=expenses', 'Expenses'],
+    'project cost vendors' => ['/admin/projects/costs?tab=vendors', 'Vendors'],
     'payables bills' => ['/admin/accounts/payables', 'Received invoices'],
     'payables vendors' => ['/admin/accounts/payables?tab=vendors', 'Vendors'],
     'payables aging' => ['/admin/accounts/payables?tab=aging', 'Payables aging'],
