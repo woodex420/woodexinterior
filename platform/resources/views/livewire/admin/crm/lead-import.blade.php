@@ -15,7 +15,7 @@
             </div>
             <div>
                 <p class="text-theme-sm font-medium text-navy-800 dark:text-white">2 · Dry run</p>
-                <p class="mt-1 text-theme-xs text-gray-500">A read-only rehearsal. The report shows counts and row numbers only — never names or phone numbers — so you can review it safely.</p>
+                <p class="mt-1 text-theme-xs text-gray-500">A read-only rehearsal. The report shows counts and original CSV record numbers only — never names or phone numbers — so you can review it safely.</p>
             </div>
             <div>
                 <p class="text-theme-sm font-medium text-navy-800 dark:text-white">3 · Import</p>
@@ -84,6 +84,23 @@
             </div>
         </x-admin.card>
 
+        <x-admin.card class="mb-5" title="Review source years — no import" description="Counts from the matched Date column only. No database comparison, date changes or application records are written. Run again after changing the mapping or selected year.">
+            <x-admin.button variant="secondary" icon="search" wire:click="reviewSourceDates" wire:loading.attr="disabled" wire:target="reviewSourceDates">Review source dates</x-admin.button>
+            @if ($sourceDateReview !== null)
+                @if (! $sourceDateReview['mapped'])
+                    <p class="mt-3 text-theme-sm text-warning-700">Choose the Date column first. {{ $sourceDateReview['unmapped'] }} rows have not been assigned a source date.</p>
+                @else
+                    <div class="mt-4 flex flex-wrap gap-2" aria-label="Source year counts">
+                        @foreach ($sourceDateReview['years'] as $sourceYear => $count)
+                            <x-admin.badge color="gray">{{ $sourceYear }} · {{ $count }} dates</x-admin.badge>
+                        @endforeach
+                    </div>
+                    <p class="mt-3 text-theme-sm text-gray-600 dark:text-gray-400">{{ $sourceDateReview['selected'] }} non-future dates in selected year {{ $year }} · {{ $sourceDateReview['other'] }} in other years · {{ $sourceDateReview['missing'] }} missing · {{ $sourceDateReview['invalid'] }} invalid · {{ $sourceDateReview['future'] }} future.</p>
+                    <p class="mt-2 text-theme-xs text-gray-500">Keep 2025 and 2026 separate. Do not assign a year to undated rows or infer an opportunity from a contact/reference list. These are date counts, not approved or eligible import counts; duplicate identities and the existing database still need review. Dates must be day/month/year.</p>
+                @endif
+            @endif
+        </x-admin.card>
+
         <x-admin.card>
             <h2 class="mb-1 text-theme-base font-medium text-gray-900 dark:text-white">3 · Dry run, then import</h2>
             <p class="mb-4 text-theme-xs text-gray-500">The dry run writes nothing. Changing any match, the year or the batch clears the report.</p>
@@ -119,7 +136,7 @@
                                     <th class="px-3 py-2.5 font-medium">Outcome</th>
                                     <th class="px-3 py-2.5 font-medium">Why</th>
                                     <th class="px-3 py-2.5 text-right font-medium">Rows</th>
-                                    <th class="px-3 py-2.5 font-medium">Sheet row numbers</th>
+                                    <th class="px-3 py-2.5 font-medium">Source CSV record numbers</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">

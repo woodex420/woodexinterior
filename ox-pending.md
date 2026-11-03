@@ -2,7 +2,18 @@
 
 **Updated:** 3 November 2026 (Asia/Karachi). **This is the current master list**, including earlier holds and new requests. Detailed machine-readable gates remain in [the completion register](docs/audit/98_COMPLETION_REGISTER_2026-11-02.csv); [revision 102](docs/audit/102_PREVIEW_LOGIN_AND_WORKBOOK_REVIEW_2026-11-03.md) records workbook/owner decisions; revisions103/104 below record implemented brand/login/SEO/diagnostic slices and their separate evidence. Earlier reports are historical evidence, not current release acceptance.
 
-## Active revision 106 — direct synthetic admin and repaired workflows
+## Active revision 107 — leads/contacts review, not import
+
+[Review, proposed column mapping and implementation](docs/audit/107_LEADS_CONTACTS_SOURCE_REVIEW_2026-11-03.md).
+
+- Fresh read-only lead-workbook review confirms **22 dated2025 /48 dated2026 /7 undated monthly candidates**, plus42 Target-client and26 client-database reference candidates. Team/vendor/expense tabs and the financial workbook are excluded. No source rows applied; accounts/payments remain reference-only.
+- The48 monthly2026 occurrences form16 repeated content groups across March/April/May;13 groups have usable matching primary phones.33 cross-tab phone groups need identity review. These are flags, not proof of distinct opportunities or authority to merge/delete. Keep7 undated rows held; contact-only/reference dates need separate semantics.
+- **Implemented:** owner-only source-date inventory with strict calendar/year/future counts and no importer/database write; stale counts cleared on mapping/year changes. Dry-run results retain original CSV record positions. Per-run canonical cleanup no longer sweeps another review's temporary files.
+- **106 hosted CI failed one test**, despite its earlier local SQLite pass: absent private preview path short-circuited the expected mock call.107 resolves the actual path first without relaxing the launcher guard. A fresh exact-candidate hosted run is required; all other106 native groups passed per check annotations.
+- Local107: native date-helper17checks and foreign-root guard checks PASS; syntax/Pint5/source contracts92/UI helpers61 PASS. Added3 unit+2 feature cases. Full app/browser/static acceptance is separate because the disposable106 application runtime/dependencies did not persist; do not reuse prior local success as new-source certification.
+- **Next owner decisions:** are March/April/May copies of the same16 enquiries or separate opportunities; which tab is authoritative? Keep Target/client-database lists reference-only or later approve a contact-only workflow? No inferred apply, ledger import, production write, deployment, provider send or repository-privacy conversion. All36 parent gates retained; deployment FINAL/auto-deploy OFF.
+
+## Previous revision 106 — direct synthetic admin and repaired workflows
 
 [Implementation, proof and remaining gaps](docs/audit/106_DIRECT_SYNTHETIC_ADMIN_AND_REPAIRS_2026-11-03.md).
 

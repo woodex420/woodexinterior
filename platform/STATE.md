@@ -1,5 +1,14 @@
 # Woodex OS: build state
 
+## Latest — revision107: source-year review and import provenance
+
+- [Read-only review](../docs/audit/107_LEADS_CONTACTS_SOURCE_REVIEW_2026-11-03.md), [queue](../ox-pending.md).22 dated2025/48 dated2026/7 undated monthly candidates;42 Target-client/26 database references. No actual import/database comparison or financial dry-run; financial reference-only hold unchanged.
+- Year inventory/source CSV record positions/per-review temporary cleanup implemented. Repeated16 content groups across three2026 tabs and33 cross-tab phone groups need owner identity/source decisions, not automatic merging/opportunity creation.
+- Fixed the106 hosted guard-test failure's absent-directory short-circuit, preserving every private-launcher refusal. Local107 native helper17, guard/syntax/Pint5/92source+61UI checks PASS; added3unit+2feature tests. Fresh hosted native acceptance tracked against exact pushed source; prior106 SQLite success is not107 certification. Disposable106 local app runtime did not persist; no existing DB was reset/reseeded.
+- No production changes, apply, merge/deployment/provider send/privacy conversion. Deployment FINAL, auto-deploy OFF; not all36 gates complete.
+
+---
+
 ## Latest — revision106: direct synthetic admin and verified workflow repairs
 
 - [Report](../docs/audit/106_DIRECT_SYNTHETIC_ADMIN_AND_REPAIRS_2026-11-03.md) / [canonical queue](../ox-pending.md). Actual105 sign-in failed; transparent welcome now pauses login and offers explicitly isolated direct synthetic access. No production auth bypass.

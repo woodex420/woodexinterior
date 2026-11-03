@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Admin\Crm;
 
 use App\Domain\System\Import\LeadCsvImporter;
+use App\Domain\System\Import\LeadSheetDateReview;
 use App\Livewire\Concerns\InteractsWithAdmin;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\UploadedFile;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -62,6 +64,10 @@ class LeadImport extends Component
     public array $headingsForReview = [];
 
     public bool $headingsReviewed = false;
+
+    /** @var array{mapped: bool, years: array<int, int>, missing: int, invalid: int, future: int, selected: int, other: int, unmapped: int}|null */
+    #[Locked]
+    public ?array $sourceDateReview = null;
 
     /** @var array<string, string> canonical heading → sheet column ('' = not matched) */
     public array $map = ['Sr' => '', 'Date' => '', 'Name' => '', 'Contact' => '', 'Status' => ''];
@@ -140,6 +146,30 @@ class LeadImport extends Component
         $this->resetRun();
     }
 
+    /** Inventory only; never calls the importer, database or a provider. */
+    public function reviewSourceDates(LeadSheetDateReview $review): void
+    {
+        abort_unless($this->user()->is_active && $this->user()->hasRole('owner'), 403);
+        $this->sourceDateReview = null;
+        $this->resetValidation('file');
+        $original = $this->storedPath();
+        if ($original === null) {
+            $this->addError('file', 'The uploaded sheet is no longer there — upload it again.');
+
+            return;
+        }
+        try {
+            $sheet = $this->readSheet($original);
+            $column = $this->map['Date'] ?? '';
+            if ($column !== '' && ! in_array($column, $sheet['header'], true)) {
+                throw ValidationException::withMessages(['import' => 'The matched Date column is not in this sheet.']);
+            }
+            $this->sourceDateReview = $review->handle($sheet['rows'], $column, $this->year, now()->toDateTimeImmutable());
+        } catch (ValidationException $exception) {
+            $this->addError('file', $exception->validator->errors()->first('import'));
+        }
+    }
+
     public function dryRun(): void
     {
         $this->run(false);
@@ -196,13 +226,23 @@ class LeadImport extends Component
             return;
         }
 
+        $canonical = null;
         try {
             $canonical = $this->buildCanonical($original);
-            $report = app(LeadCsvImporter::class)->handle($canonical, $this->user(), $apply, trim($this->batch), (int) $this->year);
+            $report = app(LeadCsvImporter::class)->handle($canonical['path'], $this->user(), $apply, trim($this->batch), (int) $this->year);
+            // Canonical records omit blank rows. Show original CSV record positions in the review.
+            foreach ($report['rows'] as &$row) {
+                $row['row'] = $canonical['sourceRows'][$row['row'] - 2];
+            }
+            unset($row);
         } catch (ValidationException $exception) {
             $this->addError('import', $exception->validator->errors()->first('import') ?? 'The sheet could not be imported.');
 
             return;
+        } finally {
+            if ($canonical !== null) {
+                Storage::disk('local')->delete('lead-imports/'.basename($canonical['path']));
+            }
         }
 
         $this->report = $this->summarise($report);
@@ -217,7 +257,7 @@ class LeadImport extends Component
     /**
      * Reads the sheet the same way the importer does (BOM-tolerant, blank lines skipped).
      *
-     * @return array{header: list<string>, rows: list<array<string, string>>, review: list<string>}
+     * @return array{header: list<string>, rows: list<array<string, string>>, review: list<string>, sourceRows: list<int>}
      */
     private function readSheet(string $path): array
     {
@@ -233,8 +273,11 @@ class LeadImport extends Component
         $header = null;
         $rows = [];
         $review = [];
+        $sourceRows = [];
+        $record = 0;
         try {
             while (($values = fgetcsv($handle, escape: '')) !== false) {
+                $record++;
                 $values = array_map(fn (?string $value): string => trim((string) preg_replace('/^\xEF\xBB\xBF/', '', $value ?? '')), $values);
                 if (! array_filter($values, fn (string $value): bool => $value !== '')) {
                     continue;
@@ -270,6 +313,7 @@ class LeadImport extends Component
                     throw ValidationException::withMessages(['import' => 'Sheets are limited to 5,000 rows — split the file and import in batches.']);
                 }
                 $rows[] = array_combine($header, $values);
+                $sourceRows[] = $record;
             }
         } finally {
             fclose($handle);
@@ -279,7 +323,7 @@ class LeadImport extends Component
             throw ValidationException::withMessages(['import' => 'No headings and data rows were found in this sheet.']);
         }
 
-        return ['header' => $header, 'rows' => $rows, 'review' => $review];
+        return ['header' => $header, 'rows' => $rows, 'review' => $review, 'sourceRows' => $sourceRows];
     }
 
     /**
@@ -328,8 +372,12 @@ class LeadImport extends Component
         $this->batch = 'sheet-'.$this->year;
     }
 
-    /** Writes the canonical CSV the importer expects; unmatched sheet columns ride along as note lines. */
-    private function buildCanonical(string $original): string
+    /**
+     * Writes the canonical CSV; unmatched columns stay separate notes.
+     *
+     * @return array{path: string, sourceRows: list<int>}
+     */
+    private function buildCanonical(string $original): array
     {
         $sheet = $this->readSheet($original);
         // Re-read the stored source, not the browser's mutable display metadata.
@@ -381,7 +429,7 @@ class LeadImport extends Component
             unlink((string) $path);
         }
 
-        return $canonical;
+        return ['path' => $canonical, 'sourceRows' => $sheet['sourceRows']];
     }
 
     /**
@@ -430,17 +478,13 @@ class LeadImport extends Component
         }
         $this->stored = null;
 
-        foreach (Storage::disk('local')->files('lead-imports') as $file) {
-            if (str_starts_with(basename($file), 'canonical-')) {
-                Storage::disk('local')->delete($file);
-            }
-        }
     }
 
     private function resetRun(): void
     {
         $this->report = null;
         $this->applied = false;
+        $this->sourceDateReview = null;
     }
 
     public function render(): View

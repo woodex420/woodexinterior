@@ -26,8 +26,9 @@ final class NativeDirectPreview
 {
     public static function install(Application $app): void
     {
+        $actual = realpath($app->basePath());
         $expected = realpath(dirname(__DIR__, 2).'/.cache/preview/source/platform');
-        if ($expected === false || realpath($app->basePath()) !== $expected) {
+        if ($expected === false || $actual !== $expected) {
             throw new RuntimeException('Direct demo can run only in the private native preview clone.');
         }
         $app->booted(function () use ($app): void {

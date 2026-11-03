@@ -6,6 +6,7 @@ use App\Domain\Crm\Models\Contact;
 use App\Domain\Crm\Models\Lead;
 use App\Livewire\Admin\Crm\LeadImport;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 /*
@@ -188,4 +189,44 @@ it('rejects a mapped heading that is absent from the stored source', function ()
     Livewire::test(LeadImport::class)->set('file', UploadedFile::fake()->createWithContent('review.csv', $csv))
         ->set('map.Name', 'Not in source')->call('dryRun')->assertHasErrors('import')->assertSet('report', null);
     $this->assertDatabaseCount('leads', 0);
+});
+
+it('reviews source years without creating application records and invalidates stale counts', function () {
+    $this->actingAs($this->userWithRole('owner'));
+    $csv = leadImportSheetCsv(['Sr', 'Date', 'Name', 'Contact', 'Status'], [
+        [1, '05/01/2025', 'Synthetic review one', '0321 5550181', 'New'],
+        [2, '07/03/2026', 'Synthetic review two', '0321 5550182', 'New'],
+        [3, '', 'Synthetic undated', '0321 5550183', 'New'],
+    ]);
+    $screen = Livewire::test(LeadImport::class)->set('file', UploadedFile::fake()->createWithContent('years.csv', $csv))
+        ->call('reviewSourceDates')->assertHasNoErrors()->assertSet('report', null)
+        ->assertSet('sourceDateReview.years', [2025 => 1, 2026 => 1])->assertSet('sourceDateReview.missing', 1)
+        ->assertSet('sourceDateReview.selected', 1)->assertDontSee('Synthetic review one');
+    $this->assertDatabaseCount('leads', 0);
+    $this->assertDatabaseCount('contacts', 0);
+    $this->assertDatabaseCount('legacy_refs', 0);
+    $screen->set('year', 2026)->assertSet('sourceDateReview', null)
+        ->call('reviewSourceDates')->assertSet('sourceDateReview.selected', 1)
+        ->set('map.Date', '')->assertSet('sourceDateReview', null)
+        ->call('reviewSourceDates')->assertSet('sourceDateReview.unmapped', 3);
+});
+
+it('reports source CSV record positions across blank records and removes only its own canonical file', function () {
+    $this->actingAs($this->userWithRole('owner'));
+    $csv = "\nSr,Date,Name,Contact,Status\n\n1,05/01/2025,Synthetic first,03215550184,New\n\n2,07/03/2026,Synthetic other year,03215550185,New\n";
+    $disk = Storage::disk('local');
+    $sentinel = 'lead-imports/canonical-another-review.csv';
+    $disk->put($sentinel, 'Synthetic unrelated review');
+    try {
+        $screen = Livewire::test(LeadImport::class)->set('file', UploadedFile::fake()->createWithContent('blank-records.csv', $csv))
+            ->call('dryRun')->assertHasNoErrors();
+        $groups = collect($screen->get('report')['groups'])->keyBy('outcome');
+        expect($groups['candidates']['rows'])->toBe([4])->and($groups['review']['rows'])->toBe([6]);
+        expect($disk->files('lead-imports'))->toContain($sentinel);
+        $screen->call('startOver');
+        expect($disk->exists($sentinel))->toBeTrue();
+        $this->assertDatabaseCount('leads', 0);
+    } finally {
+        $disk->delete($sentinel);
+    }
 });
