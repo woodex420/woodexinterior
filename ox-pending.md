@@ -2,7 +2,15 @@
 
 **Updated:** 3 November 2026 (Asia/Karachi). **This is the current master list**, including earlier holds and new requests. Detailed machine-readable gates remain in [the completion register](docs/audit/98_COMPLETION_REGISTER_2026-11-02.csv); [revision 102](docs/audit/102_PREVIEW_LOGIN_AND_WORKBOOK_REVIEW_2026-11-03.md) records workbook/owner decisions; revisions103/104 below record implemented brand/login/SEO/diagnostic slices and their separate evidence. Earlier reports are historical evidence, not current release acceptance.
 
-## Active revision108 — preview-origin repair and single-year demo
+## Active revision109 — Chat draft safety and Inbox paging
+
+[Implementation and evidence](docs/audit/109_CHAT_DRAFT_SAFETY_AND_INBOX_PAGING_2026-11-03.md).
+
+- **Implemented C01/C02 slice:** native Inbox conversation pagination beyond60; safe same-thread selection; filters and mobile Back preserve reply/note/attachment and their original visitor. A different thread requires explicit keep/discard; selected/pending IDs are locked and confirmation rechecks permissions. Drawer direct selection uses the same draft guard and now offers keep-current.
+- **Evidence:**135 focused native tests/547 assertions PASS;9 real Chromium checks PASS on a separate disposable61-conversation QA copy;15 controlled alternate-origin preview checks PASS;92 source+62 UI/helper contracts PASS; Pint and private-clone Vite build PASS. Exact-source full-suite/hosted results are tracked separately on PR8, not inferred from108.
+- **Still partial:** component-local drafts do not survive reload/leaving the page; broader compact/lifecycle/visitor-isolation/device/actual-parent acceptance remains open. No schema, production data, provider sends, financial writes or deployment. Main preview16-demo-lead data unchanged. QA listener stopped;8080 kept running.
+
+## Previous revision108 — preview-origin repair and single-year demo
 
 [Implementation and evidence](docs/audit/108_PREVIEW_NAVIGATION_AND_SINGLE_YEAR_DEMO_2026-11-03.md).
 
@@ -106,8 +114,8 @@ Implemented ≠ tested ≠ merged ≠ deployed ≠ live-verified. `pending` belo
 | V03 | P1 | Project financial and delivery summary | linked supplier costs/tax/AP and customer invoice/receipt/AR summary implemented101; delivery/budget acceptance remains | Preserve101 summaries. Verify budget/tasks/dates/handover end-to-end; do not claim mixed-project allocation or historical reconciliation. |
 | T01 | P0 | Telegram owner-only authority | implemented in revision 99, not merged | Owner-only source/isolated acceptance completed; new exact-candidate hosted CI and later deployment/live verification remain separate. |
 | T02 | P1 | Telegram lifecycle and truthful delivery | source lifecycle guards implemented; live acceptance unverified | Owner authorized one non-sensitive test report only to the paired owner chat, conditional on private rotated token, fresh owner pairing and network-capable runtime. No customer/financial data; API result and owner receipt separate. Not sent. |
-| C01 | P1 | Dedicated Website Chat compact workspace | bounded shared history/windows implemented106; broader presentation acceptance partial | Reuse existing production application DB; compact auto-opening area with paginated full history, not a second chat database. |
-| C02 | P1 | Chat draft/isolation/lifecycle/mobile QA | native history/draft tests and mandatory650-message browser checks on both surfaces PASS106; remainder partial | Verify drafts, reopen, archive, paging beyond 20, visitor isolation, permission changes and mobile interaction. |
+| C01 | P1 | Dedicated Website Chat compact workspace | bounded history106 + Inbox conversation paging109 implemented; broader compact acceptance partial | Reuse existing production application DB; compact auto-opening area with paginated full history, not a second chat database. |
+| C02 | P1 | Chat draft/isolation/lifecycle/mobile QA | history106 + draft/switch/filter/mobile safety109;135 native/547 +9 QA browser PASS; remainder partial | Verify drafts, reopen, archive, paging beyond 20, visitor isolation, permission changes and mobile interaction. |
 | C03 | P1 | Channel action and receipt truthfulness | partial | Website reply, Open WhatsApp and official API send must be distinct; do not display fake delivered labels. |
 | W01 | P1 | Charcoal shared UI and seven Website tools | existing native UI; selective requested gaps | Preserve heading/seven tools/SEO tabs; selective neutral-charcoal reuse, no wholesale old JS replacement. |
 | W02 | P1 | Media/theme/speed/accessibility acceptance | existing pages | Verify saves/live previews, real media behavior, performance measurements, keyboard/mobile and cache-state truthfulness. |

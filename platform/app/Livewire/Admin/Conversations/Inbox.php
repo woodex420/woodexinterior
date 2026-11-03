@@ -21,16 +21,18 @@ use App\Settings\BusinessSettings;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use Throwable;
 
 /**
@@ -48,6 +50,7 @@ class Inbox extends Component
     use InteractsWithAdmin;
     use WithConversationHistory;
     use WithFileUploads;
+    use WithPagination;
 
     #[Url(except: 'open')]
     public string $status = 'open';
@@ -64,7 +67,14 @@ class Inbox extends Component
     #[Url(except: '')]
     public string $assignment = '';
 
+    #[Locked]
     public ?int $selectedId = null;
+
+    #[Locked]
+    public ?int $pendingSelectionId = null;
+
+    /** Mobile list navigation never detaches the composer from its conversation. */
+    public bool $showList = false;
 
     public string $draft = '';
 
@@ -81,7 +91,7 @@ class Inbox extends Component
     public function updating(string $name): void
     {
         if (in_array($name, ['status', 'channel', 'search', 'unreadOnly', 'assignment'], true)) {
-            $this->selectedId = null;
+            $this->resetPage();
         }
     }
 
@@ -90,13 +100,13 @@ class Inbox extends Component
         abort_unless(in_array($filter, ['all', 'open', 'pending', 'closed', 'unread'], true), 422);
         $this->status = $filter === 'unread' ? 'all' : $filter;
         $this->unreadOnly = $filter === 'unread';
-        $this->selectedId = null;
+        $this->resetPage();
     }
 
-    /** @return Collection<int, Conversation> */
-    public function conversations(): Collection
+    /** @return LengthAwarePaginator<int, Conversation> */
+    public function conversations(): LengthAwarePaginator
     {
-        return $this->query()->limit(60)->get();
+        return $this->query()->paginate(60);
     }
 
     /** @return array{open: int, pending: int, unread: int, closed: int} */
@@ -116,9 +126,52 @@ class Inbox extends Component
     {
         $conversation = Conversation::query()->findOrFail($id);
         $this->authorize('view', $conversation);
+        $this->showList = false;
 
-        $this->selectedId = $id;
+        if ($this->selectedId === $id) {
+            $this->pendingSelectionId = null;
+            if ($this->historyBeforeId === null) {
+                $conversation->markRead();
+            }
+
+            return;
+        }
+        if (trim($this->draft) !== '' || trim($this->note) !== '' || $this->attachment !== null) {
+            $this->pendingSelectionId = $id;
+
+            return;
+        }
+        $this->activateConversation($conversation);
+    }
+
+    public function cancelSwitch(): void
+    {
+        $this->pendingSelectionId = null;
+    }
+
+    public function confirmSwitch(): void
+    {
+        if ($this->pendingSelectionId === null) {
+            return;
+        }
+        $conversation = Conversation::query()->findOrFail($this->pendingSelectionId);
+        $this->authorize('view', $conversation);
+        $this->activateConversation($conversation);
+    }
+
+    public function backToList(): void
+    {
+        $this->showList = true;
+        $this->pendingSelectionId = null;
+    }
+
+    private function activateConversation(Conversation $conversation): void
+    {
+        $this->selectedId = $conversation->id;
+        $this->pendingSelectionId = null;
+        $this->showList = false;
         $this->resetHistory();
+        $this->resetValidation();
         $this->draft = '';
         $this->note = '';
         $this->attachment = null;
@@ -361,6 +414,6 @@ class Inbox extends Component
                         ->orWhereHas('contact', fn (Builder $c): Builder => $c->where('name', 'like', $term));
                 });
             })
-            ->orderByDesc('last_message_at');
+            ->orderByDesc('last_message_at')->orderByDesc('id');
     }
 }

@@ -113,7 +113,8 @@ it('does not read or mark non-website conversations through the live drawer', fu
     if ($path === 'select') {
         $component->call('select', $conversation->id)->assertForbidden();
     } else {
-        $component->set('selectedId', $conversation->id)->assertForbidden();
+        expect(fn () => $component->set('selectedId', $conversation->id))
+            ->toThrow(\Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException::class);
     }
     expect($conversation->refresh()->unread_count)->toBe(4);
 })->with(['select', 'hydrate']);

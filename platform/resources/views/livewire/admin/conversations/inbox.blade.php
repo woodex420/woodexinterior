@@ -25,9 +25,22 @@
         </div>
     </div>
 
+    @if ($pendingSelectionId !== null)
+        <div class="wx-chat-pending mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3 text-theme-sm" role="status">
+            <p>Your current reply, internal note and attachment are kept. Discard them to switch conversations?</p>
+            <div class="flex flex-wrap gap-2">
+                <button type="button" wire:click="cancelSwitch" class="wx-history-button">Keep current conversation</button>
+                <button type="button" wire:click="confirmSwitch" wire:loading.attr="disabled" class="wx-history-button">Discard unsent work and switch</button>
+            </div>
+        </div>
+    @endif
+    @if ($selected !== null)
+        <p class="mb-3 text-theme-xs text-gray-500 dark:text-gray-400">Filters and list pages do not close the current conversation. Unsent work stays here while this page is open.</p>
+    @endif
+
     <div class="wx-inbox-grid">
         {{-- The list --}}
-        <div @class(['wx-conversation-list overflow-hidden bg-white dark:bg-gray-900', 'hidden lg:block' => $selected !== null])>
+        <div @class(['wx-conversation-list overflow-hidden bg-white dark:bg-gray-900', 'hidden lg:block' => $selected !== null && ! $showList])>
             <div class="border-b border-gray-200 p-3 dark:border-gray-800">
                 <div class="relative">
                     <x-icon name="search" class="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-gray-400" />
@@ -77,17 +90,18 @@
                     @endforeach
                 </ul>
             @endif
+            {{ $conversations->links('components.admin.pagination') }}
         </div>
 
         {{-- The thread --}}
-        <div @class(['wx-conversation-thread min-w-0 flex-col overflow-hidden bg-white dark:bg-gray-900', 'hidden lg:flex' => $selected === null, 'flex' => $selected !== null])>
+        <div @class(['wx-conversation-thread min-w-0 flex-col overflow-hidden bg-white dark:bg-gray-900', 'hidden lg:flex' => $selected === null || $showList, 'flex' => $selected !== null && ! $showList])>
             @if ($selected === null)
                 <div class="flex flex-1 items-center justify-center p-8 text-center text-theme-sm text-gray-500 dark:text-gray-400">
                     Your conversations, connected. Pick a thread to read the history, add a team note or reply.
                 </div>
             @else
                 <div class="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-gray-100 p-4 dark:border-gray-800">
-                    <button type="button" wire:click="$set('selectedId', null)" class="wx-icon-button lg:hidden" aria-label="Back to conversations"><x-icon name="arrow-left" class="size-4" /></button>
+                    <button type="button" wire:click="backToList" class="wx-icon-button lg:hidden" aria-label="Back to conversations"><x-icon name="arrow-left" class="size-4" /></button>
                     <div class="min-w-0 flex-1">
                         <p class="truncate text-theme-base font-semibold text-gray-900 dark:text-white">
                             {{ $selected->contact?->name ?? $selected->subject ?? $selected->external_number ?? 'Website visitor' }}

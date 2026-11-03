@@ -16,6 +16,7 @@ use App\Settings\NotificationSettings;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -38,10 +39,12 @@ class LiveChatBell extends Component
     /** Click or new inbound message opens the drawer; closing it preserves the announcement baseline. */
     public bool $drawer = false;
 
+    #[Locked]
     public ?int $selectedId = null;
 
     public string $draft = '';
 
+    #[Locked]
     public ?int $pendingId = null;
 
     /**
@@ -104,6 +107,7 @@ class LiveChatBell extends Component
         abort_unless($thread instanceof Conversation, 403);
         $this->authorize('view', $thread);
         if ($this->selectedId === $id) {
+            $this->pendingId = null;
             $this->openDrawer();
 
             return;
@@ -122,9 +126,17 @@ class LiveChatBell extends Component
     public function switchPending(): void
     {
         if ($this->pendingId !== null) {
-            $this->select($this->pendingId);
+            $conversation = Conversation::query()->where('channel', Channel::WebChat->value)->find($this->pendingId);
+            abort_unless($conversation instanceof Conversation, 403);
+            $this->authorize('view', $conversation);
+            $this->activateConversation($conversation);
             $this->openDrawer();
         }
+    }
+
+    public function cancelSwitch(): void
+    {
+        $this->pendingId = null;
     }
 
     public function render(): View
@@ -183,6 +195,21 @@ class LiveChatBell extends Component
         abort_unless($conversation instanceof Conversation, 403);
         $this->authorize('view', $conversation);
 
+        if ($this->selectedId === $id) {
+            $this->pendingId = null;
+
+            return;
+        }
+        if (trim($this->draft) !== '') {
+            $this->pendingId = $id;
+
+            return;
+        }
+        $this->activateConversation($conversation);
+    }
+
+    private function activateConversation(Conversation $conversation): void
+    {
         $this->selectedId = $conversation->id;
         $this->pendingId = null;
         $this->resetHistory();

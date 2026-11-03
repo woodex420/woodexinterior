@@ -20,6 +20,7 @@
             @if ($pendingId !== null && $pendingId !== $selectedId)
                 <div class="wx-chat-pending flex shrink-0 flex-wrap items-center justify-between gap-2 border-b p-3 text-theme-xs" role="status">
                     <span>Another website thread needs attention. Your current draft is kept.</span>
+                    <button type="button" wire:click="cancelSwitch" class="wx-history-button">Keep current conversation</button>
                     <button type="button" wire:click="switchPending" @if (trim($draft) !== '') wire:confirm="Switch threads and discard the current draft?" @endif class="wx-history-button">Switch to new message</button>
                 </div>
             @endif

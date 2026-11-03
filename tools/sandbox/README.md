@@ -1,6 +1,10 @@
 # Sandbox tooling (AI development environment only)
 
-## Current native preview (revision108)
+## Current Chat QA (revision109)
+
+The main8080 native preview is preserved, including its16 demo leads. `node tools/sandbox/chat-draft-safety-check.mjs` runs9 normal-Fortify Chromium checks only against a **separately copied disposable QA SQLite** on temporary9095. It requires privately provisioned `.cache/preview/qa/source/platform/.env` and `fixture109.json`,61 fictional conversations, native dependencies and the private browser bootstrap. It refuses the direct launcher or a different database. Credentials, database, provisioning scripts and screenshots stay ignored/private; never use an installed database. The temporary QA listener is stopped after checking. [Revision109](../../docs/audit/109_CHAT_DRAFT_SAFETY_AND_INBOX_PAGING_2026-11-03.md) records the implemented C01/C02 slice and remaining acceptance.
+
+## Native preview transport (revision108)
 
 Port8080 is served by native FrankenPHP from a private `.cache/preview/source/platform` copy; never point the direct launcher at an installed database. The launcher now loads `NativePreviewTransport.php` to keep self-links relative under an authorized preview wrapper; signed Livewire snapshots remain unchanged. `native-direct-context.js` must be served at `public/__sandbox/direct-context.js` in that private clone, including its XHR upload support.
 
