@@ -54,4 +54,4 @@ Until the actual hosted run completes and its artifacts are reviewed, MySQL acce
 
 ## Package integrity and remaining authorization
 
-`source-sha256.txt` pins this CI workflow/harness/contract-test source and STATE. `SHA256SUMS` covers the README, local diagnostics, dispatch facts and preservation report, excluding itself. It contains no runtime downloads, environment, credentials, vendor tree or private test fixtures. Older evidence is unchanged. The user approved scoped commits/pushes and this synthetic GitHub test run only; no PR/merge/deployment/production operation was performed or implied.
+Tool-log trailing whitespace is normalized without changing test outcomes. `source-sha256.txt` pins this CI workflow/harness/contract-test source and STATE. `SHA256SUMS` covers the README, local diagnostics, dispatch facts and preservation report, excluding itself. It contains no runtime downloads, environment, credentials, vendor tree or private test fixtures. Older evidence is unchanged. The user approved scoped commits/pushes and this synthetic GitHub test run only; no PR/merge/deployment/production operation was performed or implied.
