@@ -46,6 +46,9 @@ HTML);
     ));
 
     // The whole site — reads and writes — moves to the temporary tree for this test (same as CmsPageTest).
+    foreach (['insights', 'projects'] as $folder) {
+        file_put_contents($this->site.'/'.$folder.'/index.html', '<!doctype html><html><head><title>Synthetic listing</title></head><body><main><h1>Listing</h1><div class="hx-cards"></div></main></body></html>');
+    }
     $this->app->usePublicPath($this->site);
 });
 
@@ -63,6 +66,11 @@ afterEach(function () {
 /** @param array<string, mixed> $payload */
 function articleApi(array $payload)
 {
+    if (($payload['id'] ?? 0) > 0 && in_array($payload['action'], ['cms_save', 'cms_published', 'cms_status', 'cms_delete'], true)) {
+        $opened = test()->postJson(route('admin.website.studio.api'), ['action' => 'cms_get', 'id' => $payload['id'], 'type' => $payload['type'] ?? 'post'])->json('item');
+        $payload += array_intersect_key($opened ?? [], array_flip(['revision', 'token', 'base_hash']));
+    }
+
     return test()->postJson(route('admin.website.studio.api'), $payload);
 }
 
@@ -175,7 +183,7 @@ it('adds a sharing address and type when the shell has neither', function () {
         ->and(substr_count($html, '</head>'))->toBe(1);
 });
 
-it('writes the file when a published article is saved again', function () {
+it('does not write a file when a published article is saved again', function () {
     $page = Page::query()->create([
         'type' => PageType::Insight,
         'slug' => '/insights/live-edit/',
@@ -195,8 +203,10 @@ it('writes the file when a published article is saved again', function () {
 
     $file = $this->site.'/insights/live-edit/index.html';
 
-    expect(is_file($file))->toBeTrue()
-        ->and((string) file_get_contents($file))->toContain('The wording the editor just changed.');
+    expect(is_file($file))->toBeFalse();
+    expect($page->refresh()->title)->toBe('Live edit');
+    articleApi(['action' => 'cms_published', 'id' => $page->id, 'type' => 'post'])->assertJsonPath('ok', true);
+    expect((string) file_get_contents($file))->toContain('The wording the editor just changed.');
 });
 
 it('takes the file away when the page is taken off the site, and keeps a copy', function () {
@@ -221,7 +231,7 @@ it('takes the file away when the page is taken off the site, and keeps a copy', 
         ->and((string) file_get_contents($kept[0]))->toContain('Off the air');
 });
 
-it('stops answering at the old address when an article is renamed', function () {
+it('refuses a live address rename and preserves its old file', function () {
     $page = Page::query()->create([
         'type' => PageType::Insight,
         'slug' => '/insights/old-address/',
@@ -240,10 +250,11 @@ it('stops answering at the old address when an article is renamed', function () 
         'slug' => 'new-address',
         'data' => ['blocks' => [['t' => 'p', 'text' => 'Moved.']]],
         'seo' => [],
-    ])->assertOk()->assertJsonPath('ok', true);
+    ])->assertOk()->assertJsonPath('ok', false);
 
-    expect(is_file($this->site.'/insights/old-address/index.html'))->toBeFalse()
-        ->and(is_file($this->site.'/insights/new-address/index.html'))->toBeTrue();
+    expect(is_file($this->site.'/insights/old-address/index.html'))->toBeTrue()
+        ->and(is_file($this->site.'/insights/new-address/index.html'))->toBeFalse()
+        ->and($page->refresh()->slug)->toBe('/insights/old-address/');
 });
 
 it('writes a study into /projects/', function () {

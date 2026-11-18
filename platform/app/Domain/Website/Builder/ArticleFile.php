@@ -7,6 +7,7 @@ namespace App\Domain\Website\Builder;
 use App\Domain\Website\Models\Media;
 use App\Domain\Website\Models\Page;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 /**
  * Publishes an article or a study into its page file.
@@ -44,13 +45,11 @@ final class ArticleFile
             return null;
         }
 
-        $short = trim((string) preg_replace('#^/?(insights|projects)/#', '', $slug), '/');
-
-        if ($short === '') {
+        if (preg_match('~^/?'.preg_quote($folder, '~').'/([a-z0-9][a-z0-9-]*)/?$~D', $slug, $match) !== 1) {
             return null;
         }
 
-        return $folder.'/'.$short.'/index.html';
+        return $folder.'/'.$match[1].'/index.html';
     }
 
     /**
@@ -83,26 +82,182 @@ final class ArticleFile
     /**
      * Write the page as a file. Returns its public-relative path, or null when there is nothing to publish.
      */
-    public static function publish(Page $page, string $type): ?string
+    public static function publish(Page $page, string $type, ?string $preparedHtml = null): ?string
     {
         $path = self::pathFor($page, $type);
+        $html = $preparedHtml ?? self::html($page, $type);
+        if ($path === null || $html === null) {
+            return null;
+        }
+        // The optional prepared bytes come ONLY from the server renderer, never from an HTTP payload.
+        self::safeFile($path);
+        BuilderFile::write($path, $html);
 
+        return $path;
+    }
+
+    /**
+     * Read-only renderer shared by private Preview and explicit Publish. No DB/file writes.
+     *
+     * @param  array<string, mixed>|null  $data
+     */
+    public static function html(Page $page, string $type, ?array $data = null): ?string
+    {
+        return self::snapshot($page, $type, $data)['html'] ?? null;
+    }
+
+    /**
+     * Captures the rendered bytes and public related dependencies from the same read.
+     *
+     * @param  array<string, mixed>|null  $data
+     * @return array{html: string, html_hash: string, dependency_hash: string}|null
+     */
+    public static function snapshot(Page $page, string $type, ?array $data = null): ?array
+    {
+        $path = self::pathFor($page, $type);
         if ($path === null) {
             return null;
         }
-
-        $shell = is_file(self::root().'/'.$path) ? self::root().'/'.$path : self::shell($type);
-
+        $data ??= self::payload($page);
+        self::assertSupported($data, $type);
+        $resources = ArticleResources::resolve($data, $type);
+        $data = $resources['data'];
+        $target = self::safeFile($path);
+        $shell = is_file($target) ? $target : self::shell($type);
         if ($shell === null) {
             return null;
         }
+        $relative = ltrim(substr($shell, strlen(self::root())), '/');
+        $html = file_get_contents(self::safeFile($relative));
+        if ($html === false || preg_match('~<main\b[^>]*>.*?</main>~s', $html) !== 1) {
+            throw new RuntimeException('The page template could not be read or has no standard main section.');
+        }
+        $related = self::related($page, $type, $data);
+        $html = self::render($html, $page, $type, $data, $related['html'], $resources['template']);
 
-        $html = (string) file_get_contents($shell);
-        $url = rtrim((string) config('woodex.public_site_url'), '/').'/'.dirname($path).'/';
+        return ['html' => $html, 'html_hash' => hash('sha256', $html),
+            'dependency_hash' => hash('sha256', json_encode($resources['state'] === [] ? $related['state'] : ['related' => $related['state'], 'resources' => $resources['state']], JSON_THROW_ON_ERROR))];
+    }
 
-        BuilderFile::write($path, self::render($html, $page, $type, $url));
+    /** Check existing ancestors too: a missing child below a symlink must not escape the public tree. */
+    private static function safeFile(string $path): string
+    {
+        $absolute = self::root().'/'.$path;
+        $ancestor = $absolute;
+        while (! file_exists($ancestor) && ! is_link($ancestor) && dirname($ancestor) !== $ancestor) {
+            $ancestor = dirname($ancestor);
+        }
+        $real = realpath($ancestor);
+        $root = realpath(self::root());
+        if ($real === false || $root === false || ($real !== $root && ! str_starts_with($real, $root.'/'))) {
+            throw new RuntimeException('That page address is outside the website.');
+        }
 
-        return $path;
+        return $absolute;
+    }
+
+    /**
+     * Refuse unsupported layouts and malformed rich content before either Preview or Publish.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private static function assertSupported(array $data, string $type): void
+    {
+        if (! empty($data['tpl']) || ! empty($data['faqGroup'])
+            || ! in_array($data['visibility'] ?? 'public', ['public', 'unlisted'], true)) {
+            throw new RuntimeException('This layout, visibility or advanced section is not supported yet. The saved draft is safe; nothing was published.');
+        }
+        // The editor stores JSON. Do not coerce nested objects/arrays into text or silently lose them.
+        foreach (['blocks', 'facts', 'meta', 'summary', 'faqs', 'related'] as $key) {
+            if (isset($data[$key]) && (! is_array($data[$key]) || ! array_is_list($data[$key]))) {
+                throw new RuntimeException('That section must contain a list of editor entries. The saved draft is safe.');
+            }
+        }
+        foreach (['factsTitle', 'factsNote', 'ctaTitle', 'relatedTitle'] as $key) {
+            self::assertText($data[$key] ?? '');
+        }
+        foreach (($data['facts'] ?? []) as $fact) {
+            if (! is_array($fact)) {
+                throw new RuntimeException('Study facts must contain label and text entries.');
+            }
+            self::assertText($fact['k'] ?? '');
+            self::assertText($fact['v'] ?? '');
+        }
+        if ($type !== 'study' && (self::filledFacts($data) !== [] || ! empty($data['factsNote']) || ! empty($data['factsTitle']))) {
+            throw new RuntimeException('The facts sidebar belongs to Portfolio studies only. The saved draft is safe.');
+        }
+        foreach (($data['blocks'] ?? []) as $block) {
+            if (! is_array($block) || ! in_array(($block['t'] ?? ''), ['h', 'p', 'list', 'img', 'quote', 'table', 'cta', 'gallery', 'ba', 'faq'], true)) {
+                throw new RuntimeException('That content block is not supported yet. Keep the draft until its renderer is restored.');
+            }
+            foreach (['text', 'caption', 'alt', 'title', 'label'] as $key) {
+                self::assertText($block[$key] ?? '');
+            }
+            if (($block['t'] ?? '') === 'img') {
+                self::imageUrl($block['src'] ?? '');
+            }
+            if (($block['t'] ?? '') === 'cta') {
+                self::assertText($block['href'] ?? '');
+                self::checkUrl((string) ($block['href'] ?? '/contact/'), false);
+            }
+            if (($block['t'] ?? '') === 'ba') {
+                self::imageUrl($block['before'] ?? '');
+                self::imageUrl($block['after'] ?? '');
+                if (empty($block['before']) !== empty($block['after'])) {
+                    throw new RuntimeException('Choose both before and after images, or leave both empty.');
+                }
+            }
+            if (($block['t'] ?? '') === 'gallery') {
+                if (! is_array($block['imgs'] ?? []) || ! array_is_list($block['imgs'] ?? [])) {
+                    throw new RuntimeException('A gallery must contain a list of images.');
+                }
+                foreach (($block['imgs'] ?? []) as $image) {
+                    if (! is_array($image)) {
+                        throw new RuntimeException('Each gallery image must contain an address and alt text.');
+                    }
+                    self::imageUrl($image['src'] ?? '');
+                    self::assertText($image['alt'] ?? '');
+                }
+            }
+            if (($block['t'] ?? '') === 'faq') {
+                self::inlineFaqs((string) ($block['text'] ?? ''));
+            }
+        }
+        self::imageUrl($data['hero']['src'] ?? '');
+    }
+
+    private static function assertText(mixed $text): void
+    {
+        if (! is_string($text) && ! is_numeric($text)) {
+            throw new RuntimeException('Use plain text for editor text fields. The saved draft is safe.');
+        }
+    }
+
+    private static function imageUrl(mixed $url): void
+    {
+        self::assertText($url);
+        self::checkUrl((string) $url, true);
+    }
+
+    private static function checkUrl(string $url, bool $image): void
+    {
+        if ($url === '') {
+            return;
+        }
+        if (preg_match('/[\x00-\x20\x7f\\\\]/', $url) === 1 || str_starts_with($url, '//')
+            || str_contains(rawurldecode((string) parse_url($url, PHP_URL_PATH)), '..')) {
+            throw new RuntimeException('Use a safe website-relative or HTTP(S) address.');
+        }
+        $decoded = rawurldecode($url);
+        if (preg_match('/[\\x00-\\x1f\\x7f\\\\]/', $decoded) === 1 || str_starts_with($decoded, '//')) {
+            throw new RuntimeException('Use a safe website-relative or HTTP(S) address.');
+        }
+        $local = str_starts_with($url, '/');
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+        if (! $local && ! (in_array($scheme, ['https', 'http'], true) && filter_var($url, FILTER_VALIDATE_URL))
+            && ! (! $image && in_array($scheme, ['mailto', 'tel'], true))) {
+            throw new RuntimeException('Use a safe website-relative or HTTP(S) address.');
+        }
     }
 
     /** The first page file of the same kind, used as the chrome for a page that has no file yet. */
@@ -117,89 +272,31 @@ final class ArticleFile
         $files = glob(self::root().'/'.$folder.'/*/index.html') ?: [];
         sort($files);
 
-        return $files[0] ?? null;
-    }
-
-    private static function render(string $shell, Page $page, string $type, string $url): string
-    {
-        $data = self::payload($page);
-        $title = (string) ($page->seo['title'] ?? $page->title);
-        $description = (string) ($page->seo['description'] ?? $page->excerpt ?? '');
-        $hero = (string) ($data['hero']['src'] ?? '');
-
-        $shellUrl = self::canonical($shell);
-        $html = $shellUrl !== '' ? str_replace($shellUrl, $url, $shell) : $shell;
-
-        $html = self::replaceTag($html, 'title', $title);
-        $html = self::replaceMeta($html, 'name', 'description', $description);
-        $html = self::replaceMeta($html, 'property', 'og:title', $title);
-        $html = self::replaceMeta($html, 'property', 'og:description', $description);
-        $html = self::replaceMeta($html, 'name', 'twitter:title', $title);
-        $html = self::replaceMeta($html, 'name', 'twitter:description', $description);
-
-        // The page's own address, not the shell's: a shared link that points at the template sends the reader
-        // to someone else's article. og:type is the design's own choice per kind — insights are articles,
-        // projects are website pages — so a shell that has it keeps it and a new page follows the same rule.
-        $html = self::ensureMeta($html, 'property', 'og:url', $url);
-        $html = self::ensureMeta($html, 'property', 'og:type', $type === 'post' ? 'article' : 'website');
-
-        if ($hero !== '') {
-            $absolute = str_starts_with($hero, 'http') ? $hero : rtrim((string) config('woodex.public_site_url'), '/').'/'.ltrim($hero, '/');
-            $html = self::replaceMeta($html, 'property', 'og:image', $absolute);
-            $html = self::replaceMeta($html, 'name', 'twitter:image', $absolute);
+        foreach ($files as $file) {
+            $bytes = (string) file_get_contents($file);
+            if (preg_match('~<head\b[^>]*>.*?</head>~si', $bytes) && preg_match('~<main\b[^>]*>.*?</main>~si', $bytes)) {
+                return $file;
+            }
         }
 
-        return self::replaceMain($html, self::main($page, $type, $data));
-    }
-
-    private static function canonical(string $html): string
-    {
-        return preg_match('~<link rel="canonical" href="([^"]+)"~', $html, $match) === 1 ? $match[1] : '';
+        return null;
     }
 
     /**
-     * Replace a meta tag, or add it to the head when the shell has none. `replaceMeta` alone leaves a page
-     * without og:url (or og:type) when its shell happens not to carry the tag, and a shared link then has
-     * nothing to name the page with.
+     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>|null  $template
      */
-    private static function ensureMeta(string $html, string $attribute, string $key, string $value): string
+    private static function render(string $shell, Page $page, string $type, array $data, string $related, ?array $template = null): string
     {
-        $tag = '<meta '.$attribute.'="'.$key.'" content="'.e($value).'" />';
+        $html = self::replaceMain($shell, self::main($page, $type, $data, $related, $template));
 
-        if (preg_match('~<meta\s+'.$attribute.'="'.preg_quote($key, '~').'"\s+content="[^"]*"\s*/?>~i', $html) === 1) {
-            return (string) preg_replace('~<meta\s+'.$attribute.'="'.preg_quote($key, '~').'"\s+content="[^"]*"\s*/?>~i', $tag, $html, 1);
-        }
-
-        return (string) preg_replace('~</head>~i', $tag.'</head>', $html, 1);
-    }
-
-    private static function replaceTag(string $html, string $tag, string $value): string
-    {
-        $escaped = e($value);
-
-        return (string) preg_replace('~<'.$tag.'>.*?</'.$tag.'>~s', '<'.$tag.'>'.$escaped.'</'.$tag.'>', $html, 1);
-    }
-
-    private static function replaceMeta(string $html, string $attribute, string $key, string $value): string
-    {
-        $pattern = '~<meta\s+'.$attribute.'="'.preg_quote($key, '~').'"\s+content="[^"]*"\s*/?>~i';
-
-        if (preg_match($pattern, $html) !== 1) {
-            return $html;
-        }
-
-        return (string) preg_replace_callback(
-            $pattern,
-            static fn (): string => '<meta '.$attribute.'="'.$key.'" content="'.e($value).'" />',
-            $html,
-            1,
-        );
+        return PublicationSeo::article($html, $page, $type, $data);
     }
 
     private static function replaceMain(string $html, string $main): string
     {
         if (preg_match('~<main\b[^>]*>.*?</main>~s', $html) === 1) {
-            return (string) preg_replace('~<main\b[^>]*>.*?</main>~s', $main, $html, 1);
+            return (string) preg_replace_callback('~<main\b[^>]*>.*?</main>~s', static fn (): string => $main, $html, 1);
         }
 
         return str_replace('</body>', $main."\n</body>", $html);
@@ -276,8 +373,9 @@ final class ArticleFile
 
     /**
      * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>|null  $template
      */
-    private static function main(Page $page, string $type, array $data): string
+    private static function main(Page $page, string $type, array $data, string $related, ?array $template = null): string
     {
         $kicker = trim((string) ($data['kicker'] ?? ''));
         $dek = trim((string) ($data['dek'] ?? ''));
@@ -288,10 +386,12 @@ final class ArticleFile
 
         $html = '<main id="main-content">'."\n";
 
-        // Hero.
-        $html .= '    <section class="dx-hero'.($hero !== '' ? ' dx-hero--image' : '').'" aria-labelledby="dx-title">'."\n";
+        // Hero. No resource means the existing byte-for-byte default layout.
+        $mode = $template['hero'] ?? 'image';
+        $heroClass = $mode === 'image' ? ($hero !== '' ? ' dx-hero--image' : '') : ' dx-hero--'.$mode;
+        $html .= '    <section class="dx-hero'.$heroClass.'" aria-labelledby="dx-title">'."\n";
 
-        if ($hero !== '') {
+        if ($hero !== '' && $mode === 'image') {
             $html .= '      '.self::heroImage($hero, $heroAlt)."\n";
         }
 
@@ -303,7 +403,7 @@ final class ArticleFile
         if ($dek !== '') {
             $html .= '        <p class="dx-dek">'.e($dek)."</p>\n";
         }
-        if ($meta !== []) {
+        if ($meta !== [] && ($template['meta'] ?? true)) {
             $html .= "        <dl class=\"dx-meta\">\n";
             foreach ($meta as $fact) {
                 $html .= '          <div class="dx-meta-item"><dt>'.e((string) ($fact['k'] ?? '')).'</dt><dd>'.e((string) ($fact['v'] ?? ''))."</dd></div>\n";
@@ -312,8 +412,20 @@ final class ArticleFile
         }
         $html .= "      </div>\n    </section>\n";
 
-        // Body.
-        $html .= "    <section class=\"dx-body\">\n      <div class=\"dx-wrap dx-body-grid\">\n        <div class=\"dx-main\">\n";
+        if ($mode === 'media' && $hero !== '') {
+            [$width, $height] = self::size($hero);
+            $srcset = self::srcset($hero);
+            $html .= '<div class="dx-wrap"><figure class="dx-hero-media"><img sizes="100vw"'.($srcset !== '' ? ' srcset="'.e($srcset).'"' : '').' src="'.e($hero).'" alt="'.e($heroAlt).'" width="'.$width.'" height="'.$height.'" loading="eager" decoding="async" fetchpriority="high"></figure></div>';
+        }
+        if ($template !== null) {
+            return $html.self::templateSections($type, $data, $related, $template)
+                .self::cta($hero, $heroAlt, (string) ($data['ctaTitle'] ?? '')).'</main>';
+        }
+
+        // Body and the existing Portfolio facts sidebar.
+        $html .= "    <section class=\"dx-body\">\n      <div class=\"dx-wrap dx-body-grid\">\n";
+        $html .= $type === 'study' ? self::facts($data) : '';
+        $html .= "        <div class=\"dx-main\">\n";
 
         $html .= self::summary((array) ($data['summary'] ?? []));
         $html .= self::toc($blocks);
@@ -328,10 +440,182 @@ final class ArticleFile
             $html .= '    <section class="dx-quote"><div class="dx-wrap"><blockquote data-in-reveal>'.self::inline($quote)."</blockquote></div></section>\n";
         }
 
-        $html .= self::related($page, $type);
-        $html .= self::cta($hero !== '' ? $hero : '', $heroAlt);
+        $html .= $related;
+        $html .= self::cta($hero !== '' ? $hero : '', $heroAlt, (string) ($data['ctaTitle'] ?? ''));
 
         return $html.'</main>';
+    }
+
+    /**
+     * Keep the complete published order, including interleaved full-width quote/related sections.
+     *
+     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $template
+     */
+    private static function templateSections(string $type, array $data, string $related, array $template): string
+    {
+        $html = '';
+        $open = false;
+        foreach ($template['sections'] as $section) {
+            if (! $section['on']) {
+                continue;
+            }
+            $key = $section['k'];
+            if (in_array($key, ['quote', 'related'], true)) {
+                if ($open) {
+                    $html .= '</div></div></section>';
+                    $open = false;
+                }
+                if ($key === 'related') {
+                    $html .= $related;
+                } elseif (trim((string) ($data['quote'] ?? '')) !== '') {
+                    $html .= '<section class="dx-quote"><div class="dx-wrap"><blockquote data-in-reveal>'.self::inline((string) $data['quote']).'</blockquote></div></section>';
+                }
+
+                continue;
+            }
+            // The facts sidebar belongs to the body group, not unrelated summary/FAQ groups.
+            if ($key === 'body' && $type === 'study' && $template['facts'] && $open) {
+                $html .= '</div></div></section>';
+                $open = false;
+            }
+            if (! $open) {
+                $facts = $key === 'body' && $type === 'study' && $template['facts'] ? self::facts($data) : '';
+                $html .= '<section class="dx-body"><div class="dx-wrap dx-body-grid'.($facts === '' ? ' dx-body-grid--single' : '').'">'.$facts;
+                $html .= '<div class="dx-main">';
+                $open = true;
+            }
+            $html .= match ($key) {
+                'summary' => self::summary($data['summary'] ?? []),
+                'faqs' => self::faqs($data['faqs'] ?? []),
+                'body' => ($template['toc'] ? self::toc($data['blocks'] ?? []) : '').self::sections($data['blocks'] ?? []),
+                default => throw new RuntimeException('That published template section is invalid.'),
+            };
+        }
+
+        return $html.($open ? '</div></div></section>' : '');
+    }
+
+    /**
+     * Keep label-only/value-only facts; blank editor rows do not create empty bullets.
+     *
+     * @param  array<string, mixed>  $data
+     * @return list<array<string, mixed>>
+     */
+    private static function filledFacts(array $data): array
+    {
+        return array_values(array_filter($data['facts'] ?? [], static fn (array $fact): bool => trim((string) ($fact['k'] ?? '')) !== '' || trim((string) ($fact['v'] ?? '')) !== ''));
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private static function facts(array $data): string
+    {
+        $facts = self::filledFacts($data);
+        $note = trim((string) ($data['factsNote'] ?? ''));
+        if ($facts === [] && $note === '') {
+            return '';
+        }
+        $title = trim((string) ($data['factsTitle'] ?? '')) ?: 'Study facts';
+        $html = '<aside class="dx-side"><div class="dx-facts" data-in-reveal><h2>'.e($title).'</h2>';
+        if ($facts !== []) {
+            $html .= '<ul class="dx-arrow-list">';
+            foreach ($facts as $fact) {
+                $html .= '<li><strong>'.e((string) ($fact['k'] ?? '')).'</strong> '.e((string) ($fact['v'] ?? '')).'</li>';
+            }
+            $html .= '</ul>';
+        }
+
+        return $html.($note !== '' ? '<p class="dx-note">'.e($note).'</p>' : '')."</div></aside>\n";
+    }
+
+    /**
+     * Match the editor's blank-line separated Q:/A: format; refuse incomplete nonempty pairs.
+     *
+     * @return list<array{q: string, a: string}>
+     */
+    private static function inlineFaqs(string $text): array
+    {
+        $pairs = [];
+        foreach (preg_split('/\R\s*\R/', trim($text)) ?: [] as $chunk) {
+            if (trim($chunk) === '') {
+                continue;
+            }
+            $lines = preg_split('/\R/', trim($chunk)) ?: [];
+            $q = trim((string) preg_replace('/^Q[:.]\s*/i', '', array_shift($lines) ?? ''));
+            $a = trim((string) preg_replace('/^A[:.]\s*/i', '', implode(' ', $lines)));
+            if ($q === '' || $a === '') {
+                throw new RuntimeException('Each inline FAQ needs a question line and an answer, with blank lines between pairs.');
+            }
+            $pairs[] = ['q' => $q, 'a' => $a];
+        }
+
+        return $pairs;
+    }
+
+    private static function faqBlock(string $text): string
+    {
+        $pairs = self::inlineFaqs($text);
+        if ($pairs === []) {
+            return '';
+        }
+        $html = '<div class="wx-faq">';
+        foreach ($pairs as $pair) {
+            $html .= '<details><summary>'.e($pair['q']).'</summary><p>'.self::inline($pair['a']).'</p></details>';
+        }
+
+        return $html."</div>\n";
+    }
+
+    /** Image attributes come only from validated URLs; dimensions are local-file-only. */
+    private static function richImage(string $src, string $alt, string $class = ''): string
+    {
+        [$width, $height] = self::size($src);
+        $srcset = self::srcset($src);
+
+        return '<img'.($class !== '' ? ' class="'.e($class).'"' : '')
+            .' src="'.e($src).'" alt="'.e($alt).'" width="'.$width.'" height="'.$height.'"'
+            .($srcset !== '' ? ' srcset="'.e($srcset).'"' : '')
+            .' sizes="(max-width: 768px) 100vw, 50vw" loading="lazy" decoding="async">';
+    }
+
+    /**
+     * @param  array<string, mixed>  $block
+     */
+    private static function gallery(array $block): string
+    {
+        $images = array_values(array_filter($block['imgs'] ?? [], static fn (array $image): bool => ($image['src'] ?? '') !== ''));
+        if ($images === []) {
+            return '';
+        }
+        $caption = trim((string) ($block['caption'] ?? ''));
+        $html = '<div data-in-reveal><div class="wx-gal">';
+        foreach ($images as $index => $image) {
+            $alt = trim((string) ($image['alt'] ?? '')) ?: ($caption !== '' ? $caption : 'Project photo').' '.($index + 1);
+            $html .= self::richImage((string) $image['src'], $alt);
+        }
+
+        return $html.'</div>'.($caption !== '' ? '<p class="wx-gal-c">'.e($caption).'</p>' : '')."</div>\n";
+    }
+
+    /**
+     * @param  array<string, mixed>  $block
+     */
+    private static function comparison(array $block): string
+    {
+        if (empty($block['before']) && empty($block['after'])) {
+            return '';
+        }
+        $caption = trim((string) ($block['caption'] ?? ''));
+        $alt = $caption !== '' ? $caption : 'Project';
+
+        return '<figure class="wx-ba" data-in-reveal><div class="wx-ba-w">'
+            .self::richImage((string) $block['after'], $alt.' after')
+            .self::richImage((string) $block['before'], $alt.' before', 'wx-ba-b')
+            .'<span class="wx-ba-l b">Before</span><span class="wx-ba-l a">After</span>'
+            .'<input class="wx-ba-r" type="range" min="0" max="100" value="50" aria-label="Drag to compare before and after"></div>'
+            .($caption !== '' ? '<figcaption>'.e($caption).'</figcaption>' : '')."</figure>\n";
     }
 
     private static function heroImage(string $src, string $alt): string
@@ -363,7 +647,7 @@ final class ArticleFile
         foreach ([480, 960, 1920] as $width) {
             $candidate = $width === 1920 ? $base.$extension : $base.'-'.$width.$extension;
 
-            if (is_file(self::root().'/'.ltrim($candidate, '/'))) {
+            if (self::localImageFile($candidate) !== null) {
                 $candidates[] = $candidate.' '.$width.'w';
             }
         }
@@ -371,12 +655,23 @@ final class ArticleFile
         return implode(', ', $candidates);
     }
 
+    private static function localImageFile(string $src): ?string
+    {
+        if (! str_starts_with($src, '/') || str_starts_with($src, '//')) {
+            return null;
+        }
+        $file = realpath(self::root().'/'.ltrim((string) parse_url($src, PHP_URL_PATH), '/'));
+        $root = realpath(self::root());
+
+        return $file !== false && $root !== false && str_starts_with($file, $root.'/') && is_file($file) ? $file : null;
+    }
+
     /** @return array{0: int, 1: int} */
     private static function size(string $src): array
     {
-        $file = self::root().'/'.ltrim(parse_url($src, PHP_URL_PATH) ?: $src, '/');
+        $file = self::localImageFile($src);
 
-        if (is_file($file)) {
+        if ($file !== null) {
             $size = @getimagesize($file);
 
             if (is_array($size)) {
@@ -502,6 +797,9 @@ final class ArticleFile
             'table' => self::table($text),
             'quote' => '<blockquote class="dx-quote-inline">'.self::inline($text)."</blockquote>\n",
             'cta' => self::ctaBlock($block),
+            'gallery' => self::gallery($block),
+            'ba' => self::comparison($block),
+            'faq' => self::faqBlock($text),
             default => $text === '' ? '' : '<p>'.self::inline($text)."</p>\n",
         };
     }
@@ -535,7 +833,7 @@ final class ArticleFile
     private static function list(array $block): string
     {
         $items = (array) ($block['items'] ?? []);
-        $ordered = in_array(($block['style'] ?? 'ul'), ['ol', 'ordered', 'number'], true);
+        $ordered = ! empty($block['ol']) || in_array(($block['style'] ?? 'ul'), ['ol', 'ordered', 'number'], true);
 
         if ($items === []) {
             foreach (preg_split('/\R/', (string) ($block['text'] ?? '')) ?: [] as $line) {
@@ -658,7 +956,7 @@ final class ArticleFile
         $path = self::pathFor($page, $type);
 
         if ($path !== null && is_file(self::root().'/'.$path)) {
-            $html = (string) file_get_contents(self::root().'/'.$path);
+            $html = (string) file_get_contents(self::safeFile($path));
 
             if (preg_match('~<img[^>]*class="dx-hero-bg"[^>]*>~', $html, $tag) === 1) {
                 $src = preg_match('~src="([^"]+)"~', $tag[0], $match) === 1 ? $match[1] : '';
@@ -675,58 +973,119 @@ final class ArticleFile
         return ['src' => $id > 0 ? self::mediaUrl($id) : '', 'alt' => (string) $page->title];
     }
 
-    /** Three other published pages of the same kind, newest first. */
-    private static function related(Page $page, string $type): string
+    /**
+     * Explicit selections preserve order; an empty selection retains the existing automatic fallback.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{html: string, state: list<array<string, mixed>>}
+     */
+    private static function related(Page $page, string $type, array $data): array
     {
-        $folder = self::FOLDERS[$type] ?? null;
-
-        if ($folder === null) {
-            return '';
+        $selected = $data['related'] ?? [];
+        if (count($selected) > 3 || count(array_unique($selected, SORT_REGULAR)) !== count($selected)) {
+            throw new RuntimeException('Select at most three different related items. The saved draft is safe.');
         }
-
-        $others = Page::query()
-            ->where('type', $page->type)
-            ->whereKeyNot($page->getKey())
-            ->where('status', 'published')
-            ->orderByDesc('published_at')
-            ->orderByDesc('id')
-            ->limit(3)
-            ->get();
-
+        foreach ($selected as $slug) {
+            if (! is_string($slug) || preg_match('/^[a-z0-9][a-z0-9-]{0,254}$/D', $slug) !== 1) {
+                throw new RuntimeException('Select related items using their Blog or Portfolio address.');
+            }
+        }
+        $query = Page::query()->where('type', $page->type)->whereKeyNot($page->getKey())
+            ->where('status', 'published')->where(fn ($q) => $q->whereNull('published_at')->orWhere('published_at', '<=', now()));
+        if ($selected !== []) {
+            $slugs = array_map(static fn (string $slug): string => '/'.self::FOLDERS[$type].'/'.$slug.'/', $selected);
+            $found = $query->whereIn('slug', $slugs)->get()->keyBy('slug');
+            $others = [];
+            foreach ($slugs as $slug) {
+                $others[] = $found->get($slug) ?? throw new RuntimeException('A selected related item is missing, unpublished or not in this content type. Preview again after fixing the selection.');
+            }
+        } else {
+            // Preserve the inherited newest-three candidate window; invalid automatic candidates are omitted.
+            $others = $query->orderByDesc('published_at')->orderByDesc('id')->limit(3)->get();
+        }
         $cards = [];
-
+        $state = [];
         foreach ($others as $other) {
             $path = self::pathFor($other, $type);
+            $source = self::payload($other); // Published Page/blocks ONLY, never StudioDraft.
+            $file = $path !== null ? self::safeFile($path) : null;
+            if ($file === null || ! is_file($file) || ($source['visibility'] ?? 'public') !== 'public' || PublicationSeo::noindex((string) file_get_contents($file))) {
+                if ($selected !== []) {
+                    throw new RuntimeException('A selected related item has no public page or is unlisted. Fix the selection and Preview again.');
+                }
 
-            if ($path === null || ! is_file(self::root().'/'.$path)) {
                 continue;
             }
-
-            $url = '/'.dirname($path).'/';
-            $hero = self::heroOf($other, $type);
-            $image = (int) $other->featured_image_id > 0 ? self::mediaUrl((int) $other->featured_image_id) : $hero['src'];
-            $figure = '';
-
-            if ($image !== '') {
-                $figure = '<figure><img sizes="(max-width: 768px) 100vw, 50vw" src="'.e($image).'" alt="'.e($hero['alt']).'" loading="lazy" decoding="async"></figure>';
+            $card = $source['card'] ?? [];
+            if (! is_array($card)) {
+                throw new RuntimeException('The related item has invalid card data. Fix that published item first.');
             }
-
-            $cards[] = '        <a class="dx-card" href="'.e($url).'" data-in-reveal>'."\n          ".$figure
-                .'<h3>'.e((string) $other->title).'</h3>'
-                .'<p>'.e((string) ($other->excerpt ?? '')).'</p>'
-                .'<span class="dx-more">Read the article</span>'."\n        </a>";
+            self::assertText($card['src'] ?? '');
+            self::assertText($source['hero']['src'] ?? '');
+            $hero = self::heroOf($other, $type);
+            $image = (string) ($card['src'] ?? '') ?: ((int) $other->featured_image_id > 0 ? self::mediaUrl((int) $other->featured_image_id) : ((string) ($source['hero']['src'] ?? '') ?: $hero['src']));
+            $alt = $card['alt'] ?? $hero['alt'];
+            $text = $card['text'] ?? $source['dek'] ?? $other->excerpt ?? '';
+            self::assertText($alt);
+            self::assertText($text);
+            self::imageUrl($image);
+            $figure = $image !== '' ? '<figure>'.self::richImage($image, (string) $alt).'</figure>' : '';
+            $cards[] = '<a class="dx-card" href="/'.e(dirname($path)).'/" data-in-reveal>'.$figure
+                .'<h3>'.e((string) $other->title).'</h3><p>'.e((string) $text).'</p>'
+                .'<span class="dx-more">'.($type === 'study' ? 'Read the study' : 'Read the article').'</span></a>';
+            // Conservative public-only dependency binding catches file changes even when card HTML is unchanged.
+            $state[] = ['page' => $other->getAttributes(), 'payload' => $source, 'file' => hash_file('sha256', $file)];
         }
+        $title = trim((string) ($data['relatedTitle'] ?? '')) ?: ($type === 'study' ? 'Related studies.' : 'Related reading.');
+        $html = $cards === [] ? '' : '<section class="dx-related"><div class="dx-wrap"><header data-in-reveal><p class="dx-kicker">Keep looking</p><h2>'.e($title)
+            .'</h2></header><div class="dx-cards">'.implode("\n", $cards).'</div></div></section>';
 
-        if ($cards === []) {
-            return '';
-        }
-
-        return "    <section class=\"dx-related\">\n      <div class=\"dx-wrap\">\n"
-            ."        <header data-in-reveal><p class=\"dx-kicker\">Keep looking</p><h2>Related reading.</h2></header>\n"
-            ."        <div class=\"dx-cards\">\n".implode("\n", $cards)."\n        </div>\n      </div>\n    </section>\n";
+        return ['html' => $html, 'state' => $state];
     }
 
-    private static function cta(string $image, string $alt): string
+    /** The listing uses the saved article card values, not browser-authored HTML or private resource data.
+     * @param  array<string, mixed>  $data
+     */
+    public static function listingCard(string $type, string $url, string $title, array $data): string
+    {
+        $card = $data['card'] ?? [];
+        if (! is_array($card)) {
+            throw new RuntimeException('The listing card data is invalid. The saved draft is safe.');
+        }
+        foreach (['alt', 'text', 'tag', 'src'] as $key) {
+            self::assertText($card[$key] ?? '');
+        }
+        self::assertText($data['category'] ?? '');
+        self::assertText($data['dek'] ?? '');
+        $src = (string) (($card['src'] ?? '') ?: ($data['hero']['src'] ?? ''));
+        self::imageUrl($src);
+        $alt = (string) (($card['alt'] ?? '') ?: $title);
+        $copy = (string) (($card['text'] ?? '') ?: ($data['dek'] ?? ''));
+        $tag = (string) (($card['tag'] ?? '') ?: ($data['category'] ?? ''));
+        if ($tag === '') {
+            $tag = $type === 'study' ? 'Study' : '';
+            foreach (($data['meta'] ?? []) as $meta) {
+                if ($type === 'post' && in_array(strtolower((string) ($meta['k'] ?? '')), ['read time', 'reading time'], true)) {
+                    $tag = (string) ($meta['v'] ?? '');
+                    break;
+                }
+            }
+        }
+        $image = '';
+        if ($src !== '') {
+            [$width, $height] = self::size($src);
+            $srcset = self::srcset($src);
+            $image = '<img src="'.e($src).'" alt="'.e($alt).'" width="'.$width.'" height="'.$height.'" sizes="(max-width: 768px) 100vw, 50vw"'
+                .($srcset !== '' ? ' srcset="'.e($srcset).'"' : '').' loading="lazy" decoding="async">';
+        }
+        $hook = $type === 'post' ? 'data-ih-reveal' : 'data-ph-reveal';
+        $more = $type === 'post' ? 'Read the article' : 'View the study';
+
+        return '<a class="hx-card" href="'.e($url).'" '.$hook.'=""><figure'.($image === '' ? ' class="hx-card-media--empty"' : '').'>'.$image.'<span class="hx-date">'.e($tag).'</span></figure>'
+            .'<h3>'.e($title).'</h3><p>'.e($copy).'</p><span class="hx-more">'.$more.'</span></a>';
+    }
+
+    private static function cta(string $image, string $alt, string $title = ''): string
     {
         $figure = '';
 
@@ -737,11 +1096,13 @@ final class ArticleFile
                 .' src="'.e($image).'" alt="'.e($alt).'" width="'.$size[0].'" height="'.$size[1].'" loading="lazy" decoding="async"></figure>';
         }
 
+        $heading = e(trim($title) !== '' ? $title : 'Ready to start your project?');
+
         return <<<HTML
     <section class="in-section" id="cta"><div class="in-wrap in-cta-grid">
           <div class="in-cta-copy" data-in-reveal="">
             <p class="in-label">Start your project</p>
-            <h2>Ready to start your project?</h2>
+            <h2>{$heading}</h2>
             <div class="in-cta-meta"><address>M-71, Zainab Tower, Model Town Link Road, Lahore</address><a href="tel:+923224000768">+92 322 4000768</a><a href="mailto:info@woodex.com.pk">info@woodex.com.pk</a><p><strong>Mon–Sat 9:30–6:30</strong> · Sunday closed</p></div>
             <div class="actions"><a class="btn" href="mailto:info@woodex.com.pk?subject=Start%20a%20Woodex%20project">Email the studio</a><a class="btn btn-light" href="tel:+923224000768">Call +92 322 4000768</a></div>
           </div>
@@ -763,7 +1124,11 @@ HTML;
 
         $html = (string) preg_replace('~\*\*(.+?)\*\*~s', '<strong>$1</strong>', $html);
         $html = (string) preg_replace('~(?<!\*)\*([^*\n]+)\*(?!\*)~', '<em>$1</em>', $html);
-        $html = (string) preg_replace('~\[([^\]]+)\]\((https?://[^)\s]+|/[^)\s]*)\)~', '<a href="$2">$1</a>', $html);
+        $html = (string) preg_replace_callback('~\[([^\]]+)\]\((https?://[^)\s]+|/[^)\s]*)\)~', static function (array $match): string {
+            self::checkUrl(html_entity_decode($match[2], ENT_QUOTES, 'UTF-8'), false);
+
+            return '<a href="'.$match[2].'">'.$match[1].'</a>';
+        }, $html);
 
         return $html;
     }

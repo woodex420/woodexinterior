@@ -27,10 +27,12 @@
      files (docs/audit/19, 20), so a screen that edits rows changes nothing a visitor can see: exactly
      the "claims a result it cannot produce" trap the owner has been closing screen by screen.
 
+     The separate resources screen manages snapshots only and explicitly disclaims page integration.
+
      Their sidebar is hidden, so the URL hash and their internal links are the only ways in; both are
      stopped here, before their router sees them, and the person is told where the work actually lives. */
-  var ALLOWED = ["blog", "portfolio", "forms", "estimator"];
-  /* The screen the four above already are, per page — so a refused hash goes back to what the person was doing,
+  var ALLOWED = ["blog", "portfolio", "forms", "estimator", "resources"];
+  /* The active Studio screen, per page — so a refused hash goes back to what the person was doing,
      not to Blog. Kept here as well as in the Blade so the list has one home the tests can read. */
   var ALIAS = { post: "blog", study: "portfolio" };
   var LABELS = {
@@ -97,10 +99,16 @@
 
         if (wanted !== "" && ALLOWED.indexOf(wanted) === -1) {
           keepInOs(fallback());
+          C.lastStudioHash = location.hash;
           announce(wanted);
           return;
         }
 
+        if (C.beforeStudioNavigate && !C.beforeStudioNavigate()) {
+          history.replaceState(null, "", location.pathname + (C.lastStudioHash || "#/resources"));
+          return;
+        }
+        C.lastStudioHash = location.hash;
         return listener.call(this, event);
       };
 
@@ -122,6 +130,8 @@
       document.addEventListener("DOMContentLoaded", function () { announce(refused); });
     }
   } catch (e) { /* file:// or a blocked history API: the default screen still renders */ }
+
+  C.lastStudioHash = location.hash;
 
   /* Their shell restores a token from sessionStorage and boots with it. There is no token any more — the
      cookie decides — so we hand it a marker and let the server answer `status` and `me` from the session. */

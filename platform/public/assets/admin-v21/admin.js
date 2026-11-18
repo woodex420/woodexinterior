@@ -285,6 +285,7 @@
     var FLAT = []; NAV.forEach(function (n) { if (n.g) FLAT.push.apply(FLAT, n.items); else if (Array.isArray(n)) FLAT.push(n); });
     var find = function (k) { return FLAT.find(function (n) { return n[0] === k; }); };
     var def = find(SUB[v] || v);
+    if (!def && v === "resources" && window.WX_STUDIO) def = ["resources", "Templates & FAQ groups"];
     if (!def && v !== "profile") v = "dashboard", def = find("dashboard");
     if (def && def[3] && !can(def[3])) { v = "dashboard"; toast("You do not have access to that section", true); }
     S.view = v; S.charts.forEach(function (c) { c.destroy(); }); S.charts = [];

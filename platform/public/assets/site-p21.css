@@ -2658,3 +2658,11 @@ html:not(.js) .ih-faq-a,html:not(.js) .in-faq-a,html:not(.js) .ph-faq-a,html:not
 body[data-page] .site-header img.brand-mark,
 .site-header img.brand-mark { filter:none; width:38px; height:36px; flex-basis:38px; padding:2px; border-radius:8px; background:#fff; }
 @media(max-width:600px){body[data-page] .site-header img.brand-mark{width:34px;height:32px;flex-basis:34px}}
+
+/* Explicit resource templates: groups without Portfolio facts use the full content width. */
+#study-page .dx-body-grid.dx-body-grid--single{grid-template-columns:minmax(0,1fr)}
+
+/* Published listing cards: contain editor-supplied long text without changing ordinary card geometry. */
+#projects-hub-page .hx-card,#insights-hub-page .hx-card{min-width:0;overflow-wrap:anywhere}
+#projects-hub-page .hx-date,#insights-hub-page .hx-date{max-width:calc(100% - 32px)}
+#projects-hub-page .hx-card-media--empty,#insights-hub-page .hx-card-media--empty{min-height:76px}

@@ -43,21 +43,26 @@ final class WebsiteStudioApiController
         } catch (ValidationException $exception) {
             // A guard said why in words meant for the screen ("That address belongs to the system", "the folder
             // could not be created"); show those instead of the generic line, which reads like a crash.
-            return response()->json([
+            return $this->privateJson([
                 'ok' => false,
                 'error' => $exception->validator->errors()->first() ?: 'That change was not accepted.',
             ]);
         } catch (RuntimeException $exception) {
-            return response()->json(['ok' => false, 'error' => $exception->getMessage()]);
+            return $this->privateJson(['ok' => false, 'error' => $exception->getMessage()]);
         } catch (Throwable $exception) {
             report($exception);
 
-            return response()->json([
+            return $this->privateJson([
                 'ok' => false,
-                'error' => 'The server could not complete that action. Nothing was saved.',
+                'error' => 'The server could not complete that action. Reopen the item and verify its state before retrying.',
             ]);
         }
 
-        return response()->json(['ok' => true] + $result);
+        return $this->privateJson(['ok' => true] + $result);
+    }
+
+    private function privateJson(array $data): JsonResponse
+    {
+        return response()->json($data)->header('Cache-Control', 'private, no-store')->header('X-Robots-Tag', 'noindex, nofollow');
     }
 }

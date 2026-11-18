@@ -12,12 +12,15 @@
   function slugWords(url) { return norm(decodeURIComponent(String(url || "").replace(/index\.html$/, "").split("/").filter(Boolean).pop() || "")).split(" "); }
 
   function extract(html) {
-    var d = new DOMParser().parseFromString(String(html || ""), "text/html");
+    // Template contents stay inert: analyzing saved HTML must not request images/frames or execute code.
+    var template = document.createElement("template"); template.innerHTML = String(html || "");
+    var d = template.content;
     var meta = function (sel) { var m = d.querySelector(sel); return m ? m.getAttribute("content") || "" : ""; };
     var info = { title: (d.querySelector("title") || {}).textContent || "", desc: meta('meta[name="description"]'), og: meta('meta[property="og:image"]'), robots: meta('meta[name="robots"]'),
       canonical: (d.querySelector('link[rel="canonical"]') || { getAttribute: function () { return ""; } }).getAttribute("href") || "",
       schema: [].map.call(d.querySelectorAll('script[type="application/ld+json"]'), function (s) { var t = []; try { (function walk(o) { if (!o || typeof o !== "object") return; if (Array.isArray(o)) return o.forEach(walk); if (o["@type"]) t.push([].concat(o["@type"]).join("/")); if (o["@graph"]) walk(o["@graph"]); })(JSON.parse(s.textContent)); } catch (e) {} return t; }).reduce(function (a, b) { return a.concat(b); }, []) };
-    var b = d.body || d.createElement("body");
+    var b = d;
+    [].forEach.call(b.querySelectorAll("title,meta,link,base"), function (n) { n.remove(); });
     [].forEach.call(b.querySelectorAll("script,style,noscript,template,header.site-header,nav.mobile-panel,footer,.footer,.wx-wa,.wx-edit-btn,[data-seo-skip]"), function (n) { n.remove(); });
     info.h1 = [].map.call(b.querySelectorAll("h1"), function (h) { return h.textContent.replace(/\s+/g, " ").trim(); });
     info.subs = [].map.call(b.querySelectorAll("h2,h3"), function (h) { return h.textContent.replace(/\s+/g, " ").trim(); });

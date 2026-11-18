@@ -50,6 +50,9 @@ beforeEach(function () {
     file_put_contents($this->site.'/insights/template/index.html', $shell);
     file_put_contents($this->site.'/projects/template/index.html', str_replace('insights/', 'projects/', $shell));
 
+    foreach (['insights', 'projects'] as $folder) {
+        file_put_contents($this->site.'/'.$folder.'/index.html', '<!doctype html><html><head><title>Synthetic listing</title></head><body><main><h1>Listing</h1><div class="hx-cards"></div></main></body></html>');
+    }
     $this->app->usePublicPath($this->site);
 });
 
@@ -79,6 +82,11 @@ function studioContentRemoveTree(string $path): void
 /** @param array<string, mixed> $payload */
 function studioApi(array $payload): TestResponse
 {
+    if (($payload['id'] ?? 0) > 0 && in_array($payload['action'], ['cms_save', 'cms_published', 'cms_status', 'cms_delete'], true)) {
+        $opened = test()->postJson(route('admin.website.studio.api'), ['action' => 'cms_get', 'id' => $payload['id'], 'type' => $payload['type'] ?? 'post'])->json('item');
+        $payload += array_intersect_key($opened ?? [], array_flip(['revision', 'token', 'base_hash']));
+    }
+
     return test()->postJson(route('admin.website.studio.api'), $payload);
 }
 
@@ -177,10 +185,13 @@ it('creates a draft article as an insight page under /insights/', function () {
         'seo' => ['title' => 'Kitchen costs in Lahore', 'description' => 'What drives the price.', 'kw' => 'kitchen cost lahore'],
     ])->assertOk()->assertJsonPath('ok', true);
 
+    $untouched = Page::query()->where('slug', '/insights/kitchen-costs/')->firstOrFail();
+    expect($untouched->excerpt)->toBeNull()->and($untouched->blocks()->count())->toBe(0);
+    studioApi(['action' => 'cms_published', 'id' => $untouched->id, 'type' => 'post'])->assertJsonPath('ok', true);
     $page = Page::query()->where('slug', '/insights/kitchen-costs/')->firstOrFail();
 
     expect($page->type)->toBe(PageType::Insight)
-        ->and($page->status)->toBe(PageStatus::Draft)
+        ->and($page->status)->toBe(PageStatus::Published)
         ->and($page->parent_id)->toBe($this->listing->id)
         ->and($page->excerpt)->toBe('What drives the price.')
         ->and($page->featured_image_id)->toBe($this->media->id)
@@ -188,7 +199,7 @@ it('creates a draft article as an insight page under /insights/', function () {
         ->and($page->blocks()->where('type', 'text')->firstOrFail()->data['studio']['blocks'])->toHaveCount(2);
 });
 
-it('keeps the previous blocks as a version before every save', function () {
+it('keeps the previous blocks as a version before explicit publication', function () {
     $page = Page::query()->create([
         'type' => PageType::Insight,
         'slug' => '/insights/versioned/',
@@ -208,6 +219,8 @@ it('keeps the previous blocks as a version before every save', function () {
         'seo' => [],
     ])->assertOk()->assertJsonPath('ok', true);
 
+    expect(PageVersion::query()->where('page_id', $page->id)->count())->toBe(0);
+    studioApi(['action' => 'cms_published', 'id' => $page->id, 'type' => 'post'])->assertJsonPath('ok', true);
     $version = PageVersion::query()->where('page_id', $page->id)->firstOrFail();
 
     expect($version->data['blocks'][0]['data']['body'])->toBe('Old body');
@@ -342,6 +355,9 @@ it('saves a study as a project page under /projects/', function () {
         'seo' => [],
     ])->assertOk()->assertJsonPath('ok', true);
 
+    $identity = Page::query()->where('slug', '/projects/clinic/')->firstOrFail();
+    expect($identity->blocks()->count())->toBe(0);
+    studioApi(['action' => 'cms_published', 'id' => $identity->id, 'type' => 'study'])->assertJsonPath('ok', true);
     $page = Page::query()->where('slug', '/projects/clinic/')->firstOrFail();
 
     expect($page->type)->toBe(PageType::Project)

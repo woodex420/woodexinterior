@@ -325,14 +325,45 @@
     return function (el, parts) {
       var t = T[type], id = parts[0] === "new" ? 0 : +parts[0], it, others = [], faqGroups = [];
       el.innerHTML = '<p class="muted">Loading…</p>';
-      Promise.all([id ? api("cms_get", { id: id }) : Promise.resolve({ ok: true, item: { type: type, title: "", slug: "", status: "draft", data: newData(type), seo: {} } }), api("cms_list", { type: type }), api("cms_list", { type: "faq" })]).then(function (rs) {
+      Promise.all([id ? api("cms_get", { id: id, type: type }) : Promise.resolve({ ok: true, item: { type: type, title: "", slug: "", status: "draft", data: newData(type), seo: {}, can_publish: !window.WX_STUDIO || !!window.WX_STUDIO.canPublish } }), api("cms_list", { type: type }), (window.WX_STUDIO ? Promise.resolve({items: []}) : api("cms_list", { type: "faq" }))]).then(function (rs) {
         if (!rs[0].ok) { el.innerHTML = '<div class="card card-b">' + esc(rs[0].error) + "</div>"; return; }
         it = rs[0].item; others = (rs[1].items || []).filter(function (x) { return x.id !== it.id; }); aiReady = rs[1].aiReady; faqGroups = rs[2].items || [];
         it.data = Object.assign(newData(type), it.data || {}); it.seo = it.seo || {};
         draw();
       });
-      var d, dirty = false;
-      function mark() { dirty = true; var b = $("#ce-dirty"); if (b) b.hidden = false; }
+      var d, dirty = false, lastPreviewHash = "", lastPreviewDependencies = "";
+      var nativeStudio = window.WX_STUDIO && window.WX_STUDIO.staticPublish === false;
+      function resourceControls() {
+        function picker(key, label) {
+          var value = d[key], selected = value === undefined || value === null || value === 0 || value === "" ? "" : (Number.isInteger(value) && value > 0 ? String(value) : "invalid");
+          return '<div class="ce-resource-picker" data-resource="' + key + '"><label for="ce-' + key + '">' + label + '</label><select id="ce-' + key + '"><option value="">None — use this page’s original layout / local FAQs</option>' + (selected ? '<option selected value="' + selected + '">Selected resource #' + esc(value) + ' — validated by Preview</option>' : '') + '</select><div class="toolbar"><button type="button" class="btn sm" data-previous disabled>Previous</button><button type="button" class="btn sm" data-next disabled>Next</button><button type="button" class="btn sm" data-refresh>Refresh published list</button></div><small role="status" data-status>Loading published choices…</small></div>';
+        }
+        return '<div class="ce-resource-links"><h3>Published resources</h3><p class="muted">Published snapshots only. Private resource changes stay private. Select, Save and Preview before explicit page Publish. Resource publication never automatically changes a live page. Linked FAQs replace rendered local FAQs; unlinking keeps your local questions.</p>' + picker("templateResource", "Published layout template") + picker("faqResource", "Published FAQ group") + ((d.tpl || d.faqGroup) ? '<p class="err">Unsupported legacy template/FAQ references are retained, not converted. Preview will refuse them.</p><button type="button" class="btn sm" id="ce-clear-legacy">Clear unsupported legacy references</button>' : '') + '</div>';
+      }
+      function bindResourceChoices() {
+        $$(".ce-resource-picker", el).forEach(function (host) {
+          var key = host.dataset.resource, select = host.querySelector("select"), previous = host.querySelector("[data-previous]"), next = host.querySelector("[data-next]"), refresh = host.querySelector("[data-refresh]"), status = host.querySelector("[data-status]"), page = 1;
+          select.onchange = mark;
+          function load(target) {
+            previous.disabled = next.disabled = refresh.disabled = true; status.textContent = "Loading published choices…";
+            api("cms_resource_list", {kind: key === "templateResource" ? "template" : "faq_group", scope: key === "templateResource" ? type : "shared", view: "published", page: target}).then(function (r) {
+              if (!host.isConnected) return;
+              refresh.disabled = false;
+              if (!r.ok) { status.textContent = r.error || "Could not load choices. Refresh to retry; current reference retained."; return; }
+              // Preserve the current local choice even when it is missing or on another list page.
+              var current = select.value, found = r.items.some(function (item) { return String(item.id) === current; });
+              select.innerHTML = '<option value="">None — original layout / local FAQs</option>' + (current && !found ? '<option value="' + esc(current) + '">Selected #' + esc(current) + ' — not on this page; Preview validates it</option>' : '') + r.items.map(function (item) { return '<option value="' + item.id + '">' + esc(item.name) + '</option>'; }).join("");
+              select.value = current; page = r.page;
+              previous.disabled = page <= 1; next.disabled = page * r.per_page >= r.total;
+              status.textContent = r.total + " published choices · page " + page + ". Refresh after resource publication.";
+            });
+          }
+          previous.onclick = function () { if (page > 1) load(page - 1); }; next.onclick = function () { load(page + 1); }; refresh.onclick = function () { load(page); }; load(1);
+        });
+        if ($("#ce-clear-legacy")) $("#ce-clear-legacy").onclick = function () { if (!confirm("Clear only the unsupported legacy references? Local content stays saved; Save and Preview are still required.")) return; collect(); delete d.tpl; delete d.faqGroup; it.data = d; draw(); mark(); };
+      }
+      function revision() { return { revision: it.revision, token: it.token, base_hash: it.base_hash }; }
+      function mark() { dirty = true; lastPreviewHash = ""; lastPreviewDependencies = ""; var b = $("#ce-dirty"); if (b) b.hidden = false; }
       function kv(list, cls, k1, k2) { return (list || []).map(function (m, i) { return '<div class="kvr ' + cls + '" data-i="' + i + '"><input data-k="k" value="' + esc(m.k) + '" placeholder="' + k1 + '"><input data-k="v" value="' + esc(m.v) + '" placeholder="' + k2 + '"><button type="button" class="btn sm ghost" data-del>' + ic("x") + "</button></div>"; }).join(""); }
       function blk(b, i) {
         var tools = '<div class="bk-tools"><span class="bk-type">' + ({ h: "Heading", p: "Paragraph", list: "List", img: "Image", quote: "Quote", table: "Table", faq: "FAQ", cta: "Call to action", ba: "Before / after", gallery: "Gallery" }[b.t]) + '</span><button type="button" class="btn sm ghost" data-up title="Move up">' + ic("arrow-up") + '</button><button type="button" class="btn sm ghost" data-dn title="Move down">' + ic("arrow-down") + '</button><button type="button" class="btn sm ghost" data-rm title="Remove">' + ic("x") + "</button></div>";
@@ -359,12 +390,13 @@
       }
       function sideCards() {
         var cats = CATS.slice(); others.concat([it]).forEach(function (o) { var c = ((o.data || {}).category || "").trim(); if (c && cats.indexOf(c) < 0) cats.push(c); });
-        if (d.category == null) d.category = metaVal(d, "Category") || "";
+        if (type === "post" && d.category == null) d.category = metaVal(d, "Category") || "";
         var cats2 = d.category && cats.indexOf(d.category) < 0 ? cats.push(d.category) : 0;
         var vis = d.visibility === "unlisted" ? "unlisted" : "public";
-        return '<div class="card card-b"><h4 class="side-h">Status &amp; visibility</h4><dl class="ce-dl"><dt>Status</dt><dd>' + badge(it) + '</dd><dt>Words</dt><dd id="ce-wc">0</dd><dt>Reading time</dt><dd id="ce-rt">–</dd>' + (it.updated_at ? "<dt>Last saved</dt><dd>" + esc(String(it.updated_at).slice(0, 16)) + "</dd>" : "") + "</dl>" +
-          '<div class="ce-vis">' + [["public", "Public", "On the Insights page and in Google"], ["unlisted", "Unlisted", "Only people with the link. Hidden from Insights, the sitemap and Google"]].map(function (v) { return '<label class="ce-vo' + (vis === v[0] ? " on" : "") + '"><input type="radio" name="ce-vis" value="' + v[0] + '"' + (vis === v[0] ? " checked" : "") + "><span><b>" + v[1] + "</b><small>" + v[2] + "</small></span></label>"; }).join("") + "</div></div>" +
-          '<div class="card card-b"><h4 class="side-h">Category</h4><select id="ce-cat"><option value="">No category</option>' + cats.map(function (c) { return '<option' + (d.category === c ? " selected" : "") + ">" + esc(c) + "</option>"; }).join("") + '<option value="__new">+ New category…</option></select><small class="muted">Shown on the blog card (unless you set a card label below).</small></div>' +
+        var statusCard = '<div class="card card-b"><h4 class="side-h">Status &amp; visibility</h4><dl class="ce-dl"><dt>Status</dt><dd>' + badge(it) + '</dd><dt>Words</dt><dd id="ce-wc">0</dd><dt>Reading time</dt><dd id="ce-rt">–</dd>' + (it.updated_at ? "<dt>Last saved</dt><dd>" + esc(String(it.updated_at).slice(0, 16)) + "</dd>" : "") + "</dl>" +
+          '<div class="ce-vis">' + [["public", "Public", nativeStudio ? "Listed after explicit Publish. Search indexing is not guaranteed." : "On the Insights page and in Google"], ["unlisted", "Unlisted", nativeStudio ? "Publicly reachable by URL, not private. After explicit Publish: noindex, no listing or sitemap entry. Existing links may remain." : "Only people with the link. Hidden from Insights, the sitemap and Google"]].map(function (v) { return '<label class="ce-vo' + (vis === v[0] ? " on" : "") + '"><input type="radio" name="ce-vis" value="' + v[0] + '"' + (vis === v[0] ? " checked" : "") + "><span><b>" + v[1] + "</b><small>" + v[2] + "</small></span></label>"; }).join("") + "</div></div>";
+        if (type !== "post") return statusCard;
+        return statusCard + '<div class="card card-b"><h4 class="side-h">Category</h4><select id="ce-cat"><option value="">No category</option>' + cats.map(function (c) { return '<option' + (d.category === c ? " selected" : "") + ">" + esc(c) + "</option>"; }).join("") + '<option value="__new">+ New category…</option></select><small class="muted">Shown on the blog card (unless you set a card label below).</small></div>' +
           '<div class="card card-b"><h4 class="side-h">Tags</h4><div class="ce-tags" id="ce-tags"></div><small class="muted">Up to 8. Press Enter or comma to add.</small></div>';
       }
       function drawTags() { var b = $("#ce-tags"); if (!b) return; b.innerHTML = (d.tags || []).map(function (t, i) { return '<span class="ce-chip">' + esc(t) + '<button type="button" data-tx="' + i + '" aria-label="Remove">×</button></span>'; }).join("") + ((d.tags || []).length < 8 ? '<input id="ce-tag-in" placeholder="' + ((d.tags || []).length ? "Add…" : "e.g. modern, Lahore, small spaces") + '">' : ""); }
@@ -396,9 +428,9 @@
         $("#ce-tb").addEventListener("mousedown", function (e) { if (e.target.closest("button")) e.preventDefault(); }); // keep the text selection
         $("#ce-tb").onclick = function (e) { var b = e.target.closest("button"); if (!b) return; if (b.dataset.fmt) fmt(b.dataset.fmt); else if (b.dataset.ins) insBlock(b.dataset.ins); };
         R.addEventListener("input", wordCount); wordCount();
+        R.addEventListener("change", function (e) { if (e.target.name !== "ce-vis") return; $$(".ce-vo", R).forEach(function (l) { l.classList.toggle("on", l.querySelector("input").checked); }); mark(); });
         if (type !== "post") return;
         drawTags();
-        R.addEventListener("change", function (e) { if (e.target.name !== "ce-vis") return; $$(".ce-vo", R).forEach(function (l) { l.classList.toggle("on", l.querySelector("input").checked); }); mark(); });
         $("#ce-cat").onchange = function () { if (this.value !== "__new") return mark(); var n = (prompt("New category name") || "").trim().slice(0, 40); if (!n) { this.value = d.category || ""; return; } var o = document.createElement("option"); o.textContent = n; this.insertBefore(o, this.lastElementChild); this.value = n; mark(); };
         var tb = $("#ce-tags");
         tb.onclick = function (e) { var x = e.target.closest("[data-tx]"); if (x) { d.tags.splice(+x.dataset.tx, 1); drawTags(); mark(); var i = $("#ce-tag-in"); if (i) i.focus(); } else if ($("#ce-tag-in")) $("#ce-tag-in").focus(); };
@@ -418,11 +450,11 @@
           '<div class="card card-b"><label>Title<input id="ce-title" value="' + esc(it.title) + '" placeholder="' + (type === "post" ? "What interior design costs in Pakistan" : "A house around a courtyard") + '"></label>' +
           '<div class="g2"><label>Kicker <small>(small line above the title)</small><input id="ce-kicker" value="' + esc(d.kicker) + '"></label><label>Page address<div class="pre-in"><span>/' + t.folder + '/</span><input id="ce-slug" value="' + esc(it.slug) + '"' + (live ? " disabled" : "") + "></div></label></div>" +
           '<label>Standfirst <small>(one sentence under the title)</small><textarea id="ce-dek" rows="2">' + esc(d.dek) + "</textarea></label>" +
-          '<label>Template <small>(layout &amp; sections — manage in Content → Templates)</small><select id="ce-tpl" data-cur="' + esc(d.tpl || "") + '">' + (W.tplOptions ? W.tplOptions(type, d.tpl) : '<option value="">Default layout</option>') + "</select></label>" +
+          (nativeStudio ? resourceControls() : '<label>Template <small>(layout &amp; sections — manage in Content → Templates)</small><select id="ce-tpl" data-cur="' + esc(d.tpl || "") + '">' + (W.tplOptions ? W.tplOptions(type, d.tpl) : '<option value="">Default layout</option>') + "</select></label>") +
           imgField("ce-hero", (d.hero || {}).src, "Hero image") +
           '<h4 class="sub-h">Details strip</h4><div id="ce-meta">' + kv(d.meta, "meta", "Label", "Value") + '</div><button type="button" class="btn sm" id="ce-meta-add">' + ic("plus") + "Add detail</button></div>" +
           (type === "study" ? '<div class="card card-b"><h4 class="sub-h" style="margin-top:0">Facts box <small>(sidebar)</small></h4><label>Box title<input id="ce-ft" value="' + esc(d.factsTitle || "Study facts") + '"></label><div id="ce-facts">' + kv(d.facts, "fact", "Label", "Text") + '</div><button type="button" class="btn sm" id="ce-fact-add">' + ic("plus") + 'Add fact</button><label style="margin-top:12px">Note under the facts<input id="ce-fn" value="' + esc(d.factsNote) + '" placeholder="Illustrative design study. Not built work, not a client project."></label></div>' : "") +
-          '<div class="card"><div class="card-h"><h3>Content</h3>' + (type === "post" ? '<div class="toolbar"><button type="button" class="btn sm" id="ce-tpl">' + ic("blocks") + "Templates</button>" + (aiReady ? aiBtn("ce-ai-writer", "AI SEO writer") + aiBtn("ce-ai-draft", "Quick draft") : '<button type="button" class="btn sm" id="ce-ai-writer" title="Add an AI key in AI settings">' + ic("sparkles") + "AI SEO writer</button>") + "</div>" : "") + '</div><div class="card-b">' + edToolbar() + '<div id="ce-blocks" class="bks">' + d.blocks.map(blk).join("") + '</div><div class="bk-add"><span class="muted">Add:</span>' + [["h", "Heading"], ["p", "Paragraph"], ["list", "List"], ["img", "Image"], ["quote", "Quote"], ["table", "Table"], ["faq", "FAQ"], ["cta", "Call to action"], ["ba", "Before / after"], ["gallery", "Gallery"]].map(function (x) { return '<button type="button" class="btn sm" data-add="' + x[0] + '">' + ic("plus") + x[1] + "</button>"; }).join("") + "</div></div></div>" +
+          '<div class="card"><div class="card-h"><h3>Content</h3>' + (type === "post" ? '<div class="toolbar"><button type="button" class="btn sm" id="ce-presets">' + ic("blocks") + "Content presets</button>" + (aiReady ? aiBtn("ce-ai-writer", "AI SEO writer") + aiBtn("ce-ai-draft", "Quick draft") : '<button type="button" class="btn sm" id="ce-ai-writer" title="Add an AI key in AI settings">' + ic("sparkles") + "AI SEO writer</button>") + "</div>" : "") + '</div><div class="card-b">' + edToolbar() + '<div id="ce-blocks" class="bks">' + d.blocks.map(blk).join("") + '</div><div class="bk-add"><span class="muted">Add:</span>' + [["h", "Heading"], ["p", "Paragraph"], ["list", "List"], ["img", "Image"], ["quote", "Quote"], ["table", "Table"], ["faq", "FAQ"], ["cta", "Call to action"], ["ba", "Before / after"], ["gallery", "Gallery"]].map(function (x) { return '<button type="button" class="btn sm" data-add="' + x[0] + '">' + ic("plus") + x[1] + "</button>"; }).join("") + "</div></div></div>" +
           (type === "post" ? '<div class="card card-b"><h4 class="sub-h" style="margin-top:0">The short version <small>(takeaway bullets, optional)</small></h4><textarea id="ce-sum" rows="3" placeholder="One point per line. **Label:** text">' + esc((d.summary || []).join("\n")) + "</textarea></div>" +
             '<div class="card"><div class="card-h"><h3>FAQs</h3><div class="toolbar">' + (faqGroups.length ? '<select id="ce-fg" class="sm-in"><option value="">Use FAQ group…</option><optgroup label="Link (stays in sync)">' + faqGroups.map(function (g) { return '<option value="L' + g.id + '">' + esc(g.title) + " (" + ((g.data || {}).items || []).length + ")</option>"; }).join("") + '</optgroup><optgroup label="Copy questions (edit here)">' + faqGroups.map(function (g) { return '<option value="' + g.id + '">' + esc(g.title) + "</option>"; }).join("") + "</optgroup></select>" : "") + (aiReady ? aiBtn("ce-ai-faq", "Suggest FAQs") : "") + '</div></div><div class="card-b"><div id="ce-fg-link"></div><div id="ce-faqs">' + faqRows(d.faqs) + '</div><button type="button" class="btn sm" id="ce-faq-add">' + ic("plus") + "Add question</button></div></div>" : "") +
           '<div class="card card-b"><label>Pull quote <small>(big quote band, optional)</small><input id="ce-quote" value="' + esc(d.quote) + '"></label><label>Call-to-action heading <small>(leave empty to keep the default)</small><input id="ce-cta" value="' + esc(d.ctaTitle || "") + '"></label>' +
@@ -433,19 +465,38 @@
           (live ? "" : '<div class="sched"><input type="datetime-local" id="ce-at" value="' + esc(utcToLocal(it.publishAt)) + '"><button class="btn" id="ce-sch">' + ic("clock") + "Schedule</button></div>") +
           '<button class="btn blk" id="ce-save">' + ic("save") + (live ? "Save without publishing" : "Save draft") + "</button>" + (it.status === "scheduled" ? '<button class="btn blk ghost" id="ce-unsch">Cancel schedule</button>' : "") +
           (it.id && !live ? '<button class="btn blk ghost danger" id="ce-del">Delete draft</button>' : "") + "</div>" +
-          (type === "post" ? sideCards() : "") +
+          (type === "post" || nativeStudio ? sideCards() : "") +
           '<div class="card card-b"><div class="side-hr"><h4 class="side-h">Search & sharing</h4>' + (aiReady ? aiBtn("ce-ai-seo", "Write") : "") + '</div><label>SEO title <small id="ce-stc"></small><input id="ce-st" value="' + esc(seo.title) + '" placeholder="Title | Woodex Interior"></label><label>Meta description <small id="ce-sdc"></small><textarea id="ce-sd" rows="3">' + esc(seo.desc) + "</textarea></label>" + imgField("ce-og", seo.og, "Share image (defaults to hero)") +
             '<label>Focus keyphrase<input id="ce-kw" value="' + esc(seo.kw || "") + '" placeholder="e.g. interior design cost Pakistan"></label><button type="button" class="btn sm" id="ce-seo-an">' + ic("search") + 'SEO check</button><div id="ce-seo-r" style="margin-top:10px"></div>' +
           '<div class="serp"><span id="sp-u"></span><b id="sp-t"></b><p id="sp-d"></p></div></div>' +
-          '<div class="card card-b"><div class="side-hr"><h4 class="side-h">Listing card</h4>' + (aiReady ? aiBtn("ce-ai-card", "Write") : "") + "</div>" + imgField("ce-card", (d.card || {}).src, "Card image (defaults to hero)") + '<label>Card text<textarea id="ce-ct" rows="2">' + esc((d.card || {}).text) + '</textarea></label><label>Card label <small>(e.g. "5 min read", "Study · 2026")</small><input id="ce-cl" value="' + esc((d.card || {}).tag) + '"></label></div>' +
+          '<div class="card card-b">' + (nativeStudio ? '<p class="muted" id="ce-listing-note">Only explicit Publish updates this card on the public listing. Save and Preview stay private. Existing cards keep their position; new cards go last.</p>' : '') + '<div class="side-hr"><h4 class="side-h">Listing card</h4>' + (aiReady ? aiBtn("ce-ai-card", "Write") : "") + "</div>" + imgField("ce-card", (d.card || {}).src, "Card image (defaults to hero)") + '<label>Card text<textarea id="ce-ct" rows="2">' + esc((d.card || {}).text) + '</textarea></label><label>Card label <small>(e.g. "5 min read", "Study · 2026")</small><input id="ce-cl" value="' + esc((d.card || {}).tag) + '"></label></div>' +
           "</div></div></div>";
         W.fillIcons(el); bind();
+        if (nativeStudio) bindResourceChoices();
+        if (nativeStudio) {
+          if ($("#ce-pub")) $("#ce-pub").disabled = !it.can_publish;
+          $$(".sched").forEach(function (box) { box.textContent = "Scheduling is unavailable. Save privately, then publish explicitly."; });
+          if (it.has_draft && $("#ce-save")) {
+            var discard = document.createElement("button"); discard.className = "btn blk ghost"; discard.id = "ce-discard"; discard.textContent = "Discard saved changes";
+            $("#ce-save").after(discard);
+            discard.onclick = function () {
+              if (!confirm("Discard the saved private changes? The live page stays unchanged.")) return;
+              api("cms_discard", Object.assign({ id: it.id, type: type }, revision())).then(function (r) {
+                if (!r.ok) return toast(r.error, true); Object.assign(it, r.item); it.data = Object.assign(newData(type), it.data || {}); dirty = false; draw(); toast("Saved changes discarded");
+              });
+            };
+          }
+        }
       }
       function faqRows(f) { return (f || []).map(function (x, i) { return '<div class="fq" data-i="' + i + '"><input data-k="q" value="' + esc(x.q) + '" placeholder="Question"><textarea data-k="a" rows="2" placeholder="Answer">' + esc(x.a) + '</textarea><button type="button" class="btn sm ghost" data-del>' + ic("x") + "</button></div>"; }).join(""); }
       function collect() {
+        if (nativeStudio) ["templateResource", "faqResource"].forEach(function (key) {
+          var input = $("#ce-" + key); if (!input || input.value === "invalid") return;
+          if (input.value) d[key] = Number(input.value); else delete d[key];
+        });
         it.title = $("#ce-title").value.trim(); if (!it.rel) it.slug = $("#ce-slug").value.trim();
-        if ($("#ce-tpl")) { var tv = +$("#ce-tpl").value || 0; if (tv) d.tpl = tv; else delete d.tpl; }
-        d.kicker = $("#ce-kicker").value.trim(); d.dek = $("#ce-dek").value.trim(); d.hero = { src: imgVal("ce-hero") };
+        if (!nativeStudio && $("#ce-tpl")) { var tv = +$("#ce-tpl").value || 0; if (tv) d.tpl = tv; else delete d.tpl; }
+        d.kicker = $("#ce-kicker").value.trim(); d.dek = $("#ce-dek").value.trim(); d.hero = Object.assign({}, d.hero, { src: imgVal("ce-hero") });
         d.meta = $$("#ce-meta .kvr").map(function (r) { return { k: $("[data-k=k]", r).value.trim(), v: $("[data-k=v]", r).value.trim() }; });
         if (type === "study") { d.factsTitle = $("#ce-ft").value.trim(); d.factsNote = $("#ce-fn").value.trim(); d.facts = $$("#ce-facts .kvr").map(function (r) { return { k: $("[data-k=k]", r).value.trim(), v: $("[data-k=v]", r).value.trim() }; }); }
         var src = d.blocks || [];
@@ -469,7 +520,8 @@
         d.quote = $("#ce-quote").value.trim(); d.ctaTitle = $("#ce-cta").value.trim();
         d.related = $$(".rel-l input:checked").map(function (c) { return c.value; }).slice(0, 3);
         d.card = { src: imgVal("ce-card"), text: $("#ce-ct").value.trim(), tag: $("#ce-cl").value.trim(), alt: (d.card || {}).alt || "" };
-        if (type === "post" && $("#ce-cat")) { d.visibility = ($("[name=ce-vis]:checked") || {}).value === "unlisted" ? "unlisted" : "public"; var cv = $("#ce-cat").value; d.category = cv === "__new" ? "" : cv; var ti = $("#ce-tag-in"); if (ti && ti.value.trim()) { var tv = ti.value.trim().toLowerCase().slice(0, 30); d.tags = d.tags || []; if (d.tags.indexOf(tv) < 0 && d.tags.length < 8) d.tags.push(tv); ti.value = ""; } d.tags = (d.tags || []).slice(0, 8); 
+        if ($("[name=ce-vis]:checked")) d.visibility = $("[name=ce-vis]:checked").value;
+        if (type === "post" && $("#ce-cat")) { var cv = $("#ce-cat").value; d.category = cv === "__new" ? "" : cv; var ti = $("#ce-tag-in"); if (ti && ti.value.trim()) { var tv = ti.value.trim().toLowerCase().slice(0, 30); d.tags = d.tags || []; if (d.tags.indexOf(tv) < 0 && d.tags.length < 8) d.tags.push(tv); ti.value = ""; } d.tags = (d.tags || []).slice(0, 8);
           (d.meta || []).forEach(function (m) { var k = String(m.k).toLowerCase(); if (k === "category" && d.category) m.v = d.category; if (k === "read time" && lastMin) m.v = lastMin + " min read"; }); }
         it.seo = { title: $("#ce-st").value.trim(), desc: $("#ce-sd").value.trim(), og: imgVal("ce-og"), kw: ($("#ce-kw") || { value: "" }).value.trim(), related: (it.seo || {}).related || [] };
       }
@@ -508,7 +560,7 @@
           W.fillIcons(box);
           if ($("#ce-fg-un")) $("#ce-fg-un").onclick = function () { d.faqs = ((g.data || {}).items || []).map(function (f) { return { q: f.q, a: f.a }; }); delete d.faqGroup; $("#ce-faqs").innerHTML = faqRows(d.faqs); W.fillIcons($("#ce-faqs")); fgLink(); mark(); };
         }
-        fgLink();
+        if (!nativeStudio) fgLink();
         if ($("#ce-fg")) $("#ce-fg").onchange = function () { if (this.value.charAt(0) === "L") { var lg = faqGroups.find(function (x) { return "L" + x.id === this.value; }, this); this.value = ""; if (!lg) return; collect(); d.faqGroup = lg.id; d.faqs = ((lg.data || {}).items || []).map(function (f) { return { q: f.q, a: f.a }; }); $("#ce-faqs").innerHTML = faqRows(d.faqs); W.fillIcons($("#ce-faqs")); fgLink(); mark(); return; } var g = faqGroups.find(function (x) { return x.id === +this.value; }, this); if (!g) return; collect(); d.faqs = d.faqs.concat(((g.data || {}).items || []).map(function (f) { return { q: f.q, a: f.a }; })); $("#ce-faqs").innerHTML = faqRows(d.faqs); W.fillIcons($("#ce-faqs")); this.value = ""; mark(); };
         // AI
         function bodyText() { collect(); return d.blocks.map(function (b) { return b.t === "list" ? (b.items || []).join("\n") : b.text || ""; }).join("\n\n"); }
@@ -550,9 +602,9 @@
             }).catch(function (e) { busy(b, false); log('<span class="bad">The AI reply could not be read. Try again.</span>'); });
           };
         }
-        if ($("#ce-tpl")) $("#ce-tpl").onclick = function () { tplPick(false); };
+        if ($("#ce-presets")) $("#ce-presets").onclick = function () { tplPick(false); };
         if ($("#ce-ai-writer")) $("#ce-ai-writer").onclick = function () { if (!aiReady) return toast("Add an AI key first (AI settings)", true); writer(); };
-        if (type === "post" && !it.id && !d.tpl && !d._asked) { d._asked = true; setTimeout(function () { tplPick(true); }, 50); }
+        if (!nativeStudio && type === "post" && !it.id && !d.tpl && !d._asked) { d._asked = true; setTimeout(function () { tplPick(true); }, 50); }
         if ($("#ce-ai-draft")) $("#ce-ai-draft").onclick = function () {
           var btn = this; collect(); if (!it.title) return toast("Write a title first", true);
           modal('<h3>Draft article with AI</h3><p class="muted">The AI writes sections, takeaways, FAQs and a pull quote from your title and notes. It <b>replaces</b> the current content; review every line before publishing.</p><label>Notes for the writer <small>(facts, prices, points to include)</small><textarea id="ai-n" rows="5" placeholder="e.g. mention 3D before build, PKR ranges per sq ft, Lahore climate"></textarea></label><div class="modal-actions"><button class="btn" id="ai-x">Cancel</button><button class="btn pri" id="ai-go">' + ic("sparkles") + "Write draft</button></div>");
@@ -572,10 +624,14 @@
         if ($("#ce-ai-faq")) $("#ce-ai-faq").onclick = function () { var b = this; busy(b, true); ai("faqs", { title: $("#ce-title").value, text: bodyText() }).then(function (tx) { var j = aiJson(tx); collect(); d.faqs = d.faqs.concat(j.filter(function (f) { return f.q; })); $("#ce-faqs").innerHTML = faqRows(d.faqs); W.fillIcons($("#ce-faqs")); mark(); }).catch(function () {}).then(function () { busy(b, false); }); };
         // actions
         if ($("#ce-seo-an")) $("#ce-seo-an").onclick = seoCheck;
-        $("#ce-prev").onclick = function () { collect(); build().then(function (h) { preview(h); }).catch(function (e) { toast(e.message, true); }); };
+        $("#ce-prev").onclick = function () {
+          var button = this; busy(button, true);
+          (nativeStudio ? serverPreview() : (collect(), build())).then(function (h) { preview(h, !!nativeStudio); })
+            .catch(function (e) { if (e) toast(e.message || String(e), true); }).then(function () { busy(button, false); });
+        };
         $("#ce-save").onclick = function () {
           var b = this, label = b.innerHTML; busy(b, true); b.innerHTML = ic("save") + "Saving…";
-          save({}).then(function (ok) { if (ok) toast("Saved"); }).then(function () { b.innerHTML = label; busy(b, false); });
+          save({}).then(function (ok) { if (ok) { toast(nativeStudio ? "Saved privately. The live page is unchanged." : "Saved"); if (nativeStudio) draw(); } }).then(function () { b.innerHTML = label; busy(b, false); });
         };
         $("#ce-pub").onclick = function () { publish(this); };
         if ($("#ce-sch")) $("#ce-sch").onclick = function () {
@@ -584,7 +640,7 @@
           build().then(function (h) { return save({ status: "scheduled", publishAt: at, pending: { rel: t.folder + "/" + it.slug + "/index.html", html: h, card: (it.data || {}).visibility === "unlisted" ? "" : listCard(type, it) } }); }).then(function (ok) { if (ok) { toast("Scheduled for " + fmtLocal(at)); draw(); } }).catch(function (e) { toast(e.message, true); });
         };
         if ($("#ce-unsch")) $("#ce-unsch").onclick = function () { save({ status: "draft" }).then(function (ok) { if (ok) { toast("Schedule cancelled"); draw(); } }); };
-        if ($("#ce-del")) $("#ce-del").onclick = function () { if (!confirm("Delete this draft?")) return; api("cms_delete", { id: it.id }).then(function (r) { if (!r.ok) return toast(r.error, true); dirty = false; toast("Deleted"); location.hash = "#/" + t.list; }); };
+        if ($("#ce-del")) $("#ce-del").onclick = function () { if (!confirm("Delete this draft?")) return; api("cms_delete", Object.assign({ id: it.id, type: type }, revision())).then(function (r) { if (!r.ok) return toast(r.error, true); dirty = false; toast("Deleted"); location.hash = "#/" + t.list; }); };
         window.onbeforeunload = function () { return dirty && $("#ce") ? "Unsaved changes" : undefined; };
       }
       function check() {
@@ -597,11 +653,22 @@
         try { collect(); } catch (e) { toast("A field could not be read. Reload the editor and try again.", true); return Promise.resolve(false); }
         if (!it.title) { toast("Add a title", true); return Promise.resolve(false); }
         if (!it.slug) it.slug = slugify(it.title);
-        return api("cms_save", Object.assign({ id: it.id || 0, type: type, title: it.title, slug: it.slug, data: d, seo: it.seo }, extra)).then(function (r) {
+        return api("cms_save", Object.assign({ id: it.id || 0, type: type, title: it.title, slug: it.slug, data: d, seo: it.seo }, nativeStudio ? revision() : {}, extra)).then(function (r) {
           if (!r.ok) { toast(r.error, true); return false; }
           var fresh = !it.id; Object.assign(it, r.item); dirty = false; if ($("#ce-dirty")) $("#ce-dirty").hidden = true;
           if (fresh) history.replaceState(null, "", "#/" + t.ed + "/" + it.id);
           return true;
+        });
+      }
+      // Preview is saved state, not a second browser-side rendering implementation.
+      function serverPreview() {
+        return save({}).then(function (ok) {
+          if (!ok) throw 0;
+          return api("cms_preview", Object.assign({ id: it.id, type: type }, revision()));
+        }).then(function (r) {
+          if (!r.ok) throw new Error(r.error || "The private preview could not be rendered");
+          Object.assign(it, r.item); lastPreviewHash = r.html_hash; lastPreviewDependencies = r.dependency_hash; draw();
+          return r.html;
         });
       }
       function shellHtml() {
@@ -610,8 +677,13 @@
       }
       function build() { return shellHtml().then(function (r) { return renderPage(type, it, r.html, others); }); }
       function seoCheck() {
-        if (!window.WXSEO || !$("#ce-seo-r")) return; collect(); var url = "/" + t.folder + "/" + (it.slug || "new") + "/";
-        build().then(function (h) { var r = WXSEO.analyze(h, { kw: it.seo.kw, url: url }); WXSEO.render($("#ce-seo-r"), r, { url: url }); });
+        if (!window.WXSEO || !$("#ce-seo-r")) return;
+        var button = $("#ce-seo-an"); busy(button, true);
+        (nativeStudio ? serverPreview() : (collect(), build())).then(function (h) {
+          var url = "/" + t.folder + "/" + (it.slug || "new") + "/";
+          var r = WXSEO.analyze(h, { kw: it.seo.kw, url: url }); WXSEO.render($("#ce-seo-r"), r, { url: url });
+          if (nativeStudio) toast("SEO check uses the privately saved server output");
+        }).catch(function (e) { if (e) toast(e.message || String(e), true); }).then(function () { busy(button, false); });
       }
 
       function publish(btn) {
@@ -628,7 +700,7 @@
           busy(btn, true); if (btn) btn.innerHTML = ic("send") + "Publishing…";
           save({}).then(function (ok) {
             if (!ok) throw 0;
-            return api("cms_published", { id: it.id, type: type });
+            return api("cms_published", Object.assign({ id: it.id, type: type, preview_hash: lastPreviewHash, dependency_hash: lastPreviewDependencies }, revision()));
           }).then(function (r) {
             if (!r.ok) throw new Error(r.error);
             Object.assign(it, r.item); toast("Published: /" + t.folder + "/" + it.slug + "/"); draw();
@@ -654,11 +726,41 @@
       }
     };
   }
-  function preview(html) {
+  function preview(html, privateServer) {
     var o = document.createElement("div"); o.className = "pv"; o.innerHTML = '<div class="pv-bar"><b>Preview</b><span class="muted">Not published yet</span><div class="seg"><button class="on" data-w="100%">Desktop</button><button data-w="390px">Mobile</button></div><button class="btn" data-x>Close</button></div><iframe></iframe>';
-    document.body.appendChild(o); var f = o.querySelector("iframe");
-    f.srcdoc = html.replace(/<head>/i, '<head><base href="' + location.origin + '/">');
-    o.querySelector("[data-x]").onclick = function () { o.remove(); };
+    var f = o.querySelector("iframe");
+    f.title = privateServer ? "Private saved server preview" : "Preview";
+    if (privateServer) {
+      // Presentation envelope only. API HTML and SEO input stay byte-identical to the server renderer.
+      // No allow-same-origin/scripts/forms/popups; content cannot access the admin session or parent DOM.
+      f.setAttribute("sandbox", ""); f.referrerPolicy = "no-referrer";
+      var inert = document.createElement("template"); inert.innerHTML = html; var doc = inert.content;
+      var head = document.createElement("head");
+      doc.querySelectorAll("base,script,meta[http-equiv],iframe,object,embed").forEach(function (n) { n.remove(); });
+      doc.querySelectorAll("a,area").forEach(function (n) { n.removeAttribute("href"); n.setAttribute("aria-disabled", "true"); });
+      doc.querySelectorAll("link").forEach(function (n) {
+        // Public v1 loads CSS through preload/onload; scripts are disabled in this static Preview.
+        if (n.rel === "preload" && n.getAttribute("as") === "style") { n.rel = "stylesheet"; n.removeAttribute("onload"); }
+        if (n.rel !== "stylesheet") n.remove();
+      });
+      var base = document.createElement("base"); base.href = location.origin + "/"; head.append(base);
+      var robots = document.createElement("meta"); robots.name = "robots"; robots.content = "noindex,nofollow"; head.prepend(robots);
+      var policy = document.createElement("meta"); policy.httpEquiv = "Content-Security-Policy";
+      policy.content = "default-src 'none'; img-src " + location.origin + " data:; style-src " + location.origin + " 'unsafe-inline'; font-src " + location.origin + "; script-src 'none'; connect-src 'none'; form-action 'none'; base-uri " + location.origin + "; frame-src 'none'; object-src 'none'";
+      head.prepend(policy);
+      var reveal = document.createElement("style"); reveal.textContent = "[data-in-reveal]{opacity:1!important;transform:none!important;visibility:visible!important}"; head.append(reveal);
+      var htmlOpen = (html.match(/<html\b[^>]*>/i) || ['<html lang="en">'])[0];
+      var bodyOpen = (html.match(/<body\b[^>]*>/i) || ['<body>'])[0].replace(/>$/, ' inert>');
+      f.srcdoc = "<!doctype html>" + htmlOpen + head.outerHTML + bodyOpen + inert.innerHTML + "</body></html>";
+      o.querySelector(".pv-bar b").textContent = "Private Preview";
+      o.querySelector(".pv-bar .muted").textContent = "Saved server output · scripts, forms and links disabled";
+    } else {
+      f.srcdoc = html.replace(/<head>/i, '<head><base href="' + location.origin + '/">');
+    }
+    document.body.appendChild(o);
+    var close = function () { o.remove(); document.removeEventListener("keydown", escape); var back = document.querySelector("#ce-prev"); if (back) back.focus(); };
+    var escape = function (event) { if (event.key === "Escape") close(); }; document.addEventListener("keydown", escape);
+    o.querySelector("[data-x]").onclick = close; o.querySelector("[data-x]").focus();
     o.querySelectorAll("[data-w]").forEach(function (b) { b.onclick = function () { o.querySelectorAll("[data-w]").forEach(function (x) { x.classList.toggle("on", x === b); }); f.style.width = b.dataset.w; f.style.margin = b.dataset.w === "100%" ? "0" : "12px auto"; }; });
   }
 

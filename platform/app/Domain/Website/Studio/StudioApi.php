@@ -48,6 +48,14 @@ final class StudioApi
         'cms_status' => 'cmsStatus',
         'cms_delete' => 'cmsDelete',
         'cms_published' => 'cmsPublished',
+        'cms_discard' => 'cmsDiscard',
+        'cms_preview' => 'cmsPreview',
+        // Revisioned backing APIs only. Legacy template/FAQ selectors remain unported.
+        'cms_resource_list' => 'resourceList',
+        'cms_resource_get' => 'resourceGet',
+        'cms_resource_save' => 'resourceSave',
+        'cms_resource_discard' => 'resourceDiscard',
+        'cms_resource_publish' => 'resourcePublish',
         // The Service pages screen (docs/audit/16.8): the page list, its types, and the two ways a new
         // service page is made — from an existing layout, or by duplicating a row.
         'pages' => 'pagesList',
@@ -125,6 +133,51 @@ final class StudioApi
     }
 
     /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function resourceList(array $payload): array
+    {
+        return (new StudioResources($this->user))->listing($payload);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function resourceGet(array $payload): array
+    {
+        return (new StudioResources($this->user))->get($payload);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function resourceSave(array $payload): array
+    {
+        return (new StudioResources($this->user))->save($payload);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function resourceDiscard(array $payload): array
+    {
+        return (new StudioResources($this->user))->discard($payload);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function resourcePublish(array $payload): array
+    {
+        return (new StudioResources($this->user))->publish($payload);
+    }
+
+    /**
      * The signed-in staff member, in the shape the admin's shell expects.
      *
      * @return array{name: string, email: string, role: string, perms: list<string>}
@@ -179,7 +232,7 @@ final class StudioApi
      */
     private function cmsStatus(array $payload): array
     {
-        return $this->content($payload)->setStatus((int) ($payload['id'] ?? 0), (string) ($payload['status'] ?? 'draft'), $this->typeOf($payload));
+        return $this->content($payload)->setStatus((int) ($payload['id'] ?? 0), (string) ($payload['status'] ?? 'draft'), $this->typeOf($payload), $payload);
     }
 
     /**
@@ -188,7 +241,19 @@ final class StudioApi
      */
     private function cmsDelete(array $payload): array
     {
-        return $this->content($payload)->delete((int) ($payload['id'] ?? 0), $this->typeOf($payload));
+        return $this->content($payload)->delete((int) ($payload['id'] ?? 0), $this->typeOf($payload), $payload);
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function cmsPreview(array $payload): array
+    {
+        return $this->content($payload)->preview((int) ($payload['id'] ?? 0), $this->typeOf($payload), $payload);
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function cmsDiscard(array $payload): array
+    {
+        return $this->content($payload)->discard((int) ($payload['id'] ?? 0), $this->typeOf($payload), $payload);
     }
 
     /**
@@ -197,7 +262,7 @@ final class StudioApi
      */
     private function cmsPublished(array $payload): array
     {
-        return $this->content($payload)->publish((int) ($payload['id'] ?? 0), $this->typeOf($payload));
+        return $this->content($payload)->publish((int) ($payload['id'] ?? 0), $this->typeOf($payload), $payload);
     }
 
     /**

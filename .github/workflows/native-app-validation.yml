@@ -40,3 +40,100 @@ jobs:
           fi
           echo 'No Hostinger operation, production data, backup restore, migration or deployment was performed.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Passing CI alone is not production deployment approval.' >> "$GITHUB_STEP_SUMMARY"
+
+  studio-mysql84:
+    name: Studio PHP 8.4 and MySQL 8.4 (synthetic only)
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/arena/3727507a-woodexinterior'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    services:
+      mysql84:
+        image: mysql:8.4
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - '127.0.0.1:33060:3306'
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+    env:
+      APP_ENV: testing
+      APP_URL: http://localhost
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      MAIL_MAILER: array
+      BCRYPT_ROUNDS: '4'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Explicit source and no-installed-environment guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_REPOSITORY" == woodex420/woodexinterior && "$RUNNER_ENVIRONMENT" == github-hosted ]]
+          [[ "$(git rev-parse HEAD)" == "$GITHUB_SHA" ]]
+          for file in .env platform/.env; do [[ ! -e "$file" && ! -L "$file" ]]; done
+          for key in COMPOSER_AUTH DB_URL DB_PASSWORD MAIL_PASSWORD TELEGRAM_BOT_TOKEN WOODEX_HOME WOODEX_DATA_PATH; do
+            [[ -z ${!key:-} ]]
+          done
+          mkdir -p .cache/studio-mysql-ci-public platform/bootstrap/cache platform/storage/framework/testing
+          git ls-files -z -- platform .github/workflows/native-app-validation.yml | sort -z | xargs -0 sha256sum > .cache/studio-mysql-ci-public/source-sha256.txt
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          extensions: bcmath, ctype, curl, dom, exif, fileinfo, filter, gd, hash, iconv, intl, mbstring, openssl, pdo_mysql, pdo_sqlite, phar, simplexml, tokenizer, xml, xmlwriter, zip
+          coverage: none
+          ini-values: memory_limit=512M, zend.exception_ignore_args=On
+      - name: Locked dependencies, no application setup or migration scripts
+        run: composer install --working-dir=platform --prefer-dist --no-interaction --no-progress --no-scripts
+      - name: Ephemeral application key (never uploaded)
+        shell: bash
+        run: |
+          key="base64:$(php -r 'echo base64_encode(random_bytes(32));')"
+          echo "::add-mask::$key"
+          echo "APP_KEY=$key" >> "$GITHUB_ENV"
+      - name: Genuine MySQL 8.4 Studio recovery, isolation and contention
+        env:
+          STUDIO_MYSQL_CI: '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          php platform/tests/Support/studio-mysql-ci.php 2>&1 | tee .cache/studio-mysql-ci-public/mysql.log
+      - name: Website SQLite regression (not relabelled as MySQL)
+        if: success() || failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          php platform/vendor/bin/pest -c platform/phpunit.xml platform/tests/Feature/Website --colors=never 2>&1 | tee .cache/studio-mysql-ci-public/website-sqlite.log
+      - name: Scoped PHP formatting and syntax
+        if: success() || failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(platform/tests/Support/studio-mysql-*.php platform/tests/Support/studio-publication-process.php)
+          php platform/vendor/bin/pint --test "${files[@]}" 2>&1 | tee .cache/studio-mysql-ci-public/pint.log
+          for file in "${files[@]}"; do php -l "$file"; done
+          git diff --exit-code
+      - name: Publish only bounded synthetic results (no private fixture tree)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: studio-mysql84-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            .cache/studio-mysql-ci-public/*.json
+            .cache/studio-mysql-ci-public/*.log
+            .cache/studio-mysql-ci-public/source-sha256.txt
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Explicit release boundary
+        if: always()
+        run: |
+          echo '## Disposable Studio MySQL 8.4 validation' >> "$GITHUB_STEP_SUMMARY"
+          if [ -f .cache/studio-mysql-ci-public/result.json ]; then cat .cache/studio-mysql-ci-public/result.json >> "$GITHUB_STEP_SUMMARY"; fi
+          echo 'No merge, hosting operation, production secret/database, deployment, or production-readiness approval.' >> "$GITHUB_STEP_SUMMARY"

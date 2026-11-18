@@ -141,3 +141,51 @@ body.wx21-has-note .app {
     display: none;
   }
 }
+
+/* The private Preview toolbar must remain above the fixed Woodex strip, including on phones. */
+body .pv { z-index: 2147483001; }
+body .pv-bar { flex-wrap: wrap; }
+body .pv iframe { min-height: 0; }
+@media (max-width: 640px) {
+  body .pv-bar .muted { flex-basis: 100%; order: 3; }
+}
+/* A tall sticky editor sidebar otherwise makes the SEO controls unreachable. */
+@media (min-width: 1101px) {
+  body .qe-side { max-height: calc(100vh - 100px); overflow-y: auto; overscroll-behavior: contain; }
+}
+
+/* Separate resource manager; no legacy template controls or page rendering enabled. */
+.wx21-resource-link { margin-left: auto; color: var(--gold); font-weight: 600; }
+.sr-layout { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr); gap: 20px; align-items: start; }
+.sr-layout > *, .sr-layout .card-b { min-width: 0; }
+.sr-layout .toolbar { flex-wrap: wrap; }
+.sr-layout .btn { height: auto; min-height: 38px; white-space: normal; text-align: left; overflow-wrap: anywhere; }
+.sr-open { max-width: 100%; }
+.sr-state { display: block; margin-top: 4px; }
+.sr-row { border-bottom: 1px solid var(--line); padding: 12px 0; }
+.sr-row .toolbar, .sr-actions { margin: 12px 0; }
+.sr-section { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.sr-section label { margin: 0; }
+#sr-context { width: auto; max-width: 100%; margin: 0; }
+#sr-fields > input, #sr-fields > textarea, #sr-fields > select { margin-bottom: 14px; }
+#sr-fields .toolbar label { margin: 12px 0; }
+#sr-message { overflow-wrap: anywhere; }
+.sr-layout button:focus-visible, .wx21-resource-link:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+@media (max-width: 760px) {
+  .sr-layout { grid-template-columns: minmax(0, 1fr); }
+  .wx21-embed:has(#sr-context) .wx21-sec, .wx21-embed:has(#sr-context) .wx21-now { display: none; }
+}
+
+/* The inherited toolbar makes all inputs 260px wide, including checkboxes. */
+.sr-layout .toolbar input[type="checkbox"] { width: 17px; height: 17px !important; vertical-align: middle; }
+
+.wx21-strip .wx21-now { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wx21-strip a { flex-shrink: 0; }
+#sr-list { max-height: min(55vh, 520px); overflow-y: auto; }
+
+/* Published resource bindings in the article editor. */
+.ce-resource-links{margin:16px 0;padding:14px;border:1px solid var(--line);border-radius:12px}
+.ce-resource-picker{margin:16px 0;min-width:0}
+.ce-resource-picker .toolbar{margin:8px 0;flex-wrap:wrap}
+.ce-resource-picker .btn{white-space:normal;height:auto;min-height:34px}
+.ce-resource-picker select{max-width:100%}

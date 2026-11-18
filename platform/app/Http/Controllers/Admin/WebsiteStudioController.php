@@ -19,12 +19,15 @@ final class WebsiteStudioController
 {
     /**
      * Screens that are ported and switched on. A screen is added here only when its actions work.
+     * Resources is a separate snapshot manager, not the retired template/FAQ screens or public rendering.
      *
      * Service pages, City pages, FAQs, Testimonials and Client logos are retired (Woodex OS 1, §16.19): they
      * only wrote database rows, and the site is the v1 HTML files now. Their work is done in the page builder,
      * and the logos live in the home page's clients section and in Media.
      */
     public const array SCREENS = [
+        // Resource management only: publication never republishes pages or enables legacy adapters.
+        'resources' => ['title' => 'Templates & FAQ groups', 'view' => 'resources'],
         'blog' => ['title' => 'Blog & insights', 'view' => 'blog'],
         'portfolio' => ['title' => 'Portfolio', 'view' => 'portfolio'],
         'forms' => ['title' => 'Forms', 'view' => 'forms'],

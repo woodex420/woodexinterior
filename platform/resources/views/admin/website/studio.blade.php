@@ -22,6 +22,7 @@
     <span class="wx21-sec">Website</span>
     <span class="wx21-sep">/</span>
     <span class="wx21-now">{{ $title }}</span>
+    <a href="{{ route('admin.website.studio', ['screen' => 'resources'], absolute: false) }}" class="wx21-resource-link">Resources</a>
     <a href="{{ route('admin.website.pages') }}" class="wx21-exit">Leave</a>
 </div>
 
@@ -147,13 +148,14 @@
 
 <script src="/assets/admin-v21/vendor/icons.js"></script>
 <script src="/assets/admin-v21/vendor/chart.umd.js"></script>
-<script>window.WX_STUDIO = {screen: @json($screen), user: @json($user), csrf: @json(csrf_token()), api: @json(route('admin.website.studio.api', absolute: false)), builderApi: @json(route('admin.website.studio.builder-api', absolute: false))};</script>
+<script>window.WX_STUDIO = {canPublish: @json(auth()->user()->can('website.publish')), screen: @json($screen), user: @json($user), csrf: @json(csrf_token()), api: @json(route('admin.website.studio.api', absolute: false)), builderApi: @json(route('admin.website.studio.builder-api', absolute: false))};</script>
 <script src="/assets/admin-v21/wx-embed.js"></script>
 <script src="/assets/admin-v21/admin.js"></script>
 <script src="/assets/admin-v21/admin-pages.js"></script>
 <script src="/assets/admin-v21/admin-chrome.js"></script>
 <script src="/assets/admin-v21/admin-library.js"></script>
 <script src="/assets/admin-v21/admin-lib26.js"></script>
+<script src="/assets/admin-v21/seo-analyzer.js"></script>
 <script src="/assets/admin-v21/admin-content.js"></script>
 <script src="/assets/admin-v21/admin-starters.js"></script>
 <script src="/assets/admin-v21/admin-fields.js"></script>
@@ -166,6 +168,7 @@
 <script src="/assets/admin-v21/admin-redirects.js"></script>
 <script src="/assets/admin-v21/admin-templates.js"></script>
 <script src="/assets/admin-v21/admin-p36.js"></script>
+<script src="/assets/admin-v21/admin-resources.js"></script>
 <script src="/assets/admin-v21/admin-seo38.js"></script>
 <script src="/assets/admin-v21/admin-seoagent.js"></script>
 </body>
