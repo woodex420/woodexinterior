@@ -76,13 +76,14 @@ jobs:
         run: |
           set -euo pipefail
           [[ "$GITHUB_REPOSITORY" == woodex420/woodexinterior && "$RUNNER_ENVIRONMENT" == github-hosted ]]
+          node --test tools/release/studio-mysql-ci.test.mjs
           [[ "$(git rev-parse HEAD)" == "$GITHUB_SHA" ]]
           for file in .env platform/.env; do [[ ! -e "$file" && ! -L "$file" ]]; done
           for key in COMPOSER_AUTH DB_URL DB_PASSWORD MAIL_PASSWORD TELEGRAM_BOT_TOKEN WOODEX_HOME WOODEX_DATA_PATH; do
             [[ -z ${!key:-} ]]
           done
           mkdir -p .cache/studio-mysql-ci-public platform/bootstrap/cache platform/storage/framework/testing
-          git ls-files -z -- platform .github/workflows/native-app-validation.yml | sort -z | xargs -0 sha256sum > .cache/studio-mysql-ci-public/source-sha256.txt
+          git ls-files -z -- platform .github/workflows/native-app-validation.yml tools/release/studio-mysql-ci.test.mjs | sort -z | xargs -0 sha256sum > .cache/studio-mysql-ci-public/source-sha256.txt
       - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
           php-version: '8.4'

@@ -1,0 +1,16 @@
+{
+  "baseline_inventory_files": 2845,
+  "unchanged_baseline_files": 2842,
+  "intended_modified_baseline_files": [
+    "platform/tests/Support/studio-publication-process.php",
+    ".github/workflows/native-app-validation.yml",
+    "platform/STATE.md"
+  ],
+  "missing_baseline_files": [],
+  "original_public_html_unchanged": 142,
+  "dependency_locks_unchanged": 4,
+  "older_evidence_files_unchanged": 553,
+  "inventory_sha256": "decb495c0ec54a68df4e51b75fb0ddab1002523d59ee3ef60fbc2fa73bcf78a8",
+  "scope": "Byte preservation from the inherited working tree. Authorized commits record prior Website source without changing those source bytes.",
+  "mysql_acceptance": "NOT_RUN"
+}

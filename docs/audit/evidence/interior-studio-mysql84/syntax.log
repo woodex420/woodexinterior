@@ -1,0 +1,9 @@
+No syntax errors detected in platform/tests/Support/studio-mysql-ci.php
+No syntax errors detected in platform/tests/Support/studio-mysql-concurrency.php
+No syntax errors detected in platform/tests/Support/studio-mysql-lifecycle.php
+No syntax errors detected in platform/tests/Support/studio-mysql-runtime.php
+No syntax errors detected in platform/tests/Support/studio-mysql-worker.php
+No syntax errors detected in platform/tests/Support/studio-publication-process.php
+PASS: unapproved local context rejected before database/bootstrap access
+Workflow YAML syntax PASS
+git diff --check PASS

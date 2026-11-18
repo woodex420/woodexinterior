@@ -1,0 +1,14 @@
+{
+  "repository": "woodex420/woodexinterior",
+  "branch": "arena/3727507a-woodexinterior",
+  "initial_pushed_source_sha": "41c21f30e9b8ac8fd349084de33f445fe2659120",
+  "workflow": "native-app-validation.yml",
+  "workflow_id": 403191128,
+  "dispatch_command_exit": 1,
+  "dispatch_http_status": 403,
+  "dispatch_message": "Resource not accessible by integration",
+  "branch_run_list_observed_after_attempt": [],
+  "mysql_acceptance": "NOT_RUN",
+  "workaround_trigger_added": false,
+  "required_handoff": "Repository owner manually dispatches workflow on this branch, or reconnects Arena GitHub integration with Actions run permission."
+}

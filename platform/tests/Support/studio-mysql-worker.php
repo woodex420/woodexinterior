@@ -115,11 +115,16 @@ if (in_array($mode, ['deadlock-a', 'deadlock-b'], true)) {
         $resources->save(array_replace($items[$order[1]], ['data' => array_replace($items[$order[1]]['data'], ['name' => 'Synthetic '.$mode])]));
         DB::commit();
         $result(['committed' => true, 'deadlock_1213' => false]);
-    } catch (QueryException $e) {
+    } catch (Throwable $e) {
+        // Laravel wraps a deadlock raised inside a savepoint; preserve the underlying driver evidence.
+        $deadlock = false;
+        for ($cause = $e; $cause !== null; $cause = $cause->getPrevious()) {
+            $deadlock = $deadlock || ($cause instanceof PDOException && ($cause->errorInfo[1] ?? 0) === 1213);
+        }
         if (DB::transactionLevel() > 0) {
             DB::rollBack();
         }
-        $result(['committed' => false, 'deadlock_1213' => ($e->errorInfo[1] ?? 0) === 1213]);
+        $result(['committed' => false, 'deadlock_1213' => $deadlock]);
     }
 }
 if ($mode === 'deadlock-verify') {

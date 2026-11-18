@@ -1,0 +1,112 @@
+TAP version 13
+# Subtest: every configured native test belongs to exactly one nonempty group
+ok 1 - every configured native test belongs to exactly one nonempty group
+  ---
+  duration_ms: 3.033099
+  type: 'test'
+  ...
+# Subtest: test runner refuses local execution without printing private overrides
+ok 2 - test runner refuses local execution without printing private overrides
+  ---
+  duration_ms: 3.437291
+  type: 'test'
+  ...
+# Subtest: all groups run without fail-fast or archive imports, with strict outcomes and time bounds
+ok 3 - all groups run without fail-fast or archive imports, with strict outcomes and time bounds
+  ---
+  duration_ms: 0.251335
+  type: 'test'
+  ...
+# Subtest: workflow uses versioned source and read-only permissions, never deployment secrets
+ok 4 - workflow uses versioned source and read-only permissions, never deployment secrets
+  ---
+  duration_ms: 0.275385
+  type: 'test'
+  ...
+# Subtest: both genuine public locks are present and production package graphs agree
+ok 5 - both genuine public locks are present and production package graphs agree
+  ---
+  duration_ms: 13.25452
+  type: 'test'
+  ...
+# Subtest: ignored nested mountpoints are prepared before binding source read-only
+ok 6 - ignored nested mountpoints are prepared before binding source read-only
+  ---
+  duration_ms: 0.215692
+  type: 'test'
+  ...
+# Subtest: native summary removes ANSI before extracting failures and counts
+ok 7 - native summary removes ANSI before extracting failures and counts
+  ---
+  duration_ms: 0.81254
+  type: 'test'
+  ...
+# Subtest: each group must prove a nonempty passing test count, not just CLI exit zero
+ok 8 - each group must prove a nonempty passing test count, not just CLI exit zero
+  ---
+  duration_ms: 0.261978
+  type: 'test'
+  ...
+# Subtest: event logging permits one fixed synthetic path, not arbitrary output paths
+ok 9 - event logging permits one fixed synthetic path, not arbitrary output paths
+  ---
+  duration_ms: 4.190045
+  type: 'test'
+  ...
+# Subtest: shipped build assets exactly match the current manifest, without obsolete hash bundles
+ok 10 - shipped build assets exactly match the current manifest, without obsolete hash bundles
+  ---
+  duration_ms: 2.007717
+  type: 'test'
+  ...
+# Subtest: hosted source runner admits only explicitly approved review refs and master, still enforcing checkout identity
+ok 11 - hosted source runner admits only explicitly approved review refs and master, still enforcing checkout identity
+  ---
+  duration_ms: 23.235681
+  type: 'test'
+  ...
+# Subtest: new job requires manual dispatch on the exact approved branch
+ok 12 - new job requires manual dispatch on the exact approved branch
+  ---
+  duration_ms: 0.943238
+  type: 'test'
+  ...
+# Subtest: native service and PHP versions and local-only port are explicit
+ok 13 - native service and PHP versions and local-only port are explicit
+  ---
+  duration_ms: 0.230958
+  type: 'test'
+  ...
+# Subtest: no secret references, deploy, SSH, provider commands or automatic install scripts
+ok 14 - no secret references, deploy, SSH, provider commands or automatic install scripts
+  ---
+  duration_ms: 1.083546
+  type: 'test'
+  ...
+# Subtest: artifacts are only the public synthetic allowlist, never the fixture or whole cache
+ok 15 - artifacts are only the public synthetic allowlist, never the fixture or whole cache
+  ---
+  duration_ms: 0.794351
+  type: 'test'
+  ...
+# Subtest: worker guard rejects other refs, hosts, schema names and nonprivate credentials
+ok 16 - worker guard rejects other refs, hosts, schema names and nonprivate credentials
+  ---
+  duration_ms: 0.231498
+  type: 'test'
+  ...
+# Subtest: only newly created schemas are adopted and cleaned up, and only owned SQL sessions killed
+ok 17 - only newly created schemas are adopted and cleaned up, and only owned SQL sessions killed
+  ---
+  duration_ms: 0.177241
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 175.152905
